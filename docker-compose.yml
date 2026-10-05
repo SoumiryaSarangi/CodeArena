@@ -17,7 +17,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7
+    image: redis:8
     environment:
       REDIS_ADMIN_PASSWORD: ${REDIS_ADMIN_PASSWORD:-codearena-dev}
       REDIS_JUDGE_PASSWORD: ${REDIS_JUDGE_PASSWORD:-judge-dev}
