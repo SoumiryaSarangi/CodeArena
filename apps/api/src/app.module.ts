@@ -14,6 +14,7 @@ import { RoomsModule } from './modules/rooms/rooms.module';
 import { SubmissionsModule } from './modules/submissions/submissions.module';
 import { UsersModule } from './modules/users/users.module';
 import { RateLimitGuard } from './rate-limit/rate-limit';
+import { AuthGuard, CsrfGuard, RequireHandleGuard, RolesGuard } from './modules/auth/guards';
 import { RedisModule } from './redis/redis.module';
 import { S3Module } from './s3/s3.module';
 import { createLogger, LOGGER } from './telemetry/logger';
@@ -57,6 +58,11 @@ export class AppModule {
       ],
       providers: [
         { provide: APP_FILTER, useClass: ProblemFilter },
+        // Order matters: who you are → CSRF → role → handle → rate limit (keyed by user when known).
+        { provide: APP_GUARD, useClass: AuthGuard },
+        { provide: APP_GUARD, useClass: CsrfGuard },
+        { provide: APP_GUARD, useClass: RolesGuard },
+        { provide: APP_GUARD, useClass: RequireHandleGuard },
         { provide: APP_GUARD, useClass: RateLimitGuard },
       ],
     };

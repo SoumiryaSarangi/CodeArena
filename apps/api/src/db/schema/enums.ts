@@ -5,7 +5,7 @@ import { Lane, Verdict } from '@codearena/contracts';
 export const verdict = pgEnum('verdict', Verdict.enum);
 export const lane = pgEnum('lane', Lane.enum);
 
-export const userRole = pgEnum('user_role', ['user', 'admin']);
+export const userRole = pgEnum('user_role', ['user', 'setter', 'admin']);
 export const oauthProvider = pgEnum('oauth_provider', ['google', 'github']);
 export const problemVisibility = pgEnum('problem_visibility', ['public', 'contest', 'private']);
 export const validationStatus = pgEnum('validation_status', [

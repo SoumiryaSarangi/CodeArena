@@ -1,0 +1,60 @@
+{
+  "$id": "Me.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "avatarUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "defaultLanguage": {
+      "anyOf": [
+        {
+          "$ref": "Language.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "email": {
+      "type": "string"
+    },
+    "handle": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rating": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "role": {
+      "$ref": "Role.json"
+    }
+  },
+  "required": [
+    "id",
+    "handle",
+    "name",
+    "email",
+    "avatarUrl",
+    "role",
+    "rating",
+    "defaultLanguage"
+  ],
+  "type": "object"
+}

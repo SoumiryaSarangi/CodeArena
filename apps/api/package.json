@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
     "typecheck": "tsc -p .",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
@@ -36,6 +36,7 @@
     "drizzle-orm": "^0.45.3",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
+    "jose": "^6.2.12",
     "pg": "^8.23.1",
     "pino": "^10.4.0",
     "reflect-metadata": "^0.2.2",

@@ -105,3 +105,35 @@
 - Next: F-06 (O).
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-06 · done
+- Built:
+  - Google (OIDC; id_token checked against JWKS, iss/aud/nonce/email_verified) and GitHub (PKCE, `/user` + primary verified email) OAuth with fetch + jose. State/verifier/nonce/returnTo live in a 10-min `ca_oauth` cookie; safe `returnTo`; every failure → `WEB_URL/signin?error=oauth-failed`.
+  - ES256 access JWT (15 min, `sub/role/sid`, `typ at+jwt`, ES256-only verify).
+  - Refresh tokens: SHA-256 stored, 30-day sliding. Rotation under `SELECT … FOR UPDATE`; reuse after 5 s revokes the family (`token-reused`); reuse within 5 s is a tab race (401, nothing revoked, cookie kept).
+  - Cookies: `ca_rt` (httpOnly, Secure, Lax, `/api/auth`) and `ca_csrf` double-submit for all POST/PUT/PATCH/DELETE (guests get the cookie too).
+  - Default-deny guards (Auth → CSRF → Roles → RequireHandle → RateLimit) with `@Public`, `@Roles` (admin ⊇ setter ⊇ user), `@RequireHandle`, `@SkipCsrf`.
+  - Endpoints: `/api/auth/{google,github}`, `/callback/*`, `/refresh`, `/logout`, `/logout-all`; `GET/PATCH /api/me`; `GET /api/handles/:h/available`; `POST /api/realtime/ticket` (256-bit, `SET tkt:* EX 60 NX`, `redeem()` with GETDEL plus requested ⊆ granted, SD-§10 topic policy, 30/min).
+  - Contracts `auth.ts` (Role, Me, PatchMe, HANDLE_RE, RESERVED_HANDLES, AccessToken, Topic, Ticket*).
+  - Migration `0001` (`setter` role, nullable handle). Drizzle `DB` provider. `ca_auth_events_total{event}`.
+  - `scripts/gen-keys.sh`. API `dev` now loads `apps/api/.env` (`--env-file-if-exists`).
+- Tests: `pnpm check` green (api 46, incl. 29 in `auth.test.ts`), using an in-process fake Google/GitHub that enforces PKCE. Coverage:
+  - FR-AUTH-01: login, state, missing cookie, wrong verifier, unverified email, returning user, cross-provider link.
+  - FR-AUTH-02/03: handle onboarding and rules. FR-AUTH-04: ES256, 900 s, hashes only; `none`/HS256/tampered/expired rejected.
+  - FR-AUTH-05: rotation, reuse revokes family, tab race, concurrent refresh, expiry. FR-AUTH-06: cookie flags. FR-AUTH-07: CSRF. FR-AUTH-08: logout and logout-all. FR-AUTH-09: roles.
+  - FR-AUTH-11: entropy, TTL, single use, scope, topic policy, 30/min. Production refuses endpoint overrides or missing keys.
+  - Mutation check: I broke family revocation, CSRF comparison, the grace window and the role check one at a time; each was caught by exactly its test, then restored.
+  - Gen-keys output loads and verifies through `loadConfig`. Live smoke on `tsx src/main.ts`: problem+json 401s, guest ticket, OAuth without client IDs → signin error.
+- Decisions:
+  - Account linking by verified email.
+  - 5 s refresh race window.
+  - Logout works with only the cookie; access tokens stay valid ≤ 15 min after logout (accepted).
+  - Clients must not send `Authorization` to `/auth/refresh` or `/auth/logout` (an invalid bearer is always 401).
+  - API test hook timeout raised to 60 s: create + migrate a test DB takes 6–12 s on WSL2. The auth suite sets a high default rate limit because the shared per-IP bucket in Redis made back-to-back runs fail.
+- Follow-ups: `DELETE /api/me` + anonymisation job (FR-AUTH-10, P1). Web auth client (memory access token, silent refresh, CSRF header, single-flight refresh across tabs) belongs to the web/UI cards.
+- Next: Day 2 (J-01, O).
+- Ayush must:
+  - (U1.1) Run `scripts/gen-keys.sh` and paste both lines into `apps/api/.env`. My permissions block `.env*` files, so also add these names, without values, to `apps/api/.env.example`: `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `JWT_ISSUER`, `WEB_URL`, `PUBLIC_API_URL`, `OAUTH_GOOGLE_CLIENT_ID`, `OAUTH_GOOGLE_CLIENT_SECRET`, `OAUTH_GITHUB_CLIENT_ID`, `OAUTH_GITHUB_CLIENT_SECRET`.
+  - In the Google and GitHub OAuth apps, register the callbacks `http://localhost:4000/api/auth/callback/google` and `http://localhost:4000/api/auth/callback/github`.
+  - Run `pnpm --filter @codearena/api db:migrate` (or `pnpm db:reset`) on your dev DB; I already migrated it here.
+- Model: O · Opus 5.5 (plan and build; `/effort high` not confirmed by Ayush)

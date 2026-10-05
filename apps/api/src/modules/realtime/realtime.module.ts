@@ -1,5 +1,10 @@
 import { Module } from '@nestjs/common';
+import { TicketsController } from './tickets.controller';
+import { TicketsService } from './tickets.service';
 
-// Skeleton: the card that owns this area adds controllers and services here.
-@Module({})
+@Module({
+  controllers: [TicketsController],
+  providers: [TicketsService],
+  exports: [TicketsService],
+})
 export class RealtimeModule {}

@@ -1,0 +1,22 @@
+{
+  "$id": "HandleAvailability.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "available": {
+      "type": "boolean"
+    },
+    "reason": {
+      "enum": [
+        "invalid",
+        "reserved",
+        "taken"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "available"
+  ],
+  "type": "object"
+}

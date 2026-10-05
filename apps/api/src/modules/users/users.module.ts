@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
+import { MeController } from './me.controller';
+import { UsersService } from './users.service';
 
-// Skeleton: the card that owns this area adds controllers and services here.
-@Module({})
+@Module({ controllers: [MeController], providers: [UsersService], exports: [UsersService] })
 export class UsersModule {}

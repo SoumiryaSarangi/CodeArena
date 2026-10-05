@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json } from 'express';
 import { AppModule } from './app.module';
 import { requestId } from './common/request-id';
+import { csrfCookieMiddleware } from './modules/auth/guards';
 import { type Config, loadConfig } from './config/config';
 import { createLogger } from './telemetry/logger';
 import { httpTelemetry } from './telemetry/http-telemetry';
@@ -21,6 +22,7 @@ export async function createApp(
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.setGlobalPrefix('api');
   app.use(requestId);
+  app.use(csrfCookieMiddleware);
   app.use(httpTelemetry(createLogger(config)));
   // Largest legitimate body is a run input of 1 MB plus a 64 KB source (SRS §3.2.3).
   app.use(json({ limit: '1.5mb' }));

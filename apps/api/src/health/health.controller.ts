@@ -7,6 +7,7 @@ import type { Redis } from 'ioredis';
 import type pg from 'pg';
 import { CONFIG, type Config } from '../config/config';
 import { PG_POOL } from '../db/db.module';
+import { Public } from '../modules/auth/guards';
 import { RateLimit } from '../rate-limit/rate-limit';
 import { REDIS } from '../redis/redis.module';
 import { S3 } from '../s3/s3.module';
@@ -29,6 +30,7 @@ const within = async (ms: number, fn: () => Promise<unknown>): Promise<Check> =>
 };
 
 @ApiTags('health')
+@Public()
 @RateLimit(false)
 @Controller('health')
 export class HealthController {

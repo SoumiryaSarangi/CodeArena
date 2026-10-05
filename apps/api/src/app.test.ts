@@ -8,10 +8,12 @@ import { createApp } from './app';
 import { ZodPipe } from './common/zod.pipe';
 import { loadConfig } from './config/config';
 import { RateLimit } from './rate-limit/rate-limit';
+import { Public } from './modules/auth/guards';
 
 const Body_ = z.object({ n: z.number().int() }).strict();
 const scope = `test-${Math.random().toString(36).slice(2)}`;
 
+@Public()
 @Controller('t')
 class TestController {
   @Post('validated')
@@ -43,6 +45,30 @@ if (process.env.CI && !redisUp) throw new Error('CI requires the dev stack (scri
 describe('F-05: config', () => {
   it('F-05: invalid configuration is rejected at boot', () => {
     expect(() => loadConfig({ PORT: 'not-a-port' })).toThrow(/invalid configuration/);
+  });
+
+  it('F-06: production refuses OAuth endpoint overrides and missing keys', () => {
+    const prod = {
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgres://u:p@db:5432/x',
+      REDIS_URL: 'redis://u:p@r:6379',
+      S3_SECRET_KEY: 's',
+      JWT_PRIVATE_KEY: '-----BEGIN PRIVATE KEY-----\\nx\\n-----END PRIVATE KEY-----',
+      JWT_PUBLIC_KEY: '-----BEGIN PUBLIC KEY-----\\nx\\n-----END PUBLIC KEY-----',
+      WEB_URL: 'https://codearena.me',
+      PUBLIC_API_URL: 'https://codearena.me',
+      OAUTH_GOOGLE_CLIENT_ID: 'g',
+      OAUTH_GOOGLE_CLIENT_SECRET: 'g',
+      OAUTH_GITHUB_CLIENT_ID: 'h',
+      OAUTH_GITHUB_CLIENT_SECRET: 'h',
+    };
+    expect(() => loadConfig(prod)).not.toThrow();
+    expect(() => loadConfig({ ...prod, OAUTH_GOOGLE_TOKEN_URL: 'http://evil.test/token' })).toThrow(
+      /not allowed in production/,
+    );
+    expect(() => loadConfig({ ...prod, JWT_PRIVATE_KEY: undefined })).toThrow(
+      /JWT_PRIVATE_KEY is required/,
+    );
   });
 
   it('F-05: production refuses dev credentials', () => {
@@ -81,8 +107,11 @@ describe('F-05: http conventions', () => {
   });
 
   it('F-05: Zod failures become 400 validation with errors[]; unknown fields are rejected', async () => {
+    const csrf = 'c'.repeat(43);
     const res = await request(app.getHttpServer())
       .post('/api/t/validated')
+      .set('Cookie', `ca_csrf=${csrf}`)
+      .set('X-CSRF-Token', csrf)
       .send({ n: 'x', extra: 1 });
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('validation');

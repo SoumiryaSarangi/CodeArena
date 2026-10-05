@@ -4,7 +4,8 @@ import { oauthProvider, userRole } from './enums';
 
 export const users = pgTable('users', {
   id: id(),
-  handle: citext('handle').notNull().unique(),
+  // Null until the user picks one on onboarding (FR-AUTH-02).
+  handle: citext('handle').unique(),
   name: text('name'),
   email: citext('email').notNull().unique(),
   avatarUrl: text('avatar_url'),

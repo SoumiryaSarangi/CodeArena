@@ -1,47 +1,25 @@
-import { randomBytes } from 'node:crypto';
 import { sql } from 'drizzle-orm';
-import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { connect, databaseUrl, type Db } from './client';
-import { runMigrations } from './migrate';
+import { createTestDatabase, postgresReachable } from '../test/db';
+import type { Db } from './client';
 import { seed } from './seed';
 import { judgeRuns, problems, submissions, users } from './schema';
 
 // Uses the compose Postgres (pnpm dev stack). A throwaway database is created per run.
-const adminUrl = databaseUrl();
-const reachable = await new pg.Client({ connectionString: adminUrl, connectionTimeoutMillis: 1500 })
-  .connect()
-  .then(() => true)
-  .catch(() => false);
+const reachable = await postgresReachable();
 
 // In CI the stack must be up: an unreachable database is a failure, not a skip.
 if (process.env.CI && !reachable) throw new Error('CI requires the dev stack (scripts/dev-up.sh)');
 
 describe.skipIf(!reachable)('F-04: database schema', () => {
-  const name = `test_${randomBytes(6).toString('hex')}`;
   let db: Db;
-  let close: () => Promise<void>;
+  let drop: () => Promise<void>;
 
   beforeAll(async () => {
-    const admin = new pg.Client({ connectionString: adminUrl });
-    await admin.connect();
-    await admin.query(`create database ${name}`);
-    await admin.end();
-    const url = new URL(adminUrl);
-    url.pathname = `/${name}`;
-    const conn = connect(url.toString());
-    db = conn.db;
-    close = () => conn.pool.end();
-    await runMigrations(db);
+    ({ db, drop } = await createTestDatabase());
   });
 
-  afterAll(async () => {
-    await close();
-    const admin = new pg.Client({ connectionString: adminUrl });
-    await admin.connect();
-    await admin.query(`drop database if exists ${name} with (force)`);
-    await admin.end();
-  });
+  afterAll(() => drop());
 
   it('F-04: migrations apply from empty and create every §6.2 table', async () => {
     const rows = await db.execute<{ n: string }>(
