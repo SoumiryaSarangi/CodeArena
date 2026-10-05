@@ -64,3 +64,11 @@
 - Next: Ayush reviews (U1.2). F-09 becomes done on approval.
 - Ayush must: review the ADRs and reply "approved" or raise concerns.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-08 · done
+- Built: `.github/workflows/ci.yml` (jobs `node`: install, lint, typecheck, unit + integration against the Compose dev stack via `scripts/dev-up.sh`, contracts freshness; `go`: gofmt, vet, test; `python`: ruff, mypy, pytest), `codeql.yml` (JS/TS, Python, Go; weekly + on push/PR), `dependabot.yml` (npm, gomod, uv, actions, docker-compose). Replaces the interim `contracts.yml`. DB and API stack tests now fail (not skip) when `CI` is set and the stack is down, which closes the F-04/F-05 follow-up.
+- Tests: first run failed on two real issues (pnpm `ERR_PNPM_IGNORED_BUILDS` for `@scarf/scarf` and `protobufjs`, now `allowBuilds: false` in `pnpm-workspace.yaml`; CodeQL Go does not support `build-mode: none`, now `autobuild`). Re-run on fbe32e7: `ci` and `codeql` both green in ~80 s (limit 10 min).
+- Decisions: integration tests use the Compose stack instead of Testcontainers (same services as dev, one source of truth; Testcontainers stays approved for tests that need throwaway containers). Node 24 in CI to mirror dev.
+- Next: F-07, then F-06 (O).
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5
