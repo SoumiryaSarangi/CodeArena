@@ -192,3 +192,7 @@
 - Next: J-03 (checkers and verdict engine, S·high).
 - Ayush must: run `sudo scripts/setup-judge-runtimes.sh`, then `cd apps/worker && JUDGE_REQUIRE_ISOLATE=1 JUDGE_REQUIRE_RUNTIMES=1 go test -count=1 -v ./internal/languages/` and paste the java21 and node results. J-02 becomes done when both pass.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · J-02 · done
+- Tests: Ayush ran `sudo scripts/setup-judge-runtimes.sh` (all tool paths ok, including `/etc/java-21-openjdk`) and `JUDGE_REQUIRE_ISOLATE=1 JUDGE_REQUIRE_RUNTIMES=1 go test -count=1 -v ./internal/languages/`: hello world is AC in all six languages (java21 0.75 s, node 0.26 s), and every compile and registry test passes. Installed: openjdk 21.0.12, nodejs 18.19.1.
+- Model: S · Sonnet 5.5
