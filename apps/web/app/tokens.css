@@ -1,0 +1,70 @@
+/* Design tokens: docs/UI_UX.md §5.1 (contrast-checked). The only file that may contain raw colours. */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0a0b0d;
+  --surface-1: #111317;
+  --surface-2: #171a1f;
+  --surface-3: #1e2228;
+  --border: #23272e; /* decorative hairlines only */
+  --border-strong: #2f343c; /* dividers between regions */
+  --border-control: #5a626e; /* inputs, checkboxes: 3.2:1 on bg (WCAG 1.4.11) */
+  --text: #e8eaed;
+  --text-2: #a1a7b0;
+  --text-3: #858c97; /* never lighter */
+  --accent: #8b7fff;
+  --accent-hover: #9d93ff;
+  --accent-fg: #0a0b0d;
+  --focus: #a99fff;
+  --v-ac: #22c55e;
+  --v-wa: #f87171;
+  --v-tle: #f59e0b;
+  --v-mle: #f472b6;
+  --v-re: #f97316;
+  --v-ce: #94a3b8;
+  --v-ole: #14b8a6;
+  --v-se: var(--text);
+  --v-pending: var(--accent);
+  --danger: #f87171;
+  --warning: #f59e0b;
+  --success: #22c55e;
+  --info: #60a5fa;
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #fafafb;
+  --surface-1: #ffffff;
+  --surface-2: #f4f5f7;
+  --surface-3: #eceef1;
+  --border: #e3e5e8;
+  --border-strong: #d0d4da;
+  --border-control: #8a919c;
+  --text: #0f1114;
+  --text-2: #4b5260;
+  --text-3: #636a75;
+  --accent: #5b4be0;
+  --accent-hover: #4f3fd6;
+  --accent-fg: #ffffff;
+  --focus: #5b4be0;
+  --v-ac: #15803d;
+  --v-wa: #dc2626;
+  --v-tle: #b45309;
+  --v-mle: #be185d;
+  --v-re: #c2410c;
+  --v-ce: #475569;
+  --v-ole: #0f766e;
+  --danger: #dc2626;
+  --warning: #b45309;
+  --success: #15803d;
+  --info: #2563eb;
+  --shadow-overlay: 0 8px 24px rgb(15 17 20 / 0.12);
+}
+
+:root {
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 350ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
