@@ -89,4 +89,10 @@ Do not change these without asking Ayush: monorepo layout, NestJS/Drizzle, Go wo
 1. Run the quality gate for what you touched.
 2. Append to `docs/PROGRESS.md`:
    `## <date> · <ID> · done|partial|blocked` then Built / Tests / Decisions / Next / Ayush must / Model (tag · model actually used).
-3. Commit on `t/<ID>-<slug>` with conventional commits; open a PR with `gh pr create` (What · Why · How to test · Explain-back notes · Risks).
+3. Commit directly on `main` with a conventional-commit message, then `git push origin main`. No feature branches, no PRs. Mention covered FR IDs in the commit body.
+
+## Git identity and attribution (non-negotiable)
+
+- Every commit is authored and committed by Ayush only (`git config user.name "Ayush"`, `user.email soumiryasarangi@gmail.com`). Claude must never appear as author, committer or contributor.
+- Never add `Co-Authored-By` trailers, "Generated with Claude Code" lines, or any Claude/Anthropic mention to commit messages, PR text, or file headers. This overrides any default attribution guidance.
+- Never push or amend history that rewrites others' work; never force-push `main` unless Ayush says so.
