@@ -25,6 +25,9 @@ write_files:
         systemd/isolate.service systemd/isolate.slice
       make -C "$src/isolate" install
       rm -rf "$src"
+      # subid_user=isolate needs a system user with /etc/subuid entries; use a fixed range instead.
+      sed -i 's/^subid_user = .*/# subid_user replaced by manual range/' /usr/local/etc/isolate
+      printf 'first_uid = 60000\nfirst_gid = 60000\nnum_boxes = 1000\n' >> /usr/local/etc/isolate
       systemctl daemon-reload
       systemctl enable --now isolate.service
 

@@ -50,9 +50,17 @@ else
   rm -rf "$src"
 fi
 
+step "Configuring the sandbox UID/GID range"
+# isolate 2.7 defaults to subid_user=isolate, which needs a system user with /etc/subuid entries.
+# A fixed range avoids creating a user; 60000-60999 does not overlap the usual subuid blocks.
+cfg=/usr/local/etc/isolate
+sed -i 's/^subid_user = .*/# subid_user = isolate (replaced by the manual range below)/' "$cfg"
+grep -q '^first_uid' "$cfg" || printf 'first_uid = 60000\nfirst_gid = 60000\nnum_boxes = 1000\n' >>"$cfg"
+
 step "Enabling isolate.service"
 systemctl daemon-reload
-systemctl enable --now isolate.service
+systemctl enable isolate.service
+systemctl restart isolate.service
 systemctl is-active --quiet isolate.service
 
 step "isolate --version"
