@@ -137,3 +137,4 @@
   - In the Google and GitHub OAuth apps, register the callbacks `http://localhost:4000/api/auth/callback/google` and `http://localhost:4000/api/auth/callback/github`.
   - Run `pnpm --filter @codearena/api db:migrate` (or `pnpm db:reset`) on your dev DB; I already migrated it here.
 - Model: O · Opus 5.5 (plan and build; `/effort high` not confirmed by Ayush)
+- CI note (F-06, 6287488): `node`, `python`, CodeQL JS/TS and CodeQL Go passed on GitHub. The `go`, `e2e` and CodeQL Python jobs were cancelled twice with "The job was not acquired by Runner of type hosted even after multiple attempts" (GitHub runner capacity or Actions allowance, not a test failure). I ran them locally on the same commit: gofmt/vet/`go test` ok, pytest ok, `pnpm e2e` 8/8. Ayush: check Settings → Billing → Actions usage for the repo, and re-run the workflow when runners are available.
