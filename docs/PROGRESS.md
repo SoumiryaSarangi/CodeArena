@@ -218,3 +218,23 @@
   - The compile and run boxes are separate (SD-§8.1), so artifacts are copied through the host with the safe reader/writer.
 - Next: J-04 (test cache + object storage, S). Heads-up: it needs MinIO (`minio-go` is approved) and a running object store for the integration test; Docker/compose state is unknown to me, I'll check before starting.
 - Model: S·high · Sonnet 5.5 (`/effort high` not confirmed by Ayush)
+
+## 2026-10-05 · J-04 · done
+- Built: `apps/worker/internal/testcache` (adds `minio-go/v7`, approved; talks to the SeaweedFS S3 endpoint from compose with path-style access):
+  - `Cache.Get(ctx, hash, uri)` returns a `Testset` (ordered cases, `Load(no)` through the safe reader, `Release()`). A hit never touches the store. Concurrent Gets of one hash share one download. A failed or hash-mismatched download stores nothing and is not cached.
+  - Download streams to a temp file inside the cache root with a 1 GB cap and SHA-256 computed on the way. Extraction only starts if the hash equals the job's `testsetHash` (FR-JUDGE-12).
+  - Archive format: a plain tar of flat `NN.in` / `NN.ans` (2–4 digits). Symlinks, hard links, directories, nested, absolute or `..` names, odd names, duplicates, orphan or missing halves, empty archives, truncated archives and one test under two names (`01`/`001`) are all rejected. Limits: 2000 tests, 128 MB per file, 1 GB total. Files are created `O_EXCL` mode 0440, directories 0550, and the finished directory is renamed into `<root>/<hash>` atomically (SD-§8.6).
+  - URIs must be `s3://<configured bucket>/testsets/...`: no other bucket, scheme, `..`, query or fragment (FR-JUDGE-09, a job cannot aim the judge elsewhere).
+  - LRU eviction when the cache exceeds `MaxBytes` (default 5 GB): oldest `lastUsed` first, never a testset in use or the one just fetched; rename-then-delete so a crash leaves no half-evicted directory.
+  - Restart: re-indexes `<root>`, deletes the temp area and any directory that is not a valid testset, restores LRU order from directory mtimes.
+  - `Stats()` (hits, misses, downloads, evictions, failures) for the J-05 metrics.
+- Tests: `go test ./...` green (gofmt, vet, `-race` clean on testcache; 35 testcache cases; no leftover boxes). With `JUDGE_REQUIRE_S3=1` against the running SeaweedFS: the card's accept test (second run of the same testset: the store is opened once, counted by a wrapper around the real store) plus wrong hash and missing key.
+  - Mutation check: removing hash verification, evicting in-use testsets, evicting newest first, and accepting links or any tar names were each caught; all restored.
+- Decisions:
+  - The dev object store is SeaweedFS (ADR), not MinIO; the card says MinIO, `minio-go` is just the S3 client.
+  - The integration test defaults to the compose dev credentials (`codearena` / `codearena-dev`, in the committed compose file) with `S3_*` env overrides; it skips when `:8333` is unreachable (as in CI). It writes and removes its own fixture object under `testsets/j04-*`.
+  - Worker still needs a read-only object-store key in production (D cards): `NewS3` only ever reads.
+  - Checker binaries (testlib) are not yet cached by hash; the same pattern (`<root>/checkers/<hash>`) belongs in J-05 where `testsetUri` and `Checker.BinaryURI` are both resolved.
+- Next: J-05 (worker loop, single lane, S·high): consume `jobs:practice`, publish `JudgeProgress` per test and `JudgeResult`, heartbeat, graceful shutdown. Needs Redis as ACL user `judge` (REDIS_URL in `apps/worker/.env`; I cannot read it) and `go-redis` v9 (approved).
+- Ayush must: before J-05, make sure `apps/worker/.env` has `REDIS_URL` for the judge ACL user (Q-04 owns the ACL itself; for J-05 the default Redis user is fine locally).
+- Model: S · Sonnet 5.5
