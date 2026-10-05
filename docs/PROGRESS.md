@@ -81,3 +81,11 @@
 - Next: F-06 (O). Follow-up card: browser verification of F-07 (screenshots at 1280 and 390 in both themes, axe 0 serious/critical, keyboard pass) once Chromium deps are installed.
 - Ayush must: `sudo npx playwright install-deps chromium` (or `sudo apt-get install -y libnss3 libnspr4 libasound2t64`) so I can run the browser checks; then say so and I will do the F-07 visual/axe pass. Optionally open `pnpm dev` and visit `/dev/ui` yourself in both themes.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · J-00 · done
+- Built: fixes found by Ayush's real runs (U1.4): isolate 2.7 also needs `libseccomp-dev`; its default `subid_user = isolate` needs a system user with `/etc/subuid` entries, so the script (and `infra/cloud-init/judge.yaml`) now sets a fixed range (`first_uid/first_gid = 60000`, `num_boxes = 1000`) and restarts the service on every run.
+- Tests: Ayush ran `sudo scripts/setup-isolate-wsl.sh` three times (idempotent). Final run: `isolate --version` = 2.7, `isolate.service` active, all cgroup feature checks PASS, smoke test PASSED (`/bin/echo` in box 99, `exitcode:0`, `cg-mem:332`).
+- Decisions: `isolate-check-environment` reports timing-variability warnings on this WSL2 host (SMT on, swap on, ASLR on, transparent hugepages on, core files piped). They are expected on a dev laptop and do not affect correctness; they matter for timing fairness. The judge VM (D-02/J cards) should turn them off (`echo never > /sys/kernel/mm/transparent_hugepage/enabled`, `randomize_va_space=0`, `core_pattern=core`, SMT off where the VM allows) and J-06/J-07 calibration should record the variance.
+- Next: J-01 (Day 2).
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5
