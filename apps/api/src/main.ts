@@ -1,6 +1,16 @@
-import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { loadConfig } from './config/config';
+import { startTelemetry } from './telemetry/otel';
 
-const app = await NestFactory.create(AppModule);
-await app.listen(Number(process.env.PORT ?? 4000));
+// Telemetry first so instrumentation sees every later import.
+const config = loadConfig();
+const telemetry = startTelemetry(config.OTEL_EXPORTER_OTLP_ENDPOINT);
+
+const { createApp } = await import('./app');
+const app = await createApp(config);
+await app.listen(config.PORT);
+
+for (const sig of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(sig, () => {
+    void app.close().then(() => telemetry.shutdown());
+  });
+}

@@ -48,3 +48,11 @@
 - Next: Ayush runs it (U1.4); J-00 becomes done once the smoke test passes.
 - Ayush must: `sudo scripts/setup-isolate-wsl.sh`, then paste the `isolate --version` and smoke-test output.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-05 · done
+- Built: NestJS skeleton under `apps/api/src`: nine empty feature modules (auth, users, problems, submissions, contests, realtime, admin, ai, rooms) plus health; Zod-validated config (`config/config.ts`, production refuses dev defaults); RFC 7807 `ProblemFilter` + `ProblemError` for the whole SRS §3.1.8 catalogue; request IDs (`X-Request-Id`, also the `instance` of errors); pino JSON logs with request/trace IDs; OTel bootstrap (OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set), an `http <method> <path>` span and `ca_http_request_seconds` per request, `ca_rate_limited_total`; Redis token-bucket guard (`rl:{scope}:{id}`, Lua, Redis TIME, `@RateLimit({scope, perMinute})` or `false`); `GET /api/health/live`, `/api/health/ready` and `/api/health` (DB, Redis, S3); Swagger at `/docs` only in development; `X-Powered-By` off; JSON body limit 1.5 MB.
+- Tests: `pnpm check` green. `app.test.ts` covers config, problem+json shape, request IDs, Zod 400, no leak on 500, 400/413 body errors, `/docs` hidden in test, `/health` against the compose stack, and the token bucket 429 + Retry-After (NFR-SEC-06). Stack tests skip if Redis is unreachable (same F-08 follow-up as the DB test). Manually verified `tsx src/main.ts`: `/api/health` all ok, `/docs` 200, 404 is problem+json.
+- Decisions: added `express`, `@nestjs/swagger`, `@nestjs/testing`, `supertest`, `ioredis`, `pino`, `zod`, `@opentelemetry/*`, `@aws-sdk/client-s3` (all on the approved list or implied by `@nestjs/*`). tsx/vitest do not emit decorator metadata, so DI uses explicit `@Inject(token)` everywhere — keep doing that. The rate limiter fails open if Redis is down (logged); `/health/ready` reports Redis. Default limit 120/min per user-or-IP; specific limits (6/min submit etc.) come with their endpoints. `createApp(config, extraModules)` is the test seam for throwaway routes.
+- Next: F-06 needs `/model opus` and `/effort high` (tag O).
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5

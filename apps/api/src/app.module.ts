@@ -1,13 +1,64 @@
-import { Controller, Get, Module } from '@nestjs/common';
-import type { Health } from '@codearena/contracts';
+import { type DynamicModule, Global, Module } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ProblemFilter } from './common/problem.filter';
+import { CONFIG, type Config } from './config/config';
+import { DbModule } from './db/db.module';
+import { HealthModule } from './health/health.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { AiModule } from './modules/ai/ai.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ContestsModule } from './modules/contests/contests.module';
+import { ProblemsModule } from './modules/problems/problems.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
+import { RoomsModule } from './modules/rooms/rooms.module';
+import { SubmissionsModule } from './modules/submissions/submissions.module';
+import { UsersModule } from './modules/users/users.module';
+import { RateLimitGuard } from './rate-limit/rate-limit';
+import { RedisModule } from './redis/redis.module';
+import { S3Module } from './s3/s3.module';
+import { createLogger, LOGGER } from './telemetry/logger';
 
-@Controller()
-export class HealthController {
-  @Get('healthz')
-  health(): Health {
-    return { status: 'ok', service: 'api' };
+@Global()
+@Module({})
+class CoreModule {
+  static forRoot(config: Config): DynamicModule {
+    return {
+      module: CoreModule,
+      providers: [
+        { provide: CONFIG, useValue: config },
+        { provide: LOGGER, useValue: createLogger(config) },
+      ],
+      exports: [CONFIG, LOGGER],
+    };
   }
 }
 
-@Module({ controllers: [HealthController] })
-export class AppModule {}
+@Module({})
+export class AppModule {
+  static forRoot(config: Config, extra: NonNullable<DynamicModule['imports']> = []): DynamicModule {
+    return {
+      module: AppModule,
+      imports: [
+        CoreModule.forRoot(config),
+        DbModule,
+        RedisModule,
+        S3Module,
+        HealthModule,
+        AuthModule,
+        UsersModule,
+        ProblemsModule,
+        SubmissionsModule,
+        ContestsModule,
+        RealtimeModule,
+        AdminModule,
+        AiModule,
+        RoomsModule,
+        ...extra,
+      ],
+      providers: [
+        { provide: APP_FILTER, useClass: ProblemFilter },
+        { provide: APP_GUARD, useClass: RateLimitGuard },
+      ],
+    };
+  }
+}
