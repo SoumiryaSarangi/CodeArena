@@ -71,6 +71,21 @@ describe('F-05: config', () => {
     );
   });
 
+  it('F-06: blank .env values fall back to defaults instead of failing boot', () => {
+    const c = loadConfig({
+      JWT_ISSUER: '',
+      WEB_URL: ' ',
+      OAUTH_GITHUB_CLIENT_ID: '',
+      JWT_PRIVATE_KEY: '',
+    });
+    expect(c.JWT_ISSUER).toBe('codearena');
+    expect(c.WEB_URL).toBe('http://localhost:3000');
+    expect(c.OAUTH_GITHUB_CLIENT_ID).toBeUndefined();
+    expect(() => loadConfig({ NODE_ENV: 'production', DATABASE_URL: '' })).toThrow(
+      /DATABASE_URL is required/,
+    );
+  });
+
   it('F-05: production refuses dev credentials', () => {
     expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL is required/);
   });

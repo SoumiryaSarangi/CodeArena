@@ -42,7 +42,11 @@ const schema = z.object({
 
 export type Config = z.infer<typeof schema>;
 
-export function loadConfig(env: Record<string, string | undefined> = process.env): Config {
+export function loadConfig(raw: Record<string, string | undefined> = process.env): Config {
+  // `KEY=` in a .env file means "not set": treat blank values like missing so defaults apply.
+  const env = Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => v !== undefined && v.trim() !== ''),
+  );
   const parsed = schema.safeParse(env);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
