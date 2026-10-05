@@ -1,0 +1,1 @@
+{ "extends": "@codearena/config/tsconfig.base.json", "include": ["src"] }

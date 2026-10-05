@@ -1,0 +1,10 @@
+{
+  "name": "@codearena/worker",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "go run .",
+    "typecheck": "go vet ./...",
+    "test": "go test ./..."
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+.next
+dist
+.turbo
+pnpm-lock.yaml
+docs
+apps/plag
+apps/worker

@@ -1,0 +1,6 @@
+{
+  "extends": "@codearena/config/tsconfig.base.json",
+  "compilerOptions": { "jsx": "preserve", "allowJs": true, "plugins": [{ "name": "next" }] },
+  "include": ["next-env.d.ts", "app", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

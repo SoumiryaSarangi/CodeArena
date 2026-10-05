@@ -1,0 +1,11 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint-staged:
+      run: pnpm exec lint-staged
+    gofmt:
+      glob: '*.go'
+      run: gofmt -l {staged_files}
+    ruff:
+      glob: 'apps/plag/**/*.py'
+      run: uv run --project apps/plag ruff check {staged_files}

@@ -1,0 +1,31 @@
+{
+  "name": "codearena",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "eslint . && prettier --check .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "format": "prettier --write .",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.4",
+    "eslint": "^10.12.0",
+    "lefthook": "^2.1.16",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "turbo": "^2.11.7",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}
