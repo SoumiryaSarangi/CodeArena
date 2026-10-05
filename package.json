@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "prepare": "lefthook install",
     "contracts:gen": "pnpm --filter @codearena/contracts gen",
-    "contracts:check": "pnpm --filter @codearena/contracts gen --check"
+    "contracts:check": "pnpm --filter @codearena/contracts gen --check",
+    "db:reset": "pnpm --filter @codearena/api db:reset"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -31,3 +31,12 @@
 - Next: F-04.
 - Ayush must: nothing.
 - Model: P · planned on Opus (`/model opus`, not `opusplan`); build ran on Sonnet 5.5 after a mid-session model change — opusplan itself untested.
+
+## 2026-10-05 · F-04 · done
+- Built: Drizzle schema for all 37 §6.2 tables in `apps/api/src/db/schema/*` (enums reuse `Verdict`/`Lane` from contracts); `drizzle/0000_init.sql` (starts with `CREATE EXTENSION citext`); `uuidv7()` helper (no extra dep); `db:migrate`, `db:seed`, `db:reset` (root `pnpm db:reset`); idempotent seed (admin user + 3 public sample problems with versions and tags).
+- Tests: `pnpm check` green. `schema.test.ts` creates a throwaway database on the compose Postgres: migrations from empty (37 tables), seed idempotent, `(submission_id, run_version)` unique (FR-QUEUE-06). `uuid.test.ts` covers v7 format and ordering.
+- Decisions: `drizzle-orm`, `drizzle-kit`, `pg`, `@types/pg` (approved list + types). Dev DB URL defaults to the compose one; `DATABASE_URL` overrides. `db reset` refuses non-local hosts. `problems.current_version_id` has no FK (circular). Enum values not given in SD were chosen: `user_role`, `problem_visibility`, `run_reason`, `decision_kind`, `signal_kind`, `room_event_kind`, `room_role`, `run_status` — revisit if a later card needs different ones.
+- Follow-up (F-08): `schema.test.ts` is skipped when Postgres is unreachable; F-08 must provide a Postgres service/Testcontainers in CI so it always runs.
+- Next: F-05.
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5
