@@ -6,6 +6,7 @@ packages:
   - build-essential
   - pkg-config
   - libcap-dev
+  - libseccomp-dev
   - libsystemd-dev
   - git
 

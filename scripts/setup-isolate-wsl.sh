@@ -29,7 +29,7 @@ fi
 step "Installing build dependencies"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq build-essential pkg-config libcap-dev libsystemd-dev git
+apt-get install -y -qq build-essential pkg-config libcap-dev libseccomp-dev libsystemd-dev git
 
 installed_version() { isolate --version 2>/dev/null | head -n1 || true; }
 
