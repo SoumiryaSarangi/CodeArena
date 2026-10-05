@@ -40,3 +40,11 @@
 - Next: F-05.
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · J-00 · partial
+- Built: `scripts/setup-isolate-wsl.sh` (checks cgroup v2 + systemd PID 1, installs build deps, builds isolate v2.7 from source with the tag's commit SHA verified, `make install` to /usr/local, enables `isolate.service`, runs `isolate-check-environment`, smoke-tests `/bin/echo` in box 99 with `--cg`). Idempotent: skips the build when v2.7 is installed. `infra/cloud-init/judge.yaml` does the same for the judge VM.
+- Tests: `bash -n` and a YAML parse only. The script needs root, so it has NOT been run; build deps (pkg-config, libcap-dev, libsystemd-dev) are not installed on this machine yet.
+- Decisions: isolate is not packaged for Ubuntu 24.04, so it is built from source, pinned to v2.7. Docs (`make install-doc`) are skipped to avoid asciidoc.
+- Next: Ayush runs it (U1.4); J-00 becomes done once the smoke test passes.
+- Ayush must: `sudo scripts/setup-isolate-wsl.sh`, then paste the `isolate --version` and smoke-test output.
+- Model: S · Sonnet 5.5

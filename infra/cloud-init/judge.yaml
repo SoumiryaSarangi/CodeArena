@@ -1,0 +1,33 @@
+#cloud-config
+# Judge VM (Ubuntu 24.04, cgroup v2): isolate pinned to the same tag as scripts/setup-isolate-wsl.sh.
+# D-02 adds the worker binary, its systemd unit, node exporter and the Redis `judge` credentials.
+package_update: true
+packages:
+  - build-essential
+  - pkg-config
+  - libcap-dev
+  - libsystemd-dev
+  - git
+
+write_files:
+  - path: /usr/local/sbin/install-isolate.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      TAG="v2.7"
+      COMMIT="8f185bb37f3f23e29b33b0c7727c91c13429abe3"
+      src="$(mktemp -d)"
+      git clone -q --depth 1 --branch "$TAG" https://github.com/ioi/isolate.git "$src/isolate"
+      [ "$(git -C "$src/isolate" rev-parse HEAD)" = "$COMMIT" ] || { echo "isolate tag moved" >&2; exit 1; }
+      make -C "$src/isolate" -j"$(nproc)" isolate isolate-cg-keeper default.cf \
+        systemd/isolate.service systemd/isolate.slice
+      make -C "$src/isolate" install
+      rm -rf "$src"
+      systemctl daemon-reload
+      systemctl enable --now isolate.service
+
+runcmd:
+  - /usr/local/sbin/install-isolate.sh
+  - isolate-check-environment || true
+  - isolate --box-id=99 --cg --init && isolate --box-id=99 --cg --run --time=2 --wall-time=5 --cg-mem=65536 --processes=1 --env=PATH=/usr/bin:/bin -- /bin/echo judge-vm-smoke-ok; isolate --box-id=99 --cg --cleanup
