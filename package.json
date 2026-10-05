@@ -16,10 +16,13 @@
     "prepare": "lefthook install",
     "contracts:gen": "pnpm --filter @codearena/contracts gen",
     "contracts:check": "pnpm --filter @codearena/contracts gen --check",
-    "db:reset": "pnpm --filter @codearena/api db:reset"
+    "db:reset": "pnpm --filter @codearena/api db:reset",
+    "e2e": "pnpm --filter @codearena/web e2e"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.4",
     "eslint": "^10.12.0",
     "lefthook": "^2.1.16",

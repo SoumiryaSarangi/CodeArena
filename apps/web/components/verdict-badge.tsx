@@ -18,7 +18,7 @@ export function VerdictBadge({
       <span
         title="Judging"
         className={cn(
-          'inline-flex items-center rounded-sm bg-v-pending/14 px-1.5 py-0.5 font-mono text-12 font-medium text-v-pending motion-safe:animate-judging',
+          'inline-flex items-center rounded-sm bg-v-pending/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-pending/40 px-1.5 py-0.5 font-mono text-12 font-medium text-v-pending motion-safe:animate-judging',
           className,
         )}
       >

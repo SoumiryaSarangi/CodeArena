@@ -11,3 +11,5 @@ problems-private/
 __pycache__/
 *.log
 .DS_Store
+test-results/
+playwright-report/

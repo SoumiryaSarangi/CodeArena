@@ -117,7 +117,7 @@ Overall: SUS ≥ 75 (PRD M6).
 ```
 
 Rules:
-- Verdict **text** colours are only used on `--bg` or `--surface-1`/`--surface-2`. Badge background = `color-mix(in srgb, var(--v-x) 14%, transparent)`.
+- Verdict **text** colours are only used on `--bg` or `--surface-1`/`--surface-2`. Badge background = `color-mix(in srgb, var(--v-x) 14%, transparent)` in the **dark** theme. In the **light** theme the verdict colours are only ~4.6:1 on `--bg`, so a tint would drop the label below 4.5:1 (measured with axe, F-07): light badges have no tint and use a 1 px inset ring in the verdict colour at 40% instead.
 - Default theme follows `prefers-color-scheme`; user choice stored in localStorage and applied before paint (no flash).
 - Never use colour alone: verdicts always show the two/three-letter label; board cells use ✓ / +n / ?n glyphs.
 

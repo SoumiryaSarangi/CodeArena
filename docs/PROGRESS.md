@@ -95,3 +95,13 @@
 - Next: F-06.
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-07 · done
+- Built: browser verification of the F-07 design system (Ayush installed the Chromium libraries). `apps/web/e2e/ui.spec.ts` + `playwright.config.ts` (`pnpm e2e`, new CI job `e2e`): `/dev/ui` at 1280 and 390 px in dark and light (OS colour scheme, reduced motion on): theme applied before paint, no horizontal overflow (WCAG 1.4.10), axe wcag2a/2aa/21aa/22aa with 0 serious/critical; theme toggle persists across reload; Ctrl+K opens/filters/closes the palette; `?` opens the shortcut sheet but not while typing; DataTable ↑/↓ row focus. I also viewed the screenshots (1280 dark, 390 light): layout, rail → bottom bar, wrapping and both themes look as intended.
+- Bugs the browser found (all fixed, with unit tests): (1) `tailwind-merge` read the custom `text-14` size classes as colours and dropped `text-accent-fg`/`text-bg`, so primary and danger buttons had light text on light fills (2.3–2.6:1); `lib/cn.ts` now declares the type scale. (2) The loading button's label was `invisible`, leaving it without an accessible name; now `opacity-0` + spinner. (3) The kitchen-sink timers row overflowed 74 px at 390 px; it wraps now. (4) vitest was picking up the Playwright spec; `e2e/` excluded.
+- Spec change (UI_UX §5.1 updated): the 14% verdict-badge tint cannot meet 4.5:1 in the light theme (verdict colours are ~4.6:1 on `--bg`, so any tint drops them below 4.5:1; measured by axe at 3.7–4.3:1). Dark keeps the 14% tint; light badges have no tint and use a 1 px inset ring in the verdict colour at 40% (`light:` Tailwind variant). The `judging…` pulse still dips below 4.5:1 mid-animation (axe measured 4.2:1 while it ran); acceptable for a transient state and removed under reduced motion, where the check passes.
+- Not covered: manual keyboard pass of every component and an NVDA check (UI_UX §11 schedules NVDA for S05/S10 before Day 10); toast and drawer/dialog focus-return are Radix behaviour and only the palette's Esc path is asserted.
+- Tests: `pnpm check` green (23 web tests); `pnpm e2e` 8/8.
+- Next: F-06 (O).
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5

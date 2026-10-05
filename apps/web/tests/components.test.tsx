@@ -89,3 +89,17 @@ describe('F-07: base components', () => {
     ).toContain('Go');
   });
 });
+
+describe('F-07: class merging', () => {
+  it('F-07: a text colour survives next to a custom font-size class', async () => {
+    const { cn } = await import('@/lib/cn');
+    expect(cn('text-accent-fg', 'text-14')).toBe('text-accent-fg text-14');
+    expect(cn('text-13', 'text-14')).toBe('text-14');
+    expect(cn('text-text-2', 'text-text')).toBe('text-text');
+  });
+
+  it('F-07: primary and danger buttons keep their foreground colour', () => {
+    expect(renderToStaticMarkup(<Button variant="primary">x</Button>)).toContain('text-accent-fg');
+    expect(renderToStaticMarkup(<Button variant="danger">x</Button>)).toContain('text-bg');
+  });
+});

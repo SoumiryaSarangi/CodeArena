@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
 /* Colours exist only as tokens: the default Tailwind palette is removed on purpose. */
 @theme inline {
   --color-*: initial;

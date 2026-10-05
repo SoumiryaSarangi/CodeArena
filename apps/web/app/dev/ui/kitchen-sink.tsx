@@ -132,7 +132,7 @@ export function KitchenSink() {
       </Section>
 
       <Section title="Timers">
-        <div className="flex gap-6 text-32">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-32">
           <Timer endsAt={now + 2 * 3600_000 + 5000} />
           <Timer endsAt={now + 4 * 60_000} />
           <Timer endsAt={now + 45_000} />

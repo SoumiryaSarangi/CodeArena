@@ -47,7 +47,8 @@ export function Button({
     >
       {loading ? (
         <>
-          <span className="invisible inline-flex items-center gap-2">{children}</span>
+          {/* Kept in the accessibility tree (not `invisible`) so the button keeps its name. */}
+          <span className="inline-flex items-center gap-2 opacity-0">{children}</span>
           <Loader2
             className="absolute size-4 animate-spin motion-reduce:animate-none"
             aria-hidden

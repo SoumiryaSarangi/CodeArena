@@ -11,14 +11,19 @@ export interface VerdictMeta {
   swatch: string;
 }
 
-/** Copy from SRS Appendix A / UI_UX §10.2. The text label is always rendered next to the colour. */
+/**
+ * Dark badges use a 14% tint (UI_UX §5.1). In the light theme the verdict colours sit at ~4.6:1 on
+ * the page, so any tint pushes the label below 4.5:1: light badges use a hairline ring instead.
+ *
+ * Copy from SRS Appendix A / UI_UX §10.2. The text label is always rendered next to the colour.
+ */
 export const VERDICTS: Record<Verdict, VerdictMeta> = {
   AC: {
     label: 'AC',
     name: 'Accepted',
     perTest: false,
     text: 'text-v-ac',
-    tint: 'bg-v-ac/14',
+    tint: 'bg-v-ac/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-ac/40',
     swatch: 'bg-v-ac',
   },
   WA: {
@@ -26,7 +31,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Wrong answer',
     perTest: true,
     text: 'text-v-wa',
-    tint: 'bg-v-wa/14',
+    tint: 'bg-v-wa/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-wa/40',
     swatch: 'bg-v-wa',
   },
   TLE: {
@@ -34,7 +39,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Time limit exceeded',
     perTest: true,
     text: 'text-v-tle',
-    tint: 'bg-v-tle/14',
+    tint: 'bg-v-tle/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-tle/40',
     swatch: 'bg-v-tle',
   },
   MLE: {
@@ -42,7 +47,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Memory limit exceeded',
     perTest: true,
     text: 'text-v-mle',
-    tint: 'bg-v-mle/14',
+    tint: 'bg-v-mle/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-mle/40',
     swatch: 'bg-v-mle',
   },
   RE: {
@@ -50,7 +55,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Runtime error',
     perTest: true,
     text: 'text-v-re',
-    tint: 'bg-v-re/14',
+    tint: 'bg-v-re/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-re/40',
     swatch: 'bg-v-re',
   },
   CE: {
@@ -58,7 +63,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Compilation error',
     perTest: false,
     text: 'text-v-ce',
-    tint: 'bg-v-ce/14',
+    tint: 'bg-v-ce/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-ce/40',
     swatch: 'bg-v-ce',
   },
   OLE: {
@@ -66,7 +71,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'Output limit exceeded',
     perTest: true,
     text: 'text-v-ole',
-    tint: 'bg-v-ole/14',
+    tint: 'bg-v-ole/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-ole/40',
     swatch: 'bg-v-ole',
   },
   SE: {
@@ -74,7 +79,7 @@ export const VERDICTS: Record<Verdict, VerdictMeta> = {
     name: 'System error',
     perTest: false,
     text: 'text-v-se',
-    tint: 'bg-v-se/14',
+    tint: 'bg-v-se/14 light:bg-transparent light:ring-1 light:ring-inset light:ring-v-se/40',
     swatch: 'bg-v-se',
   },
 };
