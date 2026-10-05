@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -105,4 +106,28 @@ func WriteFileExcl(dir, name string, data []byte, perm os.FileMode) error {
 		return err
 	}
 	return f.Close()
+}
+
+// ListFiles returns the entry names in dir (any type; callers read each with
+// ReadFile, which refuses anything that is not a plain file). Names that are
+// not a single safe path component are skipped.
+func ListFiles(dir string) ([]string, error) {
+	dfd, err := openDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	f := os.NewFile(uintptr(dfd), dir)
+	defer f.Close()
+	names, err := f.Readdirnames(-1)
+	if err != nil {
+		return nil, &os.PathError{Op: "readdir", Path: dir, Err: err}
+	}
+	out := names[:0]
+	for _, n := range names {
+		if checkName(n) == nil {
+			out = append(out, n)
+		}
+	}
+	slices.Sort(out)
+	return out, nil
 }

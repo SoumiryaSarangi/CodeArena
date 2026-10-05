@@ -1,0 +1,84 @@
+# Language registry (SD-§8.3). Embedded into the worker; edit and rebuild.
+#
+# isolate execve()s the command directly (no PATH lookup), so tools are absolute
+# paths. They must live under /usr or /bin, the only trees a box sees by default.
+# Java uses the real JDK path because the java launcher in /usr/bin goes through /etc/alternatives,
+# which is not visible in a box. Paths are Ubuntu 24.04 amd64 (the judge image).
+#
+# Placeholders in `run`: {MEM_MB} = the problem's memory limit in MB (Java -Xmx).
+# `artifacts` are the files copied from the compile box to the run box
+# (exact names or a single `*` glob). `memOverheadMb` is added to the problem's
+# memory limit for runtimes that need it. `timeMultiplier` scales the problem's
+# time limit (T = limit x multiplier).
+
+compile:
+  cpuSeconds: 10
+  memMb: 512
+  # Largest file the compiler may write (static C++ binaries are a few MB).
+  fsizeKb: 65536
+  processes: 64
+  # Only this much of the compiler output is kept for the CE log.
+  logKb: 16
+
+languages:
+  - id: c
+    name: C (gcc, C17)
+    sourceFile: main.c
+    compile: [/usr/bin/gcc, -O2, -std=c17, -static, -o, main, main.c, -lm]
+    run: [./main]
+    artifacts: [main]
+    processes: 1
+    memOverheadMb: 0
+    timeMultiplier: 1
+
+  - id: cpp17
+    name: C++17 (g++)
+    sourceFile: main.cpp
+    compile: [/usr/bin/g++, -O2, -std=c++17, -static, -o, main, main.cpp]
+    run: [./main]
+    artifacts: [main]
+    processes: 1
+    memOverheadMb: 0
+    timeMultiplier: 1
+
+  - id: cpp20
+    name: C++20 (g++)
+    sourceFile: main.cpp
+    compile: [/usr/bin/g++, -O2, -std=c++20, -static, -o, main, main.cpp]
+    run: [./main]
+    artifacts: [main]
+    processes: 1
+    memOverheadMb: 0
+    timeMultiplier: 1
+
+  - id: python3
+    name: Python 3
+    sourceFile: main.py
+    # Syntax check only; a failure is a compile error.
+    compile: [/usr/bin/python3, -B, -m, py_compile, main.py]
+    run: [/usr/bin/python3, -B, main.py]
+    artifacts: [main.py]
+    processes: 1
+    memOverheadMb: 16
+    timeMultiplier: 3
+
+  - id: java21
+    name: Java 21
+    sourceFile: Main.java
+    compile: [/usr/lib/jvm/java-21-openjdk-amd64/bin/javac, -encoding, UTF-8, Main.java]
+    run: [/usr/lib/jvm/java-21-openjdk-amd64/bin/java, -Xss64m, -XX:+UseSerialGC, "-Xmx{MEM_MB}m", Main]
+    artifacts: ["*.class"]
+    dirs: [/etc/java-21-openjdk]
+    processes: 32
+    memOverheadMb: 64
+    timeMultiplier: 2
+
+  - id: node
+    name: JavaScript (Node.js)
+    sourceFile: main.js
+    compile: [/usr/bin/node, --check, main.js]
+    run: [/usr/bin/node, --stack-size=65500, main.js]
+    artifacts: [main.js]
+    processes: 16
+    memOverheadMb: 48
+    timeMultiplier: 2

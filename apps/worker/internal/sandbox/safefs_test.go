@@ -158,3 +158,25 @@ func must(t *testing.T, err error) {
 		t.Fatal(err)
 	}
 }
+
+func TestListFiles(t *testing.T) {
+	t.Run("FR-JUDGE-08: lists names of every entry type without following them", func(t *testing.T) {
+		dir := t.TempDir()
+		write(t, filepath.Join(dir, "b.class"), "x")
+		write(t, filepath.Join(dir, "a.class"), "x")
+		must(t, os.Symlink("/etc/passwd", filepath.Join(dir, "link")))
+		got, err := ListFiles(dir)
+		must(t, err)
+		if len(got) != 3 || got[0] != "a.class" || got[1] != "b.class" || got[2] != "link" {
+			t.Fatalf("got %q", got)
+		}
+		assertUnsafe(t, dir, "link")
+	})
+	t.Run("FR-JUDGE-08: refuses a symlinked directory", func(t *testing.T) {
+		link := filepath.Join(t.TempDir(), "box")
+		must(t, os.Symlink(t.TempDir(), link))
+		if _, err := ListFiles(link); err == nil {
+			t.Fatal("listed through a symlink")
+		}
+	})
+}

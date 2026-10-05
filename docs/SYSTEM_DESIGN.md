@@ -507,6 +507,8 @@ isolate --box-id=<core> --cg --cleanup
 
 ### 8.3 Language registry (`apps/worker/languages.yaml`)
 
+_Implemented as `apps/worker/internal/languages/languages.yaml` (embedded with `go:embed`, which cannot reach a parent directory). Tool paths are absolute because isolate does not search PATH._
+
 | id | Compile | Run | Processes | Memory overhead allowance |
 |---|---|---|---|---|
 | `c` | `gcc -O2 -std=c17 -static -o main main.c -lm` | `./main` | 1 | 0 |

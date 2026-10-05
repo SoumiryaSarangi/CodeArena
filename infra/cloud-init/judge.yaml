@@ -9,6 +9,10 @@ packages:
   - libseccomp-dev
   - libsystemd-dev
   - git
+  # Language runtimes the judge boxes see under /usr (apps/worker/internal/languages/languages.yaml)
+  - python3
+  - openjdk-21-jdk-headless
+  - nodejs
 
 write_files:
   - path: /usr/local/sbin/install-isolate.sh

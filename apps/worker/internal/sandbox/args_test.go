@@ -123,6 +123,7 @@ func TestValidateRejects(t *testing.T) {
 		"in=out mapping":       func(s *RunSpec) { s.Dirs = []string{"/box=/etc"} },
 		"root bind":            func(s *RunSpec) { s.Dirs = []string{"/"} },
 		"etc bind":             func(s *RunSpec) { s.Dirs = []string{"/etc"} },
+		"other etc subtree":    func(s *RunSpec) { s.Dirs = []string{"/etc/java-21-openjdk/../shadow"} },
 		"proc subtree":         func(s *RunSpec) { s.Dirs = []string{"/proc/1"} },
 		"var subtree":          func(s *RunSpec) { s.Dirs = []string{"/var/local/lib/isolate"} },
 		"stdin with slash":     func(s *RunSpec) { s.Stdin = "../in.txt" },
@@ -140,6 +141,14 @@ func TestValidateRejects(t *testing.T) {
 				t.Fatal("RunArgs accepted an invalid spec")
 			}
 		})
+	}
+}
+
+func TestValidateAllowsJavaConf(t *testing.T) {
+	s := validSpec()
+	s.Dirs = []string{"/etc/java-21-openjdk"}
+	if err := s.Validate(); err != nil {
+		t.Fatal(err)
 	}
 }
 

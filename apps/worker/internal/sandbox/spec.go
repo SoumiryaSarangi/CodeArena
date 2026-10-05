@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -104,6 +105,10 @@ func (s RunSpec) Validate() error {
 // forbiddenDirs may not be bound into a box, nor anything below them.
 var forbiddenDirs = []string{"/box", "/proc", "/dev", "/sys", "/run", "/var", "/etc", "/home", "/root", "/tmp"}
 
+// javaConfDir is the one /etc path a runtime needs: Ubuntu's JDK links its
+// conf directory into /etc/java-<n>-openjdk.
+var javaConfDir = regexp.MustCompile(`^/etc/java-[0-9]+-openjdk$`)
+
 // checkDir allows only a plain, clean, absolute path: no isolate options
 // (":rw", ":dev"), no "=" (in/out mapping), no root, no sensitive trees.
 func checkDir(d string) error {
@@ -115,6 +120,9 @@ func checkDir(d string) error {
 	}
 	if d == "/" {
 		return invalid("dir must not be the root")
+	}
+	if javaConfDir.MatchString(d) {
+		return nil
 	}
 	for _, f := range forbiddenDirs {
 		if d == f || strings.HasPrefix(d, f+"/") {

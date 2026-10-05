@@ -172,3 +172,23 @@
 - Next: J-02 (language registry, S). Heads-up: `languages.yaml` needs a YAML parser and none is on the approved Go list (PLAN §4.2). Options: approve `gopkg.in/yaml.v3`, or use JSON instead.
 - Ayush must: decide YAML lib vs JSON for J-02. Optional: `go install honnef.co/go/tools/cmd/staticcheck@latest` so the Go lint gate runs locally.
 - Model: O · Opus 5.5
+
+## 2026-10-05 · J-02 · partial
+- Built: `apps/worker/internal/languages` plus `languages.yaml` (embedded, strict parse with unknown keys rejected, gopkg.in/yaml.v3 approved by Ayush):
+  - Six languages with compile and run commands, `artifacts`, process limit, memory overhead and time multiplier (c/cpp 1, java 2, node 2, python 3).
+  - `Language.RunSpec(limits, …)`: T = limit × multiplier, memory + overhead, `{MEM_MB}` for Java `-Xmx`, process limit and fsize per SD-§8.3.
+  - `Registry.Compile(ctx, box, lang, source)` runs the compiler inside the compile box with the compile limits (10 s CPU, 512 MB, 64 processes). It returns a `CompileResult` with a ≤ 16 KB log and CE for non-zero exit, signal, timeout or OOM; an error return only for sandbox failure or source over 64 KB.
+  - Artifacts are listed and read back with the safe reader (`sandbox.ListFiles`, new), then `Install` writes them into the run box with O_EXCL; the host never follows a box path.
+  - `sandbox`: `ListFiles`, and a narrow `/etc/java-<n>-openjdk` bind allowance (Java conf).
+  - `scripts/setup-judge-runtimes.sh` (sudo, idempotent) installs build-essential, python3, openjdk-21-jdk-headless and nodejs and checks every tool path in the YAML. `infra/cloud-init/judge.yaml` now installs the same packages.
+- Tests: `go test ./...` green (gofmt and vet clean). With `JUDGE_REQUIRE_ISOLATE=1`: hello world is AC in **c, cpp17, cpp20, python3** (compile in the compile box, install in the run box, run, output matches). Also passing: C compile error returns the compiler log; Python syntax error is CE; the compiler cannot read `/etc/passwd`; a spinning compiler is killed at the 1 s CPU limit and reported as a timeout; oversize source refused; spec and registry unit tests including 11 bad-registry rejections.
+- **Not verified:** hello world in **java21** and **node**. The JDK is not installed and this machine's Node is under nvm (`~/.nvm`), which a box cannot see. Those two subtests skip until the runtimes exist; `JUDGE_REQUIRE_RUNTIMES=1` makes a skip a failure.
+- Decisions:
+  - isolate does `execve` with no PATH lookup, so every tool in the YAML is an absolute path under /usr (Java uses `/usr/lib/jvm/java-21-openjdk-amd64/bin`, since `/usr/bin/java` goes through `/etc/alternatives`, not visible in a box). Paths are Ubuntu 24.04 amd64; other architectures need edits.
+  - SD says compile "output 1 MB". Static C++ binaries are a few MB, so the compile step's per-file limit is 64 MB; the 1 MB meaning is applied to the kept log (16 KB) only. Say if you want a strict 1 MB.
+  - Registry file lives at `internal/languages/languages.yaml`, not `apps/worker/languages.yaml` (go:embed cannot read a parent directory); SD-§8.3 updated.
+  - Time multipliers (java 2, node 2, python 3) are my choice, SD only says "language multiplier". Adjust after J-06 calibration.
+  - apt `nodejs` on 24.04 is v18. It supports `--check` and `--stack-size`; revisit if a problem needs newer syntax.
+- Next: J-03 (checkers and verdict engine, S·high).
+- Ayush must: run `sudo scripts/setup-judge-runtimes.sh`, then `cd apps/worker && JUDGE_REQUIRE_ISOLATE=1 JUDGE_REQUIRE_RUNTIMES=1 go test -count=1 -v ./internal/languages/` and paste the java21 and node results. J-02 becomes done when both pass.
+- Model: S · Sonnet 5.5
