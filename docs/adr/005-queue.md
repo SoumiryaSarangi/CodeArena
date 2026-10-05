@@ -1,6 +1,6 @@
 # ADR-005: Queue: Redis Streams with consumer groups, one stream per lane, XAUTOCLAIM leases
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

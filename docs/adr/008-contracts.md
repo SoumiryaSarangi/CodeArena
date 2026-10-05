@@ -1,6 +1,6 @@
 # ADR-008: Contracts: Zod as source of truth, JSON Schema, Go types, CI freshness check
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

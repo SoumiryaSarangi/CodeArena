@@ -1,6 +1,6 @@
 # ADR-002: Web: Next.js App Router, React 19, Tailwind v4, shadcn/ui
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-015: PostgreSQL is the source of truth; Redis is always rebuildable
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

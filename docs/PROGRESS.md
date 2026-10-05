@@ -89,3 +89,9 @@
 - Next: J-01 (Day 2).
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-09 · done
+- Built: nothing new. Ayush approved ADR-001…015 (U1.2); status lines updated to "Accepted (approved by Ayush, 2026-10-05)".
+- Next: F-06.
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5

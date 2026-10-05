@@ -1,6 +1,6 @@
 # ADR-007: Auth: OAuth only, short access JWT, rotating refresh cookie, realtime tickets
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-009: Judge hosts are untrusted
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

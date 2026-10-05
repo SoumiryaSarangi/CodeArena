@@ -1,6 +1,6 @@
 # ADR-013: Hosting: Vercel for web, Azure for Students VMs for API and judges, Terraform
 
-- **Status:** Accepted (pending Ayush's review, U1.2)
+- **Status:** Accepted (approved by Ayush, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context
