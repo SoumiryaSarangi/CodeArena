@@ -14,6 +14,9 @@ const reachable = await new pg.Client({ connectionString: adminUrl, connectionTi
   .then(() => true)
   .catch(() => false);
 
+// In CI the stack must be up: an unreachable database is a failure, not a skip.
+if (process.env.CI && !reachable) throw new Error('CI requires the dev stack (scripts/dev-up.sh)');
+
 describe.skipIf(!reachable)('F-04: database schema', () => {
   const name = `test_${randomBytes(6).toString('hex')}`;
   let db: Db;

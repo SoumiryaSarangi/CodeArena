@@ -38,6 +38,8 @@ const redisUp = await new Redis(config.REDIS_URL, { lazyConnect: true, maxRetrie
   .then(() => true)
   .catch(() => false);
 
+if (process.env.CI && !redisUp) throw new Error('CI requires the dev stack (scripts/dev-up.sh)');
+
 describe('F-05: config', () => {
   it('F-05: invalid configuration is rejected at boot', () => {
     expect(() => loadConfig({ PORT: 'not-a-port' })).toThrow(/invalid configuration/);
