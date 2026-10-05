@@ -1,0 +1,90 @@
+# Dev stack (F-02). Local-only default passwords; override via .env (see .env.example).
+name: codearena
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: codearena
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-codearena-dev}
+      POSTGRES_DB: codearena
+    ports: ['5432:5432']
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', "psql -h 127.0.0.1 -U codearena -d codearena -c 'select 1'"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    environment:
+      REDIS_ADMIN_PASSWORD: ${REDIS_ADMIN_PASSWORD:-codearena-dev}
+      REDIS_JUDGE_PASSWORD: ${REDIS_JUDGE_PASSWORD:-judge-dev}
+    volumes:
+      - ./infra/redis/users.acl.tmpl:/etc/redis/users.acl.tmpl:ro
+      - ./infra/redis/entrypoint.sh:/entrypoint.sh:ro
+      - redisdata:/data
+    entrypoint: ['sh', '/entrypoint.sh']
+    ports: ['6379:6379']
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'REDISCLI_AUTH="$$REDIS_ADMIN_PASSWORD" redis-cli --user admin ping | grep -q PONG',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  s3:
+    image: chrislusf/seaweedfs:4.00
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=256
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-codearena}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-codearena-dev}
+    entrypoint:
+      [
+        'sh',
+        '-c',
+        'sed -e "s|__AK__|$$S3_ACCESS_KEY|" -e "s|__SK__|$$S3_SECRET_KEY|" /etc/seaweedfs/s3.json.tmpl > /etc/seaweedfs/s3.json && exec weed "$$@"',
+        '--',
+      ]
+    volumes:
+      - ./infra/s3/s3.json.tmpl:/etc/seaweedfs/s3.json.tmpl:ro
+      - s3data:/data
+    ports: ['8333:8333']
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:9333/cluster/status >/dev/null']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  s3-init:
+    image: amazon/aws-cli
+    depends_on:
+      s3: { condition: service_healthy }
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-codearena}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-codearena-dev}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint:
+      [
+        'sh',
+        '-c',
+        'aws --endpoint-url http://s3:8333 s3api head-bucket --bucket codearena 2>/dev/null || aws --endpoint-url http://s3:8333 s3 mb s3://codearena',
+      ]
+    restart: 'no'
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    command: ['--config=/etc/otel/config.yaml']
+    volumes: [./infra/otel/config.yaml:/etc/otel/config.yaml:ro]
+    ports: ['4317:4317', '4318:4318', '13133:13133']
+    # Image is distroless (no shell), so health is exposed on :13133 via the health_check
+    # extension and probed from the host by scripts/dev-up.sh.
+
+volumes:
+  pgdata:
+  redisdata:
+  s3data:

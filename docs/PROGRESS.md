@@ -7,3 +7,11 @@
 - Next: F-03.
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-02 · done
+- Built: `docker-compose.yml` (Postgres 16, Redis 7 with rendered ACL file incl. restricted `judge` user, S3 store + `codearena` bucket init, OTel collector with debug exporter); healthchecks; `scripts/dev-up.sh` (also verifies connectivity).
+- Tests: `scripts/dev-up.sh` passes in WSL, all services healthy. Verified judge ACL: `SET hb:*` allowed; `SET other`, `GET`, `XADD other` denied.
+- Decisions: **MinIO no longer publishes Docker images (Docker Hub and Quay both refuse pulls), so dev uses SeaweedFS 4.00 (pinned; `latest` was broken here) as an S3-compatible store — approved by Ayush. S3 clients are unchanged.** Redis ACL rendered at container start from env; dev-only default passwords; Postgres healthcheck connects over TCP to avoid the init-server race; OTel image is distroless so health is probed from the host on :13133.
+- Next: Q-04 tightens and tests the ACLs. Revisit the PLAN/SD mentions of MinIO for prod (Azure Blob / other).
+- Ayush must: nothing.
+- Model: S · Sonnet 5.5
