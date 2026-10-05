@@ -134,7 +134,14 @@
 - Next: Day 2 (J-01, O).
 - Ayush must:
   - (U1.1) Run `scripts/gen-keys.sh` and paste both lines into `apps/api/.env`. My permissions block `.env*` files, so also add these names, without values, to `apps/api/.env.example`: `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `JWT_ISSUER`, `WEB_URL`, `PUBLIC_API_URL`, `OAUTH_GOOGLE_CLIENT_ID`, `OAUTH_GOOGLE_CLIENT_SECRET`, `OAUTH_GITHUB_CLIENT_ID`, `OAUTH_GITHUB_CLIENT_SECRET`.
-  - In the Google and GitHub OAuth apps, register the callbacks `http://localhost:4000/api/auth/callback/google` and `http://localhost:4000/api/auth/callback/github`.
+  - ~~Register callbacks on :4000~~ superseded, see the dev-rewrite entry below.
   - Run `pnpm --filter @codearena/api db:migrate` (or `pnpm db:reset`) on your dev DB; I already migrated it here.
 - Model: O · Opus 5.5 (plan and build; `/effort high` not confirmed by Ayush)
 - CI note (F-06, 6287488): `node`, `python`, CodeQL JS/TS and CodeQL Go passed on GitHub. The `go`, `e2e` and CodeQL Python jobs were cancelled twice with "The job was not acquired by Runner of type hosted even after multiple attempts" (GitHub runner capacity or Actions allowance, not a test failure). I ran them locally on the same commit: gofmt/vet/`go test` ok, pytest ok, `pnpm e2e` 8/8. Ayush: check Settings → Billing → Actions usage for the repo, and re-run the workflow when runners are available.
+
+## 2026-10-05 · F-06 follow-up · done
+- Built: `apps/web/next.config.ts` rewrites `/api/*` to the API (`API_PROXY_URL`, default `http://localhost:4000`), mirroring the production Vercel rewrite (SD-§5.1, PLAN §5.3), so the browser and OAuth callbacks use the web origin.
+- Tests: with the API and `next dev` running, `localhost:3000/api/health/live` → API; `localhost:3000/api/auth/github` → 302 to GitHub with `redirect_uri=http://localhost:3000/api/auth/callback/github` and the `ca_csrf`/`ca_oauth` cookies passed through; callback without flow cookie → `/signin?error=oauth-failed`. Web typecheck and tests green.
+- Decisions: dev callbacks are on :3000 (matching what Ayush registered on Day 0). The API sees every request from the Next proxy's IP, so per-IP rate limits are effectively global in dev; the deploy card must set Express `trust proxy` for Caddy/Vercel so `req.ip` is the client.
+- Ayush must: in `apps/api/.env` set `PUBLIC_API_URL=http://localhost:3000` (leave `JWT_ISSUER` and `WEB_URL` unset; defaults are right). OAuth callbacks: GitHub `http://localhost:3000/api/auth/callback/github` (already registered), Google `http://localhost:3000/api/auth/callback/google`. Production needs a second GitHub OAuth app (one callback per app).
+- Model: O · Opus 5.5
