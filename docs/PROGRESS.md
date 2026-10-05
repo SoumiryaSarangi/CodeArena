@@ -196,3 +196,25 @@
 ## 2026-10-05 · J-02 · done
 - Tests: Ayush ran `sudo scripts/setup-judge-runtimes.sh` (all tool paths ok, including `/etc/java-21-openjdk`) and `JUDGE_REQUIRE_ISOLATE=1 JUDGE_REQUIRE_RUNTIMES=1 go test -count=1 -v ./internal/languages/`: hello world is AC in all six languages (java21 0.75 s, node 0.26 s), and every compile and registry test passes. Installed: openjdk 21.0.12, nodejs 18.19.1.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · J-03 · done
+- Built: `apps/worker/internal/judge`:
+  - `MapRun` (SD-§8.4): TLE, then MLE (cg-oom-killed), then OLE, then RE with the signal name, XX → SE. OLE is checked before RE and also fires when output is larger than the limit. `languages.RunSpec` sets the sandbox file-size limit one KB above `OutputKB`, so "output over the limit" means the program was cut off. Python, Java and Node ignore SIGXFSZ and exit 1 on a full file, and would otherwise be RE.
+  - `languages.yaml` has `oomMarkers` (Java `OutOfMemoryError`, Node heap errors): a runtime error that names one is MLE. The JVM's `-Xmx` fires before the cgroup does.
+  - Checkers: `exact` (strict apart from trailing whitespace on each line and one final newline), `tokens`, `float` (`|a-b| ≤ eps·max(1,|b|)`, NaN only matches an identical token, inf must be equal), each with a position-bearing message ≤ 256 chars.
+  - testlib: vendored `testlib.h` 0.9.45 + MIT licence (`internal/judge/testlib/`, sha256 bb323e3c…), embedded. `CompileChecker` builds it in the compile box via the new `Registry.CompileWith` (extra files). `RunTestlib` runs `./checker in out ans` in the checker box: 0 AC, 1/2 WA, 3 and anything abnormal (crash, kill, other exit code) → jury error; `_pc` partial credit (exit 50–150) → WA (NG2).
+  - `Engine.Run`: compile → CE with log, else every test in a freshly initialised run box (no state carries between tests), safe read of `out.txt`, map, check. `StopOnFirstFailure` stops at the first non-AC; a jury error stops judging regardless and sets `Outcome.JuryError` for the alert. Sandbox failure returns an error (the worker retries, then DLQ); a failing checker is an SE verdict. Progress callback per phase and test.
+- Tests: `go test ./...` green twice (judge ≈ 47 s, mostly testlib compiles and the 5 s spinning checker), gofmt and vet clean, no leftover boxes. With `JUDGE_REQUIRE_ISOLATE=1 JUDGE_REQUIRE_RUNTIMES=1`:
+  - Verdict matrix: 6 languages × AC, WA, TLE, MLE, RE, OLE, CE = 42 cases, plus SIGSEGV name for a C segfault.
+  - testlib: ncmp accepts and rejects, `_pe` → WA, partial → WA, `_fail` / crash / spinning checker → SE with JuryError, checker that does not compile, missing binary, jury error stops after one test.
+  - Others: stopOnFirstFailure on and off, progress, unknown language, no tests, oversize source, symlinked `out.txt` → WA, a file written by one test is gone in the next.
+  - Unit: 13 MapRun cases, checker status mapping, exact/tokens/float tables.
+  - Mutation check: removing OOM markers broke java21 MLE; moving OLE after RE broke c, cpp17, cpp20 and python3 OLE. Both restored.
+- Decisions:
+  - `exact` does not ignore extra blank lines at the end (only one final newline). Say if you want it lenient.
+  - Matrix limits are 500 ms, 128 MB, 64 KB output, which are loose enough for JVM start-up on a laptop; J-06/J-07 calibration should confirm them on the judge VM.
+  - Java and Node MLE depend on the markers above; other managed runtimes added later need their own.
+  - Testlib checkers are not cached by hash yet: J-04/J-05 own the cache; `CompileChecker` returns the bytes to cache.
+  - The compile and run boxes are separate (SD-§8.1), so artifacts are copied through the host with the safe reader/writer.
+- Next: J-04 (test cache + object storage, S). Heads-up: it needs MinIO (`minio-go` is approved) and a running object store for the integration test; Docker/compose state is unknown to me, I'll check before starting.
+- Model: S·high · Sonnet 5.5 (`/effort high` not confirmed by Ayush)

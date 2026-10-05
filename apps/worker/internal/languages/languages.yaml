@@ -72,6 +72,7 @@ languages:
     processes: 32
     memOverheadMb: 64
     timeMultiplier: 2
+    oomMarkers: ["java.lang.OutOfMemoryError"]
 
   - id: node
     name: JavaScript (Node.js)
@@ -82,3 +83,4 @@ languages:
     processes: 16
     memOverheadMb: 48
     timeMultiplier: 2
+    oomMarkers: ["heap out of memory", "Array buffer allocation failed"]

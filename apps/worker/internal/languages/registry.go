@@ -44,6 +44,10 @@ type Language struct {
 	Processes      int                `yaml:"processes"`
 	MemOverheadMB  int64              `yaml:"memOverheadMb"`
 	TimeMultiplier float64            `yaml:"timeMultiplier"`
+	// OOMMarkers: a runtime error whose stderr contains one of these is MLE,
+	// not RE. Managed runtimes (JVM -Xmx, V8) raise their own out-of-memory
+	// error before the cgroup limit is hit.
+	OOMMarkers []string `yaml:"oomMarkers"`
 }
 
 // Registry holds the parsed registry.
@@ -140,11 +144,13 @@ func (l *Language) RunSpec(lim contracts.Limits, stdin, stdout, stderr string) s
 		TimeLimit: time.Duration(float64(lim.TimeMS) * l.TimeMultiplier * float64(time.Millisecond)),
 		MemKB:     (lim.MemMB + l.MemOverheadMB) * 1024,
 		Processes: l.Processes,
-		FsizeKB:   lim.OutputKB,
-		Dirs:      l.Dirs,
-		Stdin:     stdin,
-		Stdout:    stdout,
-		Stderr:    stderr,
-		Cmd:       cmd,
+		// One KB over the output limit, so the judge can tell "wrote exactly
+		// the limit" from "was cut off at the limit" (OLE): see judge.MapRun.
+		FsizeKB: lim.OutputKB + 1,
+		Dirs:    l.Dirs,
+		Stdin:   stdin,
+		Stdout:  stdout,
+		Stderr:  stderr,
+		Cmd:     cmd,
 	}
 }

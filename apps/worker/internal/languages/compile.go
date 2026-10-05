@@ -42,6 +42,18 @@ type CompileResult struct {
 // a limit hit is a compile error (CE), not an error return; an error return
 // means the sandbox itself failed (SE).
 func (r *Registry) Compile(ctx context.Context, box *sandbox.Box, l *Language, source string) (*CompileResult, error) {
+	return r.CompileWith(ctx, box, l, source, nil)
+}
+
+// File is an extra file placed next to the source (a vendored header).
+type File struct {
+	Name string
+	Data []byte
+}
+
+// CompileWith is Compile with extra files written beside the source, used for
+// testlib checkers (testlib.h). Extra files are trusted host data, not source.
+func (r *Registry) CompileWith(ctx context.Context, box *sandbox.Box, l *Language, source string, extra []File) (*CompileResult, error) {
 	if len(source) > MaxSourceBytes {
 		return nil, ErrSourceTooLarge
 	}
@@ -50,6 +62,11 @@ func (r *Registry) Compile(ctx context.Context, box *sandbox.Box, l *Language, s
 	}
 	if err := box.WriteFile(l.SourceFile, []byte(source), 0o644); err != nil {
 		return nil, fmt.Errorf("languages: write source: %w", err)
+	}
+	for _, f := range extra {
+		if err := box.WriteFile(f.Name, f.Data, 0o644); err != nil {
+			return nil, fmt.Errorf("languages: write %s: %w", f.Name, err)
+		}
 	}
 	c := r.Limits
 	meta, err := box.Run(ctx, sandbox.RunSpec{

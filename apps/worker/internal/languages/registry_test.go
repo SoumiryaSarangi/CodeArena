@@ -52,7 +52,7 @@ func TestRunSpec(t *testing.T) {
 
 	t.Run("SD-§8.3: C gets 1 process, no overhead, multiplier 1", func(t *testing.T) {
 		s := get("c").RunSpec(lim, "in.txt", "out.txt", "err.txt")
-		if s.TimeLimit != 2*time.Second || s.MemKB != 256*1024 || s.Processes != 1 || s.FsizeKB != 65536 {
+		if s.TimeLimit != 2*time.Second || s.MemKB != 256*1024 || s.Processes != 1 || s.FsizeKB != 65537 {
 			t.Fatalf("%+v", s)
 		}
 		if err := s.Validate(); err != nil {
