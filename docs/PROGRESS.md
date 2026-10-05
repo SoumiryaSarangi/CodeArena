@@ -238,3 +238,28 @@
 - Next: J-05 (worker loop, single lane, S·high): consume `jobs:practice`, publish `JudgeProgress` per test and `JudgeResult`, heartbeat, graceful shutdown. Needs Redis as ACL user `judge` (REDIS_URL in `apps/worker/.env`; I cannot read it) and `go-redis` v9 (approved).
 - Ayush must: before J-05, make sure `apps/worker/.env` has `REDIS_URL` for the judge ACL user (Q-04 owns the ACL itself; for J-05 the default Redis user is fine locally).
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · J-05 · done
+- Built: the temporary single-lane worker (`apps/worker`, deps go-redis v9 and the OTel Go SDK, both approved):
+  - `internal/worker`: `Worker` creates group `judges` on `jobs:practice`, resumes its own unacknowledged entries (cursor-based, before any claiming loop starts), then `XREADGROUP` loops (`WORKER_CONCURRENCY`, one slot and core each). Each job is validated like the Zod schema (`ParseJob`: unknown fields, ranges, traceparent, checker rules), judged by an `Executor`, and committed with one transaction: `XADD results` then `XACK` and `XDEL`. Progress goes to `progress:{submissionId}` (claimed, compiling, one event per test, done); heartbeat `hb:{workerId}` JSON every 3 s with a 10 s TTL.
+  - Failures: unparseable job → `jobs:dlq` and ack. Infrastructure errors retry 3 times with backoff, permanent ones (bad testset URI, hash mismatch, unknown language, unsupported job) do not; then the submission gets an SE result and the job goes to the DLQ (FR-QUEUE-04, done in-process until Q-02's reaper). A jury error is an SE verdict plus an ERROR log and `ca_judge_jury_errors_total`, no DLQ.
+  - Shutdown: SIGINT/SIGTERM stop claiming; running jobs finish and publish; after `DrainTimeout` (2 min) running jobs are cancelled and left pending (no result, nothing lost); a second signal kills.
+  - `Runner` (production Executor): testset via the J-04 cache, slot from the pool, testlib checker source fetched from `checkers/…` (same bucket and prefix rules as testsets), compiled once per problem version and cached (64 entries), then `judge.Engine.Run`.
+  - `internal/telemetry` (OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set, as in the API), a `judge.job` span parented on the job's traceparent, metrics `ca_judge_jobs_total{lane,verdict,outcome}`, `ca_judge_job_seconds`, `ca_judge_inflight`, `ca_judge_jury_errors_total`.
+  - `main.go` + `config.go` (blank env values mean unset; secrets never echoed in errors); `pnpm dev` in the worker now sources `apps/worker/.env`.
+- Tests: `go test -race ./...` green across the worker (gofmt, vet clean; no leftover boxes or containers):
+  - Unit: 27 `ParseJob` rejections, result mapping, settings loader.
+  - Protocol with a fake executor on a throwaway `redis:7` container: result on `results`, entry acked and deleted, progress events, heartbeat TTL, invalid job → DLQ, retry then success, 3 failures → SE + DLQ, permanent error not retried, jury error metric, graceful shutdown (waits, claims nothing new), drain timeout leaves the job pending and a restarted worker resumes it, concurrency 2 (each job judged exactly once), span parent and counter.
+  - End to end with real isolate and Redis: c AC / WA / CE, testlib AC / WA, broken checker → SE, custom-input job → SE + DLQ; seven jobs fetched the testset once and the checker once.
+  - Real binary smoke (throwaway Redis, real SeaweedFS, job via `redis-cli XADD`): AC result with per-test outcome, queue empty, heartbeat present, `kill -TERM` → exit 0. Fixtures removed.
+- Bug found and fixed while testing: the first version resumed pending entries inside the first claiming loop, so with concurrency above 1 it also re-read a job a sibling loop was judging and judged it twice. Resume now runs once, before any loop starts, with a cursor so an entry that stays pending cannot loop.
+- Decisions:
+  - Wire format: one JSON field (`job`, `result`) per stream entry; written into SD-§7. Q-01's enqueue must use it.
+  - `checker.binaryUri` is the checker's C++ **source** (compiled on each judge per SD-§8.5), under `checkers/`. The field name suggests a binary; rename to `sourceUri` in contracts if you agree (follow-up).
+  - I did not write `claimed:{lane}` (SD §5.2 flow lists it, ADR-009 and SD §16.1 limit the judge's `SET` to `hb:*`). Q-05's position calculation needs a decision: allow `SET claimed:*` in the ACL, or derive it from the stream.
+  - Custom-input runs (`mode: run` with `customInput`) are unsupported: `TestOutcome` has no output field. They get an SE result and a DLQ entry. Follow-up with the contracts owner (interactive lane, CP cards).
+  - Consumer name = worker id; the default is the hostname, so two workers on one host need distinct `WORKER_ID`. Cross-worker reclaim is Q-02.
+  - Throwaway Redis in tests is started with the docker CLI (CI runners have docker); tests skip without it unless `JUDGE_REQUIRE_REDIS=1`.
+- Next: J-06 (20 practice fixture problems, S). It needs original problem statements, generators, reference and wrong solutions and a package format that matches `testsetHash`/`testsetUri` (flat `NN.in`/`NN.ans` tar, SHA-256 of the tar).
+- Ayush must: add the worker variables to `apps/worker/.env`: `REDIS_URL`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (I cannot read or write `.env*`; `.env.example` already lists them); `pnpm --filter @codearena/worker dev` then starts a worker on `jobs:practice`. Decide the three follow-ups above (`sourceUri` rename, `claimed:*` ACL, custom-run output).
+- Model: S·high · Sonnet 5.5 (`/effort high` not confirmed by Ayush)

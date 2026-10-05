@@ -1,0 +1,429 @@
+package worker
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"os"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+
+	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
+	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/judge"
+)
+
+// Redis names (SD-§7).
+const (
+	Group      = "judges"
+	ResultsKey = "results"
+	DLQKey     = "jobs:dlq"
+)
+
+// JobsKey is the stream for a lane.
+func JobsKey(l contracts.Lane) string { return "jobs:" + string(l) }
+
+// ProgressChannel is the pub/sub channel for one submission.
+func ProgressChannel(submissionID string) string { return "progress:" + submissionID }
+
+// HeartbeatKey is the worker's liveness key.
+func HeartbeatKey(workerID string) string { return "hb:" + workerID }
+
+const HeartbeatTTL = 10 * time.Second
+
+// Config sets up a Worker. Zero values pick the defaults noted.
+type Config struct {
+	Redis *redis.Client
+	Exec  Executor
+	// Lane is the one stream this worker reads. Weighted multi-lane choice
+	// is Q-01; this loop is the temporary single-lane worker (J-05).
+	Lane           contracts.Lane // practice
+	WorkerID       string         // hostname
+	Concurrency    int            // 1 job at a time
+	Block          time.Duration  // 2 s: how long one XREADGROUP waits
+	HeartbeatEvery time.Duration  // 3 s (TTL is 10 s)
+	JobTimeout     time.Duration  // 10 min per attempt
+	DrainTimeout   time.Duration  // 2 min: how long shutdown waits for running jobs
+	MaxAttempts    int            // 3 judging attempts for infrastructure errors
+	RetryBackoff   time.Duration  // 1 s x attempt
+	Now            func() time.Time
+	Log            *slog.Logger
+	Tracer         trace.Tracer
+	Meter          metric.Meter
+}
+
+// Worker consumes one lane.
+type Worker struct {
+	cfg  Config
+	busy atomic.Int64
+	m    instruments
+}
+
+type instruments struct {
+	jobs     metric.Int64Counter
+	seconds  metric.Float64Histogram
+	inflight metric.Int64UpDownCounter
+	jury     metric.Int64Counter
+}
+
+// New applies defaults and builds the metrics.
+func New(cfg Config) (*Worker, error) {
+	if cfg.Redis == nil || cfg.Exec == nil {
+		return nil, errors.New("worker: redis and executor are required")
+	}
+	if cfg.Lane == "" {
+		cfg.Lane = contracts.LanePractice
+	}
+	if cfg.WorkerID == "" {
+		h, _ := os.Hostname()
+		cfg.WorkerID = h
+	}
+	if cfg.WorkerID == "" || strings.ContainsAny(cfg.WorkerID, " \t\n:*?[]") {
+		return nil, errors.New("worker: bad worker id")
+	}
+	cfg.Concurrency = orInt(cfg.Concurrency, 1)
+	cfg.MaxAttempts = orInt(cfg.MaxAttempts, 3)
+	cfg.Block = orDur(cfg.Block, 2*time.Second)
+	cfg.HeartbeatEvery = orDur(cfg.HeartbeatEvery, 3*time.Second)
+	cfg.JobTimeout = orDur(cfg.JobTimeout, 10*time.Minute)
+	cfg.DrainTimeout = orDur(cfg.DrainTimeout, 2*time.Minute)
+	cfg.RetryBackoff = orDur(cfg.RetryBackoff, time.Second)
+	if cfg.Now == nil {
+		cfg.Now = time.Now
+	}
+	if cfg.Log == nil {
+		cfg.Log = slog.Default()
+	}
+	if cfg.Tracer == nil {
+		cfg.Tracer = otel.Tracer("codearena/worker")
+	}
+	if cfg.Meter == nil {
+		cfg.Meter = otel.Meter("codearena/worker")
+	}
+	w := &Worker{cfg: cfg}
+	var err error
+	if w.m.jobs, err = cfg.Meter.Int64Counter("ca_judge_jobs_total", metric.WithDescription("Judge jobs finished, by lane, verdict and outcome")); err != nil {
+		return nil, err
+	}
+	if w.m.seconds, err = cfg.Meter.Float64Histogram("ca_judge_job_seconds", metric.WithUnit("s"), metric.WithDescription("Wall time from claim to published result")); err != nil {
+		return nil, err
+	}
+	if w.m.inflight, err = cfg.Meter.Int64UpDownCounter("ca_judge_inflight", metric.WithDescription("Jobs being judged right now")); err != nil {
+		return nil, err
+	}
+	if w.m.jury, err = cfg.Meter.Int64Counter("ca_judge_jury_errors_total", metric.WithDescription("Checker failures (SE + alert)")); err != nil {
+		return nil, err
+	}
+	return w, nil
+}
+
+func orInt(v, d int) int {
+	if v <= 0 {
+		return d
+	}
+	return v
+}
+
+func orDur(v, d time.Duration) time.Duration {
+	if v <= 0 {
+		return d
+	}
+	return v
+}
+
+// Run reads jobs until ctx is cancelled. Cancelling stops new claims only:
+// jobs already running finish and publish their result (up to DrainTimeout)
+// before Run returns, so a deploy or Ctrl-C never abandons a half-judged job.
+func (w *Worker) Run(ctx context.Context) error {
+	stream := JobsKey(w.cfg.Lane)
+	err := w.cfg.Redis.XGroupCreateMkStream(ctx, stream, Group, "0").Err()
+	if err != nil && !strings.HasPrefix(err.Error(), "BUSYGROUP") {
+		return fmt.Errorf("worker: create group: %w", err)
+	}
+
+	// hardCtx lives until shutdown has drained; judging uses it, not ctx.
+	hardCtx, hardCancel := context.WithCancel(context.WithoutCancel(ctx))
+	defer hardCancel()
+	go func() {
+		<-ctx.Done()
+		t := time.NewTimer(w.cfg.DrainTimeout)
+		defer t.Stop()
+		select {
+		case <-t.C:
+			w.cfg.Log.Warn("drain timeout: cancelling running jobs", "after", w.cfg.DrainTimeout)
+			hardCancel()
+		case <-hardCtx.Done():
+		}
+	}()
+
+	hbCtx, hbCancel := context.WithCancel(context.WithoutCancel(ctx))
+	var hb sync.WaitGroup
+	hb.Add(1)
+	go func() { defer hb.Done(); w.heartbeat(hbCtx) }()
+
+	// Resume entries this consumer name read before a restart but never
+	// acknowledged. This must finish before any claiming loop starts: the
+	// loops share the consumer name, so a later "my pending entries" read
+	// would also return jobs a sibling loop is judging right now.
+	w.resumePending(ctx, hardCtx, stream)
+
+	var wg sync.WaitGroup
+	for i := 0; i < w.cfg.Concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			w.consume(ctx, hardCtx, stream)
+		}()
+	}
+	wg.Wait()
+	hbCancel()
+	hb.Wait()
+	return nil
+}
+
+// consume is one claiming loop.
+func (w *Worker) consume(ctx, hardCtx context.Context, stream string) {
+	for ctx.Err() == nil {
+		res, err := w.cfg.Redis.XReadGroup(ctx, &redis.XReadGroupArgs{
+			Group: Group, Consumer: w.cfg.WorkerID, Streams: []string{stream, ">"}, Count: 1, Block: w.cfg.Block,
+		}).Result()
+		if err != nil {
+			if ctx.Err() == nil && !errors.Is(err, redis.Nil) {
+				w.cfg.Log.Error("read jobs", "err", err)
+				sleep(ctx, time.Second)
+			}
+			continue
+		}
+		for _, s := range res {
+			for _, m := range s.Messages {
+				w.handle(hardCtx, stream, m)
+			}
+		}
+	}
+}
+
+// resumePending walks this consumer's pending entries once, using the last ID
+// seen as a cursor: an entry that stays pending (interrupted again, Redis
+// down) must not be returned forever.
+func (w *Worker) resumePending(ctx, hardCtx context.Context, stream string) {
+	cursor := "0"
+	for ctx.Err() == nil {
+		res, err := w.cfg.Redis.XReadGroup(ctx, &redis.XReadGroupArgs{
+			Group: Group, Consumer: w.cfg.WorkerID, Streams: []string{stream, cursor}, Count: 10,
+		}).Result()
+		if err != nil || len(res) == 0 || len(res[0].Messages) == 0 {
+			return
+		}
+		for _, m := range res[0].Messages {
+			cursor = m.ID
+			w.cfg.Log.Info("resuming unacknowledged job", "entry", m.ID)
+			w.handle(hardCtx, stream, m)
+		}
+	}
+}
+
+// handle judges one stream entry and publishes exactly one result for it,
+// then acknowledges and deletes the entry. Anything that stops it before the
+// result is durable (shutdown timeout, Redis down) leaves the entry pending
+// so it is judged again, never lost.
+func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) {
+	raw, _ := msg.Values[FieldJob].(string)
+	job, err := ParseJob(raw)
+	if err != nil {
+		w.cfg.Log.Error("invalid job, moving to the dead-letter stream", "entry", msg.ID, "err", err)
+		w.deadLetter(ctx, stream, msg, raw, "invalid-job", err)
+		return
+	}
+
+	parent := otel.GetTextMapPropagator().Extract(ctx, propagation.MapCarrier{"traceparent": job.Traceparent})
+	spanCtx, span := w.cfg.Tracer.Start(parent, "judge.job", trace.WithAttributes(
+		attribute.String("submission.id", job.SubmissionID), attribute.Int64("run.version", job.RunVersion),
+		attribute.String("lane", string(job.Lane)), attribute.String("language", string(job.Language)),
+		attribute.String("worker.id", w.cfg.WorkerID)))
+	defer span.End()
+
+	start := w.cfg.Now()
+	w.busy.Add(1)
+	w.m.inflight.Add(ctx, 1)
+	defer func() { w.busy.Add(-1); w.m.inflight.Add(ctx, -1) }()
+
+	w.publishProgress(spanCtx, job, contracts.JudgePhaseClaimed, nil)
+	progress := func(phase contracts.JudgePhase, t *contracts.TestOutcome) { w.publishProgress(spanCtx, job, phase, t) }
+
+	outcome, err := w.execute(spanCtx, job, progress)
+	outcomeLabel := "done"
+	if err != nil {
+		if ctx.Err() != nil {
+			// Shutdown timed out mid-job: leave it pending for another worker.
+			span.SetStatus(codes.Error, "cancelled")
+			w.cfg.Log.Warn("job interrupted, left pending", "entry", msg.ID, "submission", job.SubmissionID)
+			return
+		}
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		w.cfg.Log.Error("job failed, publishing SE and dead-lettering", "entry", msg.ID, "submission", job.SubmissionID, "err", err)
+		outcome = &judge.Outcome{Verdict: contracts.VerdictSE}
+		outcomeLabel = "dlq"
+		w.deadLetterEntry(ctx, job.Lane, msg, raw, "execution-failed", err)
+	}
+	if outcome.JuryError != "" {
+		w.m.jury.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", string(job.Lane))))
+		w.cfg.Log.Error("ALERT jury error: a checker failed", "problem", job.Problem.VersionID, "submission", job.SubmissionID, "msg", outcome.JuryError)
+	}
+
+	result := ToResult(job, outcome, w.cfg.WorkerID, w.cfg.Now().UnixMilli())
+	if err := w.publishResult(ctx, stream, msg.ID, result); err != nil {
+		w.cfg.Log.Error("could not publish the result, left pending", "entry", msg.ID, "err", err)
+		return
+	}
+	w.publishProgress(spanCtx, job, contracts.JudgePhaseDone, nil)
+
+	span.SetAttributes(attribute.String("verdict", string(outcome.Verdict)))
+	attrs := metric.WithAttributes(attribute.String("lane", string(job.Lane)),
+		attribute.String("verdict", string(outcome.Verdict)), attribute.String("outcome", outcomeLabel))
+	w.m.jobs.Add(ctx, 1, attrs)
+	w.m.seconds.Record(ctx, w.cfg.Now().Sub(start).Seconds(), metric.WithAttributes(attribute.String("lane", string(job.Lane))))
+	w.cfg.Log.Info("judged", "submission", job.SubmissionID, "run", job.RunVersion, "verdict", outcome.Verdict,
+		"timeMs", outcome.TimeMS, "memKb", outcome.MemKB, "tests", len(outcome.Tests))
+}
+
+// execute runs the job with retries for non-permanent errors.
+func (w *Worker) execute(ctx context.Context, job contracts.JudgeJob, progress judge.Progress) (*judge.Outcome, error) {
+	var err error
+	for attempt := 1; attempt <= w.cfg.MaxAttempts; attempt++ {
+		jobCtx, cancel := context.WithTimeout(ctx, w.cfg.JobTimeout)
+		var o *judge.Outcome
+		o, err = w.cfg.Exec.Execute(jobCtx, job, progress)
+		cancel()
+		if err == nil {
+			return o, nil
+		}
+		if permanent(err) || ctx.Err() != nil || attempt == w.cfg.MaxAttempts {
+			break
+		}
+		w.cfg.Log.Warn("judging attempt failed, retrying", "submission", job.SubmissionID, "attempt", attempt, "err", err)
+		sleep(ctx, w.cfg.RetryBackoff*time.Duration(attempt))
+	}
+	return nil, err
+}
+
+// publishResult is the commit point: XADD the result, then XACK and XDEL the
+// job. It retries because losing the result would strand the submission.
+func (w *Worker) publishResult(ctx context.Context, stream, id string, r contracts.JudgeResult) error {
+	body, err := marshal(r)
+	if err != nil {
+		return err
+	}
+	for attempt := 1; ; attempt++ {
+		_, err = w.cfg.Redis.TxPipelined(ctx, func(p redis.Pipeliner) error {
+			p.XAdd(ctx, &redis.XAddArgs{Stream: ResultsKey, Values: map[string]any{FieldResult: string(body)}})
+			p.XAck(ctx, stream, Group, id)
+			p.XDel(ctx, stream, id)
+			return nil
+		})
+		if err == nil {
+			return nil
+		}
+		if attempt >= 5 || ctx.Err() != nil {
+			return err
+		}
+		sleep(ctx, w.cfg.RetryBackoff*time.Duration(attempt))
+	}
+}
+
+func (w *Worker) publishProgress(ctx context.Context, job contracts.JudgeJob, phase contracts.JudgePhase, t *contracts.TestOutcome) {
+	body, err := marshal(contracts.JudgeProgress{
+		SubmissionID: job.SubmissionID, RunVersion: job.RunVersion, Phase: phase,
+		WorkerID: w.cfg.WorkerID, Test: t, Ts: w.cfg.Now().UnixMilli(),
+	})
+	if err != nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+	defer cancel()
+	// Progress is best effort: the result is what counts.
+	if err := w.cfg.Redis.Publish(ctx, ProgressChannel(job.SubmissionID), string(body)).Err(); err != nil {
+		w.cfg.Log.Warn("progress publish failed", "err", err)
+	}
+}
+
+// deadLetter moves an entry that could not even be parsed.
+func (w *Worker) deadLetter(ctx context.Context, stream string, msg redis.XMessage, raw, reason string, cause error) {
+	lane := strings.TrimPrefix(stream, "jobs:")
+	w.deadLetterEntry(ctx, contracts.Lane(lane), msg, raw, reason, cause)
+	w.m.jobs.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", lane),
+		attribute.String("verdict", "none"), attribute.String("outcome", "dlq")))
+}
+
+// deadLetterEntry copies the job to jobs:dlq for an admin. For jobs that
+// still get an SE result the entry is acked by publishResult; for unparseable
+// ones it is acked here.
+func (w *Worker) deadLetterEntry(ctx context.Context, lane contracts.Lane, msg redis.XMessage, raw, reason string, cause error) {
+	stream := JobsKey(lane)
+	_, err := w.cfg.Redis.TxPipelined(ctx, func(p redis.Pipeliner) error {
+		p.XAdd(ctx, &redis.XAddArgs{Stream: DLQKey, Values: map[string]any{
+			"job": raw, "reason": reason, "error": cause.Error(), "workerId": w.cfg.WorkerID,
+			"lane": string(lane), "entry": msg.ID, "ts": w.cfg.Now().UnixMilli(),
+		}})
+		if reason == "invalid-job" {
+			p.XAck(ctx, stream, Group, msg.ID)
+			p.XDel(ctx, stream, msg.ID)
+		}
+		return nil
+	})
+	if err != nil {
+		w.cfg.Log.Error("dead-letter failed", "entry", msg.ID, "err", err)
+	}
+}
+
+// Heartbeat is the JSON stored at hb:{workerId}.
+type Heartbeat struct {
+	WorkerID    string `json:"workerId"`
+	Lane        string `json:"lane"`
+	Ts          int64  `json:"ts"`
+	Busy        int64  `json:"busy"`
+	Concurrency int    `json:"concurrency"`
+}
+
+func (w *Worker) heartbeat(ctx context.Context) {
+	beat := func() {
+		b, _ := json.Marshal(Heartbeat{WorkerID: w.cfg.WorkerID, Lane: string(w.cfg.Lane), Ts: w.cfg.Now().UnixMilli(),
+			Busy: w.busy.Load(), Concurrency: w.cfg.Concurrency})
+		c, cancel := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel()
+		if err := w.cfg.Redis.Set(c, HeartbeatKey(w.cfg.WorkerID), b, HeartbeatTTL).Err(); err != nil && ctx.Err() == nil {
+			w.cfg.Log.Warn("heartbeat failed", "err", err)
+		}
+	}
+	beat()
+	t := time.NewTicker(w.cfg.HeartbeatEvery)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			beat()
+		}
+	}
+}
+
+func sleep(ctx context.Context, d time.Duration) {
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-ctx.Done():
+	case <-t.C:
+	}
+}

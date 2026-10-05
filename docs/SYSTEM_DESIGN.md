@@ -469,6 +469,8 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `lock:{name}` | string | lease | any | Singleton jobs (`SET NX PX`) |
 | Hocuspocus Redis extension keys | managed | — | collab | Cross-instance sync |
 
+_Wire format (J-05):_ a `jobs:{lane}` entry has one field, `job`, holding the `JudgeJob` JSON; a `results` entry has one field, `result`, holding the `JudgeResult` JSON; `jobs:dlq` entries carry `job`, `reason` (`invalid-job` or `execution-failed`), `error`, `workerId`, `lane`, `entry`, `ts`. `hb:{workerId}` holds `{workerId, lane, ts, busy, concurrency}`; `progress:{submissionId}` carries `JudgeProgress` JSON. The consumer name is the worker id, and a restarted worker resumes its own unacknowledged entries first. A testlib checker's `binaryUri` points at the checker's C++ **source** under `checkers/` (compiled on each judge, SD-§8.5).
+
 ---
 
 ## §8. Judge engine

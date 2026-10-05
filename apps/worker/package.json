@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "go run .",
+    "dev": "sh -c 'set -a; [ -f .env ] && . ./.env; set +a; exec go run .'",
     "typecheck": "go vet ./...",
     "test": "go test ./..."
   }
