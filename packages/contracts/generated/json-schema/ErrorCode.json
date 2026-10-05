@@ -1,0 +1,27 @@
+{
+  "$id": "ErrorCode.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "validation",
+    "unauthorized",
+    "token-reused",
+    "forbidden",
+    "forbidden-topic",
+    "not-found",
+    "handle-taken",
+    "already-registered",
+    "payload-too-large",
+    "unsupported-language",
+    "contest-not-started",
+    "contest-ended",
+    "problem-hidden",
+    "hints-disabled-in-contest",
+    "hint-level-locked",
+    "invalid-package",
+    "room-closed",
+    "rate-limited",
+    "ai-busy",
+    "internal"
+  ],
+  "type": "string"
+}

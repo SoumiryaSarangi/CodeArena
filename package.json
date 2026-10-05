@@ -11,9 +11,11 @@
     "lint": "eslint . && prettier --check .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm contracts:check",
     "format": "prettier --write .",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "contracts:gen": "pnpm --filter @codearena/contracts gen",
+    "contracts:check": "pnpm --filter @codearena/contracts gen --check"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

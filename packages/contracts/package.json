@@ -6,12 +6,14 @@
   "main": "src/index.ts",
   "scripts": {
     "typecheck": "tsc -p .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "gen": "tsx scripts/gen.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@codearena/config": "workspace:*"
+    "@codearena/config": "workspace:*",
+    "quicktype-core": "26.0.0"
   }
 }

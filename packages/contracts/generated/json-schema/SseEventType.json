@@ -1,0 +1,19 @@
+{
+  "$id": "SseEventType.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "submission.progress",
+    "submission.verdict",
+    "board.snapshot",
+    "board.diff",
+    "board.freeze",
+    "board.resolve.step",
+    "clar.new",
+    "clar.answer",
+    "announce.new",
+    "contest.state",
+    "review.ready",
+    "sys.status"
+  ],
+  "type": "string"
+}

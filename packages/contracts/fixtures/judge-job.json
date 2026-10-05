@@ -1,0 +1,20 @@
+{
+  "jobId": "job-0001",
+  "submissionId": "0192f0a0-0000-7000-8000-000000000001",
+  "runVersion": 1,
+  "lane": "contest",
+  "language": "cpp17",
+  "source": "#include <iostream>\nint main(){int a,b;std::cin>>a>>b;std::cout<<a+b<<\"\\n\";}\n",
+  "problem": {
+    "versionId": "0192f0a0-0000-7000-8000-0000000000aa",
+    "testsetHash": "sha256:abc123",
+    "testsetUri": "s3://codearena/tests/abc123.tar.zst",
+    "checker": { "kind": "float", "eps": 0.000001 },
+    "limits": { "timeMs": 1000, "memMb": 256, "outputKb": 64 }
+  },
+  "mode": "submit",
+  "stopOnFirstFailure": true,
+  "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "enqueuedAt": 1790000000000,
+  "seq": 42
+}

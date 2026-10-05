@@ -1,0 +1,58 @@
+{
+  "$id": "JudgeResult.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "compileLog": {
+      "type": "string"
+    },
+    "finishedAt": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "memKb": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "runVersion": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "submissionId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "tests": {
+      "items": {
+        "$ref": "TestOutcome.json"
+      },
+      "type": "array"
+    },
+    "timeMs": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "verdict": {
+      "$ref": "Verdict.json"
+    },
+    "workerId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "submissionId",
+    "runVersion",
+    "verdict",
+    "timeMs",
+    "memKb",
+    "tests",
+    "workerId",
+    "finishedAt"
+  ],
+  "type": "object"
+}

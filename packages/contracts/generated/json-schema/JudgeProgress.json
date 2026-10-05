@@ -1,0 +1,39 @@
+{
+  "$id": "JudgeProgress.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "phase": {
+      "$ref": "JudgePhase.json"
+    },
+    "runVersion": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "submissionId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "test": {
+      "$ref": "TestOutcome.json"
+    },
+    "ts": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workerId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "submissionId",
+    "runVersion",
+    "phase",
+    "workerId",
+    "ts"
+  ],
+  "type": "object"
+}

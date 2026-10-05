@@ -23,3 +23,11 @@
 - Next: F-03 (needs `/model opusplan`).
 - Ayush must: Azure activation + budget alerts (U0.2) before the deploy cards; install k6, Terraform, Azure CLI before load-test/deploy days; fix duplicate `systemd` line in /etc/wsl.conf.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-03 · done
+- Built: Zod contracts in `packages/contracts/src` (enums, `JudgeJob`/`JudgeProgress`/`JudgeResult`/`TestOutcome`, `ProblemDetails` + error codes, `page()`, SSE envelope); `pnpm contracts:gen` writes JSON Schema (`packages/contracts/generated/json-schema`) and Go types (`apps/worker/internal/contracts/contracts.gen.go`); `pnpm contracts:check` fails on stale output and is part of `pnpm check`; `.github/workflows/contracts.yml` runs it plus `go test` in CI.
+- Tests: `pnpm check` green (judge.test.ts, gen.test.ts freshness); `go test ./...` green incl. fixture round-trip against the same JSON fixtures. Acceptance verified: adding a Zod field without regenerating makes `contracts:check` fail.
+- Decisions: Zod 4 `z.toJSONSchema` (no extra dep); `quicktype-core` 26.0.0 pinned (not in PLAN §4.2 — needed by the card). Timestamps are epoch ms integers. Checker is a flat object with refinements (float needs eps, testlib needs binaryUri). Registry-wide bundle under one wrapper root so quicktype shares types; wrapper struct and quicktype's inconsistent constant casing are post-processed (`VerdictAC`, `LaneContest`, …). Generated files are committed.
+- Next: F-04.
+- Ayush must: nothing.
+- Model: P · planned on Opus (`/model opus`, not `opusplan`); build ran on Sonnet 5.5 after a mid-session model change — opusplan itself untested.

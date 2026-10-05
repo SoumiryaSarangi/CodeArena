@@ -11,6 +11,7 @@ export default tseslint.config(
       'docs',
       'apps/plag',
       'apps/worker',
+      'packages/contracts/generated',
       '**/next-env.d.ts',
     ],
   },

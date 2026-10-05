@@ -1,0 +1,11 @@
+{
+  "$id": "Lane.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "contest",
+    "interactive",
+    "practice",
+    "rejudge"
+  ],
+  "type": "string"
+}

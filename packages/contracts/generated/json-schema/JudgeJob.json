@@ -1,0 +1,70 @@
+{
+  "$id": "JudgeJob.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "customInput": {
+      "type": "string"
+    },
+    "enqueuedAt": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "jobId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "lane": {
+      "$ref": "Lane.json"
+    },
+    "language": {
+      "$ref": "Language.json"
+    },
+    "mode": {
+      "$ref": "JobMode.json"
+    },
+    "problem": {
+      "$ref": "ProblemRef.json"
+    },
+    "runVersion": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "seq": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "source": {
+      "type": "string"
+    },
+    "stopOnFirstFailure": {
+      "type": "boolean"
+    },
+    "submissionId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "traceparent": {
+      "pattern": "^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "jobId",
+    "submissionId",
+    "runVersion",
+    "lane",
+    "language",
+    "source",
+    "problem",
+    "mode",
+    "stopOnFirstFailure",
+    "traceparent",
+    "enqueuedAt",
+    "seq"
+  ],
+  "type": "object"
+}

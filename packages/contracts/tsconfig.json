@@ -1,1 +1,1 @@
-{ "extends": "@codearena/config/tsconfig.base.json", "include": ["src"] }
+{ "extends": "@codearena/config/tsconfig.base.json", "include": ["src", "scripts"] }

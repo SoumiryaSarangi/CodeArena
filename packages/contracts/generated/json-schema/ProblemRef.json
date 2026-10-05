@@ -1,0 +1,33 @@
+{
+  "$id": "ProblemRef.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checker": {
+      "$ref": "Checker.json"
+    },
+    "limits": {
+      "$ref": "Limits.json"
+    },
+    "testsetHash": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "testsetUri": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "versionId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "versionId",
+    "testsetHash",
+    "testsetUri",
+    "checker",
+    "limits"
+  ],
+  "type": "object"
+}

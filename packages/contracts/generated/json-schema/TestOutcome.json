@@ -1,0 +1,39 @@
+{
+  "$id": "TestOutcome.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checkerMsg": {
+      "maxLength": 256,
+      "type": "string"
+    },
+    "memKb": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "no": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "signal": {
+      "type": "string"
+    },
+    "timeMs": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "verdict": {
+      "$ref": "Verdict.json"
+    }
+  },
+  "required": [
+    "no",
+    "verdict",
+    "timeMs",
+    "memKb"
+  ],
+  "type": "object"
+}

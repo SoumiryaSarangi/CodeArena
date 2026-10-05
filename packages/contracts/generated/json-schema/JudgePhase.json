@@ -1,0 +1,11 @@
+{
+  "$id": "JudgePhase.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "claimed",
+    "compiling",
+    "running",
+    "done"
+  ],
+  "type": "string"
+}

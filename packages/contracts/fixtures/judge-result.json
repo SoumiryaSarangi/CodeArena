@@ -1,0 +1,14 @@
+{
+  "submissionId": "0192f0a0-0000-7000-8000-000000000001",
+  "runVersion": 1,
+  "verdict": "WA",
+  "timeMs": 15,
+  "memKb": 2048,
+  "compileLog": "",
+  "tests": [
+    { "no": 1, "verdict": "AC", "timeMs": 10, "memKb": 1024 },
+    { "no": 2, "verdict": "WA", "timeMs": 15, "memKb": 2048, "checkerMsg": "expected 3, found 4" }
+  ],
+  "workerId": "judge-1",
+  "finishedAt": 1790000001000
+}

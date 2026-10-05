@@ -1,0 +1,15 @@
+{
+  "$id": "Verdict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "AC",
+    "WA",
+    "TLE",
+    "MLE",
+    "OLE",
+    "RE",
+    "CE",
+    "SE"
+  ],
+  "type": "string"
+}
