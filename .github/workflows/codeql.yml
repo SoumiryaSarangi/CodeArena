@@ -17,13 +17,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript-typescript, go, python]
+        include:
+          - { language: javascript-typescript, build-mode: none }
+          - { language: python, build-mode: none }
+          - { language: go, build-mode: autobuild }
     steps:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          build-mode: none
+          build-mode: ${{ matrix.build-mode }}
       - uses: github/codeql-action/analyze@v3
         with:
           category: /language:${{ matrix.language }}

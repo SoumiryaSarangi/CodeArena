@@ -4,3 +4,5 @@ packages:
 allowBuilds:
   esbuild: true
   lefthook: true
+  '@scarf/scarf': false
+  protobufjs: false
