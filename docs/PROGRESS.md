@@ -145,3 +145,9 @@
 - Decisions: dev callbacks are on :3000 (matching what Ayush registered on Day 0). The API sees every request from the Next proxy's IP, so per-IP rate limits are effectively global in dev; the deploy card must set Express `trust proxy` for Caddy/Vercel so `req.ip` is the client.
 - Ayush must: in `apps/api/.env` set `PUBLIC_API_URL=http://localhost:3000` (leave `JWT_ISSUER` and `WEB_URL` unset; defaults are right). OAuth callbacks: GitHub `http://localhost:3000/api/auth/callback/github` (already registered), Google `http://localhost:3000/api/auth/callback/google`. Production needs a second GitHub OAuth app (one callback per app).
 - Model: O · Opus 5.5
+
+## 2026-10-05 · F-06 live check · done
+- Tests: Ayush signed in with real GitHub OAuth on `localhost:3000/api/auth/github` → landed on `/onboarding` (first login, no handle yet). Confirms PKCE, state cookie, token exchange, `/user/emails`, user creation and refresh cookie against the real provider through the dev `/api` rewrite.
+- Fixes made while getting there: Redis errors are handled (one warning per 30 s instead of an unhandled-error flood); blank `KEY=` values in `.env` now mean "use the default" instead of failing boot.
+- Still to try: Google login (callback `http://localhost:3000/api/auth/callback/google`).
+- Model: O · Opus 5.5
