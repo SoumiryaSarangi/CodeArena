@@ -151,3 +151,24 @@
 - Fixes made while getting there: Redis errors are handled (one warning per 30 s instead of an unhandled-error flood); blank `KEY=` values in `.env` now mean "use the default" instead of failing boot.
 - Still to try: Google login (callback `http://localhost:3000/api/auth/callback/google`).
 - Model: O · Opus 5.5
+
+## 2026-10-05 · J-01 · done
+- Built: `apps/worker/internal/sandbox` (stdlib only):
+  - `RunSpec` + `Validate`: SD-§8.2 defaults (extra 0.5 s, wall 3T+1 s, stack = memory, 64 open files). No field can emit `--share-net`, extra `--env`, or rw/dev binds. `--dir` only takes clean absolute paths outside `/etc /var /proc /dev /sys /run /home /root /tmp /box`.
+  - `RunArgs`/`InitArgs`/`CleanupArgs`: always `--cg`, env exactly `PATH=/usr/bin:/bin`.
+  - `ParseMeta`: strict, 64 KB cap, unknown keys ignored; `Meta.Signal()` gives names like SIGSEGV.
+  - `ReadFile`/`WriteFileExcl`: dir opened with `O_NOFOLLOW`, then `openat(O_NOFOLLOW|O_NONBLOCK)`; reads need `fstat` regular file with nlink 1 and are capped (reports truncation). Writes use `O_CREAT|O_EXCL|O_NOFOLLOW` with an exact mode.
+  - `Box` (Init/Run/Cleanup/WriteFile/ReadFile): every call goes through `taskset -c <core> isolate …`. isolate exit 2, status XX or a bad meta file → `ErrSandbox`.
+  - `Pool`: one slot per core, each with compile/run/checker boxes at ids `base+3i+{0,1,2}`. On startup it cleans every id; `Release` always cleans; `Acquire` honours ctx. `doc.go` lists the safety rules.
+- Tests: `go test ./...` green; gofmt and vet clean (staticcheck not installed here). Unit tests cover argv golden, defaults, forbidden flags, 23 spec rejections, meta parsing (good and malformed), the safe reader (symlink, symlinked dir, FIFO without blocking, hard link, directory, bad names, cap) and the pool (with a fake executor).
+  - Integration (`JUDGE_REQUIRE_ISOLATE=1`, real isolate 2.7, boxes 900+): C sum program AC with output read back (card accept); FR-JUDGE-03 env = PATH only, no UDP or TCP, CPU TO, wall TO at 3T+1, cgroup OOM kill, SIGXFSZ on fsize, fork blocked; FR-JUDGE-04 four threads → ≥ 1.15 s CPU and parent + child summed; FR-JUDGE-13 affinity = slot core; FR-JUDGE-08 planted symlink/FIFO never followed. Ran stably 4 times with no leftover boxes. The test skips when isolate/gcc are missing (as in the CI `go` job).
+  - Mutation check: dropping `O_NOFOLLOW` (read), the `S_IFREG` check, the nlink check, `O_EXCL|O_NOFOLLOW` (write) or changing the wall default to 2T+1 each made the matching test fail; all restored.
+- Decisions:
+  - isolate always adds `LIBC_FATAL_STDERR_=1` (a built-in rule that only sends glibc fatal messages to stderr). The env test allows exactly that and PATH.
+  - isolate 2.7 deletes non-regular files (symlinks, FIFOs) from the box after each run, so our safe reader is a second layer, not the only one. Documented in `doc.go` and the test.
+  - Pinning is done with `taskset` on the isolate call (SD-§8.2); 3 boxes per core (84 of `num_boxes = 1000` on 28 cores).
+  - No OTel span or metric here: J-01 is a library with no endpoint or job. J-05 adds spans and metrics around judging.
+  - `/etc` binds are refused for now. Java's `conf` links into `/etc/java-21-openjdk`, so J-02 may need a narrow allowlist entry.
+- Next: J-02 (language registry, S). Heads-up: `languages.yaml` needs a YAML parser and none is on the approved Go list (PLAN §4.2). Options: approve `gopkg.in/yaml.v3`, or use JSON instead.
+- Ayush must: decide YAML lib vs JSON for J-02. Optional: `go install honnef.co/go/tools/cmd/staticcheck@latest` so the Go lint gate runs locally.
+- Model: O · Opus 5.5
