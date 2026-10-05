@@ -15,3 +15,11 @@
 - Next: Q-04 tightens and tests the ACLs. Revisit the PLAN/SD mentions of MinIO for prod (Azure Blob / other).
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · Day 0 setup · partial
+- Built: nothing in code. Ayush finished U0.3 (WSL on D:, Docker, Node/pnpm, Go, uv, gh), U0.4 accounts, U0.5 repo, U0.6 OAuth apps (Google + GitHub), U0.7 dry run booked, U0.8 Opus confirmed available.
+- Tests: n/a.
+- Decisions: GitHub Student Pack granted. Azure for Students activation is pending; revisit before the deploy cards.
+- Next: F-03 (needs `/model opusplan`).
+- Ayush must: Azure activation + budget alerts (U0.2) before the deploy cards; install k6, Terraform, Azure CLI before load-test/deploy days; fix duplicate `systemd` line in /etc/wsl.conf.
+- Model: S · Sonnet 5.5
