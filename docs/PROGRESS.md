@@ -56,3 +56,11 @@
 - Next: F-06 needs `/model opus` and `/effort high` (tag O).
 - Ayush must: nothing.
 - Model: S · Sonnet 5.5
+
+## 2026-10-05 · F-09 · partial
+- Built: `docs/adr/001…015` (context, decision, alternatives, consequences) plus `docs/adr/README.md` index. ADR-004 records the pinned source build of isolate; ADR-008 records the real contracts pipeline (Zod 4 JSON Schema, quicktype-core, committed output, epoch-ms timestamps); ADR-003 records the explicit `@Inject` rule.
+- Tests: n/a (docs).
+- Decisions: status is "Accepted (pending Ayush's review, U1.2)"; edit the status line when approved.
+- Next: Ayush reviews (U1.2). F-09 becomes done on approval.
+- Ayush must: review the ADRs and reply "approved" or raise concerns.
+- Model: S · Sonnet 5.5
