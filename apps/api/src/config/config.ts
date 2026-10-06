@@ -19,6 +19,8 @@ const schema = z.object({
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
   RATE_LIMIT_DEFAULT_PER_MIN: z.coerce.number().int().positive().default(120),
+  // Prefix of every queue/stream key. Empty in production; tests set one so they never touch real queues.
+  QUEUE_KEY_PREFIX: z.string().max(40).default(''),
   // Q-03: whether this instance reads the `results` stream. Default on, except under NODE_ENV=test.
   RESULT_CONSUMER: z.enum(['on', 'off']).optional(),
 

@@ -1,0 +1,199 @@
+{
+  "$id": "SubmissionDetail.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "compileLog": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "failedTest": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "journey": {
+      "additionalProperties": false,
+      "properties": {
+        "judgedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "submittedAt": {
+          "type": "string"
+        },
+        "workerId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "submittedAt",
+        "judgedAt",
+        "workerId"
+      ],
+      "type": "object"
+    },
+    "lane": {
+      "$ref": "Lane.json"
+    },
+    "language": {
+      "type": "string"
+    },
+    "memKb": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "problemSlug": {
+      "type": "string"
+    },
+    "problemTitle": {
+      "type": "string"
+    },
+    "problemVersion": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "runVersion": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "source": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "judging",
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "tests": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "checkerMsg": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "memKb": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "no": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "timeMs": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verdict": {
+            "$ref": "Verdict.json"
+          }
+        },
+        "required": [
+          "no",
+          "verdict",
+          "timeMs",
+          "memKb",
+          "checkerMsg"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "timeMs": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "problemSlug",
+    "problemTitle",
+    "language",
+    "status",
+    "verdict",
+    "timeMs",
+    "memKb",
+    "failedTest",
+    "lane",
+    "createdAt",
+    "source",
+    "problemVersion",
+    "runVersion",
+    "tests",
+    "compileLog",
+    "journey"
+  ],
+  "type": "object"
+}

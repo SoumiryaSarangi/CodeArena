@@ -1,0 +1,94 @@
+{
+  "$id": "SubmissionSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "failedTest": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "lane": {
+      "$ref": "Lane.json"
+    },
+    "language": {
+      "type": "string"
+    },
+    "memKb": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "problemSlug": {
+      "type": "string"
+    },
+    "problemTitle": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "judging",
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "timeMs": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "problemSlug",
+    "problemTitle",
+    "language",
+    "status",
+    "verdict",
+    "timeMs",
+    "memKb",
+    "failedTest",
+    "lane",
+    "createdAt"
+  ],
+  "type": "object"
+}

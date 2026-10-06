@@ -1,0 +1,30 @@
+{
+  "$id": "QueuePosition.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "capped": {
+      "type": "boolean"
+    },
+    "etaSeconds": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "lane": {
+      "$ref": "Lane.json"
+    },
+    "position": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "lane",
+    "position",
+    "etaSeconds",
+    "capped"
+  ],
+  "type": "object"
+}

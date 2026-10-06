@@ -1,0 +1,27 @@
+{
+  "$id": "CreateSubmission.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "language": {
+      "maxLength": 20,
+      "minLength": 1,
+      "type": "string"
+    },
+    "problemSlug": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "source": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "problemSlug",
+    "language",
+    "source"
+  ],
+  "type": "object"
+}

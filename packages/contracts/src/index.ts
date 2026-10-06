@@ -7,6 +7,7 @@ export * from './http';
 export * from './sse';
 export * from './auth';
 export * from './problems';
+export * from './submissions';
 
 export const HealthSchema = z.object({ status: z.literal('ok'), service: z.string() });
 export type Health = z.infer<typeof HealthSchema>;

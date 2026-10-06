@@ -1,17 +1,31 @@
 import { Module } from '@nestjs/common';
+import { CONFIG, type Config } from '../../config/config';
+import { Idempotency } from './idempotency';
+import { QueuePositionService } from './queue-position.service';
+import { SubmissionsController } from './submissions.controller';
+import { SubmissionsService } from './submissions.service';
 import { QUEUE_KEY_PREFIX, QueueService } from './queue.service';
 import { ResultsConsumer } from './results.consumer';
 import { ResultsProcessor } from './results.processor';
 
-// The card that owns the submit endpoint adds its controller here.
-// QueueService is the enqueue side (Q-01); ResultsConsumer/ResultsProcessor the verdict side (Q-03).
+// S-01: submit/run/list/detail/position endpoints. // QueueService is the enqueue side (Q-01); ResultsConsumer/ResultsProcessor the verdict side (Q-03).
 @Module({
+  controllers: [SubmissionsController],
   providers: [
-    { provide: QUEUE_KEY_PREFIX, useValue: '' },
+    Idempotency,
+    QueuePositionService,
+    SubmissionsService,
+    { provide: QUEUE_KEY_PREFIX, inject: [CONFIG], useFactory: (c: Config) => c.QUEUE_KEY_PREFIX },
     QueueService,
     ResultsProcessor,
     ResultsConsumer,
   ],
-  exports: [QueueService, ResultsProcessor, ResultsConsumer],
+  exports: [
+    QueueService,
+    QueuePositionService,
+    SubmissionsService,
+    ResultsProcessor,
+    ResultsConsumer,
+  ],
 })
 export class SubmissionsModule {}

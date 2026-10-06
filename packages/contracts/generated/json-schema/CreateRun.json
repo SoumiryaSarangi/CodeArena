@@ -1,0 +1,40 @@
+{
+  "$id": "CreateRun.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "input": {
+      "type": "string"
+    },
+    "language": {
+      "maxLength": 20,
+      "minLength": 1,
+      "type": "string"
+    },
+    "problemSlug": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "sampleIds": {
+      "items": {
+        "maximum": 20,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "type": "array"
+    },
+    "source": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "problemSlug",
+    "language",
+    "source"
+  ],
+  "type": "object"
+}
