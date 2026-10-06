@@ -540,3 +540,8 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: **Day 5: D-01..D-03 (deploy) and P-02 (contest problem tooling)**; check PLAN for the tags and the model each needs (`grep -n "#### D-0\|#### P-02" docs/PLAN.md`).
 - Ayush must: nothing. Still open: U2.3, U3.1/U3.3, Contributors sidebar. If you run the API against your own dev DB, apply the new migration once: `pnpm --filter @codearena/api db:migrate` (I already did on your dev DB).
 - Model: S · Sonnet (opusplan outside plan mode)
+
+## 2026-10-06 · note · follow-up cards from UI-03 (no code)
+- **O-01b · Trace link on the submission detail (S)**: PRD US-3.3 AC2 ("admins see a link to the distributed trace"), PLAN §6 wireframe line 444 and UI_UX S06 require it, but **no card in PLAN builds it** (O-01 covers spans, metrics and dashboards only). Needs: store the job's trace id on the submission (the `traceparent` is already in `JudgeJob`), return it to admins in `SubmissionDetail`, and render "View trace ↗" once O-01 has a Grafana trace URL. Do it right after O-01.
+- **Rejudge button on `/s/[id]`**: the rejudge itself is in **C-07** (PLAN lines 404 and 773: rejudge by submission / problem / contest); the button on the detail page should be added when C-07 builds the endpoint (the run history table for admins is already on the page).
+- Ask Ayush at O-01 / C-07 whether to schedule these inside those cards or as separate small cards.
