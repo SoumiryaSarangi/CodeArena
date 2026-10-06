@@ -27,9 +27,14 @@ import (
 
 // Redis names (SD-§7).
 const (
-	Group      = "judges"
-	ResultsKey = "results"
-	DLQKey     = "jobs:dlq"
+	Group         = "judges"
+	ResultsKey    = "results"
+	DLQKey        = "jobs:dlq"
+	QuarantineKey = "jobs:quarantine"
+	// CrashesKey counts, per job entry, how many workers died holding it
+	// (field "<stream>:<entry id>"). It lives under jobs:* because that is all
+	// the judge's Redis ACL allows (ADR-009).
+	CrashesKey = "jobs:crashes"
 )
 
 // JobsKey is the stream for a lane.
@@ -63,25 +68,42 @@ type Config struct {
 	DrainTimeout   time.Duration // 2 min: how long shutdown waits for running jobs
 	MaxAttempts    int           // 3 judging attempts for infrastructure errors
 	RetryBackoff   time.Duration // 1 s x attempt
-	Now            func() time.Time
-	Log            *slog.Logger
-	Tracer         trace.Tracer
-	Meter          metric.Meter
+	// Leases (Q-02, FR-QUEUE-03): a judging worker refreshes its claim every
+	// LeaseEvery; a job whose claim is idle longer than ReclaimIdle is taken
+	// over by another worker, which looks for such jobs every ReclaimEvery.
+	LeaseEvery          time.Duration // 2 s
+	ReclaimIdle         time.Duration // 10 s
+	ReclaimEvery        time.Duration // LeaseEvery
+	MaxDeliveries       int           // 3: the 4th delivery goes to the DLQ (FR-QUEUE-04)
+	CrashesToQuarantine int           // 2 (FR-QUEUE-05)
+
+	// leaseHook, if set (tests only), runs before each lease check; a test
+	// blocks in it to simulate a worker that stalls.
+	leaseHook func()
+	Now       func() time.Time
+	Log       *slog.Logger
+	Tracer    trace.Tracer
+	Meter     metric.Meter
 }
 
 // Worker consumes one lane.
 type Worker struct {
-	cfg    Config
-	picker *lanes.Picker
-	busy   atomic.Int64
-	m      instruments
+	cfg         Config
+	picker      *lanes.Picker
+	busy        atomic.Int64
+	m           instruments
+	lastReclaim atomic.Int64 // unix nanos of the last reclaim scan, shared by all claim loops
 }
 
 type instruments struct {
-	jobs     metric.Int64Counter
-	seconds  metric.Float64Histogram
-	inflight metric.Int64UpDownCounter
-	jury     metric.Int64Counter
+	reclaimed   metric.Int64Counter
+	dlq         metric.Int64Counter
+	quarantined metric.Int64Counter
+	leaseLost   metric.Int64Counter
+	jobs        metric.Int64Counter
+	seconds     metric.Float64Histogram
+	inflight    metric.Int64UpDownCounter
+	jury        metric.Int64Counter
 }
 
 // New applies defaults and builds the metrics.
@@ -111,6 +133,14 @@ func New(cfg Config) (*Worker, error) {
 	cfg.JobTimeout = orDur(cfg.JobTimeout, 10*time.Minute)
 	cfg.DrainTimeout = orDur(cfg.DrainTimeout, 2*time.Minute)
 	cfg.RetryBackoff = orDur(cfg.RetryBackoff, time.Second)
+	cfg.LeaseEvery = orDur(cfg.LeaseEvery, 2*time.Second)
+	cfg.ReclaimIdle = orDur(cfg.ReclaimIdle, 10*time.Second)
+	cfg.ReclaimEvery = orDur(cfg.ReclaimEvery, cfg.LeaseEvery)
+	cfg.MaxDeliveries = orInt(cfg.MaxDeliveries, 3)
+	cfg.CrashesToQuarantine = orInt(cfg.CrashesToQuarantine, 2)
+	if cfg.ReclaimIdle <= 2*cfg.LeaseEvery {
+		return nil, fmt.Errorf("worker: ReclaimIdle (%s) must be more than twice LeaseEvery (%s), or a healthy worker's job could be taken over", cfg.ReclaimIdle, cfg.LeaseEvery)
+	}
 	if cfg.Now == nil {
 		cfg.Now = time.Now
 	}
@@ -134,6 +164,18 @@ func New(cfg Config) (*Worker, error) {
 		return nil, err
 	}
 	if w.m.jury, err = cfg.Meter.Int64Counter("ca_judge_jury_errors_total", metric.WithDescription("Checker failures (SE + alert)")); err != nil {
+		return nil, err
+	}
+	if w.m.reclaimed, err = cfg.Meter.Int64Counter("ca_queue_reclaimed_total", metric.WithDescription("Jobs taken over after their lease expired")); err != nil {
+		return nil, err
+	}
+	if w.m.dlq, err = cfg.Meter.Int64Counter("ca_queue_dlq_total", metric.WithDescription("Jobs moved to the dead-letter stream, by reason (alert)")); err != nil {
+		return nil, err
+	}
+	if w.m.quarantined, err = cfg.Meter.Int64Counter("ca_queue_quarantined_total", metric.WithDescription("Jobs quarantined after crashing workers (alert)")); err != nil {
+		return nil, err
+	}
+	if w.m.leaseLost, err = cfg.Meter.Int64Counter("ca_queue_lease_lost_total", metric.WithDescription("Jobs abandoned because another worker took them over")); err != nil {
 		return nil, err
 	}
 	return w, nil
@@ -221,7 +263,11 @@ func (w *Worker) consume(ctx, hardCtx context.Context) {
 // first job found. If every lane is empty it waits on all of them at once and
 // takes whatever arrives first.
 func (w *Worker) claim(ctx context.Context) (stream string, msg redis.XMessage, ok bool) {
-	for _, lane := range w.picker.Next() {
+	order := w.picker.Next() // one fairness step per claim, shared by reclaim and new jobs
+	if stream, msg, ok := w.reclaim(ctx, order); ok {
+		return stream, msg, true
+	}
+	for _, lane := range order {
 		if m, found := w.read(ctx, []string{JobsKey(lane)}, -1); found {
 			return JobsKey(lane), m.msg, true
 		}
@@ -233,7 +279,11 @@ func (w *Worker) claim(ctx context.Context) (stream string, msg redis.XMessage, 
 	for _, lane := range w.cfg.Lanes {
 		streams = append(streams, JobsKey(lane))
 	}
-	if m, found := w.read(ctx, streams, w.cfg.Block); found {
+	block := w.cfg.Block
+	if block > w.cfg.ReclaimEvery {
+		block = w.cfg.ReclaimEvery // wake up in time for the next reclaim scan
+	}
+	if m, found := w.read(ctx, streams, block); found {
 		return m.stream, m.msg, true
 	}
 	return "", redis.XMessage{}, false
@@ -322,10 +372,26 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 	w.m.inflight.Add(ctx, 1)
 	defer func() { w.busy.Add(-1); w.m.inflight.Add(ctx, -1) }()
 
+	// Hold a lease while judging. If another worker takes the job over (we
+	// stalled past ReclaimIdle), judging is cancelled and nothing is published.
+	judgeCtx, cancelJudge := context.WithCancel(spanCtx)
+	defer cancelJudge()
+	var lost atomic.Bool
+	leaseDone := make(chan struct{})
+	go func() {
+		defer close(leaseDone)
+		w.keepLease(judgeCtx, stream, msg.ID, func() { lost.Store(true); cancelJudge() })
+	}()
+	defer func() { cancelJudge(); <-leaseDone }()
+
 	w.publishProgress(spanCtx, job, contracts.JudgePhaseClaimed, nil)
 	progress := func(phase contracts.JudgePhase, t *contracts.TestOutcome) { w.publishProgress(spanCtx, job, phase, t) }
 
-	outcome, err := w.execute(spanCtx, job, progress)
+	outcome, err := w.execute(judgeCtx, job, progress)
+	if lost.Load() || !w.stillOwned(ctx, stream, msg.ID) {
+		w.leaseLost(ctx, span, job, stream, msg.ID)
+		return
+	}
 	outcomeLabel := "done"
 	if err != nil {
 		if ctx.Err() != nil {
@@ -340,6 +406,7 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 		outcome = &judge.Outcome{Verdict: contracts.VerdictSE}
 		outcomeLabel = "dlq"
 		w.deadLetterEntry(ctx, laneOfStream(stream), msg, raw, "execution-failed", err)
+		w.m.dlq.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", string(job.Lane)), attribute.String("reason", "execution-failed")))
 	}
 	if outcome.JuryError != "" {
 		w.m.jury.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", string(job.Lane))))
@@ -394,6 +461,7 @@ func (w *Worker) publishResult(ctx context.Context, stream, id string, r contrac
 			p.XAdd(ctx, &redis.XAddArgs{Stream: ResultsKey, Values: map[string]any{FieldResult: string(body)}})
 			p.XAck(ctx, stream, Group, id)
 			p.XDel(ctx, stream, id)
+			p.HDel(ctx, CrashesKey, stream+":"+id)
 			return nil
 		})
 		if err == nil {
@@ -426,6 +494,7 @@ func (w *Worker) publishProgress(ctx context.Context, job contracts.JudgeJob, ph
 func (w *Worker) deadLetter(ctx context.Context, stream string, msg redis.XMessage, raw, reason string, cause error) {
 	lane := strings.TrimPrefix(stream, "jobs:")
 	w.deadLetterEntry(ctx, contracts.Lane(lane), msg, raw, reason, cause)
+	w.m.dlq.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", lane), attribute.String("reason", reason)))
 	w.m.jobs.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", lane),
 		attribute.String("verdict", "none"), attribute.String("outcome", "dlq")))
 }
@@ -443,6 +512,7 @@ func (w *Worker) deadLetterEntry(ctx context.Context, lane contracts.Lane, msg r
 		if reason == "invalid-job" {
 			p.XAck(ctx, stream, Group, msg.ID)
 			p.XDel(ctx, stream, msg.ID)
+			p.HDel(ctx, CrashesKey, stream+":"+msg.ID)
 		}
 		return nil
 	})

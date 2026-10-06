@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 )
@@ -48,6 +49,21 @@ func TestLoadSettings(t *testing.T) {
 		s, err := loadSettings(env(with(map[string]string{"WORKER_LANES": "contest, practice,rejudge"})))
 		if err != nil || len(s.Lanes) != 3 || s.Lanes[0] != contracts.LaneContest || s.Lanes[2] != contracts.LaneRejudge {
 			t.Fatalf("%+v %v", s.Lanes, err)
+		}
+	})
+	t.Run("Q-02: lease timings are optional milliseconds", func(t *testing.T) {
+		s, err := loadSettings(env(with(map[string]string{"WORKER_LEASE_MS": "500", "WORKER_RECLAIM_IDLE_MS": "3000"})))
+		if err != nil || s.LeaseEvery != 500*time.Millisecond || s.ReclaimIdle != 3*time.Second {
+			t.Fatalf("%v %v %v", s.LeaseEvery, s.ReclaimIdle, err)
+		}
+		s, _ = loadSettings(env(required))
+		if s.LeaseEvery != 0 || s.ReclaimIdle != 0 {
+			t.Fatal("unset timings must fall back to the worker defaults")
+		}
+		for _, bad := range []string{"x", "10", "-5", "999999999"} {
+			if _, err := loadSettings(env(with(map[string]string{"WORKER_LEASE_MS": bad}))); err == nil {
+				t.Fatalf("accepted %q", bad)
+			}
 		}
 	})
 	t.Run("concurrency picks one core per job", func(t *testing.T) {

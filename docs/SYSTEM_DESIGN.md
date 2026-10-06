@@ -233,6 +233,7 @@ sequenceDiagram
 - Heartbeat refresh uses `XCLAIM … JUSTID`, which resets the entry's idle time without incrementing the delivery counter (Redis docs).
 - `XAUTOCLAIM` claims entries idle longer than `min-idle-time`, resets their idle time, and increments the delivery count unless `JUSTID` is given (the reaper does **not** use JUSTID so the count grows).
 - Entries deleted from the stream are dropped from the PEL by `XAUTOCLAIM`, which is why jobs are only `XDEL`-ed after `XACK`.
+- **As built (Q-02, ADR-005):** no leader lock (outside the judge ACL); each worker scans `XPENDING … IDLE 10000` and takes stale entries with a min-idle `XCLAIM` (atomic per entry, delivery counted), which also reveals the previous owner. A missing `hb:{owner}` counts a crash in `jobs:crashes`; two crashes quarantine the job, more than 3 deliveries dead-letter it, both with an SE verdict. A worker that finds its entry owned by someone else cancels judging and publishes nothing.
 
 ### 5.4 Rejudge
 

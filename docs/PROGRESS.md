@@ -370,3 +370,21 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: Q-02 (leases, retries, DLQ, quarantine, O: Opus, plan mode first). Day 3 explain-back U3.3 (consumer groups, pending entries, XAUTOCLAIM, why submission ID + run version is the idempotency key) is yours.
 - Ayush must: nothing for Q-01. Still open: U2.3 notes, Contributors sidebar check, and U3.1 and U3.2 from PLAN Day 3.
 - Model: S · Sonnet 5.5
+
+## 2026-10-06 · Q-02 · done (Postgres half of the check moves to Q-03)
+- Built (`apps/worker/internal/worker/reclaim.go`, changes in `worker.go`):
+  - **Lease** (FR-QUEUE-03): while judging, every 2 s the worker confirms it still owns the entry (`XPENDING … <id> <id> 1`) and refreshes it with `XCLAIM … 0 <id> JUSTID` (idle reset, no delivery counted). If another worker now owns it, judging is cancelled and nothing is published; ownership is checked once more right before publishing.
+  - **Takeover / reaper**: every worker, at most every 2 s, scans `XPENDING … IDLE 10000` in the claim's lane order and takes stale entries with a min-idle `XCLAIM` (atomic per entry; delivery counted).
+  - **Crash count, quarantine, DLQ**: if the previous owner's `hb:` key is gone it crashed (`HINCRBY jobs:crashes`). Two crashes → `jobs:quarantine` + SE verdict (FR-QUEUE-05); otherwise more than 3 deliveries → `jobs:dlq` reason `max-deliveries` + SE verdict (FR-QUEUE-04). Both alert via metric + ERROR log. The counter is cleared when a job finishes.
+  - **Metrics**: `ca_queue_reclaimed_total`, `ca_queue_dlq_total{reason}` (also counts the existing invalid-job and execution-failed paths), `ca_queue_quarantined_total`, `ca_queue_lease_lost_total`.
+  - **Settings**: `WORKER_LEASE_MS` and `WORKER_RECLAIM_IDLE_MS` (defaults 2 s / 10 s); the worker refuses a reclaim limit not more than twice the lease interval.
+  - **Chaos test** `tests/chaos/kill-worker.sh`: throwaway Redis, two real worker binaries, each round kill -9s the judging worker mid-job.
+- Tests: `go test -race ./...` green twice in a row with every `JUDGE_REQUIRE_*` set. `tests/chaos/kill-worker.sh`: **20/20, twice** (each round: exactly one result, from the surviving worker, nothing pending, nothing in the DLQ).
+  - New Go tests (throwaway Redis): lease keeps the claim fresh with no extra delivery; a dead worker's job is taken over and judged once; a takeover really increments Redis's delivery count; a fresh claim is never taken over by a second worker; two crashes → quarantine + SE; a hung worker (heartbeat alive) is not counted as a crash; > 3 deliveries → DLQ + SE; the 3rd delivery is still judged; the takeover scan follows lane order; a worker that stalled and was taken over publishes nothing; bad timing config rejected; settings parsing.
+  - Mutations: no lease refresh, `JUSTID` on the reaper, crash detection off, and the DLQ check off were each caught.
+- Two flaky tests found under full parallel load, fixed in the tests (not the design): the lease-lost test let the worker's own reaper legitimately retake the "thief's" stale job, so it now simulates a real stall with a test-only hook; the takeover-priority test now checks the scan order directly instead of through timing.
+- Decisions (ADR-005 updated): no leader lock and no `EVAL` (both outside the judge's Redis ACL); `XPENDING IDLE` + min-idle `XCLAIM` instead of `XAUTOCLAIM` (it hides the previous owner, which the crash count needs); the residual check-then-refresh race can only follow a ≥ 10 s stall and yields at most a duplicate result, which Q-03 dedupes. ADR-009's judge ACL list now includes `XPENDING`, the crash counter and `EXISTS hb:*` (Q-04 builds the ACL from it).
+- Deviation from the card's acceptance: "exactly one verdict **in Postgres**" needs the verdict consumer (Q-03). The chaos script asserts exactly one result on the `results` stream today; Q-03 adds the Postgres check to the same script.
+- Next: Q-03 (verdict consumer + idempotency, P: Opus plans, Sonnet builds).
+- Ayush must: U3.3 explain-back (consumer groups, pending entries, XAUTOCLAIM/XCLAIM leases, why submission ID + run version is the idempotency key) is a good fit right after this card. Still open: U2.3 notes, Contributors sidebar.
+- Model: O · Opus 5.5

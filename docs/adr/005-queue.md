@@ -31,3 +31,14 @@ A worker probes lanes for each claim in strict priority order: contest, interact
 - **Wrong-lane jobs:** priority comes from the stream a job is in, so a job whose `lane` field disagrees with its stream is dead-lettered instead of run under a misleading label.
 
 The API side stamps each job with a per-lane counter `seq:{lane}` (INCR) and appends it in one Lua script, so counter order and stream order always agree. Queue position (Q-05) is derived from the stream itself, not from `seq`.
+
+## Leases, takeover, DLQ and quarantine as built (Q-02)
+
+- **Lease:** while judging, a worker checks every 2 s that it still owns the entry (`XPENDING <stream> judges <id> <id> 1`) and refreshes it with `XCLAIM … 0 <id> JUSTID` (idle reset, no delivery counted). If someone else owns it, the worker cancels judging and publishes nothing, and it checks ownership once more right before publishing.
+- **Takeover (the reaper):** every worker, at most once per 2 s, scans `XPENDING <stream> judges IDLE 10000 - + 10` in the claim's lane order and takes stale entries with `XCLAIM <stream> judges <me> 10000 <id>`. The min-idle guard makes each takeover atomic (only one worker wins), and without `JUSTID` the delivery count grows.
+- **Fate of a taken-over job:** if the previous owner's `hb:{id}` key is gone, its process died: `HINCRBY jobs:crashes <stream>:<id> 1`. Two crashes → `jobs:quarantine` + SE verdict (FR-QUEUE-05). Otherwise more than 3 deliveries → `jobs:dlq` reason `max-deliveries` + SE verdict (FR-QUEUE-04). Both raise `ca_queue_quarantined_total` / `ca_queue_dlq_total` and an ERROR log (the alert). Otherwise it is judged.
+- **Deviations from SD-§5.3, and why:**
+  - *No leader lock.* `lock:*` is outside the judge's Redis ACL (ADR-009), and the per-entry min-idle `XCLAIM` is already atomic, so every worker can safely act as reaper.
+  - *`XPENDING IDLE` + `XCLAIM` instead of `XAUTOCLAIM`.* `XAUTOCLAIM` takes the entry before saying who held it, but telling a crash from a hang needs the previous owner.
+  - *Lease check is two commands, not one script.* `EVAL` is outside the judge ACL too. The race (the reaper takes the entry in the instant between check and refresh, after a 10 s stall) at worst yields a duplicate result, which Q-03's idempotent upsert absorbs.
+- **Proof:** `tests/chaos/kill-worker.sh` kills -9 the judging worker mid-job, 20 rounds; every round ends with exactly one result, from the surviving worker, nothing pending and nothing dead-lettered.

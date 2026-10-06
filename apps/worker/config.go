@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 )
@@ -25,6 +26,9 @@ type settings struct {
 	CacheDir    string
 	BoxIDBase   int
 	Cores       []int
+	// Lease timings (Q-02). Zero means the worker defaults (2 s / 10 s).
+	LeaseEvery  time.Duration
+	ReclaimIdle time.Duration
 }
 
 func loadSettings(get func(string) string) (settings, error) {
@@ -82,6 +86,16 @@ func loadSettings(get func(string) string) (settings, error) {
 				break
 			}
 			s.Cores = append(s.Cores, n)
+		}
+	}
+	for key, dst := range map[string]*time.Duration{"WORKER_LEASE_MS": &s.LeaseEvery, "WORKER_RECLAIM_IDLE_MS": &s.ReclaimIdle} {
+		if v := val(key); v != "" {
+			n, err := strconv.Atoi(v)
+			if err != nil || n < 50 || n > 600000 {
+				errs = append(errs, fmt.Errorf("%s must be 50-600000 milliseconds, got %q", key, v))
+				continue
+			}
+			*dst = time.Duration(n) * time.Millisecond
 		}
 	}
 	if len(s.Cores) == 0 {
