@@ -1,0 +1,19 @@
+title: Stair Climb
+rating: 1200
+practicePoints: 12
+tags: [dp, counting]
+limits: {timeMs: 500, memMb: 256, outputKb: 1024}
+checker: {kind: tokens}
+samples: ['01', '02']
+avoidSet:
+  1: [dp, dynamic programming]
+  2: [f(i-1)]
+generator: generators/gen.py
+solutions:
+- {file: main.cpp, expected: AC}
+- {file: alt.py, expected: AC}
+- {file: wa-int-sum.cpp, expected: WA}
+- {file: tle-recursion.cpp, expected: TLE}
+- {file: re-crash.cpp, expected: RE}
+- {file: mle-hog.cpp, expected: MLE}
+- {file: ole-flood.cpp, expected: OLE}

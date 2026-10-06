@@ -1,0 +1,19 @@
+title: Maze Runner
+rating: 1200
+practicePoints: 12
+tags: [bfs, graphs, grids]
+limits: {timeMs: 500, memMb: 256, outputKb: 64}
+checker: {kind: tokens}
+samples: ['01', '02']
+avoidSet:
+  1: [bfs, breadth]
+  2: [queue]
+generator: generators/gen.py
+solutions:
+- {file: main.cpp, expected: AC}
+- {file: alt.py, expected: AC}
+- {file: wa-count-cells.cpp, expected: WA}
+- {file: tle-relax.cpp, expected: TLE}
+- {file: re-crash.cpp, expected: RE}
+- {file: mle-hog.cpp, expected: MLE}
+- {file: ole-flood.cpp, expected: OLE}

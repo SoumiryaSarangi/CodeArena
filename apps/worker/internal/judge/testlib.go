@@ -111,3 +111,36 @@ func RunTestlib(ctx context.Context, box *sandbox.Box, binary, in, out, ans []by
 	}
 	return fail(fmt.Sprintf("checker exited with code %d", meta.ExitCode)), nil
 }
+
+// RunValidator runs a compiled testlib validator on one input, which it reads
+// from stdin, in the checker box. ok is false when the validator rejects the
+// input (msg is its message); err is only for sandbox failures.
+func RunValidator(ctx context.Context, box *sandbox.Box, binary, in []byte) (ok bool, msg string, err error) {
+	if err := box.Init(ctx); err != nil {
+		return false, "", err
+	}
+	if err := box.WriteFile("validator", binary, 0o755); err != nil {
+		return false, "", err
+	}
+	if err := box.WriteFile("in.txt", in, 0o644); err != nil {
+		return false, "", err
+	}
+	meta, err := box.Run(ctx, sandbox.RunSpec{
+		TimeLimit: checkerCPU, MemKB: checkerMemKB, Processes: 1, FsizeKB: checkerFsizeKB,
+		Stdin: "in.txt", Stdout: "stdout.txt", Stderr: "stderr.txt",
+		Cmd: []string{"./validator"},
+	})
+	if err != nil {
+		return false, "", err
+	}
+	if data, _, rerr := box.ReadFile("stderr.txt", 1024); rerr == nil {
+		msg = clip(strings.TrimSpace(string(data)))
+	}
+	if meta.Status == sandbox.StatusOK {
+		return true, "", nil
+	}
+	if msg == "" {
+		msg = fmt.Sprintf("validator ended with status %q", string(meta.Status))
+	}
+	return false, msg, nil
+}

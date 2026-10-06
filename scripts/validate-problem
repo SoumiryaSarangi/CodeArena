@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Validates problem packages: structure, validator on every input, and every declared
+# solution against its expected verdict, through the real judge engine (needs isolate and
+# the language runtimes: scripts/setup-isolate-wsl.sh, scripts/setup-judge-runtimes.sh).
+#   scripts/validate-problem problems/            # every package under problems/
+#   scripts/validate-problem problems/range-sums  # one package
+#   scripts/validate-problem -v -j 4 problems/    # per-solution lines, 4 cores
+#   scripts/validate-problem -tar /tmp/t.tar problems/range-sums   # testset archive + hash
+set -euo pipefail
+caller="$PWD"
+cd "$(dirname "$0")/../apps/worker"
+args=()
+prev=""
+for a in "$@"; do
+  if [[ "$prev" == "-tar" ]]; then
+    case "$a" in /*) args+=("$a") ;; *) args+=("$caller/$a") ;; esac
+  elif [[ -e "$caller/$a" ]]; then
+    args+=("$(realpath "$caller/$a")")
+  else
+    args+=("$a")
+  fi
+  prev="$a"
+done
+exec go run ./cmd/validate-problem "${args[@]}"

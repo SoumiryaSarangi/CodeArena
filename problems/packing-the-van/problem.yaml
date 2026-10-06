@@ -1,0 +1,20 @@
+title: Packing the Van
+rating: 1400
+practicePoints: 14
+tags: [dp, knapsack]
+limits: {timeMs: 1000, memMb: 256, outputKb: 1024}
+checker: {kind: tokens}
+samples: ['01', '02']
+avoidSet:
+  1: [knapsack]
+  2: ['dp[c - w]']
+generator: generators/gen.py
+solutions:
+- {file: main.cpp, expected: AC}
+- {file: alt.py, expected: AC}
+- {file: wa-reuse-items.cpp, expected: WA}
+- {file: wa-greedy-ratio.cpp, expected: WA}
+- {file: tle-subsets.cpp, expected: TLE}
+- {file: re-crash.cpp, expected: RE}
+- {file: mle-hog.cpp, expected: MLE}
+- {file: ole-flood.cpp, expected: OLE}

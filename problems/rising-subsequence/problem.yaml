@@ -1,0 +1,19 @@
+title: Rising Subsequence
+rating: 1500
+practicePoints: 15
+tags: [dp, binary search, lis]
+limits: {timeMs: 500, memMb: 256, outputKb: 1024}
+checker: {kind: tokens}
+samples: ['01', '02']
+avoidSet:
+  1: [lis, longest increasing]
+  2: [lower_bound]
+generator: generators/gen.py
+solutions:
+- {file: main.cpp, expected: AC}
+- {file: alt.py, expected: AC}
+- {file: wa-non-strict.cpp, expected: WA}
+- {file: tle-quadratic.cpp, expected: TLE}
+- {file: re-crash.cpp, expected: RE}
+- {file: mle-hog.cpp, expected: MLE}
+- {file: ole-flood.cpp, expected: OLE}

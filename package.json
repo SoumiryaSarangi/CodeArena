@@ -17,7 +17,9 @@
     "contracts:gen": "pnpm --filter @codearena/contracts gen",
     "contracts:check": "pnpm --filter @codearena/contracts gen --check",
     "db:reset": "pnpm --filter @codearena/api db:reset",
-    "e2e": "pnpm --filter @codearena/web e2e"
+    "e2e": "pnpm --filter @codearena/web e2e",
+    "problems:build": "python3 scripts/problem-build.py problems/",
+    "problems:validate": "scripts/validate-problem problems/"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
