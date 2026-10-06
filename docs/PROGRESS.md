@@ -466,3 +466,22 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: **Q-05 (SSE gateway + queue position/ETA, tag P: start in plan mode, Opus plans)**. Q-03b (reconciler) can be built any time; it calls `buildJob()`.
 - Ayush must: nothing. Still open: U2.3, U3.1/U3.3, Contributors sidebar.
 - Model: S · Sonnet (opusplan outside plan mode)
+
+## 2026-10-06 · Q-05 · done
+- Built (`apps/api/src/modules/realtime/`, contracts `sse.ts`):
+  - **`GET /sse?ticket=&topics=`** (`sse.controller.ts`): single-use ticket (an over-asked, reused, expired or malformed ticket is 401), `retry: 3000`, `: ping` every 15 s, frames `id/event/data`.
+  - **`SseHub`**: one Redis subscriber per instance, `rt:{topic}` subscribed only while a local client wants it (unsubscribed when the last leaves, checked with `PUBSUB NUMSUB`), 256 KB write cap (slow clients cut off), 20 topics per connection, 5 connections per user.
+  - **Resume (FR-RT-02)**: subscribe → replay `evt:` after `Last-Event-ID` → flush live → per-topic id filter (no loss, no duplicates, even with events published during the replay). No `Last-Event-ID` on a `sub:` topic = catch-up from the buffer. Gone/short buffer + finished submission = snapshot verdict without an `id:`.
+  - **`ProgressBridge`**: copies `progress:*` into the replay buffer/fan-out as `submission.progress`; **one leader at a time** (`lock:bridge` lease) so ids follow publish order; failover within one lease; also writes `ewma:svc:{lane}` from claimed→done.
+  - **`submission.queue`** live event (position, ETA) every 2 s on change, final 0 when a judge takes the job. `QueuePositionService.peek()` added. `publishEvent()` (`events.ts`) is now the one place that appends to `evt:` and publishes on `rt:` (the verdict processor uses it too).
+  - Config: `REALTIME_BRIDGE` (on; off under `NODE_ENV=test`), `SSE_PING_MS`, `SSE_QUEUE_TICK_MS`, `BRIDGE_LEASE_MS`. Metrics `ca_sse_connections`, `ca_sse_events_total{type}`, `ca_sse_dropped_total{reason}`, `ca_sse_resume_total{result}`, `ca_verdict_to_sse_seconds` (NFR-PERF-04), `ca_progress_bridged_total{outcome}`; span `sse.attach`.
+- Tests: API 140/140 (15 new SSE tests via raw HTTP against two real app instances, 3× in a row), typecheck, `contracts:check`, lint clean except Ayush's `apps/web/next-env.d.ts`.
+  - **Acceptance**: progress `claimed, compiling, running, tests 1-3, done` then the verdict arrive in order, with unique increasing ids, once, through either instance; the replay buffer holds exactly 8 entries. Reconnect with `Last-Event-ID` returns exactly the missed events; a 30+40 event race test loses and doubles nothing.
+  - FR-RT-01 (ticket rules, guest only `sys`, another user's `sub:` refused), FR-RT-03 (retry, pings), FR-QUEUE-08 (position 3 → 1 → 0, ETA 3 s from EWMA 2000 ms ÷ 2 judges, no repeats, EWMA 2000 → 1800), leader failover, subscription freed on disconnect, 256 KB cut-off, 5-per-user cap.
+  - Mutations caught (5): no id filter, reusable ticket, every instance bridges, no unsubscribe, no per-user cap. **Not mutation-tested**: the "subscribe before replay" order (the race test exercises it but I could not express it as a text mutant).
+- Bugs the tests found: the per-user cap loop never ended (`detach` replaced the list it iterated); **`app.close()` hung on open streams because Nest closes the HTTP server before `onApplicationShutdown`**, so the hub now closes streams in `onModuleDestroy` (a real graceful-shutdown bug).
+- Decisions: the plan said "first instance to win `SET NX` per message" for the bridge; it became a **single leader lease** because per-message winners on different instances could write out of order. Live-only queue events (no ids) so a reconnect never replays stale positions. Snapshots carry no `id:`. NFR-PERF-04 (p95 ≤ 1 s) is measured by the histogram but not yet load-tested.
+- **Gaps left on purpose**: board/contest topic producers and their snapshots (C-0x); the phase timeline on the detail page can now be built from `submission.progress` events (UI-03) but is not stored for old submissions; ETA accuracy (±50 %, PRD US-3.2) is for the load test card.
+- Next: Day 4's backend is done. **UI-01 (practice list, S)**, then **UI-02 (problem workspace, P)** and UI-03. Q-03b (reconciler, calls `buildJob()`) is still open.
+- Ayush must: nothing. Still open: U2.3, U3.1/U3.3, Contributors sidebar.
+- Model: P · Opus plan + Sonnet build (opusplan)

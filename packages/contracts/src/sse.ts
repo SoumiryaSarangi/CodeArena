@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { Verdict } from './enums';
+import { Lane, Verdict } from './enums';
 
 /** Event types: SD-§10. */
 export const SseEventType = z
   .enum([
     'submission.progress',
+    'submission.queue',
     'submission.verdict',
     'board.snapshot',
     'board.diff',
@@ -47,3 +48,17 @@ export const SubmissionVerdictData = z
   .strict()
   .meta({ id: 'SubmissionVerdictData' });
 export type SubmissionVerdictData = z.infer<typeof SubmissionVerdictData>;
+
+/** Payload of a live `submission.queue` event on topic `sub:{id}`: where the job stands while it waits. Not replayed. */
+export const SubmissionQueueData = z
+  .object({
+    submissionId: z.string().min(1),
+    lane: Lane,
+    /** Jobs ahead plus this one; 0 once a judge has taken it. Capped at 100. */
+    position: z.number().int().min(0),
+    etaSeconds: z.number().int().min(0),
+    capped: z.boolean(),
+  })
+  .strict()
+  .meta({ id: 'SubmissionQueueData' });
+export type SubmissionQueueData = z.infer<typeof SubmissionQueueData>;

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Lane } from '@codearena/contracts';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../../redis/redis.module';
+import { cmpStreamId as cmp } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 
 /** Highest priority first (FR-QUEUE-08); `rejudge` is lowest. */
@@ -41,8 +42,20 @@ export class QueuePositionService {
   }
 
   async of(submissionId: string, fallbackLane: Lane): Promise<Position> {
+    return (
+      (await this.peek(submissionId)) ?? {
+        lane: fallbackLane,
+        position: 0,
+        etaSeconds: 0,
+        capped: false,
+      }
+    );
+  }
+
+  /** Like `of`, but null when the job's entry is not remembered (finished long ago, or never queued here). */
+  async peek(submissionId: string): Promise<Position | null> {
     const raw = await this.redis.get(this.entryKey(submissionId));
-    if (!raw) return { lane: fallbackLane, position: 0, etaSeconds: 0, capped: false };
+    if (!raw) return null;
     const [lane, entryId] = [
       raw.slice(0, raw.indexOf(':')) as Lane,
       raw.slice(raw.indexOf(':') + 1),
@@ -131,12 +144,4 @@ export class QueuePositionService {
     } while (cursor !== '0');
     return n;
   }
-}
-
-/** Compares two stream ids (`ms-seq`). */
-function cmp(a: string, b: string): number {
-  const [am, as] = a.split('-').map(BigInt) as [bigint, bigint];
-  const [bm, bs] = b.split('-').map(BigInt) as [bigint, bigint];
-  if (am !== bm) return am < bm ? -1 : 1;
-  return as === bs ? 0 : as < bs ? -1 : 1;
 }

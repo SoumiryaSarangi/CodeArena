@@ -21,6 +21,7 @@ import { ResultsProcessor } from './results.processor';
     ResultsConsumer,
   ],
   exports: [
+    QUEUE_KEY_PREFIX,
     QueueService,
     QueuePositionService,
     SubmissionsService,

@@ -453,7 +453,11 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `jobs:dlq`, `jobs:quarantine` | stream | none | worker/api → admin | Failed / poison jobs |
 | `results` | stream (group `api`) | trimmed `MINID` older than 1 h after ack | worker → api | Judge results |
 | `seq:{lane}` | string | none | api | Per-lane job counter (`INCR` and `XADD` in one Lua script at enqueue, so counter order = stream order); stamps `JudgeJob.seq`. The API's `api` ACL user needs `EVAL` on `seq:*` and `jobs:*` (Q-04) |
-| `ewma:svc:{lane}` | string | none | api | Service-time EWMA for ETA |
+| `ewma:svc:{lane}` | string | none | api (progress bridge) | Service-time EWMA for ETA |
+| `lock:bridge` | string | 5 s lease | api | Leader of the progress bridge (Q-05) |
+| `pclaim:{id}` | string | 10 min | api | When a judge claimed a job (for the EWMA) |
+| `sub:entry:{id}` | string | 1 h | api | `lane:entryId` of a queued job (queue position, S-01) |
+| `idem:{scope}:{uid}:{key}` | string | 10 min | api | `Idempotency-Key` result (S-01) |
 | `hb:{workerId}` | string (JSON) | 10 s | worker | Heartbeat |
 | `progress:{submissionId}` | pub/sub | — | worker → api | Per-test progress |
 | `evt:{topic}` | stream `MAXLEN ~ 2000` | 5 min idle expiry | api → api | SSE replay buffer |
@@ -608,12 +612,17 @@ Test: identical inputs → identical outputs; sum of deltas ≤ 0.
 
 - **Transport:** SSE over HTTP/2 through Caddy (avoids the browser's 6-connections-per-domain limit that applies to SSE over HTTP/1.1). One `EventSource` per tab carrying multiple topics.
 - **Envelope:** `id: <evt stream id>` · `event: <type>` · `data: {"topic","type","ts","data"}`.
-- **Types:** `submission.progress`, `submission.verdict`, `board.snapshot`, `board.diff`, `board.freeze`, `board.resolve.step`, `clar.new`, `clar.answer`, `announce.new`, `contest.state`, `review.ready`, `sys.status`.
+- **Types:** `submission.progress`, `submission.queue`, `submission.verdict`, `board.snapshot`, `board.diff`, `board.freeze`, `board.resolve.step`, `clar.new`, `clar.answer`, `announce.new`, `contest.state`, `review.ready`, `sys.status`.
 - **Authorisation per topic:** `sub:{id}` owner or admin · `contest:{id}:*` registered or public board · `admin:*` admin · `sys` anyone.
 - **Resume:** replay from `evt:{topic}` after `Last-Event-ID`; if the ID is older than the buffer, send `board.snapshot` / full state instead.
 - **Heartbeat:** comment every 15 s; `retry: 3000`.
 - **Fan-out:** every API instance subscribes to `rt:*` it has clients for; publishing is decoupled from delivery.
   - *As built (Q-03):* the `rt:{topic}` message is `{"id": "<evt stream id>", "envelope": {topic, type, ts, data}}`, so a subscriber can send the SSE `id:` without reading the stream. `submission.verdict` data is `SubmissionVerdictData` (contracts).
+  - *As built (Q-05):* `GET /sse?ticket=&topics=a,b` redeems the ticket (single use) and refuses topics it was not issued for (401). The stream starts with `retry: 3000`, then `: ping` every 15 s. **Resume:** `Last-Event-ID` (header) replays `evt:{topic}` after that id; the hub subscribes to `rt:` first, then reads the replay, then flushes live events, and drops any id it already sent, so nothing is lost or doubled. Ids are compared as stream ids across all topics of a connection (one `Last-Event-ID` covers them; fine for the usual one-topic-per-submission case). A client with **no** `Last-Event-ID` still catches up on `sub:` topics from the buffer. If the buffer is gone (5 min idle) or starts after the client's id, a finished submission is sent as a **snapshot** `submission.verdict` without an `id:` so it cannot move the client's cursor. At most 20 topics per connection and 5 connections per user (the oldest is closed).
+  - *Progress bridge:* workers can only publish to `progress:{id}` (ADR-009), so one API instance at a time (a lease on `lock:bridge`, 5 s, renewed every third; released on shutdown) subscribes `progress:*` and copies each message into `evt:sub:{id}` + `rt:sub:{id}` as `submission.progress`. A single writer keeps event ids in the order the worker published; if it dies another instance takes over within one lease (progress in the gap is lost, the verdict is not).
+  - *Queue events:* `submission.queue` `{submissionId, lane, position, etaSeconds, capped}` is **live only** (no `id:`, never replayed): every 2 s each instance checks the queued submissions its clients watch and sends when the numbers changed, and once with position 0 when a judge takes the job. A reconnecting client reads `GET /api/submissions/{id}/position`.
+  - *ETA:* position × `ewma:svc:{lane}` ÷ live judges (`hb:*`), as in FR-QUEUE-08. The bridge writes the EWMA (α = 0.2) from `claimed` → `done` progress timestamps; a cold start assumes 3 s.
+  - *Shutdown:* the hub closes its streams in `onModuleDestroy` (before the HTTP server closes): an event stream never ends by itself and would otherwise stall a graceful shutdown.
 - **Backpressure:** per-connection write buffer cap 256 KB; slow clients are disconnected and resume via replay.
 
 ---

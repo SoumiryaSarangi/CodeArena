@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JudgeResult, type SubmissionVerdictData, type SseEventType } from '@codearena/contracts';
+import { JudgeResult, type SubmissionVerdictData } from '@codearena/contracts';
 import { metrics, trace } from '@opentelemetry/api';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Redis } from 'ioredis';
@@ -8,6 +8,7 @@ import { DB, type Db } from '../../db/db.module';
 import { customRuns, judgeRuns, submissions, testResults } from '../../db/schema';
 import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
+import { publishEvent } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 
 const tracer = trace.getTracer('api');
@@ -17,10 +18,6 @@ const processed = metrics.getMeter('api').createCounter('ca_results_processed_to
 
 /** FR-SUB-06: only this much of a compile log is stored. */
 export const MAX_COMPILE_LOG_BYTES = 16 * 1024;
-/** SD-§7: replay buffer sizes for `evt:{topic}`. */
-const EVT_MAXLEN = 2000;
-const EVT_IDLE_TTL_S = 300;
-
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type Outcome =
@@ -36,11 +33,7 @@ export type Outcome =
 export type ParkReason =
   'invalid-json' | 'invalid-result' | 'unknown-submission' | 'unknown-run-version';
 
-/** What goes on the `rt:{topic}` channel: the replay stream id (the SSE `id:`) plus the envelope. */
-export interface RealtimeMessage {
-  id: string;
-  envelope: { topic: string; type: SseEventType; ts: number; data: SubmissionVerdictData };
-}
+export type { RealtimeMessage } from '../realtime/events';
 
 const cutBytes = (s: string, max: number) => {
   const buf = Buffer.from(s, 'utf8');
@@ -246,39 +239,17 @@ export class ResultsProcessor {
   }
 
   /**
-   * Tells the user (SD-§10): append to the replay buffer, then fan out. Runs after
-   * the commit and only for the call that stored the verdict, so replays are silent.
-   * If Redis is down the event is lost but the verdict is safe in Postgres; a client
-   * that reconnects reads the submission itself.
+   * Tells the user (SD-§10): see `publishEvent`. Runs after the commit and only for the call that
+   * stored the verdict, so replays are silent.
    */
   private async publish(data: SubmissionVerdictData): Promise<void> {
-    const topic = `sub:${data.submissionId}`;
-    const evtKey = `${this.prefix}evt:${topic}`;
-    const envelope: RealtimeMessage['envelope'] = {
-      topic,
-      type: 'submission.verdict',
-      ts: Date.now(),
+    await publishEvent(
+      this.redis,
+      this.prefix,
+      this.log,
+      `sub:${data.submissionId}`,
+      'submission.verdict',
       data,
-    };
-    const body = JSON.stringify(envelope);
-    try {
-      const id = (await this.redis.xadd(
-        evtKey,
-        'MAXLEN',
-        '~',
-        EVT_MAXLEN,
-        '*',
-        'event',
-        body,
-      )) as string;
-      await this.redis.expire(evtKey, EVT_IDLE_TTL_S);
-      const message: RealtimeMessage = { id, envelope };
-      await this.redis.publish(`${this.prefix}rt:${topic}`, JSON.stringify(message));
-    } catch (err) {
-      this.log.warn(
-        { err: { message: (err as Error).message }, topic },
-        'could not publish the verdict event',
-      );
-    }
+    );
   }
 }

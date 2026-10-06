@@ -21,6 +21,11 @@ const schema = z.object({
   RATE_LIMIT_DEFAULT_PER_MIN: z.coerce.number().int().positive().default(120),
   // Prefix of every queue/stream key. Empty in production; tests set one so they never touch real queues.
   QUEUE_KEY_PREFIX: z.string().max(40).default(''),
+  // Q-05: realtime. The bridge copies worker progress into the replay buffer (one leader at a time).
+  REALTIME_BRIDGE: z.enum(['on', 'off']).optional(),
+  SSE_PING_MS: z.coerce.number().int().min(50).default(15_000),
+  SSE_QUEUE_TICK_MS: z.coerce.number().int().min(50).default(2_000),
+  BRIDGE_LEASE_MS: z.coerce.number().int().min(300).default(5_000),
   // Q-03: whether this instance reads the `results` stream. Default on, except under NODE_ENV=test.
   RESULT_CONSUMER: z.enum(['on', 'off']).optional(),
 
@@ -49,6 +54,10 @@ export type Config = z.infer<typeof schema>;
 /** Q-03: should this API instance consume judge results? */
 export const resultConsumerEnabled = (c: Pick<Config, 'NODE_ENV' | 'RESULT_CONSUMER'>) =>
   (c.RESULT_CONSUMER ?? (c.NODE_ENV === 'test' ? 'off' : 'on')) === 'on';
+
+/** Q-05: should this API instance run the progress bridge? */
+export const realtimeBridgeEnabled = (c: Pick<Config, 'NODE_ENV' | 'REALTIME_BRIDGE'>) =>
+  (c.REALTIME_BRIDGE ?? (c.NODE_ENV === 'test' ? 'off' : 'on')) === 'on';
 
 export function loadConfig(raw: Record<string, string | undefined> = process.env): Config {
   // `KEY=` in a .env file means "not set": treat blank values like missing so defaults apply.
