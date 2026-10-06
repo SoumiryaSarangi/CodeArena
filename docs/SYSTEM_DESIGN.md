@@ -471,7 +471,8 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `ai:jobs` | stream | none | api | AI reviews / summaries |
 | `ai:budget:{model}:{yyyymmdd}` | hash | 48 h | api | Token/request ledger |
 | `ai:cache:{sha256}` | string | 7 d | api | Hint cache |
-| `lock:{name}` | string | lease | any | Singleton jobs (`SET NX PX`) |
+| `lock:{name}` | string | lease | any | Singleton jobs (`SET NX PX`): `lock:bridge` (Q-05), `lock:reconciler` (Q-03b) |
+| `recon:cool:{id}`, `recon:attempts` | string, hash | stuck period, 24 h | api | Reconciler attempt spacing and count (Q-03b) |
 | Hocuspocus Redis extension keys | managed | — | collab | Cross-instance sync |
 
 _Queue position (decision, J-05):_ the judge user may only `SET hb:*` (ADR-009), so there is no `claimed:{lane}` key. The API derives position from the stream itself: jobs ahead in a lane = entries between the group's `last-delivered-id` (`XINFO GROUPS`) and the job's own entry id, counted with `XRANGE … COUNT` (capped; beyond the cap it shows "100+"), plus the same figure for every higher lane (FR-QUEUE-08). This keeps a compromised judge from lying about queue state and needs no extra ACL.

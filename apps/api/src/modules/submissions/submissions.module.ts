@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CONFIG, type Config } from '../../config/config';
+import { Reconciler } from './reconciler';
 import { Idempotency } from './idempotency';
 import { QueuePositionService } from './queue-position.service';
 import { SubmissionsController } from './submissions.controller';
@@ -19,6 +20,7 @@ import { ResultsProcessor } from './results.processor';
     QueueService,
     ResultsProcessor,
     ResultsConsumer,
+    Reconciler,
   ],
   exports: [
     QUEUE_KEY_PREFIX,
@@ -27,6 +29,7 @@ import { ResultsProcessor } from './results.processor';
     SubmissionsService,
     ResultsProcessor,
     ResultsConsumer,
+    Reconciler,
   ],
 })
 export class SubmissionsModule {}

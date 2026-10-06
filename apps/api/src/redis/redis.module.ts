@@ -1,4 +1,10 @@
-import { Global, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Global,
+  Inject,
+  Module,
+  type OnApplicationShutdown,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import { CONFIG, type Config } from '../config/config';
@@ -35,8 +41,16 @@ export const REDIS = Symbol('REDIS');
   ],
   exports: [REDIS],
 })
-export class RedisModule implements OnApplicationShutdown {
+export class RedisModule implements OnModuleInit, OnApplicationShutdown {
   constructor(@Inject(REDIS) private readonly redis: Redis) {}
+  /**
+   * Start connecting now. The client is lazy and has no offline queue, so a command sent before the
+   * first connect would fail; a failed attempt here is fine (ioredis keeps retrying, and readiness
+   * reports Redis), it just must not stop the boot.
+   */
+  onModuleInit() {
+    if (this.redis.status === 'wait') this.redis.connect().catch(() => {});
+  }
   async onApplicationShutdown() {
     this.redis.disconnect();
   }

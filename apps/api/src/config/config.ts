@@ -26,6 +26,10 @@ const schema = z.object({
   SSE_PING_MS: z.coerce.number().int().min(50).default(15_000),
   SSE_QUEUE_TICK_MS: z.coerce.number().int().min(50).default(2_000),
   BRIDGE_LEASE_MS: z.coerce.number().int().min(300).default(5_000),
+  // Q-03b: the reconciler re-enqueues submissions that were accepted but lost their job.
+  RECONCILER: z.enum(['on', 'off']).optional(),
+  RECONCILER_EVERY_MS: z.coerce.number().int().min(50).default(30_000),
+  RECONCILER_STUCK_MS: z.coerce.number().int().min(50).default(120_000),
   // Q-03: whether this instance reads the `results` stream. Default on, except under NODE_ENV=test.
   RESULT_CONSUMER: z.enum(['on', 'off']).optional(),
 
@@ -58,6 +62,10 @@ export const resultConsumerEnabled = (c: Pick<Config, 'NODE_ENV' | 'RESULT_CONSU
 /** Q-05: should this API instance run the progress bridge? */
 export const realtimeBridgeEnabled = (c: Pick<Config, 'NODE_ENV' | 'REALTIME_BRIDGE'>) =>
   (c.REALTIME_BRIDGE ?? (c.NODE_ENV === 'test' ? 'off' : 'on')) === 'on';
+
+/** Q-03b: should this API instance run the reconciler? (Only one runs per sweep, by lease.) */
+export const reconcilerEnabled = (c: Pick<Config, 'NODE_ENV' | 'RECONCILER'>) =>
+  (c.RECONCILER ?? (c.NODE_ENV === 'test' ? 'off' : 'on')) === 'on';
 
 export function loadConfig(raw: Record<string, string | undefined> = process.env): Config {
   // `KEY=` in a .env file means "not set": treat blank values like missing so defaults apply.
