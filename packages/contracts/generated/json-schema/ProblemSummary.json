@@ -1,0 +1,46 @@
+{
+  "$id": "ProblemSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "difficulty": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "practicePoints": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "slug": {
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "maxLength": 30,
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "difficulty",
+    "tags",
+    "practicePoints"
+  ],
+  "type": "object"
+}

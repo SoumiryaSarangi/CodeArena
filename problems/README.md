@@ -22,7 +22,10 @@ scripts/problem-build.py problems/            # regenerate tests: gen.py, then m
 scripts/validate-problem problems/            # structure + validator on every input + every solution vs its expected verdict
 scripts/validate-problem -v -j 4 problems/x   # one package, per-solution lines, 4 cores
 scripts/validate-problem -tar /tmp/x.tar problems/x   # the testset archive the judge fetches, prints its SHA-256
+pnpm problem:import --publish problems/       # structure check + upload tests to S3 + create/refresh versions (P-01); omit --publish to keep them private
 ```
+
+`problem:import` is idempotent: identical content prints `unchanged`; a changed statement, test, limit, checker, tag or solution creates the next immutable version (FR-PROB-02). It checks structure only; run `problems:validate` first, because the judge is what runs the solutions (FR-PROB-04).
 
 `validate-problem` runs through the real judge engine in isolate boxes (needs `scripts/setup-isolate-wsl.sh` and `scripts/setup-judge-runtimes.sh`). Structure alone is also checked in plain `go test ./...` (`TestRepositoryProblems`).
 

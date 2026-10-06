@@ -18,6 +18,7 @@
     "contracts:check": "pnpm --filter @codearena/contracts gen --check",
     "db:reset": "pnpm --filter @codearena/api db:reset",
     "e2e": "pnpm --filter @codearena/web e2e",
+    "problem:import": "pnpm --filter @codearena/api exec tsx --env-file-if-exists=.env src/modules/problems/import-cli.ts",
     "problems:build": "python3 scripts/problem-build.py problems/",
     "problems:validate": "scripts/validate-problem problems/",
     "attack": "scripts/attack"
