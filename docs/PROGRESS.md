@@ -348,3 +348,4 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: J-07 is accepted (28/28). Day 3 build cards continue with Q-01 (lanes + weighted priority, S).
 - Ayush must: still fix the `/dev/disk` directory false positive in `27-dev-disk-read/main.c` (it passes now only because the path is gone); write U2.3 explain-back notes; confirm whether Claude has left the GitHub Contributors list.
 - Model: O · Opus 5.5
+- Update (later 2026-10-06): the sidebar still showed the extra contributor. Checked: no branch or commit message references it any more, and the GitHub contributors API already lists only Ayush (39 commits), so the sidebar is stale cache. The hidden pull-request merge refs of Dependabot PRs 3, 5, 7 and 8 still contained the old commit; they refresh when GitHub recomputes those PRs. Remaining steps: rebase or reopen those four PRs, wait for the cache, then GitHub Support if it persists after about 24 hours.
