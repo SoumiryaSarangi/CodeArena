@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ProblemListQuery } from '@codearena/contracts';
 import { Public } from '../auth/guards';
 import { ProblemsService } from './problems.service';
@@ -9,8 +10,15 @@ export class ProblemsController {
 
   @Public()
   @Get()
-  list(@Query() query: unknown) {
-    return this.problems.list(ProblemListQuery.parse(query));
+  list(@Req() req: Request, @Query() query: unknown) {
+    // Guests may browse; a valid bearer token adds their own progress.
+    return this.problems.list(ProblemListQuery.parse(query), req.user?.id);
+  }
+
+  @Public()
+  @Get('tags')
+  tags() {
+    return this.problems.tags();
   }
 
   @Public()

@@ -9,7 +9,16 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
 import { loadConfig } from '../../config/config';
 import type { Db } from '../../db/client';
-import { packageSolutions, problems, problemTags, problemVersions } from '../../db/schema';
+import {
+  packageSolutions,
+  problems,
+  problemTags,
+  problemVersions,
+  submissions,
+  users,
+} from '../../db/schema';
+import { ACCESS_TOKENS, type AccessTokens } from '../auth/keys';
+import { randomUUID } from 'node:crypto';
 import { createTestDatabase, postgresReachable } from '../../test/db';
 import { parsePackage, readPackageDirectory, type ProblemPackage } from './package';
 import { ProblemImporter } from './problems.import';
@@ -161,6 +170,8 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
       difficulty: 800,
       tags: ['implementation', 'math'],
       practicePoints: 8,
+      acceptance: null,
+      status: null,
     });
   });
 
@@ -281,5 +292,109 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
     const [p] = await db.select().from(problems).where(eq(problems.slug, 'hall-of-fame'));
     const tags = await db.select().from(problemTags).where(eq(problemTags.problemId, p!.id));
     expect(tags.map((t) => t.tag).sort()).toEqual(['implementation', 'sorting']);
+  });
+
+  it('GET /problems/tags counts tags on public problems only, most used first', async () => {
+    const res = await get('/problems/tags').expect(200);
+    const items: { tag: string; count: number }[] = res.body.items;
+    expect(items.find((t) => t.tag === 'dp')?.count).toBe(4);
+    expect(items.find((t) => t.tag === 'graphs')?.count).toBeGreaterThanOrEqual(4);
+    const counts = items.map((t) => t.count);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+    await db
+      .update(problems)
+      .set({ visibility: 'private' })
+      .where(eq(problems.slug, 'spell-fixer'));
+    const after = (await get('/problems/tags').expect(200)).body.items;
+    expect(after.find((t: { tag: string }) => t.tag === 'dp').count).toBe(3);
+    await db.update(problems).set({ visibility: 'public' }).where(eq(problems.slug, 'spell-fixer'));
+  });
+
+  describe('UI-01: acceptance rate and the signed-in user’s status', () => {
+    const user = async () => {
+      const id = randomUUID();
+      await db
+        .insert(users)
+        .values({ id, email: `${id}@example.test`, handle: `u${id.slice(0, 8)}` });
+      const { token } = await app
+        .get<AccessTokens>(ACCESS_TOKENS)
+        .sign({ sub: id, role: 'user', sid: randomUUID() });
+      return { id, token };
+    };
+    const sub = async (userId: string, slug: string, verdict: 'AC' | 'WA' | null, extra = {}) => {
+      const [p] = await db.select().from(problems).where(eq(problems.slug, slug));
+      await db.insert(submissions).values({
+        userId,
+        problemVersionId: p!.currentVersionId!,
+        language: 'cpp17',
+        source: 'x',
+        sourceBytes: 1,
+        lane: 'practice',
+        status: verdict ? 'done' : 'queued',
+        verdict,
+        ...extra,
+      });
+    };
+    const list = (query: string, token?: string) => {
+      const r = get(`/problems?limit=100&${query}`);
+      return token ? r.set('Authorization', `Bearer ${token}`) : r;
+    };
+    const slugs_ = (body: { items: { slug: string }[] }) => body.items.map((p) => p.slug).sort();
+
+    it('acceptance is accepted / judged submissions, one decimal; null before any submission', async () => {
+      const a = await user();
+      const b = await user();
+      await sub(a.id, 'peak-reading', 'AC');
+      await sub(a.id, 'peak-reading', 'WA');
+      await sub(b.id, 'peak-reading', 'WA');
+      await sub(b.id, 'peak-reading', null); // still queued: not counted
+      await sub(b.id, 'peak-reading', 'AC', { disqualified: true }); // not counted
+      const res = await list('').expect(200);
+      const row = (slug: string) => res.body.items.find((p: { slug: string }) => p.slug === slug);
+      expect(row('peak-reading').acceptance).toBe(33.3);
+      expect(row('maze-runner').acceptance).toBeNull();
+      expect(row('peak-reading').status).toBeNull(); // guests have no status
+    });
+
+    it('a signed-in user sees solved / attempted / new, and only for themselves', async () => {
+      const u = await user();
+      const other = await user();
+      await sub(u.id, 'maze-runner', 'WA');
+      await sub(u.id, 'maze-runner', 'AC'); // solved wins over attempts
+      await sub(u.id, 'hop-distances', 'WA'); // attempted
+      await sub(other.id, 'shelf-search', 'AC'); // someone else's progress
+      const mine = (await list('', u.token).expect(200)).body;
+      const st = (slug: string) => mine.items.find((p: { slug: string }) => p.slug === slug).status;
+      expect(st('maze-runner')).toBe('solved');
+      expect(st('hop-distances')).toBe('attempted');
+      expect(st('shelf-search')).toBe('new');
+      expect(st('spell-fixer')).toBe('new');
+    });
+
+    it('FR-PROB-08: the status filter returns exactly each group and combines with the others', async () => {
+      const u = await user();
+      await sub(u.id, 'room-booking', 'AC');
+      await sub(u.id, 'needle-in-text', 'WA');
+      await sub(u.id, 'needle-in-text', 'WA');
+      const solved = (await list('status=solved', u.token).expect(200)).body;
+      expect(slugs_(solved)).toEqual(['room-booking']);
+      const attempted = (await list('status=attempted', u.token).expect(200)).body;
+      expect(slugs_(attempted)).toEqual(['needle-in-text']);
+      const fresh = (await list('status=new', u.token).expect(200)).body;
+      expect(fresh.items.length).toBe(18);
+      expect(slugs_(fresh)).not.toContain('room-booking');
+      expect(slugs_(fresh)).not.toContain('needle-in-text');
+      const combo = (await list('status=attempted&tags=strings', u.token).expect(200)).body;
+      expect(slugs_(combo)).toEqual(['needle-in-text']);
+      expect((await list('status=attempted&tags=dp', u.token).expect(200)).body.items).toHaveLength(
+        0,
+      );
+    });
+
+    it('a guest asking for a status filter is told to sign in (401); a bad value is 400', async () => {
+      expect((await list('status=solved').expect(401)).body.code).toBe('unauthorized');
+      const u = await user();
+      expect((await list('status=bogus', u.token).expect(400)).body.code).toBe('validation');
+    });
   });
 });

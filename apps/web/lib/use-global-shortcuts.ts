@@ -7,7 +7,7 @@ const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement &&
   (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
 
-/** ⌘K / Ctrl+K, `?` and the `g` navigation sequences (UI_UX §13). Ignored while typing. */
+/** ⌘K / Ctrl+K, `?`, `/` (focus search) and the `g` navigation sequences (UI_UX §13). Ignored while typing. */
 export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () => void }) {
   const router = useRouter();
   useEffect(() => {
@@ -19,7 +19,14 @@ export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () =>
         return;
       }
       if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return;
-      if (e.key === '?') {
+      if (e.key === '/') {
+        // UI_UX §13: focus the page's search box, if it has one.
+        const search = document.querySelector<HTMLElement>('[data-search]');
+        if (search) {
+          e.preventDefault();
+          search.focus();
+        }
+      } else if (e.key === '?') {
         e.preventDefault();
         handlers.sheet();
       } else if (e.key === 'g') {

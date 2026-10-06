@@ -3,6 +3,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "acceptance": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "difficulty": {
       "maximum": 9007199254740991,
       "minimum": -9007199254740991,
@@ -23,6 +35,21 @@
     "slug": {
       "type": "string"
     },
+    "status": {
+      "anyOf": [
+        {
+          "enum": [
+            "solved",
+            "attempted",
+            "new"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "tags": {
       "items": {
         "maxLength": 30,
@@ -40,7 +67,9 @@
     "title",
     "difficulty",
     "tags",
-    "practicePoints"
+    "practicePoints",
+    "acceptance",
+    "status"
   ],
   "type": "object"
 }
