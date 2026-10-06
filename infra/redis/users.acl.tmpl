@@ -1,3 +1,4 @@
 user default off
 user admin on >__ADMIN_PW__ ~* &* +@all
-user judge on >__JUDGE_PW__ resetkeys resetchannels -@all +hello +ping +client|setinfo (~jobs:* +xreadgroup +xack +xclaim +xautoclaim) (~results +xadd) (&progress:* +publish) (~hb:* +set)
+user api on >__API_PW__ ~* &* +@all -@dangerous -@admin
+user judge on >__JUDGE_PW__ resetkeys resetchannels -@all +hello +ping +client|setinfo +multi +exec +discard (~jobs:* +xreadgroup +xack +xclaim +xautoclaim +xpending +xdel +xgroup|create) (~jobs:dlq ~jobs:quarantine +xadd) (~jobs:crashes +hincrby +hget +hdel) (~results +xadd) (&progress:* +publish) (~hb:* +set +exists)

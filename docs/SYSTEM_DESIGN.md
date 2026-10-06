@@ -790,7 +790,7 @@ Logs: JSON (pino / slog) with `traceId`, `requestId`, `userId` (never email or s
 | Judge sandbox | **E**levation: sandbox escape | isolate (namespaces, cgroups), no network, minimal binds, empty env, compile sandboxed, judge VM holds no secrets, attack suite in CI + nightly |
 | Judge host | **I**nfo disclosure via symlinks (Judge0 CVE-2024-28185/28189 class) | Host never runs file ops on box paths; safe reader with O_NOFOLLOW + fstat |
 | Judge host | SSRF to internal services (CVE-2024-29021 class) | No network in box; NSG denies egress except Redis/MinIO private IPs; Redis ACL user limited to job keys |
-| Redis | **T**ampering by a compromised judge | ACL: `judge` user can only touch `jobs:*`, `results`, `progress:*`, `hb:*`; results validated by schema; verdict consumer ignores results for unknown runVersions |
+| Redis | **T**ampering by a compromised judge | ACL (Q-04, `infra/redis/users.acl.tmpl`): `judge` can only touch `jobs:*`, `results`, `progress:*`, `hb:*`, each with only the commands it needs, and cannot add jobs to a lane; results validated by schema; verdict consumer ignores results for unknown runVersions |
 | Auth | **S**poofing via stolen refresh token | Rotation + reuse detection revokes family; httpOnly Secure cookies; short access TTL |
 | API | **T**ampering: CSRF | SameSite=Lax cookies + double-submit CSRF token on mutations; access token in header, not cookie |
 | API | **E**levation: IDOR on submissions/notes | Resource-level authorisation checks in services; tests for every protected resource (candidate can't read notes) |

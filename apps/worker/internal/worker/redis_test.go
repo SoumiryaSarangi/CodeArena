@@ -20,12 +20,19 @@ var (
 	redisAddr string
 	redisID   string
 	redisErr  error
+
+	aclOnce sync.Once
+	aclID   string
+	aclAddr string
+	aclErr  error
 )
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-	if redisID != "" {
-		_ = exec.Command("docker", "rm", "-f", redisID).Run()
+	for _, id := range []string{redisID, aclID} {
+		if id != "" {
+			_ = exec.Command("docker", "rm", "-f", id).Run()
+		}
 	}
 	os.Exit(code)
 }

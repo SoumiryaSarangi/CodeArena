@@ -21,6 +21,7 @@ services:
     environment:
       REDIS_ADMIN_PASSWORD: ${REDIS_ADMIN_PASSWORD:-codearena-dev}
       REDIS_JUDGE_PASSWORD: ${REDIS_JUDGE_PASSWORD:-judge-dev}
+      REDIS_API_PASSWORD: ${REDIS_API_PASSWORD:-api-dev}
     volumes:
       - ./infra/redis/users.acl.tmpl:/etc/redis/users.acl.tmpl:ro
       - ./infra/redis/entrypoint.sh:/entrypoint.sh:ro

@@ -29,7 +29,7 @@ func ghostTake(t *testing.T, rdb *redis.Client, ghost string) string {
 	if err := rdb.XGroupCreateMkStream(ctx, stream, Group, "0").Err(); err != nil && err.Error() != "BUSYGROUP Consumer Group name already exists" {
 		t.Fatal(err)
 	}
-	res, err := rdb.XReadGroup(ctx, &redis.XReadGroupArgs{Group: Group, Consumer: ghost, Streams: []string{stream, ">"}, Count: 1}).Result()
+	res, err := rdb.XReadGroup(ctx, &redis.XReadGroupArgs{Group: Group, Consumer: ghost, Streams: []string{stream, ">"}, Count: 1, Block: -1}).Result()
 	if err != nil || len(res) == 0 || len(res[0].Messages) == 0 {
 		t.Fatalf("ghost could not take a job: %v", err)
 	}
