@@ -133,8 +133,28 @@ export const SubmissionDetail = SubmissionSummary.extend({
       submittedAt: z.string(),
       judgedAt: z.string().nullable(),
       workerId: z.string().nullable(),
+      /** When each phase of the judging run began (from the worker's progress events); may be partial or empty. */
+      steps: z.array(
+        z
+          .object({ phase: z.enum(['claimed', 'compiling', 'running', 'done']), at: z.string() })
+          .strict(),
+      ),
     })
     .strict(),
+  /** Admins only: every judging run of this submission (a rejudge adds one). */
+  runs: z
+    .array(
+      z
+        .object({
+          runVersion: z.number().int(),
+          reason: z.enum(['initial', 'retry', 'rejudge']),
+          workerId: z.string().nullable(),
+          verdict: Verdict.nullable(),
+          finishedAt: z.string().nullable(),
+        })
+        .strict(),
+    )
+    .optional(),
 })
   .strict()
   .meta({ id: 'SubmissionDetail' });

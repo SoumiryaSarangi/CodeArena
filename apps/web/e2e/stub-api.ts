@@ -38,6 +38,8 @@ export interface StubOptions {
   handle?: string | null;
   /** Answer the next submit with 429. */
   rateLimit?: { retryAfter: number };
+  /** The signed-in user's role (default user). */
+  role?: 'user' | 'admin';
   /** Taken handles for the availability check. */
   takenHandles?: string[];
   /** Handles that look free but are taken by the time you save (a race): saving answers 409. */
@@ -60,6 +62,8 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
     handle: o.handle,
     /** What `GET /api/runs/:id` answers, by run id; anything else is a plain successful run. */
     runResults: {} as Record<string, object>,
+    /** What `GET /api/submissions/:id` answers, by id. */
+    details: {} as Record<string, object>,
   };
 
   const context: BrowserContext = page.context();
@@ -148,7 +152,7 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
       name: 'Riya',
       email: 'riya@example.test',
       avatarUrl: null,
-      role: 'user',
+      role: o.role ?? 'user',
       rating: 1400,
       defaultLanguage: 'cpp17',
     });
@@ -211,9 +215,21 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
     }
     return json(r, { id: 'S1', lane: 'practice', position: 3, etaSeconds: 5 }, 201);
   });
-  await page.route('**/api/submissions/S1', (r) =>
-    json(r, { id: 'S1', verdict: 'AC', status: 'done', tests: [], compileLog: null }),
-  );
+  await page.route(/\/api\/submissions\/[\w-]+$/, (r) => {
+    const id = r.request().url().split('/').at(-1)!;
+    const d =
+      state.details[id] ??
+      (id === 'S1'
+        ? { id: 'S1', verdict: 'AC', status: 'done', tests: [], compileLog: null }
+        : null);
+    return d
+      ? json(r, d)
+      : json(
+          r,
+          { code: 'not-found', title: 'Not found', status: 404, type: 'x', instance: 'req-404' },
+          404,
+        );
+  });
   await page.route('**/api/runs', (r) => {
     if (r.request().method() !== 'POST') return r.fallback();
     const body = r.request().postDataJSON() as { sampleIds?: number[] };

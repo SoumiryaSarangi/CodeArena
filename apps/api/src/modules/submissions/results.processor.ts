@@ -113,6 +113,7 @@ export class ResultsProcessor {
         };
       }
 
+      const journey = await this.journey(r.submissionId, r.runVersion);
       const inserted = await tx
         .insert(judgeRuns)
         .values({
@@ -126,6 +127,7 @@ export class ResultsProcessor {
           memKb: r.memKb,
           compileLog:
             r.compileLog === undefined ? null : cutBytes(r.compileLog, MAX_COMPILE_LOG_BYTES),
+          journey,
         })
         .onConflictDoNothing({ target: [judgeRuns.submissionId, judgeRuns.runVersion] })
         .returning({ id: judgeRuns.id });
@@ -180,6 +182,45 @@ export class ResultsProcessor {
 
     if (outcome.kind === 'applied') await this.publish(outcome.event);
     return outcome;
+  }
+
+  /**
+   * When each phase of this run began (US-3.3), read from the replay buffer the progress bridge
+   * fills while the judge works. The progress events are only kept for minutes, so the verdict is
+   * the moment to keep them. Missing events (bridge off, Redis down) give a partial timeline, never
+   * a failure: the verdict matters more than its history.
+   */
+  private async journey(
+    submissionId: string,
+    runVersion: number,
+  ): Promise<{ steps: { phase: string; at: number }[] } | null> {
+    try {
+      const entries = await this.redis.xrange(
+        `${this.prefix}evt:sub:${submissionId}`,
+        '-',
+        '+',
+        'COUNT',
+        500,
+      );
+      const first = new Map<string, number>();
+      for (const [, fields] of entries) {
+        const env = JSON.parse(fields[1]!) as {
+          type?: string;
+          data?: { phase?: string; ts?: number; runVersion?: number };
+        };
+        if (env.type !== 'submission.progress') continue;
+        const { phase, ts, runVersion: v } = env.data ?? {};
+        if (v !== runVersion || !phase || typeof ts !== 'number') continue;
+        if (!first.has(phase) || ts < first.get(phase)!) first.set(phase, ts);
+      }
+      if (first.size === 0) return null;
+      const order = ['claimed', 'compiling', 'running', 'done'];
+      return {
+        steps: order.filter((p) => first.has(p)).map((p) => ({ phase: p, at: first.get(p)! })),
+      };
+    } catch {
+      return null;
+    }
   }
 
   /** Results for `POST /api/runs` jobs carry the custom run's id (JudgeJob contract). */

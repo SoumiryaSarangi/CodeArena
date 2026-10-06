@@ -36,6 +36,31 @@
             "null"
           ]
         },
+        "steps": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "string"
+              },
+              "phase": {
+                "enum": [
+                  "claimed",
+                  "compiling",
+                  "running",
+                  "done"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "phase",
+              "at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
         "submittedAt": {
           "type": "string"
         },
@@ -49,7 +74,8 @@
       "required": [
         "submittedAt",
         "judgedAt",
-        "workerId"
+        "workerId",
+        "steps"
       ],
       "type": "object"
     },
@@ -81,6 +107,57 @@
       "maximum": 9007199254740991,
       "minimum": -9007199254740991,
       "type": "integer"
+    },
+    "runs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "finishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason": {
+            "enum": [
+              "initial",
+              "retry",
+              "rejudge"
+            ],
+            "type": "string"
+          },
+          "runVersion": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "Verdict.json"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "runVersion",
+          "reason",
+          "workerId",
+          "verdict",
+          "finishedAt"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "runVersion": {
       "maximum": 9007199254740991,

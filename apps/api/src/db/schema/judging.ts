@@ -68,6 +68,8 @@ export const judgeRuns = pgTable(
     timeMs: integer('time_ms'),
     memKb: integer('mem_kb'),
     compileLog: text('compile_log'),
+    /** When each phase began, from the worker's progress events: `{steps: [{phase, at (epoch ms)}]}` (US-3.3). */
+    journey: jsonb('journey'),
   },
   // FR-QUEUE-06: idempotent result processing hangs on this constraint.
   (t) => [unique('judge_runs_submission_run_version_uq').on(t.submissionId, t.runVersion)],

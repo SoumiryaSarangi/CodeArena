@@ -79,6 +79,19 @@ test('UI-02 live: sign in, run a sample, submit AC, submit WA', async ({ page, c
   expect(await tests.count()).toBeGreaterThan(5);
   for (const t of await tests.all()) await expect(t).toHaveAttribute('aria-label', /· AC/);
 
+  // The detail page: the journey was recorded from the real worker's progress events.
+  await page.getByRole('link', { name: 'Details →' }).click();
+  await expect(page).toHaveURL(/\/s\/[0-9a-f-]{36}$/);
+  const journey = page.getByRole('region', { name: 'Journey' });
+  await expect(journey.getByText('by live-w1')).toBeVisible({ timeout: 15_000 });
+  for (const label of ['Submitted', 'Claimed', 'Compiled', 'Tests', 'Verdict published'])
+    await expect(journey.getByText(label, { exact: true })).toBeVisible();
+  await expect(journey.getByText(/in \d/)).toBeVisible(); // how long compiling took
+  await expect(page.getByRole('region', { name: 'Tests' }).getByRole('row')).toHaveCount(13); // header + 12
+  await expect(journey.getByText('Step timings were not recorded')).toHaveCount(0);
+  await page.goBack();
+  await page.locator('.monaco-editor .view-lines').first().waitFor({ timeout: 60_000 });
+
   // A wrong program (32-bit overflow): WA, and the grid shows which test.
   await setCode(page, CPP_WA);
   await page.getByRole('button', { name: /^Submit/ }).click();

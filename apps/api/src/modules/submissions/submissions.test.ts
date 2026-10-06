@@ -3,6 +3,7 @@ import type { INestApplication } from '@nestjs/common';
 import { type JudgeJob, JudgeJob as JudgeJobSchema, type JudgeResult } from '@codearena/contracts';
 import { eq } from 'drizzle-orm';
 import { Redis } from 'ioredis';
+import pino from 'pino';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
@@ -13,6 +14,7 @@ import { createTestDatabase, postgresReachable } from '../../test/db';
 import { ACCESS_TOKENS, type AccessTokens } from '../auth/keys';
 import { ProblemImporter } from '../problems/problems.import';
 import { parsePackage, readPackageDirectory } from '../problems/package';
+import { publishEvent } from '../realtime/events';
 import { ResultsProcessor } from './results.processor';
 
 const probe = new Redis(loadConfig({ NODE_ENV: 'test' }).REDIS_URL, {
@@ -29,6 +31,7 @@ probe.disconnect();
 const ready = redisUp && (await postgresReachable());
 
 const prefix = `t${randomBytes(4).toString('hex')}:`;
+const log = pino({ level: 'silent' });
 const csrf = randomBytes(32).toString('base64url');
 const root = new URL('../../../../../problems/', import.meta.url).pathname;
 
@@ -338,18 +341,83 @@ describe.skipIf(!ready)('S-01: submissions API (needs the Compose Postgres, Redi
     expect((await call('get', '/submissions', other.token).expect(200)).body.items).toHaveLength(0);
   });
 
-  it('FR-SUB-06: detail and position belong to the owner (403 otherwise); an admin may read any', async () => {
+  it('FR-SUB-06: detail and position belong to the owner (404 otherwise, hiding existence); an admin may read any', async () => {
     const u = await makeUser();
     const other = await makeUser();
     const admin = await makeUser('admin');
     const { body } = await submit(u.token).expect(201);
     for (const path of [`/submissions/${body.id}`, `/submissions/${body.id}/position`]) {
-      expect((await call('get', path, other.token).expect(403)).body.code).toBe('forbidden');
+      expect((await call('get', path, other.token).expect(404)).body.code).toBe('not-found');
       await call('get', path, admin.token).expect(200);
       await call('get', path, u.token).expect(200);
       await call('get', path).expect(401);
     }
     await call('get', `/submissions/${randomUUID()}`, u.token).expect(404);
+  });
+
+  it('US-3.3: the journey (when each phase began, on which judge) is kept with the verdict and shown on the detail', async () => {
+    const u = await makeUser();
+    const admin = await makeUser('admin');
+    const { body } = await submit(u.token).expect(201);
+    const { job } = (await jobs()).find((j) => j.job.submissionId === body.id)!;
+    const t0 = Date.now() - 5000;
+    const at = (n: number) => t0 + n;
+    for (const [phase, ts] of [
+      ['claimed', at(0)],
+      ['compiling', at(300)],
+      ['running', at(1900)],
+      ['running', at(2500)], // a later test: the phase began at 1900
+      ['done', at(4000)],
+    ] as const) {
+      await publishEvent(redis, prefix, log, `sub:${body.id}`, 'submission.progress', {
+        submissionId: body.id,
+        runVersion: 1,
+        phase,
+        workerId: 'judge-2',
+        ts,
+      });
+    }
+    // another run version's events must not leak into this one
+    await publishEvent(redis, prefix, log, `sub:${body.id}`, 'submission.progress', {
+      submissionId: body.id,
+      runVersion: 2,
+      phase: 'claimed',
+      workerId: 'judge-9',
+      ts: at(-100),
+    });
+    await judge(job, 'AC');
+
+    const d = (await call('get', `/submissions/${body.id}`, u.token).expect(200)).body;
+    expect(d.journey.steps).toEqual([
+      { phase: 'claimed', at: new Date(at(0)).toISOString() },
+      { phase: 'compiling', at: new Date(at(300)).toISOString() },
+      { phase: 'running', at: new Date(at(1900)).toISOString() },
+      { phase: 'done', at: new Date(at(4000)).toISOString() },
+    ]);
+    expect(d.journey.workerId).toBe('w-test');
+    expect(d).not.toHaveProperty('runs'); // admins only
+    const a = (await call('get', `/submissions/${body.id}`, admin.token).expect(200)).body;
+    expect(a.runs).toEqual([
+      expect.objectContaining({
+        runVersion: 1,
+        reason: 'initial',
+        workerId: 'w-test',
+        verdict: 'AC',
+      }),
+    ]);
+  });
+
+  it('US-3.3: with no progress events the detail still works, with an empty list of steps', async () => {
+    const u = await makeUser();
+    const { body } = await submit(u.token).expect(201);
+    expect(
+      (await call('get', `/submissions/${body.id}`, u.token).expect(200)).body.journey.steps,
+    ).toEqual([]);
+    const { job } = (await jobs()).find((j) => j.job.submissionId === body.id)!;
+    await judge(job, 'AC');
+    const d = (await call('get', `/submissions/${body.id}`, u.token).expect(200)).body;
+    expect(d.journey.steps).toEqual([]);
+    expect(d.verdict).toBe('AC');
   });
 
   it('FR-SUB-02: queue position counts jobs ahead in the lane and higher lanes; 0 once judged', async () => {

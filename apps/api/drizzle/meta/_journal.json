@@ -15,6 +15,13 @@
       "when": 1791227904541,
       "tag": "0001_auth_roles_handle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791315585629,
+      "tag": "0002_bouncy_titanium_man",
+      "breakpoints": true
     }
   ]
 }

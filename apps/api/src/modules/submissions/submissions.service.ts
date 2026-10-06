@@ -43,6 +43,19 @@ const bytes = (s: string) => Buffer.byteLength(s, 'utf8');
 const sameTokens = (a: string, b: string) =>
   a.trim().split(/\s+/).join(' ') === b.trim().split(/\s+/).join(' ');
 
+const PHASES = ['claimed', 'compiling', 'running', 'done'] as const;
+
+/** The stored `{steps:[{phase, at}]}` as ISO times, ignoring anything that does not look right. */
+function journeySteps(raw: unknown): SubmissionDetail['journey']['steps'] {
+  const steps = (raw as { steps?: unknown } | null)?.steps;
+  if (!Array.isArray(steps)) return [];
+  return steps.flatMap((s: { phase?: unknown; at?: unknown }) =>
+    PHASES.includes(s.phase as never) && typeof s.at === 'number'
+      ? [{ phase: s.phase as (typeof PHASES)[number], at: new Date(s.at).toISOString() }]
+      : [],
+  );
+}
+
 export interface Actor {
   id: string;
   role: 'user' | 'setter' | 'admin';
@@ -295,8 +308,10 @@ export class SubmissionsService {
       .where(eq(submissions.id, id))
       .limit(1);
     if (!sub) throw new ProblemError('not-found', 'No such submission');
+    // Someone else's submission looks exactly like no submission (SRS error catalogue: not-found
+    // also hides existence; UI_UX S06).
     if (sub.userId !== actor.id && actor.role !== 'admin') {
-      throw new ProblemError('forbidden', 'This is not your submission');
+      throw new ProblemError('not-found', 'No such submission');
     }
     return sub;
   }
@@ -345,8 +360,25 @@ export class SubmissionsService {
         submittedAt: sub.createdAt.toISOString(),
         judgedAt: sub.judgedAt?.toISOString() ?? null,
         workerId: run?.workerId ?? null,
+        steps: journeySteps(run?.journey),
       },
+      ...(actor.role === 'admin' ? { runs: await this.runsOf(id) } : {}),
     };
+  }
+
+  private async runsOf(id: string): Promise<NonNullable<SubmissionDetail['runs']>> {
+    const rows = await this.db
+      .select({
+        runVersion: judgeRuns.runVersion,
+        reason: judgeRuns.reason,
+        workerId: judgeRuns.workerId,
+        verdict: judgeRuns.verdict,
+        finishedAt: judgeRuns.finishedAt,
+      })
+      .from(judgeRuns)
+      .where(eq(judgeRuns.submissionId, id))
+      .orderBy(asc(judgeRuns.runVersion));
+    return rows.map((r) => ({ ...r, finishedAt: r.finishedAt?.toISOString() ?? null }));
   }
 
   async position(actor: Actor, id: string): Promise<QueuePosition> {

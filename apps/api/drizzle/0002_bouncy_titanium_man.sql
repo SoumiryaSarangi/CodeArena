@@ -1,0 +1,1 @@
+ALTER TABLE "judge_runs" ADD COLUMN "journey" jsonb;
