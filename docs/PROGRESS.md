@@ -291,3 +291,10 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: Day 2 cards done. Day 3 starts with J-07 (attack suite, O). Ayush's Day 2 tasks remain: U2.1 contest problem ideas, U2.2 try wrong solutions by hand (the packages now give you 20 × 4 to try), U2.3 explain-back on isolate.
 - Ayush must: skim a few statements and editorials in `problems/` for tone and correctness; run `pnpm problems:validate` once on your machine and paste the last line.
 - Model: S · Sonnet 5.5
+
+## 2026-10-06 · U2.1 contest statements · done
+- Ayush wrote the six contest statements (A easy to F hard) and delegated storing them. They are in `problems-private/<slug>/statement.md` with a private `README.md` (spoilers, intended solutions, test traps for P-02). The folder is gitignored; nothing about the problems is in this repo.
+- B was given a twist (the keeper's walks grow longer: the j-th lantern costs `t_i + w·(j−1)`), which turns it from a plain sort-and-sum into prefix sums with a quadratic term and a real 64-bit trap. Ayush authorised the change.
+- I checked every sample in every Notes section by hand; all are correct and the constraints are consistent (64-bit where it matters).
+- Settings change, with Ayush's approval: `.claude/settings.json` denied all reads of `problems-private/**`, which also blocked writing statements. It now denies only `problems-private/**/tests/**`, so hidden test files stay unreadable to Claude while statements, generators and solutions are workable. P-02 builds the packages with scripts that generate and validate the tests rather than reading them.
+- Model: S · Sonnet 5.5
