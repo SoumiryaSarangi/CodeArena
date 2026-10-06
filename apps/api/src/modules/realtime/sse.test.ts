@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
 import { loadConfig } from '../../config/config';
 import type { Db } from '../../db/client';
-import { problems, problemVersions, submissions, users } from '../../db/schema';
+import { customRuns, problems, problemVersions, submissions, users } from '../../db/schema';
 import { createTestDatabase, postgresReachable } from '../../test/db';
 import { QueuePositionService } from '../submissions/queue-position.service';
 import { ResultsProcessor } from '../submissions/results.processor';
@@ -282,6 +282,25 @@ describe.skipIf(!ready)('Q-05: SSE gateway (needs the Compose Postgres and Redis
       code: 'forbidden-topic',
     });
     await tickets.issue(undefined, { topics: ['sys'] });
+  });
+
+  it('UI-02: the owner of a custom run may watch it; other users and guests may not', async () => {
+    const owner = await makeUser();
+    const other = await makeUser();
+    const [run] = await db
+      .insert(customRuns)
+      .values({ userId: owner.id, language: 'cpp17', source: 'x', input: '1' })
+      .returning();
+    await tickets.issue(owner, { topics: [`sub:${run!.id}`] });
+    await expect(tickets.issue(other, { topics: [`sub:${run!.id}`] })).rejects.toMatchObject({
+      code: 'forbidden-topic',
+    });
+    await expect(tickets.issue(undefined, { topics: [`sub:${run!.id}`] })).rejects.toMatchObject({
+      code: 'forbidden-topic',
+    });
+    await expect(tickets.issue(owner, { topics: [`sub:${randomUUID()}`] })).rejects.toMatchObject({
+      code: 'forbidden-topic',
+    });
   });
 
   it('FR-RT-03: heartbeat comments keep coming', async () => {

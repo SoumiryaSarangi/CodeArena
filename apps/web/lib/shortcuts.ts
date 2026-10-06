@@ -15,6 +15,11 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: ['/'], action: 'Focus search', scope: 'Lists' },
   { keys: ['mod', 'Enter'], action: 'Run', scope: 'Workspace, room' },
   { keys: ['mod', 'Shift', 'Enter'], action: 'Submit', scope: 'Workspace, room' },
+  {
+    keys: ['Ctrl', 'M'],
+    action: 'Tab moves focus out of the editor (toggle)',
+    scope: 'Workspace, room',
+  },
   { keys: ['Alt', '1…4'], action: 'Console / Tests / Submissions / Coach', scope: 'Workspace' },
   { keys: ['Alt', 'A…F'], action: 'Switch contest problem', scope: 'Arena' },
 ];

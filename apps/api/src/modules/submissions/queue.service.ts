@@ -5,6 +5,7 @@ import { context, metrics, propagation, trace } from '@opentelemetry/api';
 import type { Redis } from 'ioredis';
 import { ProblemError } from '../../common/problem';
 import { REDIS } from '../../redis/redis.module';
+import { whenReady } from '../../redis/ready';
 import { uuidv7 } from '../../db/uuid';
 
 /** Key prefix for tests, so they never touch real queue keys. Production uses ''. */
@@ -85,6 +86,7 @@ export class QueueService {
         const body = JSON.stringify({ seq: 0, ...withoutSeq(parsed.data) });
         if (!body.startsWith(SEQ_PREFIX)) throw new Error('job JSON lost its seq-first layout');
 
+        await whenReady(this.redis);
         const [seq, entryId] = (await this.redis.eval(
           ENQUEUE,
           2,

@@ -5,6 +5,8 @@ import { ThemeToggle } from '../theme-toggle';
 import { Button, IconButton } from '../ui/button';
 import { Kbd } from '../ui/kbd';
 import { useModLabel } from '../shortcut-sheet';
+import { signInHref, useSession } from '@/lib/session';
+import { usePathname } from 'next/navigation';
 
 export function Wordmark() {
   return (
@@ -15,6 +17,30 @@ export function Wordmark() {
 }
 
 /** 48 px bar: wordmark, ⌘K, system dot (word beside the dot, never colour alone), theme, account. */
+/** Guests get a Sign in link that returns them here; signed-in users see their handle and Sign out. */
+function Account() {
+  const { session, signOut } = useSession();
+  const path = usePathname();
+  if (session.status === 'loading') return <span className="h-7 w-16" aria-hidden />;
+  if (session.status === 'guest') {
+    return (
+      <Button asChild variant="secondary" size="sm">
+        <Link href={path === '/signin' ? '/signin' : signInHref(path)}>Sign in</Link>
+      </Button>
+    );
+  }
+  return (
+    <span className="flex items-center gap-2">
+      <Link href="/onboarding" className="text-13 text-text-2 hover:text-text">
+        {session.me.handle ?? 'Choose a handle'}
+      </Link>
+      <Button variant="ghost" size="sm" onClick={() => void signOut()}>
+        Sign out
+      </Button>
+    </span>
+  );
+}
+
 export function TopBar({ onPalette, onSheet }: { onPalette: () => void; onSheet: () => void }) {
   const mod = useModLabel();
   return (
@@ -35,6 +61,7 @@ export function TopBar({ onPalette, onSheet }: { onPalette: () => void; onSheet:
           <Keyboard className="size-4" aria-hidden />
         </IconButton>
         <ThemeToggle />
+        <Account />
       </div>
     </header>
   );

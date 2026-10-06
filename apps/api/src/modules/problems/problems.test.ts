@@ -232,6 +232,7 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
     const res = await get('/problems/sum-two-numbers').expect(200);
     expect(res.body.title).toBe('Two Numbers, One Total');
     expect(res.body.version).toBe(3);
+    expect(res.body.testsCount).toBe(12);
     expect(res.body.statementMd).toMatch(/^# /);
     expect(res.body.statementMd).toMatch(/\$[^$]+\$/); // inline KaTeX
     expect(res.body.samples.length).toBeGreaterThan(0);
@@ -254,6 +255,7 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
       'slug',
       'statementMd',
       'tags',
+      'testsCount',
       'title',
       'version',
     ]);

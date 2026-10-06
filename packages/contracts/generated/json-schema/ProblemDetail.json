@@ -94,6 +94,11 @@
       },
       "type": "array"
     },
+    "testsCount": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
     "title": {
       "type": "string"
     },
@@ -110,6 +115,7 @@
     "tags",
     "practicePoints",
     "version",
+    "testsCount",
     "statementMd",
     "samples",
     "limits",

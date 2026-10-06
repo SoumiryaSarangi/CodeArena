@@ -19,6 +19,7 @@ import { publishEvent } from '../realtime/events';
 import { buildJob } from './job-builder';
 import { QueuePositionService } from './queue-position.service';
 import { QUEUE_KEY_PREFIX, QueueService } from './queue.service';
+import { whenReady } from '../../redis/ready';
 
 const tracer = trace.getTracer('api');
 const outcomes = metrics.getMeter('api').createCounter('ca_reconciler_total', {
@@ -94,7 +95,7 @@ export class Reconciler implements OnApplicationBootstrap, OnApplicationShutdown
 
   /** One sweep if no other instance is sweeping; null when the lease is held elsewhere. */
   async sweepLocked(): Promise<SweepReport | null> {
-    if (this.redis.status === 'wait') await this.redis.connect();
+    await whenReady(this.redis);
     const ttl = Math.max(this.config.RECONCILER_EVERY_MS, 5_000);
     if ((await this.redis.set(this.lockKey, this.me, 'PX', ttl, 'NX')) !== 'OK') return null;
     try {

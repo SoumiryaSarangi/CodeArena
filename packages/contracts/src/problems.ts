@@ -53,6 +53,8 @@ export type ProblemListQuery = z.infer<typeof ProblemListQuery>;
 export const ProblemDetail = ProblemSummary.omit({ acceptance: true, status: true })
   .extend({
     version: z.number().int().min(1),
+    /** How many tests the judge runs (the verdict grid's size); their contents are never shown. */
+    testsCount: z.number().int().min(1),
     /** Markdown with KaTeX; the web renders it sanitised (FR-PROB-07). */
     statementMd: z.string(),
     samples: z.array(z.object({ in: z.string(), out: z.string() }).strict()),

@@ -6,8 +6,9 @@ import type { Redis } from 'ioredis';
 import { z } from 'zod';
 import { ProblemError } from '../../common/problem';
 import { DB, type Db } from '../../db/db.module';
-import { contests, participants, roomMembers, submissions } from '../../db/schema';
+import { contests, customRuns, participants, roomMembers, submissions } from '../../db/schema';
 import { REDIS } from '../../redis/redis.module';
+import { whenReady } from '../../redis/ready';
 import type { AuthUser } from '../auth/guards';
 
 export const TICKET_TTL_SECONDS = 60; // FR-AUTH-11
@@ -46,7 +47,7 @@ export class TicketsService {
       topics,
       roomId,
     };
-    if (this.redis.status === 'wait') await this.redis.connect();
+    await whenReady(this.redis);
     const ok = await this.redis.set(
       key(ticket),
       JSON.stringify(value),
@@ -61,7 +62,7 @@ export class TicketsService {
   /** GETDEL makes the ticket single-use. Returns null if unknown, used, expired or over-asked. */
   async redeem(ticket: string, requested?: string[]): Promise<RedeemedTicket | null> {
     if (!/^[A-Za-z0-9_-]{43}$/.test(ticket)) return null;
-    if (this.redis.status === 'wait') await this.redis.connect();
+    await whenReady(this.redis);
     const raw = await this.redis.getdel(key(ticket));
     if (!raw) return null;
     const parsed = Stored.safeParse(JSON.parse(raw));
@@ -83,11 +84,17 @@ export class TicketsService {
     if (sub) {
       if (!user) return deny();
       if (admin) return;
+      // A topic id is either a submission or one of the caller's custom runs (POST /runs).
       const [row] = await this.db
         .select({ id: submissions.id })
         .from(submissions)
         .where(and(eq(submissions.id, sub[1]!), eq(submissions.userId, user.id)));
-      return row ? undefined : deny();
+      if (row) return;
+      const [run] = await this.db
+        .select({ id: customRuns.id })
+        .from(customRuns)
+        .where(and(eq(customRuns.id, sub[1]!), eq(customRuns.userId, user.id)));
+      return run ? undefined : deny();
     }
 
     const contest = /^contest:([0-9a-f-]{36}):([a-z0-9:_-]+)$/.exec(topic);

@@ -624,6 +624,7 @@ Test: identical inputs → identical outputs; sum of deltas ≤ 0.
   - *Queue events:* `submission.queue` `{submissionId, lane, position, etaSeconds, capped}` is **live only** (no `id:`, never replayed): every 2 s each instance checks the queued submissions its clients watch and sends when the numbers changed, and once with position 0 when a judge takes the job. A reconnecting client reads `GET /api/submissions/{id}/position`.
   - *ETA:* position × `ewma:svc:{lane}` ÷ live judges (`hb:*`), as in FR-QUEUE-08. The bridge writes the EWMA (α = 0.2) from `claimed` → `done` progress timestamps; a cold start assumes 3 s.
   - *Shutdown:* the hub closes its streams in `onModuleDestroy` (before the HTTP server closes): an event stream never ends by itself and would otherwise stall a graceful shutdown.
+  - *Browser client (UI-02):* `EventSource` reconnects by itself but would reuse the URL, and a ticket is single use, so the client (`apps/web/lib/realtime.ts`) closes the source on any error, fetches a **new ticket**, and reopens with the last event id as `lastEventId`, with back-off 1 s to 15 s plus jitter. A run's verdict is watched on `sub:{runId}` (the ticket check accepts the caller's own custom runs as well as submissions). The access token lives in memory only; the httpOnly refresh cookie renews it (`apps/web/lib/api.ts`), and a refused refresh marks the visitor a guest for 30 s instead of retrying on every request.
 - **Backpressure:** per-connection write buffer cap 256 KB; slow clients are disconnected and resume via replay.
 
 ---

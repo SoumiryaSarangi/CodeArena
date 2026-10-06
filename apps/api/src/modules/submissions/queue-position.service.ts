@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Lane } from '@codearena/contracts';
 import type { Redis } from 'ioredis';
 import { REDIS } from '../../redis/redis.module';
+import { whenReady } from '../../redis/ready';
 import { cmpStreamId as cmp } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 
@@ -38,6 +39,7 @@ export class QueuePositionService {
 
   /** Remembered at enqueue so a later request can find the job's place in its lane. */
   async remember(submissionId: string, lane: Lane, entryId: string) {
+    await whenReady(this.redis);
     await this.redis.set(this.entryKey(submissionId), `${lane}:${entryId}`, 'EX', ENTRY_TTL_S);
   }
 
@@ -54,6 +56,7 @@ export class QueuePositionService {
 
   /** Like `of`, but null when the job's entry is not remembered (finished long ago, or never queued here). */
   async peek(submissionId: string): Promise<Position | null> {
+    await whenReady(this.redis);
     const raw = await this.redis.get(this.entryKey(submissionId));
     if (!raw) return null;
     const [lane, entryId] = [

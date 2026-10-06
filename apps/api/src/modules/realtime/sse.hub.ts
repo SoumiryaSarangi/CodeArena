@@ -14,6 +14,7 @@ import { LOGGER } from '../../telemetry/logger';
 import { QueuePositionService } from '../submissions/queue-position.service';
 import { QUEUE_KEY_PREFIX } from '../submissions/queue.service';
 import { cmpStreamId, type Envelope, type RealtimeMessage } from './events';
+import { whenReady } from '../../redis/ready';
 
 const tracer = trace.getTracer('api');
 const meter = metrics.getMeter('api');
@@ -150,7 +151,7 @@ export class SseHub implements OnModuleDestroy {
 
   /** Writes what the client missed. Returns how it caught up, or null for nothing to say. */
   private async catchUp(conn: Connection, topic: string): Promise<string | null> {
-    if (this.redis.status === 'wait') await this.redis.connect();
+    await whenReady(this.redis);
     const key = `${this.prefix}evt:${topic}`;
     const last = conn.lastEventId;
     const isSub = topic.startsWith('sub:');

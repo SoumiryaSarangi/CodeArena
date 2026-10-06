@@ -9,7 +9,8 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const sources = (dir: string): string[] =>
   readdirSync(dir).flatMap((f) => {
     const p = join(dir, f);
-    if (['node_modules', '.next', 'tests'].includes(f)) return [];
+    // `public` holds vendored assets (Monaco, copied at install), not our code.
+    if (['node_modules', '.next', 'tests', 'public'].includes(f)) return [];
     return statSync(p).isDirectory() ? sources(p) : /\.(tsx?|css)$/.test(f) ? [p] : [];
   });
 
@@ -26,6 +27,8 @@ describe('F-07: design tokens', () => {
     const offenders: string[] = [];
     for (const file of sources(root)) {
       if (file.endsWith('tokens.css')) continue;
+      // Monaco takes literal colours and cannot read CSS variables; UI_UX §14 lists these values.
+      if (file.endsWith('monaco-theme.ts')) continue;
       const text = readFileSync(file, 'utf8');
       text.split('\n').forEach((line, i) => {
         // A leading comment line may quote a value; real usages are what we police.

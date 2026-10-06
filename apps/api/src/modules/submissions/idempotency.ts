@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { ProblemError } from '../../common/problem';
 import { REDIS } from '../../redis/redis.module';
+import { whenReady } from '../../redis/ready';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 
 const TTL_S = 600;
@@ -27,6 +28,7 @@ export class Idempotency {
     work: () => Promise<T>,
   ): Promise<T> {
     if (key === undefined) return work();
+    await whenReady(this.redis);
     if (!UUID.test(key)) {
       throw new ProblemError('validation', 'Idempotency-Key must be a UUID', {
         errors: [{ path: 'Idempotency-Key', message: 'must be a UUID' }],

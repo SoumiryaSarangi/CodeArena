@@ -14,6 +14,7 @@ import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
 import { QUEUE_KEY_PREFIX } from '../submissions/queue.service';
 import { publishEvent } from './events';
+import { whenReady } from '../../redis/ready';
 
 const bridged = metrics.getMeter('api').createCounter('ca_progress_bridged_total', {
   description: 'Worker progress messages copied to the realtime layer, by outcome',
@@ -78,7 +79,7 @@ export class ProgressBridge implements OnApplicationBootstrap, OnApplicationShut
   private async tick() {
     if (this.stopped) return;
     try {
-      if (this.redis.status === 'wait') await this.redis.connect();
+      await whenReady(this.redis);
       const lease = this.config.BRIDGE_LEASE_MS;
       const took = await this.redis.set(this.lockKey, this.me, 'PX', lease, 'NX');
       const mine =
