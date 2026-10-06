@@ -1,0 +1,7 @@
+title: harness self-test, must be detected as failing
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [LEAK]
+  host: [worker-alive]

@@ -1,0 +1,8 @@
+title: harness self-test, clean program
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputHas: [ok]
+  outputLacks: [LEAK]
+  host: [no-leftover-procs, worker-alive, env-clean]

@@ -48,6 +48,40 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
 
+  attack:
+    # Sandbox-containment suite (J-07, FR-JUDGE-10). isolate needs systemd +
+    # cgroup v2; if a hosted runner cannot provide them, this job says so and
+    # the nightly-on-judge-VM path (D-02) covers it. The suite also needs real
+    # cases to exist (added over J-07/J-08); until then it reports and passes.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/worker/go.mod
+      - name: Install isolate and language runtimes
+        id: isolate
+        run: |
+          if [ "$(ps -p 1 -o comm=)" != "systemd" ] || [ "$(stat -fc %T /sys/fs/cgroup)" != "cgroup2fs" ]; then
+            echo "runner has no systemd/cgroup v2; isolate cannot run here (nightly on the judge VM covers this, D-02)" >&2
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sudo scripts/setup-isolate-wsl.sh && sudo scripts/setup-judge-runtimes.sh \
+            && echo "available=true" >> "$GITHUB_OUTPUT" \
+            || { echo "isolate setup failed on this runner; see nightly judge-VM run (D-02)" >&2; echo "available=false" >> "$GITHUB_OUTPUT"; }
+      - name: Run attack suite
+        if: steps.isolate.outputs.available == 'true'
+        working-directory: apps/worker
+        run: |
+          if [ -z "$(find ../../tests/attack-suite/cases -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
+            echo "no attack cases yet; skipping (J-07 adds the probe programs)"
+            exit 0
+          fi
+          JUDGE_REQUIRE_ISOLATE=1 go test ./cmd/attack/ ./internal/attacksuite/
+          ../../scripts/attack
+
   python:
     runs-on: ubuntu-latest
     timeout-minutes: 10
