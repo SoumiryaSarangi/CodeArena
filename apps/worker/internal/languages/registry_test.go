@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
+	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/sandbox"
 )
 
 func TestDefaultRegistry(t *testing.T) {
@@ -117,4 +118,27 @@ languages:
 			}
 		})
 	}
+}
+
+func TestCompileSpec(t *testing.T) {
+	r, _ := Default()
+	t.Run("J-08 / FR-JUDGE-02: every compile step is capped (CPU, wall, memory, processes, file size, open files)", func(t *testing.T) {
+		for _, id := range r.IDs() {
+			l, _ := r.Get(id)
+			args, err := sandbox.RunArgs(1, "/m", r.compileSpec(l), sandbox.RunOptions{DevDir: "/d"})
+			if err != nil {
+				t.Fatalf("%s: %v", id, err)
+			}
+			for _, want := range []string{"--time=10.000", "--wall-time=31.000", "--cg-mem=524288", "--processes=64",
+				"--fsize=65536", "--open-files=64", "--env=PATH=/usr/bin:/bin", "--dir=dev=/d:dev"} {
+				found := false
+				for _, a := range args {
+					found = found || a == want
+				}
+				if !found {
+					t.Fatalf("%s: compile step lacks %s: %q", id, want, args)
+				}
+			}
+		}
+	})
 }

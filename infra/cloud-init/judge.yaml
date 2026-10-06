@@ -1,7 +1,17 @@
 #cloud-config
 # Judge VM (Ubuntu 24.04, cgroup v2): isolate pinned to the same tag as scripts/setup-isolate-wsl.sh.
 # D-02 adds the worker binary, its systemd unit, node exporter and the Redis `judge` credentials.
+# J-08: minimal box /dev, kernel log restricted to root, and a dedicated non-root worker user.
 package_update: true
+
+users:
+  - default
+  # The worker runs as this user (D-02's systemd unit). It is never root: isolate is setuid and
+  # the worker refuses to start as root, so a sandbox escape cannot land in a root process.
+  - name: codearena-judge
+    system: true
+    shell: /usr/sbin/nologin
+    lock_passwd: true
 packages:
   - build-essential
   - pkg-config
@@ -15,6 +25,10 @@ packages:
   - nodejs
 
 write_files:
+  - path: /etc/sysctl.d/60-codearena-judge.conf
+    permissions: '0644'
+    content: |
+      kernel.dmesg_restrict = 1
   - path: /usr/local/sbin/install-isolate.sh
     permissions: '0755'
     content: |
@@ -34,8 +48,22 @@ write_files:
       printf 'first_uid = 60000\nfirst_gid = 60000\nnum_boxes = 1000\n' >> /usr/local/etc/isolate
       systemctl daemon-reload
       systemctl enable --now isolate.service
+      # Minimal /dev bound into every box (same as scripts/setup-isolate-wsl.sh).
+      d=/var/local/lib/codearena/box-dev
+      install -d -o root -g root -m 0755 /var/local/lib/codearena "$d" "$d/shm"
+      mknod -m 0666 "$d/null" c 1 3
+      mknod -m 0666 "$d/zero" c 1 5
+      mknod -m 0666 "$d/full" c 1 7
+      mknod -m 0666 "$d/random" c 1 8
+      mknod -m 0666 "$d/urandom" c 1 9
+      ln -sfn /proc/self/fd "$d/fd"
+      ln -sfn /proc/self/fd/0 "$d/stdin"
+      ln -sfn /proc/self/fd/1 "$d/stdout"
+      ln -sfn /proc/self/fd/2 "$d/stderr"
+      install -d -o codearena-judge -g codearena-judge -m 0750 /var/cache/codearena
 
 runcmd:
+  - sysctl -q -p /etc/sysctl.d/60-codearena-judge.conf
   - /usr/local/sbin/install-isolate.sh
   - isolate-check-environment || true
-  - isolate --box-id=99 --cg --init && isolate --box-id=99 --cg --run --time=2 --wall-time=5 --cg-mem=65536 --processes=1 --env=PATH=/usr/bin:/bin -- /bin/echo judge-vm-smoke-ok; isolate --box-id=99 --cg --cleanup
+  - isolate --box-id=99 --cg --init && isolate --box-id=99 --cg --run --time=2 --wall-time=5 --cg-mem=65536 --processes=1 --env=PATH=/usr/bin:/bin --dir=dev= --dir=dev=/var/local/lib/codearena/box-dev:dev -- /bin/echo judge-vm-smoke-ok; isolate --box-id=99 --cg --cleanup

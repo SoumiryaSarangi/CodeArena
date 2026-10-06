@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/sandbox"
 )
 
 const selftest = "../../../../tests/attack-suite/selftest"
@@ -19,6 +22,17 @@ func TestSelftest(t *testing.T) {
 			}
 			t.Skipf("%s not installed", bin)
 		}
+	}
+
+	// isolate may be installed but unusable here (e.g. the box /dev is not
+	// set up yet); treat that like a missing binary.
+	if pool, err := sandbox.New(context.Background(), sandbox.Config{Cores: []int{0}, BoxIDBase: 870}); err != nil {
+		if os.Getenv("JUDGE_REQUIRE_ISOLATE") == "1" {
+			t.Fatalf("sandbox unusable: %v", err)
+		}
+		t.Skipf("sandbox unusable: %v", err)
+	} else {
+		_ = pool.Close(context.Background())
 	}
 
 	t.Run("FR-JUDGE-10: the clean self-test case passes (min floor relaxed to 1)", func(t *testing.T) {

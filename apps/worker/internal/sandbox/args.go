@@ -16,9 +16,18 @@ func CleanupArgs(id int) []string {
 	return []string{"--box-id=" + strconv.Itoa(id), "--cg", "--cleanup"}
 }
 
+// RunOptions are per-pool settings that apply to every run.
+type RunOptions struct {
+	// DevDir replaces isolate's default /dev rule, which binds the host's
+	// whole /dev with device access, by a prepared directory holding only
+	// null, zero, full, random, urandom, the fd/std* symlinks and an empty
+	// shm/ (J-08; see scripts/setup-isolate-wsl.sh). Empty keeps the default.
+	DevDir string
+}
+
 // RunArgs are the isolate arguments for one run (SD-§8.2). metaPath is a host
 // path outside the box.
-func RunArgs(id int, metaPath string, spec RunSpec) ([]string, error) {
+func RunArgs(id int, metaPath string, spec RunSpec, opts RunOptions) ([]string, error) {
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -46,6 +55,10 @@ func RunArgs(id int, metaPath string, spec RunSpec) ([]string, error) {
 	}
 	if s.Stderr != "" {
 		args = append(args, "--stderr="+s.Stderr)
+	}
+	if opts.DevDir != "" {
+		// Delete the default rule first, then bind the prepared directory.
+		args = append(args, "--dir=dev=", "--dir=dev="+opts.DevDir+":dev")
 	}
 	for _, d := range s.Dirs {
 		args = append(args, "--dir="+d)

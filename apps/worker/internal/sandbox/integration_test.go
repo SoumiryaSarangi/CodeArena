@@ -190,6 +190,27 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
+	t.Run("J-08: a box sees only the prepared /dev, and the devices programs need still work", func(t *testing.T) {
+		r := run(t, base(), "dev", "piped\n")
+		out := output(t, r)
+		var entries []string
+		for _, line := range strings.Split(out, "\n") {
+			if name, ok := strings.CutPrefix(line, "entry "); ok {
+				entries = append(entries, name)
+			}
+		}
+		slices.Sort(entries)
+		want := []string{"fd", "full", "null", "random", "shm", "stderr", "stdin", "stdout", "urandom", "zero"}
+		if !slices.Equal(entries, want) {
+			t.Fatalf("/dev inside the box is %q, want %q", entries, want)
+		}
+		for _, w := range []string{"null ok", "urandom ok", "stdin ok", "shm ok"} {
+			if !strings.Contains(out, w) {
+				t.Fatalf("missing %q in\n%s", w, out)
+			}
+		}
+	})
+
 	// isolate 2.7 deletes non-regular files from the box after each run, so a
 	// planted symlink or FIFO is normally gone; ReadFile is the second layer
 	// (exercised directly in safefs_test.go). Either way nothing is followed.

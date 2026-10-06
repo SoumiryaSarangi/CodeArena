@@ -80,3 +80,27 @@ func TestLoadSettings(t *testing.T) {
 		}
 	})
 }
+
+func TestRootGuard(t *testing.T) {
+	t.Run("J-08: an unprivileged worker starts", func(t *testing.T) {
+		if err := rootGuard(1000, env(nil)); err != nil {
+			t.Fatal(err)
+		}
+	})
+	t.Run("J-08: the worker refuses to run as root", func(t *testing.T) {
+		err := rootGuard(0, env(nil))
+		if err == nil || !strings.Contains(err.Error(), "refusing to run as root") {
+			t.Fatalf("got %v", err)
+		}
+	})
+	t.Run("WORKER_ALLOW_ROOT=1 overrides, anything else does not", func(t *testing.T) {
+		if err := rootGuard(0, env(map[string]string{"WORKER_ALLOW_ROOT": "1"})); err != nil {
+			t.Fatal(err)
+		}
+		for _, v := range []string{"", "0", "true", "yes"} {
+			if rootGuard(0, env(map[string]string{"WORKER_ALLOW_ROOT": v})) == nil {
+				t.Fatalf("%q overrode the guard", v)
+			}
+		}
+	})
+}

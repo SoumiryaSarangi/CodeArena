@@ -90,3 +90,18 @@ func loadSettings(get func(string) string) (settings, error) {
 	}
 	return s, errors.Join(errs...)
 }
+
+// rootGuard refuses to run the worker as root (J-08). The worker parses job
+// data and drives the sandbox; if a submission ever escaped a box into the
+// worker's process, it must not gain root. isolate is setuid, so the worker
+// never needs root itself. WORKER_ALLOW_ROOT=1 overrides it, deliberately
+// loudly, for a throwaway machine.
+func rootGuard(euid int, get func(string) string) error {
+	if euid != 0 {
+		return nil
+	}
+	if strings.TrimSpace(get("WORKER_ALLOW_ROOT")) == "1" {
+		return nil
+	}
+	return errors.New("refusing to run as root: run the worker as an unprivileged user (on the judge VM, codearena-judge); set WORKER_ALLOW_ROOT=1 only on a throwaway machine")
+}

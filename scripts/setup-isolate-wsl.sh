@@ -57,6 +57,43 @@ cfg=/usr/local/etc/isolate
 sed -i 's/^subid_user = .*/# subid_user = isolate (replaced by the manual range below)/' "$cfg"
 grep -q '^first_uid' "$cfg" || printf 'first_uid = 60000\nfirst_gid = 60000\nnum_boxes = 1000\n' >>"$cfg"
 
+step "Preparing the minimal /dev bound into every box (J-08)"
+# isolate's default rules bind the host's whole /dev into each box. The judge
+# replaces that with this directory: the five harmless devices, the fd/std*
+# symlinks, and an empty shm/ where isolate mounts a private tmpfs.
+devdir=/var/local/lib/codearena/box-dev
+install -d -o root -g root -m 0755 /var/local/lib/codearena "$devdir"
+mknode() {
+  local p="$devdir/$1" want
+  want="$(printf '%x:%x' "$2" "$3")"
+  if [[ ! -c "$p" || "$(stat -c '%t:%T' "$p")" != "$want" ]]; then
+    rm -rf "$p"
+    mknod -m 0666 "$p" c "$2" "$3"
+  fi
+  chown root:root "$p"
+  chmod 0666 "$p"
+}
+mknode null 1 3
+mknode zero 1 5
+mknode full 1 7
+mknode random 1 8
+mknode urandom 1 9
+for link in fd:/proc/self/fd stdin:/proc/self/fd/0 stdout:/proc/self/fd/1 stderr:/proc/self/fd/2; do
+  ln -sfn "${link#*:}" "$devdir/${link%%:*}"
+done
+install -d -o root -g root -m 0755 "$devdir/shm"
+for entry in "$devdir"/*; do
+  case "$(basename "$entry")" in
+    null | zero | full | random | urandom | fd | stdin | stdout | stderr | shm) ;;
+    *) rm -rf "$entry" ;;
+  esac
+done
+ls -la "$devdir"
+
+step "Restricting the kernel log to root (kernel.dmesg_restrict = 1)"
+printf 'kernel.dmesg_restrict = 1\n' >/etc/sysctl.d/60-codearena-judge.conf
+sysctl -q -p /etc/sysctl.d/60-codearena-judge.conf || echo "(could not apply now; it applies at next boot)"
+
 step "Enabling isolate.service"
 systemctl daemon-reload
 systemctl enable isolate.service
@@ -76,7 +113,9 @@ trap cleanup EXIT
 cleanup
 isolate --box-id="$SMOKE_BOX" --cg --init >/dev/null
 out="$(isolate --box-id="$SMOKE_BOX" --cg --run --meta="$meta" --time=2 --wall-time=5 \
-  --cg-mem=65536 --processes=1 --env=PATH=/usr/bin:/bin -- /bin/echo hello-from-isolate 2>&1)"
+  --cg-mem=65536 --processes=4 --env=PATH=/usr/bin:/bin \
+  --dir=dev= --dir=dev="$devdir":dev \
+  -- /bin/sh -c 'echo probe >/dev/null && echo "box /dev: $(ls /dev | tr "\n" " ")" && echo hello-from-isolate' 2>&1)"
 echo "$out"
 echo "--- meta ---"
 cat "$meta"

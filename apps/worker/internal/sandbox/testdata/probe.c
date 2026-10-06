@@ -1,6 +1,8 @@
 // Probe program for the sandbox integration tests. argv[1] picks the behaviour.
 #define _GNU_SOURCE
 #include <arpa/inet.h>
+#include <dirent.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -102,6 +104,26 @@ int main(int argc, char **argv) {
   } else if (!strcmp(m, "fifo")) {
     unlink("out.txt");
     if (mkfifo("out.txt", 0644) != 0) return 8;
+  } else if (!strcmp(m, "dev")) {
+    /* J-08: list /dev and use the devices a normal program needs. */
+    DIR *d = opendir("/dev");
+    if (!d) return 9;
+    struct dirent *e;
+    while ((e = readdir(d)))
+      if (e->d_name[0] != '.') printf("entry %s\n", e->d_name);
+    closedir(d);
+    int fd = open("/dev/null", O_WRONLY);
+    printf("null %s\n", fd >= 0 && write(fd, "x", 1) == 1 ? "ok" : "fail");
+    if (fd >= 0) close(fd);
+    unsigned char b[8];
+    fd = open("/dev/urandom", O_RDONLY);
+    printf("urandom %s\n", fd >= 0 && read(fd, b, sizeof b) == (ssize_t)sizeof b ? "ok" : "fail");
+    if (fd >= 0) close(fd);
+    char line[64] = {0};
+    FILE *in = fopen("/dev/stdin", "r");
+    printf("stdin %s\n", in && fgets(line, sizeof line, in) && !strcmp(line, "piped\n") ? "ok" : "fail");
+    FILE *shm = fopen("/dev/shm/probe", "w");
+    printf("shm %s\n", shm && fputs("x", shm) >= 0 && fclose(shm) == 0 ? "ok" : "fail");
   } else {
     return 2;
   }

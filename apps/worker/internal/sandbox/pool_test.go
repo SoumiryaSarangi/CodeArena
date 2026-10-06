@@ -261,3 +261,48 @@ func TestBoxRun(t *testing.T) {
 		}
 	})
 }
+
+func TestDevDir(t *testing.T) {
+	t.Run("J-08: every run carries the prepared /dev (default path)", func(t *testing.T) {
+		f := &fakeExec{runMeta: "exitcode:0\n"}
+		p, err := New(context.Background(), Config{Cores: []int{0}, BoxIDBase: 100, Exec: f, MetaDir: t.TempDir()})
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, _ := p.Acquire(context.Background())
+		must(t, s.Run.Init(context.Background()))
+		f.reset()
+		if _, err := s.Run.Run(context.Background(), validSpec()); err != nil {
+			t.Fatal(err)
+		}
+		if !contains(f.calls[0], "--dir=dev="+DefaultDevDir+":dev") || !contains(f.calls[0], "--dir=dev=") {
+			t.Fatalf("argv %q", f.calls[0])
+		}
+	})
+	t.Run(`"-" keeps isolate's default /dev (test-only escape hatch)`, func(t *testing.T) {
+		f := &fakeExec{runMeta: "exitcode:0\n"}
+		p, _ := New(context.Background(), Config{Cores: []int{0}, Exec: f, MetaDir: t.TempDir(), DevDir: "-"})
+		s, _ := p.Acquire(context.Background())
+		must(t, s.Run.Init(context.Background()))
+		f.reset()
+		_, _ = s.Run.Run(context.Background(), validSpec())
+		for _, a := range f.calls[0] {
+			if strings.HasPrefix(a, "--dir=dev") {
+				t.Fatalf("unexpected %s", a)
+			}
+		}
+	})
+	t.Run("J-08: startup refuses a missing or fake box /dev", func(t *testing.T) {
+		if err := checkDevDir(t.TempDir()); err == nil || !strings.Contains(err.Error(), "setup-isolate-wsl.sh") {
+			t.Fatalf("missing null accepted: %v", err)
+		}
+		fake := t.TempDir()
+		must(t, os.WriteFile(fake+"/null", nil, 0o666))
+		if err := checkDevDir(fake); err == nil {
+			t.Fatal("a regular file named null was accepted")
+		}
+		if err := checkDevDir("/dev"); err != nil {
+			t.Fatalf("the host /dev has a real null device: %v", err)
+		}
+	})
+}

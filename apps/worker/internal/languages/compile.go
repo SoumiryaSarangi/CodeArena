@@ -68,17 +68,7 @@ func (r *Registry) CompileWith(ctx context.Context, box *sandbox.Box, l *Languag
 			return nil, fmt.Errorf("languages: write %s: %w", f.Name, err)
 		}
 	}
-	c := r.Limits
-	meta, err := box.Run(ctx, sandbox.RunSpec{
-		TimeLimit: time.Duration(c.CPUSeconds) * time.Second,
-		MemKB:     c.MemMB * 1024,
-		Processes: c.Processes,
-		FsizeKB:   c.FsizeKB,
-		Dirs:      l.Dirs,
-		Stdout:    compileStdout,
-		Stderr:    compileStderr,
-		Cmd:       l.Compile,
-	})
+	meta, err := box.Run(ctx, r.compileSpec(l))
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +85,23 @@ func (r *Registry) CompileWith(ctx context.Context, box *sandbox.Box, l *Languag
 	}
 	res.OK, res.Artifacts = true, arts
 	return res, nil
+}
+
+// compileSpec is the sandbox spec for a compile step: the registry's compile
+// limits (FR-JUDGE-02), the language's binds, output into compile.out/err.
+// Wall time and open files take the sandbox defaults (3T+1 s, 64).
+func (r *Registry) compileSpec(l *Language) sandbox.RunSpec {
+	c := r.Limits
+	return sandbox.RunSpec{
+		TimeLimit: time.Duration(c.CPUSeconds) * time.Second,
+		MemKB:     c.MemMB * 1024,
+		Processes: c.Processes,
+		FsizeKB:   c.FsizeKB,
+		Dirs:      l.Dirs,
+		Stdout:    compileStdout,
+		Stderr:    compileStderr,
+		Cmd:       l.Compile,
+	}
 }
 
 // readLog joins compiler stdout and stderr, each capped, and adds the limit

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 )
 
@@ -20,7 +21,15 @@ type Config struct {
 	TasksetPath string   // default "taskset" on PATH
 	MetaDir     string   // worker-owned dir for meta files; default a new temp dir
 	Exec        Executor // default runs the real binaries
+	// DevDir is the prepared /dev bound into every box (J-08). Default
+	// DefaultDevDir. "-" keeps isolate's default /dev rule (tests only).
+	DevDir string
 }
+
+// DefaultDevDir is created by scripts/setup-isolate-wsl.sh (and the judge VM
+// cloud-init): device nodes null, zero, full, random, urandom; fd/stdin/
+// stdout/stderr symlinks into /proc/self/fd; an empty shm/ for isolate's tmpfs.
+const DefaultDevDir = "/var/local/lib/codearena/box-dev"
 
 // Slot is one core's worth of boxes, handed to one job at a time.
 type Slot struct {
@@ -61,6 +70,19 @@ func New(ctx context.Context, cfg Config) (*Pool, error) {
 	}
 
 	r := &runner{exec: cfg.Exec}
+	switch cfg.DevDir {
+	case "":
+		r.devDir = DefaultDevDir
+	case "-":
+		r.devDir = ""
+	default:
+		r.devDir = cfg.DevDir
+	}
+	if r.devDir != "" && cfg.Exec == nil {
+		if err := checkDevDir(r.devDir); err != nil {
+			return nil, err
+		}
+	}
 	var err error
 	if r.isolate, err = resolveBinary(cfg.IsolatePath, "isolate", cfg.Exec != nil); err != nil {
 		return nil, err
@@ -162,4 +184,14 @@ func (p *Pool) removeMetaDir() {
 	if p.ownsMetaDir {
 		os.RemoveAll(p.r.metaDir)
 	}
+}
+
+// checkDevDir verifies the prepared /dev exists and holds a real null device,
+// so a misconfigured host fails at startup instead of on the first job.
+func checkDevDir(dir string) error {
+	fi, err := os.Stat(filepath.Join(dir, "null"))
+	if err != nil || fi.Mode()&os.ModeCharDevice == 0 || fi.Mode()&os.ModeDevice == 0 {
+		return fmt.Errorf("sandbox: %s/null is not a character device; create the box /dev with: sudo scripts/setup-isolate-wsl.sh", dir)
+	}
+	return nil
 }

@@ -331,3 +331,20 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: J-08 (hardening, O, plan mode first). Proposed direction for `/dev`: stop using the built-in default directory rules (`--no-default-dirs`) and bind an explicit minimal set: `bin`, `lib`, `lib64`, `usr`, `/proc`, and a small prepared `/dev` holding only `null`, `zero`, `full`, `random`, `urandom` (created once by the setup script, and in `infra/cloud-init/judge.yaml`). Also set `kernel.dmesg_restrict=1` on the judge VM. Needs `sudo` for the setup script, which Ayush runs.
 - Ayush must: fix the directory false positive in `27-dev-disk-read/main.c` (check the file type of what was opened before calling it an escape), and decide whether to start J-08 now.
 - Model: O · Opus 4.8
+
+## 2026-10-06 · J-08 · done (and J-07 accepted)
+- Built:
+  - **Minimal box `/dev`**: every compile, run and checker step now deletes isolate's default `/dev` rule (`--dir=dev=`) and binds `/var/local/lib/codearena/box-dev` (`--dir=dev=…:dev`). That directory holds only `null zero full random urandom`, the `fd/stdin/stdout/stderr` links into `/proc/self/fd`, and an empty `shm/` where isolate mounts a private tmpfs. `sandbox.Config.DevDir` (default that path; `"-"` keeps the old behaviour, test-only), `RunArgs(…, RunOptions{DevDir})`, and a startup check that refuses to run if `null` there is not a character device. Created by `scripts/setup-isolate-wsl.sh` (idempotent, smoke test uses it) and `infra/cloud-init/judge.yaml`.
+  - **Kernel log**: `kernel.dmesg_restrict = 1` via `/etc/sysctl.d/60-codearena-judge.conf` (setup script and cloud-init).
+  - **Non-root worker**: the worker refuses to run as root unless `WORKER_ALLOW_ROOT=1`; cloud-init adds the no-login system user `codearena-judge` that owns `/var/cache/codearena` (D-02's systemd unit runs as it).
+  - **Compile step**: limits extracted into `Registry.compileSpec` and pinned by a test (10 s CPU, 31 s wall, 512 MB, 64 processes, 64 MB per file, 64 open files, PATH-only env, minimal `/dev`).
+  - **ADR-009**: new section with every attack-suite finding and its handling, plus the residual risk (shared kernel; ADR-014).
+- Tests: Ayush ran `sudo scripts/setup-isolate-wsl.sh` (box `/dev` created, smoke test lists exactly the ten entries). Then, all with real dependencies required:
+  - `go test ./...` in `apps/worker` green, including the new checks that a box's `/dev` lists exactly those ten entries with `/dev/null`, `/dev/urandom`, `/dev/stdin` and `/dev/shm` working, and that the compile step's environment is PATH only.
+  - `scripts/validate-problem -j 4 problems/`: 20 packages, 0 failed.
+  - `pnpm attack`: **28 cases, 0 failed** (27-dev-disk-read now passes because the host devices no longer exist in a box).
+  - Unit: dev rules in `RunArgs` (present and ordered; absent without DevDir), startup check (missing dir, regular file named `null`, real `/dev`), root guard (unprivileged starts, root refused, only `WORKER_ALLOW_ROOT=1` overrides).
+- Decisions: binding single device files is not possible in isolate ("Not a directory"), hence the prepared directory. `/dev/shm` stays as isolate's private per-box tmpfs (counted against the box's memory). isolate's `LIBC_FATAL_STDERR_=1` env rule is kept (harmless). The attack runner's self-test now skips like the other integration tests when the sandbox is unusable.
+- Next: J-07 is accepted (28/28). Day 3 build cards continue with Q-01 (lanes + weighted priority, S).
+- Ayush must: still fix the `/dev/disk` directory false positive in `27-dev-disk-read/main.c` (it passes now only because the path is gone); write U2.3 explain-back notes; confirm whether Claude has left the GitHub Contributors list.
+- Model: O · Opus 5.5

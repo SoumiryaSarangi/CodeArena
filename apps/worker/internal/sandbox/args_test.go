@@ -24,7 +24,7 @@ func validSpec() RunSpec {
 
 func TestRunArgsGolden(t *testing.T) {
 	t.Run("FR-JUDGE-03: run argv carries every limit, PATH-only env, cgroup mode", func(t *testing.T) {
-		got, err := RunArgs(7, "/run/meta/7.meta", validSpec())
+		got, err := RunArgs(7, "/run/meta/7.meta", validSpec(), RunOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -46,7 +46,7 @@ func TestRunArgsDefaultsAndOverrides(t *testing.T) {
 	t.Run("FR-JUDGE-03: wall time defaults to 3T+1s", func(t *testing.T) {
 		s := validSpec()
 		s.TimeLimit = 1500 * time.Millisecond
-		got, _ := RunArgs(1, "/m", s)
+		got, _ := RunArgs(1, "/m", s, RunOptions{})
 		if !contains(got, "--wall-time=5.500") {
 			t.Fatalf("argv %q", got)
 		}
@@ -54,7 +54,7 @@ func TestRunArgsDefaultsAndOverrides(t *testing.T) {
 	t.Run("explicit values win over defaults", func(t *testing.T) {
 		s := validSpec()
 		s.WallTime, s.ExtraTime, s.StackKB, s.OpenFiles = 10*time.Second, 250*time.Millisecond, 8192, 16
-		got, _ := RunArgs(1, "/m", s)
+		got, _ := RunArgs(1, "/m", s, RunOptions{})
 		for _, w := range []string{"--wall-time=10.000", "--extra-time=0.250", "--stack=8192", "--open-files=16"} {
 			if !contains(got, w) {
 				t.Fatalf("missing %s in %q", w, got)
@@ -64,7 +64,7 @@ func TestRunArgsDefaultsAndOverrides(t *testing.T) {
 	t.Run("unset streams are not redirected", func(t *testing.T) {
 		s := validSpec()
 		s.Stdin, s.Stdout, s.Stderr, s.Dirs = "", "", "", nil
-		got, _ := RunArgs(1, "/m", s)
+		got, _ := RunArgs(1, "/m", s, RunOptions{})
 		for _, a := range got {
 			if strings.HasPrefix(a, "--std") || strings.HasPrefix(a, "--dir") {
 				t.Fatalf("unexpected %s", a)
@@ -75,7 +75,7 @@ func TestRunArgsDefaultsAndOverrides(t *testing.T) {
 
 func TestRunArgsNeverSharesNetOrEnv(t *testing.T) {
 	t.Run("FR-JUDGE-03: no network sharing and exactly one env rule", func(t *testing.T) {
-		got, _ := RunArgs(3, "/m", validSpec())
+		got, _ := RunArgs(3, "/m", validSpec(), RunOptions{})
 		envs := 0
 		for _, a := range got {
 			if a == "--" {
@@ -137,7 +137,7 @@ func TestValidateRejects(t *testing.T) {
 			if err := s.Validate(); !errors.Is(err, ErrInvalidSpec) {
 				t.Fatalf("want ErrInvalidSpec, got %v", err)
 			}
-			if _, err := RunArgs(1, "/m", s); err == nil {
+			if _, err := RunArgs(1, "/m", s, RunOptions{}); err == nil {
 				t.Fatal("RunArgs accepted an invalid spec")
 			}
 		})
@@ -159,4 +159,36 @@ func contains(xs []string, x string) bool {
 		}
 	}
 	return false
+}
+
+func TestRunArgsMinimalDev(t *testing.T) {
+	t.Run("J-08: the default /dev rule is deleted and the prepared directory bound with device access", func(t *testing.T) {
+		got, err := RunArgs(7, "/m", validSpec(), RunOptions{DevDir: "/var/local/lib/codearena/box-dev"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		del, bind := -1, -1
+		for i, a := range got {
+			switch a {
+			case "--dir=dev=":
+				del = i
+			case "--dir=dev=/var/local/lib/codearena/box-dev:dev":
+				bind = i
+			case "--":
+				if del < 0 || bind < 0 || del > bind {
+					t.Fatalf("dev rules missing or out of order before --: %q", got)
+				}
+				return
+			}
+		}
+		t.Fatalf("no -- in %q", got)
+	})
+	t.Run("without DevDir no dev rule is emitted", func(t *testing.T) {
+		got, _ := RunArgs(7, "/m", validSpec(), RunOptions{})
+		for _, a := range got {
+			if strings.HasPrefix(a, "--dir=dev") {
+				t.Fatalf("unexpected %s", a)
+			}
+		}
+	})
 }

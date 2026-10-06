@@ -76,6 +76,7 @@ type runner struct {
 	taskset string
 	exec    Executor
 	metaDir string
+	devDir  string
 }
 
 func (r *runner) call(ctx context.Context, core int, args []string) (ExecResult, error) {
@@ -138,7 +139,7 @@ func (b *Box) Run(ctx context.Context, spec RunSpec) (Meta, error) {
 	if err := os.Remove(metaPath); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return Meta{}, err
 	}
-	args, err := RunArgs(b.ID, metaPath, spec)
+	args, err := RunArgs(b.ID, metaPath, spec, RunOptions{DevDir: b.r.devDir})
 	if err != nil {
 		return Meta{}, err
 	}

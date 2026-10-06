@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"testing"
 
@@ -134,6 +135,33 @@ languages:
 		res, err := spin.Compile(ctx, slot.Compile, l, "int main(void){return 0;}\n")
 		if err != nil || res.OK || res.Meta.Status != sandbox.StatusTO || !strings.Contains(res.Log, "timed out") {
 			t.Fatalf("%+v %v", res, err)
+		}
+	})
+	t.Run("J-08: the compile step's environment is scrubbed to PATH (plus isolate's LIBC_FATAL_STDERR_)", func(t *testing.T) {
+		envReg, err := Parse([]byte(`
+compile: {cpuSeconds: 2, memMb: 256, fsizeKb: 1024, processes: 4, logKb: 16}
+languages:
+  - {id: c, name: env, sourceFile: main.c, compile: [/usr/bin/env], run: [./main], artifacts: [main], processes: 1, memOverheadMb: 0, timeMultiplier: 1}
+`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		l, _ := envReg.Get("c")
+		slot, _ := pool.Acquire(ctx)
+		defer func() { _ = pool.Release(ctx, slot) }()
+		res, err := envReg.Compile(ctx, slot.Compile, l, "int main(void){return 0;}\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var vars []string
+		for _, line := range strings.Split(res.Log, "\n") {
+			if k, _, ok := strings.Cut(line, "="); ok && !strings.Contains(k, " ") {
+				vars = append(vars, k)
+			}
+		}
+		slices.Sort(vars)
+		if !slices.Equal(vars, []string{"LIBC_FATAL_STDERR_", "PATH"}) {
+			t.Fatalf("compile environment has %q\nlog:\n%s", vars, res.Log)
 		}
 	})
 	t.Run("FR-JUDGE-02: oversize source is refused", func(t *testing.T) {

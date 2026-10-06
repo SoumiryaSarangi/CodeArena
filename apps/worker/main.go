@@ -29,6 +29,9 @@ func main() {
 }
 
 func run(log *slog.Logger) error {
+	if err := rootGuard(os.Geteuid(), os.Getenv); err != nil {
+		return err
+	}
 	cfg, err := loadSettings(os.Getenv)
 	if err != nil {
 		return err
