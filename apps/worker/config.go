@@ -20,7 +20,7 @@ type settings struct {
 	S3AccessKey string
 	S3SecretKey string
 	WorkerID    string
-	Lane        contracts.Lane
+	Lanes       []contracts.Lane
 	Concurrency int
 	CacheDir    string
 	BoxIDBase   int
@@ -32,7 +32,7 @@ func loadSettings(get func(string) string) (settings, error) {
 	s := settings{
 		RedisURL: val("REDIS_URL"), S3Endpoint: val("S3_ENDPOINT"), S3Bucket: val("S3_BUCKET"),
 		S3AccessKey: val("S3_ACCESS_KEY"), S3SecretKey: val("S3_SECRET_KEY"),
-		WorkerID: val("WORKER_ID"), Lane: contracts.LanePractice, Concurrency: 1, BoxIDBase: 100,
+		WorkerID: val("WORKER_ID"), Lanes: []contracts.Lane{contracts.LanePractice}, Concurrency: 1, BoxIDBase: 100,
 	}
 	var errs []error
 	for k, v := range map[string]string{"REDIS_URL": s.RedisURL, "S3_ENDPOINT": s.S3Endpoint, "S3_BUCKET": s.S3Bucket,
@@ -41,12 +41,23 @@ func loadSettings(get func(string) string) (settings, error) {
 			errs = append(errs, fmt.Errorf("%s is required", k))
 		}
 	}
-	if v := val("WORKER_LANE"); v != "" {
-		s.Lane = contracts.Lane(v)
-		switch s.Lane {
-		case contracts.LaneContest, contracts.LaneInteractive, contracts.LanePractice, contracts.LaneRejudge:
-		default:
-			errs = append(errs, fmt.Errorf("WORKER_LANE %q is not a lane", v))
+	if v := val("WORKER_LANES"); v != "" {
+		s.Lanes = nil
+		seen := map[contracts.Lane]bool{}
+		for _, p := range strings.Split(v, ",") {
+			l := contracts.Lane(strings.TrimSpace(p))
+			switch l {
+			case contracts.LaneContest, contracts.LaneInteractive, contracts.LanePractice, contracts.LaneRejudge:
+			default:
+				errs = append(errs, fmt.Errorf("WORKER_LANES has %q, which is not a lane (contest, interactive, practice, rejudge)", p))
+				continue
+			}
+			if seen[l] {
+				errs = append(errs, fmt.Errorf("WORKER_LANES lists %q twice", l))
+				continue
+			}
+			seen[l] = true
+			s.Lanes = append(s.Lanes, l)
 		}
 	}
 	if v := val("WORKER_CONCURRENCY"); v != "" {

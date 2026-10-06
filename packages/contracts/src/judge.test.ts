@@ -52,6 +52,47 @@ describe('contracts', () => {
     expect(JudgeResult.safeParse({ ...r, stderr: 'x'.repeat(64 * 1024 + 1) }).success).toBe(false);
   });
 
+  it('Q-01: the testset hash and URI must be what the judge accepts, so the API cannot enqueue a job the worker would reject', () => {
+    const job = fixture('judge-job') as { problem: Record<string, unknown> } & Record<
+      string,
+      unknown
+    >;
+    const withProblem = (patch: Record<string, unknown>) => ({
+      ...job,
+      problem: { ...job.problem, ...patch },
+    });
+    expect(JudgeJob.safeParse(job).success).toBe(true);
+    for (const bad of [
+      'sha256:abc123',
+      'ABCDEF'.repeat(11).slice(0, 64),
+      'a'.repeat(63),
+      'g'.repeat(64),
+    ]) {
+      expect(JudgeJob.safeParse(withProblem({ testsetHash: bad })).success).toBe(false);
+    }
+    for (const bad of [
+      's3://codearena/tests/x.tar',
+      's3://codearena/testsets/',
+      'https://codearena/testsets/x.tar',
+      's3://codearena/testsets/x.tar?versionId=1',
+      's3:///testsets/x.tar',
+    ]) {
+      expect(JudgeJob.safeParse(withProblem({ testsetUri: bad })).success).toBe(false);
+    }
+  });
+
+  it('Q-01: a testlib checker source must live under checkers/', () => {
+    expect(Checker.safeParse({ kind: 'testlib', sourceUri: 's3://b/checkers/c.cpp' }).success).toBe(
+      true,
+    );
+    expect(Checker.safeParse({ kind: 'testlib', sourceUri: 's3://b/testsets/c.cpp' }).success).toBe(
+      false,
+    );
+    expect(Checker.safeParse({ kind: 'testlib', sourceUri: 's3://b/checkers/' }).success).toBe(
+      false,
+    );
+  });
+
   it('F-03: malformed traceparent is rejected', () => {
     const job = fixture('judge-job') as Record<string, unknown>;
     expect(JudgeJob.safeParse({ ...job, traceparent: 'nope' }).success).toBe(false);

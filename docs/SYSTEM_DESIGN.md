@@ -451,7 +451,7 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `jobs:{lane}` | stream (group `judges`) | none; `XDEL` after ack | api → worker | Judge jobs per lane |
 | `jobs:dlq`, `jobs:quarantine` | stream | none | worker/api → admin | Failed / poison jobs |
 | `results` | stream (group `api`) | trimmed `MINID` older than 1 h after ack | worker → api | Judge results |
-| `seq:{lane}` | string | none | api | Per-lane job counter (`INCR` at enqueue); stamps `JudgeJob.seq` |
+| `seq:{lane}` | string | none | api | Per-lane job counter (`INCR` and `XADD` in one Lua script at enqueue, so counter order = stream order); stamps `JudgeJob.seq`. The API's `api` ACL user needs `EVAL` on `seq:*` and `jobs:*` (Q-04) |
 | `ewma:svc:{lane}` | string | none | api | Service-time EWMA for ETA |
 | `hb:{workerId}` | string (JSON) | 10 s | worker | Heartbeat |
 | `progress:{submissionId}` | pub/sub | — | worker → api | Per-test progress |

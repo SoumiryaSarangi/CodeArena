@@ -349,3 +349,24 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Ayush must: still fix the `/dev/disk` directory false positive in `27-dev-disk-read/main.c` (it passes now only because the path is gone); write U2.3 explain-back notes; confirm whether Claude has left the GitHub Contributors list.
 - Model: O · Opus 5.5
 - Update (later 2026-10-06): the sidebar still showed the extra contributor. Checked: no branch or commit message references it any more, and the GitHub contributors API already lists only Ayush (39 commits), so the sidebar is stale cache. The hidden pull-request merge refs of Dependabot PRs 3, 5, 7 and 8 still contained the old commit; they refresh when GitHub recomputes those PRs. Remaining steps: rebase or reopen those four PRs, wait for the cache, then GitHub Support if it persists after about 24 hours.
+
+## 2026-10-06 · Q-01 · done
+- Built:
+  - **Lane picker** (`apps/worker/internal/lanes`): strict priority contest > interactive > practice > rejudge; every 8th claim probes lowest-first, so it takes the lowest non-empty lane (FR-QUEUE-02). Pure, concurrency-safe, per-worker counter.
+  - **Multi-lane worker**: `WORKER_LANES` (comma list, default `practice`; replaces `WORKER_LANE`). Each claim probes lanes without blocking in the picker's order and takes the first job; with every lane empty it waits on all streams at once. Groups, resume-after-restart and heartbeat (`lanes` list) cover every lane. A job whose `lane` field disagrees with its stream is dead-lettered (priority comes from the stream, never from the job's own label).
+  - **API enqueue** (`QueueService` in `SubmissionsModule`): validates a job against the contract, stamps `jobId` (UUIDv7), `enqueuedAt`, a `traceparent` (the caller's, the active span's, or a fresh one), and a per-lane `seq`. `INCR seq:{lane}` and `XADD jobs:{lane} job=<JSON>` run in one Lua script, so counter order equals stream order across API instances. A `queue.enqueue` span and `ca_queue_enqueued_total{lane}` metric.
+  - **Contract tightened**: `testsetHash` must be 64 lowercase hex, `testsetUri` `s3://<bucket>/testsets/<key>`, `checker.sourceUri` `s3://<bucket>/checkers/<key>`. The old fixture (`sha256:abc123`, `tests/….tar.zst`) was something our worker would have dead-lettered; fixed, and the API now refuses such a job before it takes a queue slot.
+  - ADR-005 documents the ratio, the bound, why 8, and the known limit; SD-§7 notes the Lua enqueue.
+- Tests: `go test -race ./...` green with every `JUDGE_REQUIRE_*` set; `pnpm --filter @codearena/api test` 54/54; contracts 11/11 and `contracts:check` fresh; API typecheck clean; lint clean except `apps/web/next-env.d.ts` (Ayush's own uncommitted change).
+  - Ordering and bound (FR-QUEUE-02): 1–7 contest then the 8th lowest-first, repeating; with all four lanes backlogged exactly 7000 contest and 1000 rejudge per 8000 claims; the k-th rejudge job under an endless contest backlog finishes at exactly claim 8k; the lowest non-empty lane (not rejudge specifically) gets the slot; the middle-lane limit is pinned by a test.
+  - Against real Redis: a late contest job runs before earlier practice jobs (`cpppr`); 14 contest + 2 rejudge judge as `cccccccrcccccccr`; a practice-only worker never touches rejudge; an idle multi-lane worker wakes for any lane; a mislabelled job is dead-lettered; a restarted multi-lane worker resumes its pending job.
+  - API (Compose Redis): wire format and entry id, per-lane seq (1, 2, 1), 60 concurrent enqueues give unique seqs in stream order, a bad job takes no slot or seq, seq-marker text inside `source` cannot corrupt the stamp, oversize source rejected, explicit traceparent kept. The shared JudgeJob and JudgeResult fixtures also pass through the Go parsers.
+  - Mutations: no reversal, ratio 4, and caller-order lanes were each caught.
+- Decisions:
+  - Counter counts claim attempts, not successful claims; under backlog they are equal. Idle polling only shifts the phase.
+  - The fairness rule protects the lowest non-empty lane only; a middle lane starves if both neighbours stay backlogged. Kept per spec and ADR-005; the test names it.
+  - `seq` is informational now (position comes from the stream, decided in J-05 follow-ups).
+  - The `api` Redis ACL user (Q-04) needs `EVAL` on `seq:*` and `jobs:*`.
+- Next: Q-02 (leases, retries, DLQ, quarantine, O: Opus, plan mode first). Day 3 explain-back U3.3 (consumer groups, pending entries, XAUTOCLAIM, why submission ID + run version is the idempotency key) is yours.
+- Ayush must: nothing for Q-01. Still open: U2.3 notes, Contributors sidebar check, and U3.1 and U3.2 from PLAN Day 3.
+- Model: S · Sonnet 5.5

@@ -22,6 +22,7 @@ import (
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/judge"
+	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/lanes"
 )
 
 // Redis names (SD-§7).
@@ -33,6 +34,10 @@ const (
 
 // JobsKey is the stream for a lane.
 func JobsKey(l contracts.Lane) string { return "jobs:" + string(l) }
+
+func laneOfStream(stream string) contracts.Lane {
+	return contracts.Lane(strings.TrimPrefix(stream, "jobs:"))
+}
 
 // ProgressChannel is the pub/sub channel for one submission.
 func ProgressChannel(submissionID string) string { return "progress:" + submissionID }
@@ -46,17 +51,18 @@ const HeartbeatTTL = 10 * time.Second
 type Config struct {
 	Redis *redis.Client
 	Exec  Executor
-	// Lane is the one stream this worker reads. Weighted multi-lane choice
-	// is Q-01; this loop is the temporary single-lane worker (J-05).
-	Lane           contracts.Lane // practice
-	WorkerID       string         // hostname
-	Concurrency    int            // 1 job at a time
-	Block          time.Duration  // 2 s: how long one XREADGROUP waits
-	HeartbeatEvery time.Duration  // 3 s (TTL is 10 s)
-	JobTimeout     time.Duration  // 10 min per attempt
-	DrainTimeout   time.Duration  // 2 min: how long shutdown waits for running jobs
-	MaxAttempts    int            // 3 judging attempts for infrastructure errors
-	RetryBackoff   time.Duration  // 1 s x attempt
+	// Lanes are the streams this worker serves (default: practice). It claims
+	// in strict priority order with the every-8th-claim fairness rule (Q-01,
+	// FR-QUEUE-02); see internal/lanes.
+	Lanes          []contracts.Lane
+	WorkerID       string        // hostname
+	Concurrency    int           // 1 job at a time
+	Block          time.Duration // 2 s: how long one XREADGROUP waits
+	HeartbeatEvery time.Duration // 3 s (TTL is 10 s)
+	JobTimeout     time.Duration // 10 min per attempt
+	DrainTimeout   time.Duration // 2 min: how long shutdown waits for running jobs
+	MaxAttempts    int           // 3 judging attempts for infrastructure errors
+	RetryBackoff   time.Duration // 1 s x attempt
 	Now            func() time.Time
 	Log            *slog.Logger
 	Tracer         trace.Tracer
@@ -65,9 +71,10 @@ type Config struct {
 
 // Worker consumes one lane.
 type Worker struct {
-	cfg  Config
-	busy atomic.Int64
-	m    instruments
+	cfg    Config
+	picker *lanes.Picker
+	busy   atomic.Int64
+	m      instruments
 }
 
 type instruments struct {
@@ -82,9 +89,14 @@ func New(cfg Config) (*Worker, error) {
 	if cfg.Redis == nil || cfg.Exec == nil {
 		return nil, errors.New("worker: redis and executor are required")
 	}
-	if cfg.Lane == "" {
-		cfg.Lane = contracts.LanePractice
+	if len(cfg.Lanes) == 0 {
+		cfg.Lanes = []contracts.Lane{contracts.LanePractice}
 	}
+	picker, err := lanes.New(cfg.Lanes, 0)
+	if err != nil {
+		return nil, err
+	}
+	cfg.Lanes = picker.Lanes() // normalised to priority order
 	if cfg.WorkerID == "" {
 		h, _ := os.Hostname()
 		cfg.WorkerID = h
@@ -111,8 +123,7 @@ func New(cfg Config) (*Worker, error) {
 	if cfg.Meter == nil {
 		cfg.Meter = otel.Meter("codearena/worker")
 	}
-	w := &Worker{cfg: cfg}
-	var err error
+	w := &Worker{cfg: cfg, picker: picker}
 	if w.m.jobs, err = cfg.Meter.Int64Counter("ca_judge_jobs_total", metric.WithDescription("Judge jobs finished, by lane, verdict and outcome")); err != nil {
 		return nil, err
 	}
@@ -146,10 +157,11 @@ func orDur(v, d time.Duration) time.Duration {
 // jobs already running finish and publish their result (up to DrainTimeout)
 // before Run returns, so a deploy or Ctrl-C never abandons a half-judged job.
 func (w *Worker) Run(ctx context.Context) error {
-	stream := JobsKey(w.cfg.Lane)
-	err := w.cfg.Redis.XGroupCreateMkStream(ctx, stream, Group, "0").Err()
-	if err != nil && !strings.HasPrefix(err.Error(), "BUSYGROUP") {
-		return fmt.Errorf("worker: create group: %w", err)
+	for _, lane := range w.cfg.Lanes {
+		err := w.cfg.Redis.XGroupCreateMkStream(ctx, JobsKey(lane), Group, "0").Err()
+		if err != nil && !strings.HasPrefix(err.Error(), "BUSYGROUP") {
+			return fmt.Errorf("worker: create group on %s: %w", JobsKey(lane), err)
+		}
 	}
 
 	// hardCtx lives until shutdown has drained; judging uses it, not ctx.
@@ -176,14 +188,16 @@ func (w *Worker) Run(ctx context.Context) error {
 	// acknowledged. This must finish before any claiming loop starts: the
 	// loops share the consumer name, so a later "my pending entries" read
 	// would also return jobs a sibling loop is judging right now.
-	w.resumePending(ctx, hardCtx, stream)
+	for _, lane := range w.cfg.Lanes {
+		w.resumePending(ctx, hardCtx, JobsKey(lane))
+	}
 
 	var wg sync.WaitGroup
 	for i := 0; i < w.cfg.Concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			w.consume(ctx, hardCtx, stream)
+			w.consume(ctx, hardCtx)
 		}()
 	}
 	wg.Wait()
@@ -193,24 +207,65 @@ func (w *Worker) Run(ctx context.Context) error {
 }
 
 // consume is one claiming loop.
-func (w *Worker) consume(ctx, hardCtx context.Context, stream string) {
+func (w *Worker) consume(ctx, hardCtx context.Context) {
 	for ctx.Err() == nil {
-		res, err := w.cfg.Redis.XReadGroup(ctx, &redis.XReadGroupArgs{
-			Group: Group, Consumer: w.cfg.WorkerID, Streams: []string{stream, ">"}, Count: 1, Block: w.cfg.Block,
-		}).Result()
-		if err != nil {
-			if ctx.Err() == nil && !errors.Is(err, redis.Nil) {
-				w.cfg.Log.Error("read jobs", "err", err)
-				sleep(ctx, time.Second)
-			}
-			continue
-		}
-		for _, s := range res {
-			for _, m := range s.Messages {
-				w.handle(hardCtx, stream, m)
-			}
+		stream, msg, ok := w.claim(ctx)
+		if ok {
+			w.handle(hardCtx, stream, msg)
 		}
 	}
+}
+
+// claim takes one job. It probes each lane without blocking in the order the
+// picker gives (priority, or lowest-first on every 8th claim) and takes the
+// first job found. If every lane is empty it waits on all of them at once and
+// takes whatever arrives first.
+func (w *Worker) claim(ctx context.Context) (stream string, msg redis.XMessage, ok bool) {
+	for _, lane := range w.picker.Next() {
+		if m, found := w.read(ctx, []string{JobsKey(lane)}, -1); found {
+			return JobsKey(lane), m.msg, true
+		}
+		if ctx.Err() != nil {
+			return "", redis.XMessage{}, false
+		}
+	}
+	streams := make([]string, 0, len(w.cfg.Lanes))
+	for _, lane := range w.cfg.Lanes {
+		streams = append(streams, JobsKey(lane))
+	}
+	if m, found := w.read(ctx, streams, w.cfg.Block); found {
+		return m.stream, m.msg, true
+	}
+	return "", redis.XMessage{}, false
+}
+
+type claimed struct {
+	stream string
+	msg    redis.XMessage
+}
+
+// read does one XREADGROUP on the given streams. block < 0 means do not block.
+func (w *Worker) read(ctx context.Context, streams []string, block time.Duration) (claimed, bool) {
+	args := append([]string{}, streams...)
+	for range streams {
+		args = append(args, ">")
+	}
+	res, err := w.cfg.Redis.XReadGroup(ctx, &redis.XReadGroupArgs{
+		Group: Group, Consumer: w.cfg.WorkerID, Streams: args, Count: 1, Block: block,
+	}).Result()
+	if err != nil {
+		if ctx.Err() == nil && !errors.Is(err, redis.Nil) {
+			w.cfg.Log.Error("read jobs", "err", err)
+			sleep(ctx, time.Second)
+		}
+		return claimed{}, false
+	}
+	for _, s := range res {
+		if len(s.Messages) > 0 {
+			return claimed{stream: s.Stream, msg: s.Messages[0]}, true
+		}
+	}
+	return claimed{}, false
 }
 
 // resumePending walks this consumer's pending entries once, using the last ID
@@ -246,6 +301,15 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 		return
 	}
 
+	if want := laneOfStream(stream); job.Lane != want {
+		// Priority comes from the stream a job is in, so a job whose lane field
+		// disagrees was enqueued wrongly: never run it under the wrong label.
+		err := fmt.Errorf("%w: job says lane %q but arrived on %s", ErrInvalidJob, job.Lane, stream)
+		w.cfg.Log.Error("lane mismatch, moving to the dead-letter stream", "entry", msg.ID, "err", err)
+		w.deadLetter(ctx, stream, msg, raw, "invalid-job", err)
+		return
+	}
+
 	parent := otel.GetTextMapPropagator().Extract(ctx, propagation.MapCarrier{"traceparent": job.Traceparent})
 	spanCtx, span := w.cfg.Tracer.Start(parent, "judge.job", trace.WithAttributes(
 		attribute.String("submission.id", job.SubmissionID), attribute.Int64("run.version", job.RunVersion),
@@ -275,7 +339,7 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 		w.cfg.Log.Error("job failed, publishing SE and dead-lettering", "entry", msg.ID, "submission", job.SubmissionID, "err", err)
 		outcome = &judge.Outcome{Verdict: contracts.VerdictSE}
 		outcomeLabel = "dlq"
-		w.deadLetterEntry(ctx, job.Lane, msg, raw, "execution-failed", err)
+		w.deadLetterEntry(ctx, laneOfStream(stream), msg, raw, "execution-failed", err)
 	}
 	if outcome.JuryError != "" {
 		w.m.jury.Add(ctx, 1, metric.WithAttributes(attribute.String("lane", string(job.Lane))))
@@ -389,16 +453,20 @@ func (w *Worker) deadLetterEntry(ctx context.Context, lane contracts.Lane, msg r
 
 // Heartbeat is the JSON stored at hb:{workerId}.
 type Heartbeat struct {
-	WorkerID    string `json:"workerId"`
-	Lane        string `json:"lane"`
-	Ts          int64  `json:"ts"`
-	Busy        int64  `json:"busy"`
-	Concurrency int    `json:"concurrency"`
+	WorkerID    string   `json:"workerId"`
+	Lanes       []string `json:"lanes"`
+	Ts          int64    `json:"ts"`
+	Busy        int64    `json:"busy"`
+	Concurrency int      `json:"concurrency"`
 }
 
 func (w *Worker) heartbeat(ctx context.Context) {
 	beat := func() {
-		b, _ := json.Marshal(Heartbeat{WorkerID: w.cfg.WorkerID, Lane: string(w.cfg.Lane), Ts: w.cfg.Now().UnixMilli(),
+		lanes := make([]string, len(w.cfg.Lanes))
+		for i, l := range w.cfg.Lanes {
+			lanes[i] = string(l)
+		}
+		b, _ := json.Marshal(Heartbeat{WorkerID: w.cfg.WorkerID, Lanes: lanes, Ts: w.cfg.Now().UnixMilli(),
 			Busy: w.busy.Load(), Concurrency: w.cfg.Concurrency})
 		c, cancel := context.WithTimeout(ctx, 2*time.Second)
 		defer cancel()

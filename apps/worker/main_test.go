@@ -31,7 +31,7 @@ func TestLoadSettings(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if s.Lane != contracts.LanePractice || s.Concurrency != 1 || len(s.Cores) != 1 || s.Cores[0] != 0 || s.BoxIDBase != 100 {
+		if len(s.Lanes) != 1 || s.Lanes[0] != contracts.LanePractice || s.Concurrency != 1 || len(s.Cores) != 1 || s.Cores[0] != 0 || s.BoxIDBase != 100 {
 			t.Fatalf("%+v", s)
 		}
 		if !strings.HasSuffix(s.CacheDir, "codearena/tests") {
@@ -39,9 +39,15 @@ func TestLoadSettings(t *testing.T) {
 		}
 	})
 	t.Run("blank values mean unset", func(t *testing.T) {
-		s, err := loadSettings(env(with(map[string]string{"WORKER_LANE": "  ", "WORKER_CONCURRENCY": "", "WORKER_CORES": ""})))
-		if err != nil || s.Concurrency != 1 || s.Lane != contracts.LanePractice {
+		s, err := loadSettings(env(with(map[string]string{"WORKER_LANES": "  ", "WORKER_CONCURRENCY": "", "WORKER_CORES": ""})))
+		if err != nil || s.Concurrency != 1 || len(s.Lanes) != 1 || s.Lanes[0] != contracts.LanePractice {
 			t.Fatalf("%+v %v", s, err)
+		}
+	})
+	t.Run("Q-01: WORKER_LANES takes a comma list of lanes", func(t *testing.T) {
+		s, err := loadSettings(env(with(map[string]string{"WORKER_LANES": "contest, practice,rejudge"})))
+		if err != nil || len(s.Lanes) != 3 || s.Lanes[0] != contracts.LaneContest || s.Lanes[2] != contracts.LaneRejudge {
+			t.Fatalf("%+v %v", s.Lanes, err)
 		}
 	})
 	t.Run("concurrency picks one core per job", func(t *testing.T) {
@@ -70,7 +76,7 @@ func TestLoadSettings(t *testing.T) {
 	})
 	t.Run("bad values are rejected", func(t *testing.T) {
 		for _, extra := range []map[string]string{
-			{"WORKER_LANE": "vip"}, {"WORKER_CONCURRENCY": "0"}, {"WORKER_CONCURRENCY": "x"}, {"WORKER_CONCURRENCY": "65"},
+			{"WORKER_LANES": "vip"}, {"WORKER_LANES": "contest,contest"}, {"WORKER_LANES": "contest,,practice"}, {"WORKER_CONCURRENCY": "0"}, {"WORKER_CONCURRENCY": "x"}, {"WORKER_CONCURRENCY": "65"},
 			{"WORKER_BOX_BASE": "-1"}, {"WORKER_BOX_BASE": "901"}, {"WORKER_CORES": "a"}, {"WORKER_CORES": "-1"},
 			{"WORKER_CORES": "1,2", "WORKER_CONCURRENCY": "1"},
 		} {

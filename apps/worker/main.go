@@ -81,13 +81,13 @@ func run(log *slog.Logger) error {
 	defer func() { _ = pool.Close(context.Background()) }()
 
 	w, err := worker.New(worker.Config{
-		Redis: rdb, Lane: cfg.Lane, WorkerID: cfg.WorkerID, Concurrency: cfg.Concurrency, Log: log,
+		Redis: rdb, Lanes: cfg.Lanes, WorkerID: cfg.WorkerID, Concurrency: cfg.Concurrency, Log: log,
 		Exec: &worker.Runner{Pool: pool, Cache: cache, Store: store, Bucket: cfg.S3Bucket, Engine: &judge.Engine{Reg: reg}},
 	})
 	if err != nil {
 		return err
 	}
-	log.Info("worker started", "id", cfg.WorkerID, "lane", cfg.Lane, "concurrency", cfg.Concurrency, "cores", cfg.Cores)
+	log.Info("worker started", "id", cfg.WorkerID, "lanes", cfg.Lanes, "concurrency", cfg.Concurrency, "cores", cfg.Cores)
 	err = w.Run(ctx)
 	log.Info("worker drained, exiting")
 	return err

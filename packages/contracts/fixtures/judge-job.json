@@ -7,8 +7,8 @@
   "source": "#include <iostream>\nint main(){int a,b;std::cin>>a>>b;std::cout<<a+b<<\"\\n\";}\n",
   "problem": {
     "versionId": "0192f0a0-0000-7000-8000-0000000000aa",
-    "testsetHash": "sha256:abc123",
-    "testsetUri": "s3://codearena/tests/abc123.tar.zst",
+    "testsetHash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "testsetUri": "s3://codearena/testsets/9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08.tar",
     "checker": { "kind": "float", "eps": 0.000001 },
     "limits": { "timeMs": 1000, "memMb": 256, "outputKb": 64 }
   },

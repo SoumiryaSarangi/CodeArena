@@ -22,7 +22,10 @@ export const Checker = z
     kind: CheckerKind,
     eps: z.number().positive().optional(),
     /** Object holding the checker's C++ source (compiled on each judge, SD-§8.5). */
-    sourceUri: z.string().min(1).optional(),
+    sourceUri: z
+      .string()
+      .regex(/^s3:\/\/[^/?#]+\/checkers\/[^?#]+$/, 'sourceUri must be s3://<bucket>/checkers/<key>')
+      .optional(),
   })
   .strict()
   .superRefine((c, ctx) => {
@@ -42,8 +45,17 @@ export const Checker = z
 export const ProblemRef = z
   .object({
     versionId: z.string().min(1),
-    testsetHash: z.string().min(1),
-    testsetUri: z.string().min(1),
+    /** SHA-256 of the testset tar, lowercase hex: the judge verifies the archive against it (FR-JUDGE-12). */
+    testsetHash: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/, 'testsetHash must be 64 lowercase hex characters'),
+    /** `s3://<bucket>/testsets/<key>`: the judge only reads this prefix of its configured bucket. */
+    testsetUri: z
+      .string()
+      .regex(
+        /^s3:\/\/[^/?#]+\/testsets\/[^?#]+$/,
+        'testsetUri must be s3://<bucket>/testsets/<key>',
+      ),
     checker: Checker,
     limits: Limits,
   })

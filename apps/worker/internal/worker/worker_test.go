@@ -200,7 +200,7 @@ func TestEndToEndProtocol(t *testing.T) {
 	t.Run("heartbeat: hb:<worker> holds JSON and expires within 10 s", func(t *testing.T) {
 		waitFor(t, "heartbeat", func() bool { return rdb.Exists(ctx, HeartbeatKey("w1")).Val() == 1 })
 		var hb Heartbeat
-		if err := json.Unmarshal([]byte(rdb.Get(ctx, HeartbeatKey("w1")).Val()), &hb); err != nil || hb.WorkerID != "w1" || hb.Lane != "practice" || hb.Concurrency != 1 {
+		if err := json.Unmarshal([]byte(rdb.Get(ctx, HeartbeatKey("w1")).Val()), &hb); err != nil || hb.WorkerID != "w1" || len(hb.Lanes) != 1 || hb.Lanes[0] != "practice" || hb.Concurrency != 1 {
 			t.Fatalf("%+v %v", hb, err)
 		}
 		if ttl := rdb.TTL(ctx, HeartbeatKey("w1")).Val(); ttl <= 0 || ttl > HeartbeatTTL {

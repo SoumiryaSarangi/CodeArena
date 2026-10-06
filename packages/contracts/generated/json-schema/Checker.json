@@ -11,7 +11,7 @@
       "$ref": "CheckerKind.json"
     },
     "sourceUri": {
-      "minLength": 1,
+      "pattern": "^s3:\\/\\/[^/?#]+\\/checkers\\/[^?#]+$",
       "type": "string"
     }
   },

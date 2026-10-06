@@ -3,6 +3,7 @@ package worker
 import (
 	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 	"testing"
 
@@ -131,4 +132,33 @@ func TestPermanentErrors(t *testing.T) {
 	if permanent(errors.New("connection reset")) {
 		t.Error("an unknown error must be retried")
 	}
+}
+
+// The Zod contracts own these fixtures; the worker must accept exactly what the
+// API will produce, so the same files go through the Go side here.
+func TestContractFixtures(t *testing.T) {
+	read := func(name string) string {
+		b, err := os.ReadFile("../../../../packages/contracts/fixtures/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	t.Run("Q-01: the shared JudgeJob fixture passes the worker's job validation", func(t *testing.T) {
+		j, err := ParseJob(read("judge-job.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if j.Lane != contracts.LaneContest || j.Seq != 42 || j.Problem.Checker.Eps == nil {
+			t.Fatalf("%+v", j)
+		}
+	})
+	t.Run("Q-01: the shared JudgeResult fixture decodes into the Go contract types", func(t *testing.T) {
+		var r contracts.JudgeResult
+		dec := json.NewDecoder(strings.NewReader(read("judge-result.json")))
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&r); err != nil || len(r.Tests) != 2 {
+			t.Fatalf("%+v %v", r, err)
+		}
+	})
 }
