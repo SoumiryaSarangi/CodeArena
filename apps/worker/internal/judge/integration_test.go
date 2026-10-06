@@ -2,12 +2,14 @@ package judge
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/languages"
@@ -348,6 +350,84 @@ func TestEngineEdges(t *testing.T) {
 			Checker: contracts.Checker{Kind: contracts.CheckerKindTokens}, Tests: tests})
 		if out.Verdict != "AC" {
 			t.Fatalf("%+v", out.Tests)
+		}
+	})
+}
+
+func TestRunCustom(t *testing.T) {
+	e := setup(t)
+	run := func(t *testing.T, lang contracts.Language, src, input string, lim contracts.Limits) *Outcome {
+		t.Helper()
+		slot, err := e.pool.Acquire(e.ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = e.pool.Release(e.ctx, slot) }()
+		out, err := e.eng.RunCustom(e.ctx, slot, CustomRequest{Language: lang, Source: src, Limits: lim, Input: []byte(input)}, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	bigOut := contracts.Limits{TimeMS: 500, MemMB: 128, OutputKB: 1024}
+
+	t.Run("FR-SUB-05: returns stdout and stderr, verdict AC means it ran to completion", func(t *testing.T) {
+		src := `#include <stdio.h>` + "\n" + `int main(){long a,b;scanf("%ld %ld",&a,&b);printf("%ld\n",a+b);fprintf(stderr,"note\n");return 0;}`
+		out := run(t, "c", src, "40 2\n", limits)
+		if out.Verdict != "AC" || out.Output == nil || *out.Output != "42\n" || out.Stderr == nil || *out.Stderr != "note\n" ||
+			len(out.Tests) != 1 || out.MemKB <= 0 {
+			t.Fatalf("%+v out=%v", out, out.Output)
+		}
+	})
+	t.Run("FR-SUB-05: a wrong-looking answer is still AC: there is nothing to compare with", func(t *testing.T) {
+		out := run(t, "python3", "print('anything')\n", "", limits)
+		if out.Verdict != "AC" || *out.Output != "anything\n" {
+			t.Fatalf("%+v", out)
+		}
+	})
+	t.Run("FR-SUB-05: a crash is RE with the signal and whatever it printed before", func(t *testing.T) {
+		src := `#include <stdio.h>` + "\n" + `int main(){puts("before");fflush(stdout);volatile int*p=0;*p=1;return 0;}`
+		out := run(t, "c", src, "", limits)
+		if out.Verdict != "RE" || out.Tests[0].Signal == nil || *out.Tests[0].Signal != "SIGSEGV" || *out.Output != "before\n" {
+			t.Fatalf("%+v out=%q", out, *out.Output)
+		}
+	})
+	t.Run("FR-SUB-05: TLE and CE are reported like for judged runs", func(t *testing.T) {
+		if out := run(t, "c", programs["c"]["TLE"], "", limits); out.Verdict != "TLE" {
+			t.Fatalf("%+v", out)
+		}
+		out := run(t, "c", programs["c"]["CE"], "", limits)
+		if out.Verdict != "CE" || out.CompileLog == "" || out.Output != nil {
+			t.Fatalf("%+v", out)
+		}
+	})
+	t.Run("FR-SUB-05: output over the problem's output limit is OLE, and the first 64 KB still come back", func(t *testing.T) {
+		out := run(t, "c", programs["c"]["OLE"], "", limits) // 8 MB against a 64 KB limit
+		if out.Verdict != "OLE" || len(*out.Output) == 0 || len(*out.Output) > MaxCustomOutput {
+			t.Fatalf("%s %d bytes", out.Verdict, len(*out.Output))
+		}
+	})
+	t.Run("FR-SUB-05: output is cut at 64 KB", func(t *testing.T) {
+		src := `#include <stdio.h>` + "\n" + `int main(){for(int i=0;i<20000;i++)puts("0123456789012345678901234567890123456789");return 0;}` // 820 KB
+		out := run(t, "c", src, "", bigOut)
+		if out.Verdict != "AC" || len(*out.Output) != MaxCustomOutput {
+			t.Fatalf("%s %d bytes", out.Verdict, len(*out.Output))
+		}
+	})
+	t.Run("FR-SUB-05: binary output becomes valid UTF-8 so the result stays valid JSON", func(t *testing.T) {
+		src := `#include <stdio.h>` + "\n" + `int main(){fwrite("ok\xff\xfe\n",1,5,stdout);return 0;}`
+		out := run(t, "c", src, "", limits)
+		b, err := json.Marshal(out.Output)
+		if err != nil || !utf8.ValidString(*out.Output) || !strings.HasPrefix(*out.Output, "ok") {
+			t.Fatalf("%q %v", *out.Output, err)
+		}
+		_ = b
+	})
+	t.Run("an unknown language is an error", func(t *testing.T) {
+		slot, _ := e.pool.Acquire(e.ctx)
+		defer func() { _ = e.pool.Release(e.ctx, slot) }()
+		if _, err := e.eng.RunCustom(e.ctx, slot, CustomRequest{Language: "ruby"}, nil); !errors.Is(err, ErrUnknownLanguage) {
+			t.Fatalf("got %v", err)
 		}
 	})
 }

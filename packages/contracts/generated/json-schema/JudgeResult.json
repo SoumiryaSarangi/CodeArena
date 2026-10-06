@@ -16,10 +16,16 @@
       "minimum": 0,
       "type": "integer"
     },
+    "output": {
+      "type": "string"
+    },
     "runVersion": {
       "maximum": 9007199254740991,
       "minimum": 1,
       "type": "integer"
+    },
+    "stderr": {
+      "type": "string"
     },
     "submissionId": {
       "minLength": 1,

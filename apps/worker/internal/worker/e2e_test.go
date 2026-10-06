@@ -123,7 +123,7 @@ func TestEndToEnd(t *testing.T) {
 	tokens := contracts.Checker{Kind: contracts.CheckerKindTokens}
 	uri := func(k string) *string { s := "s3://codearena/checkers/" + k; return &s }
 	testlib := func(k string) contracts.Checker {
-		return contracts.Checker{Kind: contracts.CheckerKindTestlib, BinaryURI: uri(k)}
+		return contracts.Checker{Kind: contracts.CheckerKindTestlib, SourceURI: uri(k)}
 	}
 	custom := job("custom", sumC, tokens)
 	custom.Mode = contracts.JobModeRun
@@ -141,7 +141,7 @@ func TestEndToEnd(t *testing.T) {
 		{"tl-ac", job("tl-ac", sumC, testlib("ncmp.cpp")), contracts.VerdictAC},
 		{"tl-wa", job("tl-wa", wrong, testlib("ncmp.cpp")), contracts.VerdictWA},
 		{"jury", job("jury", sumC, testlib("broken.cpp")), contracts.VerdictSE},
-		{"custom", custom, contracts.VerdictSE},
+		{"custom", custom, contracts.VerdictAC},
 	}
 	for _, c := range cases {
 		enqueue(t, rdb, c.j)
@@ -177,7 +177,7 @@ func TestEndToEnd(t *testing.T) {
 			t.Fatalf("%+v", r)
 		}
 	})
-	t.Run("J-04 + J-05: seven jobs on one problem fetched the testset once", func(t *testing.T) {
+	t.Run("J-04 + J-05: the six problem jobs fetched the testset once", func(t *testing.T) {
 		if n := store.opens["testsets/sum.tar"].Load(); n != 1 {
 			t.Fatalf("testset downloaded %d times", n)
 		}
@@ -187,10 +187,20 @@ func TestEndToEnd(t *testing.T) {
 			t.Fatalf("checker source fetched %d times", n)
 		}
 	})
+	t.Run("FR-SUB-05: a custom run returns stdout and stderr, and problem tests never do", func(t *testing.T) {
+		r := got["sub-custom"]
+		if r.Output == nil || *r.Output != "3\n" || r.Stderr == nil || *r.Stderr != "" || len(r.Tests) != 1 {
+			t.Fatalf("%+v", r)
+		}
+		for _, id := range []string{"ac", "wa", "ce", "tl-ac", "tl-wa", "jury"} {
+			if got["sub-"+id].Output != nil || got["sub-"+id].Stderr != nil {
+				t.Fatalf("%s leaked program output", id)
+			}
+		}
+	})
 	t.Run("FR-JUDGE-06: a broken checker publishes SE without dead-lettering", func(t *testing.T) {
-		// Only the unsupported custom run is dead-lettered.
-		if streamLen(rdb, DLQKey) != 1 {
-			t.Fatalf("dlq has %d entries, want 1 (the custom run)", streamLen(rdb, DLQKey))
+		if n := streamLen(rdb, DLQKey); n != 0 {
+			t.Fatalf("dlq has %d entries, want 0", n)
 		}
 	})
 	waitFor(t, "ack", func() bool { return pending(rdb, "jobs:practice") == 0 })

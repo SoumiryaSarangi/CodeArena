@@ -21,18 +21,19 @@ export const Checker = z
   .object({
     kind: CheckerKind,
     eps: z.number().positive().optional(),
-    binaryUri: z.string().min(1).optional(),
+    /** Object holding the checker's C++ source (compiled on each judge, SD-§8.5). */
+    sourceUri: z.string().min(1).optional(),
   })
   .strict()
   .superRefine((c, ctx) => {
     if (c.kind === 'float' && c.eps === undefined) {
       ctx.addIssue({ code: 'custom', path: ['eps'], message: 'float checker requires eps' });
     }
-    if (c.kind === 'testlib' && c.binaryUri === undefined) {
+    if (c.kind === 'testlib' && c.sourceUri === undefined) {
       ctx.addIssue({
         code: 'custom',
-        path: ['binaryUri'],
-        message: 'testlib checker requires binaryUri',
+        path: ['sourceUri'],
+        message: 'testlib checker requires sourceUri',
       });
     }
   })
@@ -111,6 +112,18 @@ export const JudgeResult = z
       .refine((s) => byteLen(s) <= MAX_LOG_BYTES, 'compile log exceeds 64 KB')
       .optional(),
     tests: z.array(TestOutcome),
+    /**
+     * Only for custom runs (`mode: run` with `customInput`): the program's stdout and stderr,
+     * each cut at 64 KB. Never set for problem tests, whose outputs must not leak.
+     */
+    output: z
+      .string()
+      .refine((s) => byteLen(s) <= MAX_LOG_BYTES, 'output exceeds 64 KB')
+      .optional(),
+    stderr: z
+      .string()
+      .refine((s) => byteLen(s) <= MAX_LOG_BYTES, 'stderr exceeds 64 KB')
+      .optional(),
     workerId: z.string().min(1),
     finishedAt: epochMs,
   })

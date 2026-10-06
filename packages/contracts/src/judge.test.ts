@@ -31,11 +31,25 @@ describe('contracts', () => {
     expect(Verdict.options).toEqual(['AC', 'WA', 'TLE', 'MLE', 'OLE', 'RE', 'CE', 'SE']);
   });
 
-  it('FR-JUDGE-06: float needs eps and testlib needs binaryUri', () => {
+  it('FR-JUDGE-06: float needs eps and testlib needs sourceUri', () => {
     expect(Checker.safeParse({ kind: 'float' }).success).toBe(false);
     expect(Checker.safeParse({ kind: 'float', eps: 1e-6 }).success).toBe(true);
     expect(Checker.safeParse({ kind: 'testlib' }).success).toBe(false);
+    expect(
+      Checker.safeParse({ kind: 'testlib', sourceUri: 's3://codearena/checkers/c.cpp' }).success,
+    ).toBe(true);
+    expect(Checker.safeParse({ kind: 'testlib', binaryUri: 's3://x/y' }).success).toBe(false);
     expect(Checker.safeParse({ kind: 'tokens' }).success).toBe(true);
+  });
+
+  it('FR-SUB-05: custom-run output and stderr are optional and capped at 64 KB', () => {
+    const r = fixture('judge-result') as Record<string, unknown>;
+    expect(JudgeResult.safeParse(r).success).toBe(true);
+    expect(
+      JudgeResult.safeParse({ ...r, output: 'x'.repeat(64 * 1024), stderr: 'e' }).success,
+    ).toBe(true);
+    expect(JudgeResult.safeParse({ ...r, output: 'x'.repeat(64 * 1024 + 1) }).success).toBe(false);
+    expect(JudgeResult.safeParse({ ...r, stderr: 'x'.repeat(64 * 1024 + 1) }).success).toBe(false);
   });
 
   it('F-03: malformed traceparent is rejected', () => {

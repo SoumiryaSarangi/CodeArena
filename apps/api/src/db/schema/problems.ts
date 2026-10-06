@@ -37,7 +37,7 @@ export const problemVersions = pgTable(
     editorialMd: text('editorial_md'),
     /** `{timeMs, memMb, outputKb, wallMultiplier}` */
     limits: jsonb('limits').notNull(),
-    /** `{kind: 'exact'|'tokens'|'float'|'testlib', eps?, binaryUri?}` */
+    /** `{kind: 'exact'|'tokens'|'float'|'testlib', eps?, sourceUri?}` */
     checker: jsonb('checker').notNull(),
     testsetHash: text('testset_hash'),
     testsetUri: text('testset_uri'),

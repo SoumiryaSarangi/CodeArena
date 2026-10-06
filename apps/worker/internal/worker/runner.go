@@ -23,14 +23,11 @@ type Executor interface {
 	Execute(ctx context.Context, job contracts.JudgeJob, progress judge.Progress) (*judge.Outcome, error)
 }
 
-// ErrUnsupported marks jobs this worker cannot judge yet.
-var ErrUnsupported = errors.New("worker: unsupported job")
-
 // permanent errors will fail the same way on every attempt, so they are not
 // retried. Everything else (sandbox, Redis, object store hiccups) is.
 func permanent(err error) bool {
 	for _, target := range []error{
-		ErrInvalidJob, ErrUnsupported, judge.ErrUnknownLanguage,
+		ErrInvalidJob, judge.ErrUnknownLanguage,
 		testcache.ErrBadURI, testcache.ErrBadHash, testcache.ErrHashMismatch,
 		testcache.ErrBadTestset, testcache.ErrNotFound, testcache.ErrTooLarge,
 	} {
@@ -63,9 +60,7 @@ type Runner struct {
 // Execute implements Executor.
 func (r *Runner) Execute(ctx context.Context, job contracts.JudgeJob, progress judge.Progress) (*judge.Outcome, error) {
 	if job.Mode == contracts.JobModeRun && job.CustomInput != nil {
-		// Custom runs need the program's output sent back, and TestOutcome has
-		// no field for it yet (follow-up: contracts + interactive lane).
-		return nil, fmt.Errorf("%w: custom input runs", ErrUnsupported)
+		return r.executeCustom(ctx, job, progress)
 	}
 	ts, err := r.Cache.Get(ctx, job.Problem.TestsetHash, job.Problem.TestsetURI)
 	if err != nil {
@@ -109,19 +104,32 @@ func (r *Runner) Execute(ctx context.Context, job contracts.JudgeJob, progress j
 	return r.Engine.Run(ctx, slot, req, progress)
 }
 
+// executeCustom runs the source once on the user's input (FR-SUB-05). It needs
+// no testset, so a custom run cannot fail on a missing or corrupt one.
+func (r *Runner) executeCustom(ctx context.Context, job contracts.JudgeJob, progress judge.Progress) (*judge.Outcome, error) {
+	slot, err := r.Pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = r.Pool.Release(context.WithoutCancel(ctx), slot) }()
+	return r.Engine.RunCustom(ctx, slot, judge.CustomRequest{
+		Language: job.Language, Source: job.Source, Limits: job.Problem.Limits, Input: []byte(*job.CustomInput),
+	}, progress)
+}
+
 // checkerBinary returns the compiled testlib checker for a problem version,
-// compiling it once per worker. The object named by checker.binaryUri holds
+// compiling it once per worker. The object named by checker.sourceUri holds
 // the checker's C++ source: custom checkers are compiled on each judge
 // (SD-§8.5), never trusted as prebuilt binaries.
 func (r *Runner) checkerBinary(ctx context.Context, slot *sandbox.Slot, p contracts.ProblemRef) ([]byte, error) {
-	key := p.VersionID + "|" + *p.Checker.BinaryURI
+	key := p.VersionID + "|" + *p.Checker.SourceURI
 	r.mu.Lock()
 	bin, ok := r.checkers[key]
 	r.mu.Unlock()
 	if ok {
 		return bin, nil
 	}
-	src, err := r.fetchObject(ctx, *p.Checker.BinaryURI, checkerPrefix, maxCheckerBytes)
+	src, err := r.fetchObject(ctx, *p.Checker.SourceURI, checkerPrefix, maxCheckerBytes)
 	if err != nil {
 		return nil, err
 	}

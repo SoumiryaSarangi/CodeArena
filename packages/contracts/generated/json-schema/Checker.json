@@ -3,16 +3,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
-    "binaryUri": {
-      "minLength": 1,
-      "type": "string"
-    },
     "eps": {
       "exclusiveMinimum": 0,
       "type": "number"
     },
     "kind": {
       "$ref": "CheckerKind.json"
+    },
+    "sourceUri": {
+      "minLength": 1,
+      "type": "string"
     }
   },
   "required": [

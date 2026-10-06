@@ -76,9 +76,9 @@ func TestParseJob(t *testing.T) {
 		"float with eps 0": mutate(func(j *contracts.JudgeJob) {
 			j.Problem.Checker = contracts.Checker{Kind: contracts.CheckerKindFloat, Eps: &zero}
 		}),
-		"testlib no binary": mutate(func(j *contracts.JudgeJob) { j.Problem.Checker = contracts.Checker{Kind: contracts.CheckerKindTestlib} }),
-		"testlib empty binary": mutate(func(j *contracts.JudgeJob) {
-			j.Problem.Checker = contracts.Checker{Kind: contracts.CheckerKindTestlib, BinaryURI: &empty}
+		"testlib no source": mutate(func(j *contracts.JudgeJob) { j.Problem.Checker = contracts.Checker{Kind: contracts.CheckerKindTestlib} }),
+		"testlib empty source": mutate(func(j *contracts.JudgeJob) {
+			j.Problem.Checker = contracts.Checker{Kind: contracts.CheckerKindTestlib, SourceURI: &empty}
 		}),
 		"unknown checker": mutate(func(j *contracts.JudgeJob) { j.Problem.Checker = contracts.Checker{Kind: "magic"} }),
 	}
@@ -89,8 +89,8 @@ func TestParseJob(t *testing.T) {
 			}
 		})
 	}
-	t.Run("accepts float with eps and testlib with a binary", func(t *testing.T) {
-		for _, c := range []contracts.Checker{{Kind: contracts.CheckerKindFloat, Eps: &eps}, {Kind: contracts.CheckerKindTestlib, BinaryURI: &bin}, {Kind: contracts.CheckerKindExact}} {
+	t.Run("accepts float with eps and testlib with a source", func(t *testing.T) {
+		for _, c := range []contracts.Checker{{Kind: contracts.CheckerKindFloat, Eps: &eps}, {Kind: contracts.CheckerKindTestlib, SourceURI: &bin}, {Kind: contracts.CheckerKindExact}} {
 			c := c
 			if _, err := ParseJob(mutate(func(j *contracts.JudgeJob) { j.Problem.Checker = c })); err != nil {
 				t.Fatalf("%+v: %v", c, err)
@@ -122,7 +122,7 @@ func TestToResult(t *testing.T) {
 }
 
 func TestPermanentErrors(t *testing.T) {
-	for _, err := range []error{ErrInvalidJob, ErrUnsupported, judge.ErrUnknownLanguage, testcache.ErrBadURI, testcache.ErrHashMismatch,
+	for _, err := range []error{ErrInvalidJob, judge.ErrUnknownLanguage, testcache.ErrBadURI, testcache.ErrHashMismatch,
 		testcache.ErrBadTestset, testcache.ErrNotFound, testcache.ErrBadHash, testcache.ErrTooLarge} {
 		if !permanent(errors.Join(errors.New("wrapped"), err)) {
 			t.Errorf("%v should be permanent", err)

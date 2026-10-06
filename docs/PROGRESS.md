@@ -263,3 +263,15 @@
 - Next: J-06 (20 practice fixture problems, S). It needs original problem statements, generators, reference and wrong solutions and a package format that matches `testsetHash`/`testsetUri` (flat `NN.in`/`NN.ans` tar, SHA-256 of the tar).
 - Ayush must: add the worker variables to `apps/worker/.env`: `REDIS_URL`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` (I cannot read or write `.env*`; `.env.example` already lists them); `pnpm --filter @codearena/worker dev` then starts a worker on `jobs:practice`. Decide the three follow-ups above (`sourceUri` rename, `claimed:*` ACL, custom-run output).
 - Model: S·high · Sonnet 5.5 (`/effort high` not confirmed by Ayush)
+
+## 2026-10-06 · J-05 follow-ups · done
+Ayush delegated the three open decisions; each was resolved as follows.
+- Built:
+  - `checker.binaryUri` is now `checker.sourceUri` (Zod, regenerated JSON Schema and Go types, API schema comment, SD). A job still carrying `binaryUri` is rejected as an unknown field.
+  - `JudgeResult` gains optional `output` and `stderr` (≤ 64 KB each, Zod-checked), set only for custom runs. `Engine.RunCustom` and `Runner.executeCustom` run `mode: run` + `customInput` jobs: compile, run once on the input, no checker, no testset needed. The verdict says how the run ended (AC = ran to completion), with time, memory and signal; output is cut at 64 KB and made valid UTF-8. Problem tests never return program output (asserted).
+  - The shared run step is now `runProgram` (fresh box, safe reads, `MapRun`), used by both judged tests and custom runs.
+- Decisions:
+  - **Queue position (`claimed:{lane}`)**: no judge `SET` beyond `hb:*`. The API derives position from the stream (`XINFO GROUPS` last-delivered-id plus an `XRANGE … COUNT` between it and the job's entry id, capped, plus higher lanes), exact and with no extra ACL. Why: ADR-009's untrusted-judge model should not give a compromised host a way to falsify queue state, and concurrent workers writing one `claimed` key would race anyway. SD §5.2 flow and §7 keyspace updated; Q-05 implements it.
+  - **Custom-run output**: on `JudgeResult` (not `TestOutcome`) so per-test outcomes, which are shown for hidden tests, can never carry program output.
+- Tests: `go test -race ./...` green (worker end to end now expects the custom job to be AC with `output "3\n"` and the other six jobs to carry none; 8 new `RunCustom` cases: stdout+stderr, no expected answer, SIGSEGV with output before the crash, TLE, CE, OLE with partial output, 64 KB cut, invalid UTF-8). Contracts vitest 9/9 (new FR-SUB-05 cap test, old field name rejected); API typecheck clean.
+- Model: S·high · Sonnet 5.5

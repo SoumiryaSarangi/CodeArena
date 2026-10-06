@@ -27,9 +27,9 @@ type ProblemRef struct {
 }
 
 type Checker struct {
-	BinaryURI *string     `json:"binaryUri,omitempty"`
 	Eps       *float64    `json:"eps,omitempty"`
 	Kind      CheckerKind `json:"kind"`
+	SourceURI *string     `json:"sourceUri,omitempty"`
 }
 
 type Limits struct {
@@ -60,7 +60,9 @@ type JudgeResult struct {
 	CompileLog   *string       `json:"compileLog,omitempty"`
 	FinishedAt   int64         `json:"finishedAt"`
 	MemKB        int64         `json:"memKb"`
+	Output       *string       `json:"output,omitempty"`
 	RunVersion   int64         `json:"runVersion"`
+	Stderr       *string       `json:"stderr,omitempty"`
 	SubmissionID string        `json:"submissionId"`
 	Tests        []TestOutcome `json:"tests"`
 	TimeMS       int64         `json:"timeMs"`

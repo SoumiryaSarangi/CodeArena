@@ -79,8 +79,8 @@ func ParseJob(raw string) (contracts.JudgeJob, error) {
 			return j, invalid("float checker requires a positive eps")
 		}
 	case contracts.CheckerKindTestlib:
-		if c.BinaryURI == nil || *c.BinaryURI == "" {
-			return j, invalid("testlib checker requires binaryUri")
+		if c.SourceURI == nil || *c.SourceURI == "" {
+			return j, invalid("testlib checker requires sourceUri")
 		}
 	default:
 		return j, invalid("unknown checker kind %q", c.Kind)
@@ -115,6 +115,7 @@ func ToResult(job contracts.JudgeJob, o *judge.Outcome, workerID string, nowMS i
 		log := o.CompileLog
 		res.CompileLog = &log
 	}
+	res.Output, res.Stderr = o.Output, o.Stderr // custom runs only
 	return res
 }
 

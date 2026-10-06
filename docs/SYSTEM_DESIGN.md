@@ -198,7 +198,7 @@ sequenceDiagram
   A-->>B: 201 {id, position, eta}
   B->>A: GET /sse?ticket&topics=sub:{id}
   W->>R: XREADGROUP judges (lane order)
-  W->>R: SET claimed:{lane} seq, PUBLISH progress:{id} claimed
+  W->>R: PUBLISH progress:{id} claimed
   W->>W: compile in box → run tests → checker
   W->>R: PUBLISH progress:{id} test n (each)
   W->>R: XADD results JudgeResult, XACK jobs:{lane}, XDEL
@@ -345,7 +345,7 @@ problems(id uuid pk, slug text unique, title text, difficulty int, visibility pr
       current_version_id uuid, author_id fk, practice_points int, created_at)
 problem_versions(id uuid pk, problem_id fk, version int, statement_md text, editorial_md text,
       limits jsonb /* {timeMs, memMb, outputKb, wallMultiplier} */,
-      checker jsonb /* {kind:'exact'|'tokens'|'float'|'testlib', eps?, binaryUri?} */,
+      checker jsonb /* {kind:'exact'|'tokens'|'float'|'testlib', eps?, sourceUri?} */,
       testset_hash text, testset_uri text, tests_count int, samples jsonb,
       validation_status validation_status, validated_at, created_by fk, created_at,
       unique(problem_id, version))
@@ -451,7 +451,7 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `jobs:{lane}` | stream (group `judges`) | none; `XDEL` after ack | api → worker | Judge jobs per lane |
 | `jobs:dlq`, `jobs:quarantine` | stream | none | worker/api → admin | Failed / poison jobs |
 | `results` | stream (group `api`) | trimmed `MINID` older than 1 h after ack | worker → api | Judge results |
-| `seq:{lane}` / `claimed:{lane}` | string | none | api / worker | Queue position |
+| `seq:{lane}` | string | none | api | Per-lane job counter (`INCR` at enqueue); stamps `JudgeJob.seq` |
 | `ewma:svc:{lane}` | string | none | api | Service-time EWMA for ETA |
 | `hb:{workerId}` | string (JSON) | 10 s | worker | Heartbeat |
 | `progress:{submissionId}` | pub/sub | — | worker → api | Per-test progress |
@@ -469,7 +469,11 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `lock:{name}` | string | lease | any | Singleton jobs (`SET NX PX`) |
 | Hocuspocus Redis extension keys | managed | — | collab | Cross-instance sync |
 
-_Wire format (J-05):_ a `jobs:{lane}` entry has one field, `job`, holding the `JudgeJob` JSON; a `results` entry has one field, `result`, holding the `JudgeResult` JSON; `jobs:dlq` entries carry `job`, `reason` (`invalid-job` or `execution-failed`), `error`, `workerId`, `lane`, `entry`, `ts`. `hb:{workerId}` holds `{workerId, lane, ts, busy, concurrency}`; `progress:{submissionId}` carries `JudgeProgress` JSON. The consumer name is the worker id, and a restarted worker resumes its own unacknowledged entries first. A testlib checker's `binaryUri` points at the checker's C++ **source** under `checkers/` (compiled on each judge, SD-§8.5).
+_Queue position (decision, J-05):_ the judge user may only `SET hb:*` (ADR-009), so there is no `claimed:{lane}` key. The API derives position from the stream itself: jobs ahead in a lane = entries between the group's `last-delivered-id` (`XINFO GROUPS`) and the job's own entry id, counted with `XRANGE … COUNT` (capped; beyond the cap it shows "100+"), plus the same figure for every higher lane (FR-QUEUE-08). This keeps a compromised judge from lying about queue state and needs no extra ACL.
+
+_Custom runs (decision, J-05):_ a job with `mode: run` and `customInput` runs the source once on that input with no checker; the result's `output` and `stderr` (≤ 64 KB each) are set only for these runs, and the verdict says how the run ended (AC = ran to completion). Problem tests never return program output.
+
+_Wire format (J-05):_ a `jobs:{lane}` entry has one field, `job`, holding the `JudgeJob` JSON; a `results` entry has one field, `result`, holding the `JudgeResult` JSON; `jobs:dlq` entries carry `job`, `reason` (`invalid-job` or `execution-failed`), `error`, `workerId`, `lane`, `entry`, `ts`. `hb:{workerId}` holds `{workerId, lane, ts, busy, concurrency}`; `progress:{submissionId}` carries `JudgeProgress` JSON. The consumer name is the worker id, and a restarted worker resumes its own unacknowledged entries first. A testlib checker's `sourceUri` points at the checker's C++ **source** under `checkers/` (compiled on each judge, SD-§8.5).
 
 ---
 
