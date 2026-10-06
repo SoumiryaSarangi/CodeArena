@@ -314,3 +314,9 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Next: J-07 completes when ≥ 25 probe cases exist and pass. Then J-08 (hardening) consumes whatever they expose. (Day 3 also has Q-01 lanes next on the build side.)
 - Ayush must: write probe programs under `tests/attack-suite/cases/<NN-name>/` (one `main.<ext>` + `case.yaml` each; `README.md` shows the format and the BLOCKED/ESCAPED convention). Run `pnpm attack` as you add them. The card's list (fork/memory/CPU/sleep, output floods, symlink to /etc/passwd, /proc and /sys reads, network incl. IPv6/DNS, other-box reads, env dump, ptrace, setuid, raw sockets, compile-time includes, compiler bombs, huge source, Java/Node thread blowups, zombies, signal abuse) is the checklist; send me any you want turned into a case and I'll wire the case.yaml.
 - Model: O · Opus 4.8 (`/effort high` not confirmed by Ayush; the generate-probes step was declined by the safety classifier, so I did not do it — note PLAN §3.6 explain-back matters more here)
+
+## 2026-10-06 · Follow-up · open
+- The J-07 commit briefly carried a `Co-Authored-By` trailer, so GitHub listed an extra contributor on the repo page. The message was amended (now `f8b9e2d`, tree unchanged) and `main` force-pushed with Ayush's approval. Every other commit was already clean.
+- Not yet confirmed fixed: the Contributors box is cached by GitHub, and Dependabot PR #6 (`setup-go-7`) still contained the old commit when last checked.
+- **Next session, ask Ayush first:** "Is the extra contributor gone from the Contributors list?" If not: (1) comment `@dependabot rebase` on PR #6 so no branch references the old commit, (2) re-scan all branches for the trailer, (3) if still listed after about 24 hours, ask GitHub Support (Repositories) to purge cached views and the unreferenced commit `a1b6c14`.
+- Also open: whether to add a `commit-msg` hook in `lefthook.yml` that rejects any commit message containing `Co-Authored-By`.
