@@ -4,6 +4,7 @@
    the harmless basics, and an unprivileged uid could not read these anyway. */
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 int main(void) {
@@ -15,8 +16,13 @@ int main(void) {
     for (unsigned i = 0; i < sizeof devs / sizeof devs[0]; i++) {
         int fd = open(devs[i], O_RDONLY);
         if (fd >= 0) {
-            printf("ESCAPED opened %s\n", devs[i]);
-            opened++;
+            /* Opening a directory (e.g. /dev/disk) always succeeds and is not an
+               escape; only a character or block device node counts. */
+            struct stat st;
+            if (fstat(fd, &st) == 0 && (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode))) {
+                printf("ESCAPED opened %s\n", devs[i]);
+                opened++;
+            }
             close(fd);
         }
     }
