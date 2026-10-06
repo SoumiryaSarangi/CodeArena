@@ -33,3 +33,5 @@ The attack suite (`tests/attack-suite`, 28 cases written by Ayush, FR-JUDGE-10) 
 - **What held without changes:** process, memory, CPU, wall-time, disk and output limits; no network (IPv4, IPv6, DNS); no other box or host isolate paths; no `ptrace`, `setuid`, raw sockets, `mount` or `chroot`; zombies and stray children gone after teardown; signals cannot reach the worker.
 
 Residual risk: the kernel itself is shared; a kernel exploit from inside a box remains the main escape route. That is why the judge VM holds no secrets (this ADR's main decision) and why ADR-014 keeps gVisor/Firecracker as the next step if the threat grows.
+
+**API-side Redis permissions (for Q-04's `api` ACL user).** Besides enqueueing (`EVAL` on `seq:*` and `jobs:*`), the verdict consumer needs `XGROUP CREATE`, `XREADGROUP`, `XACK`, `XAUTOCLAIM`, `XPENDING`, `XINFO GROUPS` and `XTRIM` on `results`; `XADD` on `results:dlq`; and `XADD`, `EXPIRE` and `PUBLISH` on `evt:*` and `rt:*`.

@@ -613,6 +613,7 @@ Test: identical inputs → identical outputs; sum of deltas ≤ 0.
 - **Resume:** replay from `evt:{topic}` after `Last-Event-ID`; if the ID is older than the buffer, send `board.snapshot` / full state instead.
 - **Heartbeat:** comment every 15 s; `retry: 3000`.
 - **Fan-out:** every API instance subscribes to `rt:*` it has clients for; publishing is decoupled from delivery.
+  - *As built (Q-03):* the `rt:{topic}` message is `{"id": "<evt stream id>", "envelope": {topic, type, ts, data}}`, so a subscriber can send the SSE `id:` without reading the stream. `submission.verdict` data is `SubmissionVerdictData` (contracts).
 - **Backpressure:** per-connection write buffer cap 256 KB; slow clients are disconnected and resume via replay.
 
 ---

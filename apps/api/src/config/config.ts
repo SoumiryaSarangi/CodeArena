@@ -19,6 +19,8 @@ const schema = z.object({
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
   RATE_LIMIT_DEFAULT_PER_MIN: z.coerce.number().int().positive().default(120),
+  // Q-03: whether this instance reads the `results` stream. Default on, except under NODE_ENV=test.
+  RESULT_CONSUMER: z.enum(['on', 'off']).optional(),
 
   // Auth (F-06). PEM keys may arrive as one line with literal "\n" (scripts/gen-keys.sh output).
   JWT_PRIVATE_KEY: pem.optional(),
@@ -41,6 +43,10 @@ const schema = z.object({
 });
 
 export type Config = z.infer<typeof schema>;
+
+/** Q-03: should this API instance consume judge results? */
+export const resultConsumerEnabled = (c: Pick<Config, 'NODE_ENV' | 'RESULT_CONSUMER'>) =>
+  (c.RESULT_CONSUMER ?? (c.NODE_ENV === 'test' ? 'off' : 'on')) === 'on';
 
 export function loadConfig(raw: Record<string, string | undefined> = process.env): Config {
   // `KEY=` in a .env file means "not set": treat blank values like missing so defaults apply.

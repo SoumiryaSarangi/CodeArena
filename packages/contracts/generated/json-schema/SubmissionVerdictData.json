@@ -1,0 +1,58 @@
+{
+  "$id": "SubmissionVerdictData.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "failedTest": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "memKb": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "runVersion": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "submissionId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "timeMs": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "verdict": {
+      "$ref": "Verdict.json"
+    }
+  },
+  "required": [
+    "submissionId",
+    "runVersion",
+    "status",
+    "verdict",
+    "timeMs",
+    "memKb",
+    "failedTest"
+  ],
+  "type": "object"
+}

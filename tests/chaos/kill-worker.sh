@@ -10,18 +10,27 @@
 # object store is needed. Needs docker, isolate (with the box /dev from setup-isolate-wsl.sh),
 # gcc and go.
 #
-# Until the verdict consumer exists (Q-03) "exactly one verdict" is checked on the `results`
-# stream; Q-03 extends this script to check Postgres as well.
+# "Exactly one verdict" is checked on the `results` stream. With CHAOS_POSTGRES=1 (needs the
+# Compose Postgres) the API's verdict consumer also runs against a throwaway database, and each
+# round additionally checks that the custom run row is `done` and that exactly one verdict
+# event was published for it (Q-03, FR-QUEUE-06/07).
 set -euo pipefail
 
 ROUNDS="${ROUNDS:-20}"
+CHAOS_POSTGRES="${CHAOS_POSTGRES:-0}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+API="$ROOT/apps/api"
+DB_URL=""
+DB_USER=""
+CONSUMER_PID=""
 TMP="$(mktemp -d)"
 REDIS_ID=""
 declare -A PID
 
 cleanup() {
   for w in "${!PID[@]}"; do kill -9 "${PID[$w]}" 2>/dev/null || true; done
+  [[ -n "$CONSUMER_PID" ]] && kill "$CONSUMER_PID" 2>/dev/null || true
+  [[ -n "$DB_URL" ]] && (cd "$API" && npx tsx src/modules/submissions/chaos-db.ts drop "$DB_URL" >/dev/null 2>&1) || true
   [[ -n "$REDIS_ID" ]] && docker rm -f "$REDIS_ID" >/dev/null 2>&1 || true
   rm -rf "$TMP"
 }
@@ -53,6 +62,18 @@ start_worker() { # name box_base core
 start_worker chaos-a 700 0
 start_worker chaos-b 720 1
 sleep 1
+
+if [[ "$CHAOS_POSTGRES" == 1 ]]; then
+  say "creating a throwaway database and starting the verdict consumer"
+  made="$(cd "$API" && npx tsx src/modules/submissions/chaos-db.ts create)"
+  DB_URL="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["url"])' "$made")"
+  DB_USER="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["userId"])' "$made")"
+  (cd "$API" && DATABASE_URL="$DB_URL" REDIS_URL="redis://127.0.0.1:$PORT" LOG_LEVEL=warn \
+    exec npx tsx src/modules/submissions/results-cli.ts >>"$TMP/consumer.log" 2>&1) &
+  CONSUMER_PID=$!
+  disown "$CONSUMER_PID"
+  sleep 4
+fi
 
 job_json() { # submission id
   python3 - "$1" <<'PY'
@@ -90,6 +111,10 @@ owner_of_pending() {
 fail=0
 for round in $(seq "$ROUNDS"); do
   sid="chaos-sub-$round"
+  if [[ "$CHAOS_POSTGRES" == 1 ]]; then
+    sid="$(python3 -c 'import uuid; print(uuid.uuid4())')"   # custom run ids are UUIDs
+    (cd "$API" && npx tsx src/modules/submissions/chaos-db.ts seed "$DB_URL" "$DB_USER" "$sid")
+  fi
   rc XADD jobs:practice '*' job "$(job_json "$sid")" >/dev/null
 
   owner=""
@@ -111,10 +136,24 @@ for round in $(seq "$ROUNDS"); do
   n="${got%% *}"; by="${got#* }"
   pend="$(rc XPENDING jobs:practice judges | head -1)"
   dlq="$(rc XLEN jobs:dlq)"
-  if [[ "$n" == 1 && "$by" == "$survivor" && "$pend" == 0 && "$dlq" == 0 ]]; then
-    say "round $round: ok   killed $owner, verdict once by $survivor"
+  pg_ok=1
+  pg_note=""
+  if [[ "$CHAOS_POSTGRES" == 1 ]]; then
+    for _ in $(seq 100); do
+      st="$(cd "$API" && npx tsx src/modules/submissions/chaos-db.ts status "$DB_URL" "$sid")"
+      [[ "$st" == *'"status":"done"'* ]] && break
+      sleep 0.1
+    done
+    sleep 1
+    st="$(cd "$API" && npx tsx src/modules/submissions/chaos-db.ts status "$DB_URL" "$sid")"
+    evt="$(rc XLEN "evt:sub:$sid")"
+    if [[ "$st" != *'"status":"done"'* || "$st" != *'"verdict":"AC"'* || "$evt" != 1 ]]; then pg_ok=0; fi
+    pg_note=" postgres=$st events=$evt"
+  fi
+  if [[ "$n" == 1 && "$by" == "$survivor" && "$pend" == 0 && "$dlq" == 0 && "$pg_ok" == 1 ]]; then
+    say "round $round: ok   killed $owner, verdict once by $survivor$pg_note"
   else
-    say "round $round: FAIL killed $owner; results=$n by=[$by] pending=$pend dlq=$dlq"
+    say "round $round: FAIL killed $owner; results=$n by=[$by] pending=$pend dlq=$dlq$pg_note"
     fail=1
   fi
 
@@ -128,7 +167,7 @@ done
 if [[ "$fail" == 0 ]]; then
   say "PASS: $ROUNDS/$ROUNDS rounds ended with exactly one verdict"
 else
-  say "FAIL (worker logs: chaos-a.log, chaos-b.log in $TMP, removed on exit)"
-  tail -20 "$TMP/chaos-a.log" "$TMP/chaos-b.log" || true
+  say "FAIL (worker logs: chaos-a.log, chaos-b.log, consumer.log in $TMP, removed on exit)"
+  tail -20 "$TMP/chaos-a.log" "$TMP/chaos-b.log" "$TMP/consumer.log" 2>/dev/null || true
   exit 1
 fi

@@ -42,3 +42,15 @@ The API side stamps each job with a per-lane counter `seq:{lane}` (INCR) and app
   - *`XPENDING IDLE` + `XCLAIM` instead of `XAUTOCLAIM`.* `XAUTOCLAIM` takes the entry before saying who held it, but telling a crash from a hang needs the previous owner.
   - *Lease check is two commands, not one script.* `EVAL` is outside the judge ACL too. The race (the reaper takes the entry in the instant between check and refresh, after a 10 s stall) at worst yields a duplicate result, which Q-03's idempotent upsert absorbs.
 - **Proof:** `tests/chaos/kill-worker.sh` kills -9 the judging worker mid-job, 20 rounds; every round ends with exactly one result, from the surviving worker, nothing pending and nothing dead-lettered.
+
+## The verdict consumer (Q-03, FR-QUEUE-06)
+
+The API reads `results` as consumer group `api` (`apps/api/src/modules/submissions/results.*.ts`). One result is handled in one Postgres transaction:
+
+- **Idempotency is the unique constraint.** `judge_runs` is unique on `(submission_id, run_version)` and the insert is `ON CONFLICT DO NOTHING`. No row back means a duplicate: nothing else is touched, nothing is published. Concurrent API instances racing on the same result are serialised by the constraint, so exactly one stores it.
+- **Run versions.** A result for the submission's current version sets its summary (`verdict`, time, memory, `failed_test`, `status`). An older version is kept in `judge_runs` as history and never overwrites a newer summary. A version the submission never started is parked (SD-§16.1).
+- **Acknowledge after commit.** A crash between commit and `XACK` redelivers the entry, and the duplicate check absorbs it. The one cost: a crash between commit and the realtime publish loses that event (the verdict is safe in Postgres, and a reconnecting client reads the submission). Publishing only for the call that stored the verdict is what keeps replays silent.
+- **Failures.** A transient error is retried in process, then left pending for takeover (`XAUTOCLAIM`, idle > 60 s). Unusable results (bad JSON, schema violation, unknown submission or version, more than 5 deliveries) go to `results:dlq` with the reason and are acknowledged, so one poison entry cannot block the queue. `results` is trimmed to the last hour, never past an unacknowledged or undelivered entry.
+- **Custom runs** reuse the same stream: a result whose id is a `custom_runs` row completes that row once, with its output and stderr.
+- **Realtime.** On the first store the API appends a `submission.verdict` envelope to `evt:sub:{id}` (replay buffer, 5 min idle expiry) and publishes `{id, envelope}` on `rt:sub:{id}`, where `id` is the replay-stream id the SSE endpoint (Q-05) sends as `id:`.
+- **Not in this card:** the reconciler for submissions stuck without a live job (FR-QUEUE-09, P1). It needs a job builder (submission + problem version → `JudgeJob`) that belongs with the submit endpoint and problem import, so it is a follow-up card (Q-03b).

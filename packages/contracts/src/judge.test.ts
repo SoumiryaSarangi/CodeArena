@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { Checker, HealthSchema, JudgeJob, JudgeProgress, JudgeResult, Verdict } from './index';
+import {
+  Checker,
+  HealthSchema,
+  JudgeJob,
+  JudgeProgress,
+  JudgeResult,
+  SubmissionVerdictData,
+  Verdict,
+} from './index';
 
 const fixture = (name: string): unknown =>
   JSON.parse(readFileSync(new URL(`../fixtures/${name}.json`, import.meta.url), 'utf8'));
@@ -96,5 +104,22 @@ describe('contracts', () => {
   it('F-03: malformed traceparent is rejected', () => {
     const job = fixture('judge-job') as Record<string, unknown>;
     expect(JudgeJob.safeParse({ ...job, traceparent: 'nope' }).success).toBe(false);
+  });
+
+  it('Q-03: the submission.verdict payload is strict and carries no test contents', () => {
+    const ok = {
+      submissionId: 's1',
+      runVersion: 1,
+      status: 'done',
+      verdict: 'WA',
+      timeMs: 10,
+      memKb: 1024,
+      failedTest: 3,
+    };
+    expect(SubmissionVerdictData.safeParse(ok).success).toBe(true);
+    expect(SubmissionVerdictData.safeParse({ ...ok, failedTest: null }).success).toBe(true);
+    expect(SubmissionVerdictData.safeParse({ ...ok, failedTest: 0 }).success).toBe(false);
+    expect(SubmissionVerdictData.safeParse({ ...ok, status: 'queued' }).success).toBe(false);
+    expect(SubmissionVerdictData.safeParse({ ...ok, input: '1 2' }).success).toBe(false);
   });
 });
