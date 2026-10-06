@@ -1,0 +1,8 @@
+title: reading another box's directory or the host isolate tree
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED]
+  outputHas: [BLOCKED]
+  host: [no-leftover-procs, worker-alive]

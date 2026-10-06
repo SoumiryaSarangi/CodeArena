@@ -1,0 +1,8 @@
+title: setuid(0) and related privilege changes
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED]
+  outputHas: [BLOCKED]
+  host: [no-leftover-procs, worker-alive]

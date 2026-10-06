@@ -1,0 +1,8 @@
+title: mounting filesystems from inside the box
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED]
+  outputHas: [BLOCKED]
+  host: [no-leftover-procs, worker-alive]

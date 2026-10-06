@@ -1,0 +1,7 @@
+title: filling the disk with a huge file in the box and /tmp
+language: c
+mode: run
+expect:
+  verdicts: [AC, RE, OLE, MLE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

@@ -1,0 +1,7 @@
+title: fork bomb, process flood stopped by the process limit
+language: c
+mode: run
+expect:
+  verdicts: [AC, RE, TLE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

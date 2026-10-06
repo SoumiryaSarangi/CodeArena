@@ -1,0 +1,7 @@
+title: signalling pid 1 and probing for processes outside the box
+language: c
+mode: run
+expect:
+  verdicts: [AC, RE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

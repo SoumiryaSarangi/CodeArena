@@ -1,0 +1,7 @@
+title: '#include "/etc/shadow" to leak a host file through the compile log'
+language: c
+mode: run
+expect:
+  verdicts: [CE]
+  outputLacks: ['root:', 'daemon:', ESCAPED]
+  host: [no-leftover-procs, worker-alive]

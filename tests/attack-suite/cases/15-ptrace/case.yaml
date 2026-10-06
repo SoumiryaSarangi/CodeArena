@@ -1,0 +1,8 @@
+title: ptrace attach to other processes
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED]
+  outputHas: [BLOCKED]
+  host: [no-leftover-procs, worker-alive]

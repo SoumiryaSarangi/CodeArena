@@ -12,6 +12,7 @@ export default tseslint.config(
       'apps/plag',
       'apps/worker',
       'problems',
+      'tests/attack-suite',
       'packages/contracts/generated',
       '**/next-env.d.ts',
     ],

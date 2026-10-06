@@ -1,0 +1,7 @@
+title: forking children and never reaping them
+language: c
+mode: run
+expect:
+  verdicts: [AC, RE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

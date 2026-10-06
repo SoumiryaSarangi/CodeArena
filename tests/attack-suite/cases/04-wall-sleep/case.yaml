@@ -1,0 +1,7 @@
+title: sleeping far past the wall-clock limit
+language: c
+mode: run
+expect:
+  verdicts: [TLE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

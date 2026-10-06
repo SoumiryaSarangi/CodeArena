@@ -1,0 +1,7 @@
+title: template recursion and constexpr loop to bomb the compiler
+language: cpp17
+mode: run
+expect:
+  verdicts: [CE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

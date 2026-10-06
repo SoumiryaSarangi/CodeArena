@@ -1,0 +1,8 @@
+title: enormous source file rejected before compiling
+language: c
+mode: run
+expect:
+  verdicts: [CE]
+  outputLacks: [ESCAPED]
+  outputHas: ['larger than']
+  host: [no-leftover-procs, worker-alive]

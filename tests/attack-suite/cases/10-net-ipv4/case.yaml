@@ -1,0 +1,8 @@
+title: outbound IPv4 TCP connection
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED]
+  outputHas: [BLOCKED]
+  host: [no-leftover-procs, worker-alive]

@@ -1,0 +1,7 @@
+title: replacing the output file with a symlink to /etc/passwd
+language: c
+mode: run
+expect:
+  verdicts: [AC, RE]
+  outputLacks: ['root:', ESCAPED]
+  host: [no-leftover-procs, worker-alive]

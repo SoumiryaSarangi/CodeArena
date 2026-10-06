@@ -1,0 +1,7 @@
+title: spawning many Node worker threads
+language: node
+mode: run
+expect:
+  verdicts: [AC, RE, TLE, MLE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

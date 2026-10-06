@@ -1,0 +1,7 @@
+title: spawning thousands of JVM threads
+language: java21
+mode: run
+expect:
+  verdicts: [AC, RE, TLE, MLE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

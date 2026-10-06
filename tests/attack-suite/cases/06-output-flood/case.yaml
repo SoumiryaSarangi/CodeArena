@@ -1,0 +1,7 @@
+title: printing gigabytes to stdout
+language: c
+mode: run
+expect:
+  verdicts: [OLE, RE]
+  outputLacks: [ESCAPED]
+  host: [no-leftover-procs, worker-alive]

@@ -8,3 +8,4 @@ apps/plag
 apps/worker
 packages/contracts/generated
 problems
+tests/attack-suite

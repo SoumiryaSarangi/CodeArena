@@ -1,0 +1,8 @@
+title: dumping the environment of every visible process
+language: c
+mode: run
+expect:
+  verdicts: [AC]
+  outputLacks: [ESCAPED, CODEARENA]
+  outputHas: ['dumped']
+  host: [no-leftover-procs, worker-alive, env-clean]
