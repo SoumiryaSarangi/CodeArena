@@ -24,14 +24,18 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
    az login
    az account show --query "{name:name, id:id}" -o table
    ```
-2. **Check the region and sizes your subscription allows** (Azure for Students blocks some).
+2. **Check the region and sizes your subscription allows.** Azure for Students has a policy that
+   limits regions and hides some VM sizes, and it differs per account. List the allowed regions,
+   then check the sizes in them:
    ```
-   az vm list-skus --location centralindia --size Standard_B2s --query "[].{size:name, blocked:restrictions[0].reasonCode}" -o table
-   az vm list-skus --location centralindia --size Standard_D2s_v5 --query "[].{size:name, blocked:restrictions[0].reasonCode}" -o table
+   az policy assignment list --query "[].{name:displayName, regions:parameters.listOfAllowedLocations.value}" -o json
+   az vm list-skus --location eastasia --resource-type virtualMachines --query "[?length(restrictions)==\`0\` && contains(['Standard_B2s_v2','Standard_D2s_v5'], name)].name" -o tsv
    ```
-   An empty `blocked` column means allowed. If `centralindia` or a size is blocked, set `location`
-   / `api_vm_size` / `judge_vm_size` in `terraform.tfvars` (the nearest allowed region is fine; it
-   only adds latency). Make sure the providers are registered once:
+   For the account this was written for, only `eastasia`, `malaysiawest`, `polandcentral`,
+   `koreacentral` and `uaenorth` are allowed, and `eastasia` is the one with the sizes we need
+   (`Standard_B2s_v2`, and `Standard_D2s_v5` for contests), so those are the defaults. If your
+   account differs, set `location` / `api_vm_size` / `judge_vm_size` in `terraform.tfvars`. Make
+   sure the providers are registered once:
    ```
    for ns in Microsoft.Compute Microsoft.Network Microsoft.Storage Microsoft.Consumption Microsoft.Authorization; do az provider register --namespace $ns; done
    ```
@@ -78,7 +82,7 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
 
 **Why D2s_v5 for contests.** `Standard_B2s` is _burstable_: it earns CPU credits while idle and is
 throttled to a baseline once they run out. Sustained judging drains them, which makes timings
-unfair (flaky TLEs). `Standard_D2s_v5` is not burstable. B2s is fine for the quiet days.
+unfair (flaky TLEs). `Standard_D2s_v5` is not burstable. B-series is fine for the quiet days.
 
 ## Cost (rough, check the Azure pricing calculator for your region)
 

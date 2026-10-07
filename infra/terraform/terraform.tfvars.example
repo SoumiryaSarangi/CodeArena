@@ -4,7 +4,7 @@
 subscription_id = "00000000-0000-0000-0000-000000000000" # az account show --query id -o tsv
 ssh_public_key  = "ssh-ed25519 AAAA... you@laptop"       # cat ~/.ssh/id_ed25519.pub
 
-# location = "centralindia"   # change if the subscription does not allow it (README, step 2)
+# location = "eastasia"   # the only allowed region with the needed sizes on the Azure for Students policy (README, step 2)
 
 # Steady state: one judge. Before the load test and contest day, scale up and use a non-burstable size:
 # judge_count   = 3

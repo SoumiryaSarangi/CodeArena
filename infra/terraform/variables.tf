@@ -20,9 +20,9 @@ variable "environment" {
 }
 
 variable "location" {
-  description = "Azure region. Central India if the subscription allows it (PLAN §5.1); otherwise the nearest allowed one (see README)."
+  description = "Azure region. PLAN §5.1 prefers Central India, but the Azure for Students policy here only allows eastasia, malaysiawest, polandcentral, koreacentral and uaenorth, and only eastasia has the VM sizes below (checked with az vm list-skus)."
   type        = string
-  default     = "centralindia"
+  default     = "eastasia"
 }
 
 variable "admin_username" {
@@ -47,15 +47,15 @@ variable "api_ssh_allowed_cidrs" {
 }
 
 variable "api_vm_size" {
-  description = "API VM (Caddy, API, Postgres, Redis, object storage, collab). 2 vCPU / 4 GB."
+  description = "API VM (Caddy, API, Postgres, Redis, object storage, collab). Standard_B2s_v2 = 2 vCPU / 8 GB, burstable (the old Standard_B2s is not offered in the allowed region)."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B2s_v2"
 }
 
 variable "judge_vm_size" {
-  description = "Judge VM size. B2s is burstable: under sustained judging its CPU credits run out and it is throttled, which skews timings. Use Standard_D2s_v5 (non-burstable) for the load test and contest day."
+  description = "Judge VM size. B-series is burstable: under sustained judging its CPU credits run out and it is throttled, which skews timings. Use Standard_D2s_v5 (non-burstable, available in eastasia) for the load test and contest day."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B2s_v2"
 }
 
 variable "judge_count" {
