@@ -41,7 +41,7 @@ jobs:
         working-directory: apps/worker
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: apps/worker/go.mod
       - run: test -z "$(gofmt -l .)"
@@ -60,7 +60,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: apps/worker/go.mod
       - name: Install isolate and language runtimes
