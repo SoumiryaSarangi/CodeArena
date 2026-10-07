@@ -56,7 +56,7 @@ for j in $judges; do
 done
 
 echo "== 3/5 /opt/codearena and the production files"
-ssh "$api" "sudo install -d -o $user -g $user /opt/codearena /opt/codearena/state"
+ssh "$api" "sudo install -d -o $user -g $user /opt/codearena /opt/codearena/state && sudo usermod -aG docker $user"
 tar -C "$infra" -cz --transform 's,^prod/,,' --exclude='prod/tests' --exclude='prod/ci' prod redis \
   | ssh "$api" 'tar -xz -C /opt/codearena && chmod +x /opt/codearena/deploy.sh /opt/codearena/init-env.sh'
 
