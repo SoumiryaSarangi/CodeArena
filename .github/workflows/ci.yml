@@ -68,9 +68,12 @@ jobs:
             echo "available=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          sudo scripts/setup-isolate-wsl.sh && sudo scripts/setup-judge-runtimes.sh \
-            && echo "available=true" >> "$GITHUB_OUTPUT" \
-            || { echo "isolate setup failed on this runner; see nightly judge-VM run (D-02)" >&2; echo "available=false" >> "$GITHUB_OUTPUT"; }
+          if sudo scripts/setup-isolate-wsl.sh && sudo scripts/setup-judge-runtimes.sh; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "isolate setup failed on this runner; see nightly judge-VM run (D-02)" >&2
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Run attack suite
         if: steps.isolate.outputs.available == 'true'
         working-directory: apps/worker
@@ -134,11 +137,11 @@ jobs:
           set -e
           docker build -f apps/api/Dockerfile -t codearena-api:ci .
           docker run -d --name api-smoke -p 4000:4000 -e NODE_ENV=development codearena-api:ci
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4000/api/health/live && break; sleep 2; done
+          for _ in $(seq 1 30); do curl -fsS http://127.0.0.1:4000/api/health/live && break; sleep 2; done
           curl -fsS http://127.0.0.1:4000/api/health/live || { docker logs api-smoke; exit 1; }
       - name: Workflows are valid
         run: |
-          bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) latest
+          bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
           ./actionlint
 
   python:
