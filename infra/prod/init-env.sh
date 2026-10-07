@@ -128,7 +128,15 @@ set)
   [ -f "$ENV_FILE" ] || die "$ENV_FILE does not exist; run init first"
   grep -q "^$key=" "$ENV_FILE" || die "$key is not in $ENV_FILE"
   read -r -s -p "Value for $key (hidden): " value; echo
+  value="${value//[[:space:]]/}"
+  [ -n "$value" ] || die "$key: nothing was entered, nothing changed"
   safe "$key" "$value"
+  # A Google client ID is exactly one "<digits>-<letters>.apps.googleusercontent.com". Pasting twice (or
+  # pasting a whole command into the prompt) makes a longer string that Google reports as "client not found".
+  if [ "$key" = OAUTH_GOOGLE_CLIENT_ID ]; then
+    [[ "$value" =~ ^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$ ]] \
+      || die "$key is not a single Google client ID (expected <digits>-<letters>.apps.googleusercontent.com, got ${#value} characters); nothing changed"
+  fi
   tmp="$(mktemp "$APP_DIR/.env.XXXXXX")"
   chmod 600 "$tmp"
   # Replace the line without ever putting the value on a command line.
@@ -136,7 +144,7 @@ set)
     if [[ "$line" == "$key="* ]]; then printf '%s=%s\n' "$key" "$value"; else printf '%s\n' "$line"; fi
   done < "$ENV_FILE" > "$tmp"
   mv "$tmp" "$ENV_FILE"
-  echo "$key updated."
+  echo "$key updated (${#value} characters)."
   ;;
 
 show-keys)

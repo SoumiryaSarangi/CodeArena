@@ -56,9 +56,13 @@ check "rejects a web URL with a path" "$([ $? != 0 ] && echo 0 || echo 1)"
 
 echo "- setting a value"
 before="$(pw JWT_ISSUER)"
-printf 'g-client-id.apps.example\n' | "$INIT" set OAUTH_GOOGLE_CLIENT_ID >/dev/null 2>&1; rc=$?
-check "set updates one value" "$([ $rc = 0 ] && [ "$(pw OAUTH_GOOGLE_CLIENT_ID)" = "g-client-id.apps.example" ] && [ "$(pw JWT_ISSUER)" = "$before" ] && echo 0 || echo 1)"
+printf '123456-abc.apps.googleusercontent.com\n' | "$INIT" set OAUTH_GOOGLE_CLIENT_ID >/dev/null 2>&1; rc=$?
+check "set updates one value" "$([ $rc = 0 ] && [ "$(pw OAUTH_GOOGLE_CLIENT_ID)" = "123456-abc.apps.googleusercontent.com" ] && [ "$(pw JWT_ISSUER)" = "$before" ] && echo 0 || echo 1)"
 check "the file is still mode 600 after an update" "$([ "$(stat -c %a "$APP_DIR/prod.env")" = 600 ] && echo 0 || echo 1)"
+printf '123456-abc.apps.googleusercontent.com123456-abc.apps.googleusercontent.com\n' | "$INIT" set OAUTH_GOOGLE_CLIENT_ID >/dev/null 2>&1
+check "a Google client ID pasted twice is refused and the good one is kept" "$([ $? != 0 ] && [ "$(pw OAUTH_GOOGLE_CLIENT_ID)" = "123456-abc.apps.googleusercontent.com" ] && echo 0 || echo 1)"
+printf '  123456-def.apps.googleusercontent.com  \n' | "$INIT" set OAUTH_GOOGLE_CLIENT_ID >/dev/null 2>&1
+check "spaces around a pasted value are trimmed" "$([ "$(pw OAUTH_GOOGLE_CLIENT_ID)" = "123456-def.apps.googleusercontent.com" ] && echo 0 || echo 1)"
 printf 'abc;rm -rf /\n' | "$INIT" set OAUTH_GOOGLE_CLIENT_SECRET >/dev/null 2>&1
 check "set refuses unsafe characters" "$([ $? != 0 ] && [ "$(pw OAUTH_GOOGLE_CLIENT_SECRET)" = not-configured ] && echo 0 || echo 1)"
 printf 'x\n' | "$INIT" set NOT_A_KEY >/dev/null 2>&1

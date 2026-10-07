@@ -61,17 +61,16 @@ servers, uploads the files, generates every secret on the API VM, and sets the G
 variables (needs `gh auth login` once). It prints the servers' host key fingerprints: compare them
 with the ones you accepted when you first logged in (API `SHA256:li4V…`, judge `SHA256:iBke…`).
 
-**4. Sign-in values, typed on the server (hidden prompts).**
+**4. Sign-in values (hidden prompts, one value at a time).** From your own machine:
 
 ```bash
-ssh codearena@40.83.75.34
-cd /opt/codearena
-./init-env.sh set OAUTH_GOOGLE_CLIENT_ID
-./init-env.sh set OAUTH_GOOGLE_CLIENT_SECRET
-./init-env.sh set OAUTH_GITHUB_CLIENT_ID
-./init-env.sh set OAUTH_GITHUB_CLIENT_SECRET
-./init-env.sh show-keys          # shows which are set, never the values
+infra/prod/set-oauth.sh all      # or: google | github
 ```
+
+It logs in with the deploy key, asks for each value in turn (paste **only the value**, once, never a
+command), saves it to the server's `prod.env`, and restarts the API. A Google client ID that is not exactly
+one `<digits>-<letters>.apps.googleusercontent.com` is refused. `./init-env.sh show-keys` on the server
+shows which values are set, never the values.
 
 Until these are set the site comes up but sign-in does not work (the placeholders say `not-configured`).
 
