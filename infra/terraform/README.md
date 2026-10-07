@@ -63,9 +63,14 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
    ```
    # use the commands printed by `terraform output ssh`
    ssh -J codearena@<api-ip> codearena@<judge-private-ip> 'cloud-init status --wait'
-   terraform apply -var judge_bootstrap=false
+   ./lock-judges.sh
    ```
-   The second apply removes the judge's public IP and adds the rule that blocks all other egress.
+   The script runs two applies (it detaches the judge's temporary public IP first, because Azure
+   will not delete an IP that is still attached, and Terraform does not order those steps by
+   itself), then adds the rule that blocks all other egress. Type `yes` at each prompt. Check:
+   ```
+   ssh -J codearena@<api-ip> codearena@<judge-private-ip> 'curl -m 5 -sI https://example.com >/dev/null 2>&1 && echo "INTERNET OPEN (bad)" || echo "no internet (good)"'
+   ```
    You can still reach the judge through the API VM (jump host).
 7. **Domain** (U5.3): until the `.me` domain exists, use the `api_host_sslip` output
    (`api.<ip-with-dashes>.sslip.io`): Caddy gets a certificate for it automatically (D-02).

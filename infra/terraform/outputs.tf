@@ -49,5 +49,5 @@ output "ssh" {
 }
 
 output "next_steps" {
-  value = var.judge_bootstrap ? "Judge VMs are in BOOTSTRAP mode (public IP, open egress). When cloud-init has finished on each (ssh in, run: cloud-init status --wait), run: terraform apply -var judge_bootstrap=false" : "Judge VMs are locked down (no public IP; egress only to Redis and object storage on the API subnet)."
+  value = var.judge_bootstrap ? "Judge VMs are in BOOTSTRAP mode (public IP, open egress). When cloud-init has finished on each (ssh in, run: cloud-init status --wait), run: ./lock-judges.sh" : "Judge VMs are locked down (no public IP; egress only to Redis and object storage on the API subnet)."
 }
