@@ -16,13 +16,18 @@ import { and, asc, desc, eq, lt, type SQL } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
 import { DB, type Db } from '../../db/db.module';
 import {
+  contestProblems,
+  contests,
   customRuns,
   judgeRuns,
+  participants,
   problemVersions,
   problems,
   submissions,
   testResults,
 } from '../../db/schema';
+import { contestMinute, contestState } from '../contests/state';
+import { practiceVisible } from '../problems/practice';
 import { buildJob } from './job-builder';
 import { QueuePositionService } from './queue-position.service';
 import { QueueService } from './queue.service';
@@ -86,25 +91,81 @@ export class SubmissionsService {
     }
   }
 
-  /** A public problem's current version, with what a judge needs. 404 for anything else. */
+  /** A problem practice may show, at its current version. 404 for anything else (FR-PROB-09). */
   private async version(slug: string) {
     const [row] = await this.db
-      .select({
-        problemId: problems.id,
-        title: problems.title,
-        id: problemVersions.id,
-        testsetHash: problemVersions.testsetHash,
-        testsetUri: problemVersions.testsetUri,
-        limits: problemVersions.limits,
-        checker: problemVersions.checker,
-        samples: problemVersions.samples,
-      })
+      .select(this.versionColumns)
       .from(problems)
       .innerJoin(problemVersions, eq(problemVersions.id, problems.currentVersionId))
-      .where(and(eq(problems.slug, slug), eq(problems.visibility, 'public')))
+      .where(and(eq(problems.slug, slug), practiceVisible))
       .limit(1);
     if (!row || !row.testsetHash) throw new ProblemError('not-found', 'No such problem');
     return row;
+  }
+
+  private readonly versionColumns = {
+    problemId: problems.id,
+    title: problems.title,
+    id: problemVersions.id,
+    testsetHash: problemVersions.testsetHash,
+    testsetUri: problemVersions.testsetUri,
+    limits: problemVersions.limits,
+    checker: problemVersions.checker,
+    samples: problemVersions.samples,
+  };
+
+  /**
+   * FR-SUB-03/08: where a submission goes. A contest problem (`contestSlug` + `label`) judges the
+   * version the contest pinned: before start → `contest-not-started`; while running → the
+   * `contest` lane, stamped with the contest minute and the freeze flag; after the end → accepted
+   * as practice (no contest id, so it never touches the board).
+   */
+  private async target(userId: string, body: CreateSubmission) {
+    if (body.contestSlug === undefined) {
+      return { version: await this.version(body.problemSlug!), lane: 'practice' as const };
+    }
+    const [c] = await this.db
+      .select({
+        id: contests.id,
+        status: contests.status,
+        startsAt: contests.startsAt,
+        endsAt: contests.endsAt,
+        freezeAt: contests.freezeAt,
+      })
+      .from(contests)
+      .where(eq(contests.slug, body.contestSlug))
+      .limit(1);
+    // A draft does not exist for contestants.
+    if (!c || c.status === 'draft') throw new ProblemError('not-found', 'No such contest');
+    const now = new Date();
+    const state = contestState(c, now);
+    const [row] = await this.db
+      .select(this.versionColumns)
+      .from(contestProblems)
+      .innerJoin(problems, eq(problems.id, contestProblems.problemId))
+      .innerJoin(problemVersions, eq(problemVersions.id, contestProblems.versionId))
+      .where(and(eq(contestProblems.contestId, c.id), eq(contestProblems.label, body.label!)))
+      .limit(1);
+    if (!row || !row.testsetHash) throw new ProblemError('not-found', 'No such problem');
+    if (state === 'scheduled') {
+      throw new ProblemError('contest-not-started', 'The contest has not started yet');
+    }
+    if (state === 'ended' || state === 'finalized') {
+      return { version: row, lane: 'practice' as const };
+    }
+    const [reg] = await this.db
+      .select({ userId: participants.userId })
+      .from(participants)
+      .where(and(eq(participants.contestId, c.id), eq(participants.userId, userId)))
+      .limit(1);
+    if (!reg) throw new ProblemError('forbidden', 'Register for the contest to submit');
+    return {
+      version: row,
+      lane: 'contest' as const,
+      contestId: c.id,
+      contestMinute: contestMinute(c.startsAt, now),
+      afterFreeze: c.freezeAt !== null && now >= c.freezeAt,
+    };
   }
 
   /** FR-SUB-01/02/03: persist, enqueue, then answer with the queue position and ETA. */
@@ -113,10 +174,8 @@ export class SubmissionsService {
       try {
         const language = this.checkLanguage(body.language);
         this.checkSize(body.source);
-        const version = await this.version(body.problemSlug);
-        // Practice for now; the contest lane (running contest) and `interactive` (pad) arrive with
-        // C-01 and the rooms card (FR-SUB-03, FR-SUB-08).
-        const lane = 'practice' as const;
+        const target = await this.target(userId, body);
+        const { version, lane } = target;
         const [sub] = await this.db
           .insert(submissions)
           .values({
@@ -126,6 +185,13 @@ export class SubmissionsService {
             source: body.source,
             sourceBytes: bytes(body.source),
             lane,
+            ...('contestId' in target
+              ? {
+                  contestId: target.contestId,
+                  contestMinute: target.contestMinute,
+                  afterFreeze: target.afterFreeze,
+                }
+              : {}),
           })
           .returning({ id: submissions.id });
         const id = sub!.id;

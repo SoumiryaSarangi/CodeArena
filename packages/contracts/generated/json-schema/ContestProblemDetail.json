@@ -1,0 +1,79 @@
+{
+  "$id": "ContestProblemDetail.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "difficulty": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "label": {
+      "type": "string"
+    },
+    "limits": {
+      "additionalProperties": false,
+      "properties": {
+        "memMb": {
+          "type": "number"
+        },
+        "outputKb": {
+          "type": "number"
+        },
+        "timeMs": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "timeMs",
+        "memMb",
+        "outputKb"
+      ],
+      "type": "object"
+    },
+    "samples": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "in",
+          "out"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "statementMd": {
+      "type": "string"
+    },
+    "testsCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "title",
+    "slug",
+    "difficulty",
+    "limits",
+    "statementMd",
+    "samples",
+    "testsCount"
+  ],
+  "type": "object"
+}

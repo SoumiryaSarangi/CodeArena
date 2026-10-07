@@ -1,0 +1,52 @@
+{
+  "$id": "ContestRules.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "ceCountsAsAttempt": {
+      "default": false,
+      "type": "boolean"
+    },
+    "langMultipliers": {
+      "additionalProperties": {
+        "maximum": 10,
+        "minimum": 1,
+        "type": "number"
+      },
+      "default": {
+        "c": 1,
+        "cpp17": 1,
+        "cpp20": 1,
+        "java21": 2,
+        "node": 2,
+        "python3": 3
+      },
+      "propertyNames": {
+        "$ref": "Language.json"
+      },
+      "type": "object"
+    },
+    "lateRegistration": {
+      "default": true,
+      "type": "boolean"
+    },
+    "penaltyMinutes": {
+      "default": 20,
+      "maximum": 120,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "rated": {
+      "default": true,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "penaltyMinutes",
+    "ceCountsAsAttempt",
+    "langMultipliers",
+    "rated",
+    "lateRegistration"
+  ],
+  "type": "object"
+}

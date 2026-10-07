@@ -18,6 +18,8 @@ export const contests = pgTable('contests', {
   id: id(),
   slug: text('slug').notNull().unique(),
   title: text('title').notNull(),
+  /** Shown on the contest page (Markdown-free plain text). */
+  description: text('description').notNull().default(''),
   startsAt: ts('starts_at').notNull(),
   endsAt: ts('ends_at').notNull(),
   freezeAt: ts('freeze_at'),

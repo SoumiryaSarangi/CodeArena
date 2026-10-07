@@ -1,0 +1,73 @@
+{
+  "$id": "AdminContestList.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "endsAt": {
+            "type": "string"
+          },
+          "freezeAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "problemCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "registered": {
+            "type": "boolean"
+          },
+          "registeredCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "state": {
+            "$ref": "ContestState.json"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "state",
+          "startsAt",
+          "endsAt",
+          "freezeAt",
+          "problemCount",
+          "registeredCount",
+          "registered",
+          "id"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "serverNow": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "serverNow",
+    "items"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,49 @@
+{
+  "$id": "ContestProblemItem.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "difficulty": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "label": {
+      "type": "string"
+    },
+    "limits": {
+      "additionalProperties": false,
+      "properties": {
+        "memMb": {
+          "type": "number"
+        },
+        "outputKb": {
+          "type": "number"
+        },
+        "timeMs": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "timeMs",
+        "memMb",
+        "outputKb"
+      ],
+      "type": "object"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "label",
+    "title",
+    "slug",
+    "difficulty",
+    "limits"
+  ],
+  "type": "object"
+}

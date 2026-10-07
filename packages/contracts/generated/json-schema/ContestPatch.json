@@ -1,0 +1,85 @@
+{
+  "$id": "ContestPatch.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "maxLength": 5000,
+      "type": "string"
+    },
+    "endsAt": {
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+      "type": "string"
+    },
+    "freezeAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "published": {
+      "type": "boolean"
+    },
+    "rules": {
+      "additionalProperties": false,
+      "properties": {
+        "ceCountsAsAttempt": {
+          "default": false,
+          "type": "boolean"
+        },
+        "langMultipliers": {
+          "additionalProperties": {
+            "maximum": 10,
+            "minimum": 1,
+            "type": "number"
+          },
+          "default": {
+            "c": 1,
+            "cpp17": 1,
+            "cpp20": 1,
+            "java21": 2,
+            "node": 2,
+            "python3": 3
+          },
+          "propertyNames": {
+            "$ref": "Language.json"
+          },
+          "type": "object"
+        },
+        "lateRegistration": {
+          "default": true,
+          "type": "boolean"
+        },
+        "penaltyMinutes": {
+          "default": 20,
+          "maximum": 120,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rated": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "startsAt": {
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 3,
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

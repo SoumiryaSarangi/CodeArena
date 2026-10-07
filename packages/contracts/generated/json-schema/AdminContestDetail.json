@@ -1,0 +1,120 @@
+{
+  "$id": "AdminContestDetail.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "canRegister": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "endsAt": {
+      "type": "string"
+    },
+    "freezeAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "problemCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "problems": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "validationStatus": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pending",
+                  "running",
+                  "passed",
+                  "failed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "label",
+          "slug",
+          "title",
+          "version",
+          "validationStatus"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "registered": {
+      "type": "boolean"
+    },
+    "registeredCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "rules": {
+      "$ref": "ContestRules.json"
+    },
+    "serverNow": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "startsAt": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "ContestState.json"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "state",
+    "startsAt",
+    "endsAt",
+    "freezeAt",
+    "problemCount",
+    "registeredCount",
+    "registered",
+    "description",
+    "rules",
+    "serverNow",
+    "canRegister",
+    "id",
+    "problems"
+  ],
+  "type": "object"
+}

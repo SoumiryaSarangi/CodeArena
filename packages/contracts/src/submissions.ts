@@ -5,13 +5,27 @@ import { Lane, Verdict } from './enums';
 /** POST /api/submissions (SRS §3.1.2). Contest submissions (`contestSlug` + `label`) arrive with C-01. */
 export const CreateSubmission = z
   .object({
-    problemSlug: z.string().min(1).max(100),
+    /** Practice: the problem. Contest: `contestSlug` + `label` instead (exactly one form). */
+    problemSlug: z.string().min(1).max(100).optional(),
+    contestSlug: z.string().min(1).max(100).optional(),
+    label: z
+      .string()
+      .regex(/^[A-Z]$/)
+      .optional(),
     /** Checked against the enabled languages: an unknown one is 422 `unsupported-language`. */
     language: z.string().min(1).max(20),
     /** ≤ 64 KB; over that is 413 `payload-too-large`. */
     source: z.string().min(1),
   })
   .strict()
+  .refine((v) => (v.problemSlug !== undefined) !== (v.contestSlug !== undefined), {
+    message: 'Send either problemSlug or contestSlug with label',
+    path: ['problemSlug'],
+  })
+  .refine((v) => (v.contestSlug === undefined) === (v.label === undefined), {
+    message: 'contestSlug and label go together',
+    path: ['label'],
+  })
   .meta({ id: 'CreateSubmission' });
 export type CreateSubmission = z.infer<typeof CreateSubmission>;
 

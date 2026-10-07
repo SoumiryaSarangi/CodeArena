@@ -1,0 +1,69 @@
+{
+  "$id": "ContestDetail.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "canRegister": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "endsAt": {
+      "type": "string"
+    },
+    "freezeAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "problemCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "registered": {
+      "type": "boolean"
+    },
+    "registeredCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "rules": {
+      "$ref": "ContestRules.json"
+    },
+    "serverNow": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "startsAt": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "ContestState.json"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "state",
+    "startsAt",
+    "endsAt",
+    "freezeAt",
+    "problemCount",
+    "registeredCount",
+    "registered",
+    "description",
+    "rules",
+    "serverNow",
+    "canRegister"
+  ],
+  "type": "object"
+}

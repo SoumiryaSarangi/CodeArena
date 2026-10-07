@@ -7,6 +7,7 @@ import type {
 } from '@codearena/contracts';
 import { and, asc, eq, gt, ilike, inArray, isNotNull, or, sql, type SQL } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
+import { practiceVisible } from './practice';
 import { DB, type Db } from '../../db/db.module';
 import { problemTags, problemVersions, problems, submissions } from '../../db/schema';
 
@@ -37,7 +38,7 @@ export class ProblemsService {
     if (q.status && !userId) {
       throw new ProblemError('unauthorized', 'Sign in to filter by your progress');
     }
-    const where: SQL[] = [eq(problems.visibility, 'public'), isNotNull(problems.currentVersionId)];
+    const where: SQL[] = [practiceVisible, isNotNull(problems.currentVersionId)];
     if (q.q) where.push(ilike(problems.title, `%${escapeLike(q.q)}%`));
     if (q.minDiff !== undefined) where.push(sql`${problems.difficulty} >= ${q.minDiff}`);
     if (q.maxDiff !== undefined) where.push(sql`${problems.difficulty} <= ${q.maxDiff}`);
@@ -127,7 +128,7 @@ export class ProblemsService {
       .select({ tag: problemTags.tag, count: sql<number>`count(*)::int` })
       .from(problemTags)
       .innerJoin(problems, eq(problems.id, problemTags.problemId))
-      .where(and(eq(problems.visibility, 'public'), isNotNull(problems.currentVersionId)))
+      .where(and(practiceVisible, isNotNull(problems.currentVersionId)))
       .groupBy(problemTags.tag)
       .orderBy(sql`count(*) desc`, asc(problemTags.tag));
     return { items: rows };
@@ -179,7 +180,7 @@ export class ProblemsService {
       })
       .from(problems)
       .innerJoin(problemVersions, eq(problemVersions.id, problems.currentVersionId))
-      .where(and(eq(problems.slug, slug), eq(problems.visibility, 'public')))
+      .where(and(eq(problems.slug, slug), practiceVisible))
       .limit(1);
     if (!row) throw new ProblemError('not-found', 'No such problem');
     const tags = await this.db

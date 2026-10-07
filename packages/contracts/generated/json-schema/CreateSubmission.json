@@ -3,6 +3,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "contestSlug": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "label": {
+      "pattern": "^[A-Z]$",
+      "type": "string"
+    },
     "language": {
       "maxLength": 20,
       "minLength": 1,
@@ -19,7 +28,6 @@
     }
   },
   "required": [
-    "problemSlug",
     "language",
     "source"
   ],

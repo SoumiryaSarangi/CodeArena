@@ -1,0 +1,21 @@
+{
+  "$id": "ContestProblemList.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "ContestProblemItem.json"
+      },
+      "type": "array"
+    },
+    "serverNow": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "serverNow",
+    "items"
+  ],
+  "type": "object"
+}
