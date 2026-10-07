@@ -1,0 +1,21 @@
+{
+  "$id": "StatementPatch.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "editorialMd": {
+      "maxLength": 200000,
+      "type": "string"
+    },
+    "statementMd": {
+      "maxLength": 200000,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "statementMd",
+    "editorialMd"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,112 @@
+{
+  "$id": "ValidationItem.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actual": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expected": {
+      "$ref": "Verdict.json"
+    },
+    "failedTests": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "no": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "verdict": {
+            "$ref": "Verdict.json"
+          }
+        },
+        "required": [
+          "no",
+          "verdict"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "kind": {
+      "enum": [
+        "solution",
+        "validator"
+      ],
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "memKb": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "ok": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "timeMs": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "name",
+    "language",
+    "expected",
+    "status",
+    "actual",
+    "timeMs",
+    "memKb",
+    "failedTests",
+    "ok"
+  ],
+  "type": "object"
+}

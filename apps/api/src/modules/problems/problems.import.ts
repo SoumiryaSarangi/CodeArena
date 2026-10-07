@@ -101,6 +101,10 @@ export class ProblemImporter {
       await this.put(key, pkg.checkerSource, 'text/x-c++src');
       checker = { kind: 'testlib', sourceUri: this.uri(key) };
     }
+    // The validator is stored so a validation run can send it to a judge (FR-PROB-04, UI-04).
+    const validatorKey = `validators/${sha256(pkg.validatorSource)}.cpp`;
+    await this.put(validatorKey, pkg.validatorSource, 'text/x-c++src');
+    const validatorUri = this.uri(validatorKey);
     const solutionRows: {
       name: string;
       language: string;
@@ -151,6 +155,7 @@ export class ProblemImporter {
         isDeepStrictEqual(last.limits, pkg.limits) &&
         isDeepStrictEqual(last.checker, checker) &&
         isDeepStrictEqual(last.samples, pkg.samples) &&
+        (last.validatorUri === null || last.validatorUri === validatorUri) &&
         problem!.difficulty === pkg.rating &&
         JSON.stringify(await this.solutionsOf(tx, last.id)) ===
           JSON.stringify(sortedSolutions(solutionRows)) &&
@@ -158,6 +163,13 @@ export class ProblemImporter {
           JSON.stringify([...pkg.tags].sort());
 
       if (same) {
+        // Versions imported before validators were stored get theirs now; nothing else changes.
+        if (last.validatorUri === null) {
+          await tx
+            .update(problemVersions)
+            .set({ validatorUri })
+            .where(eq(problemVersions.id, last.id));
+        }
         if (opts.visibility && opts.visibility !== problem!.visibility) {
           await tx
             .update(problems)
@@ -186,6 +198,7 @@ export class ProblemImporter {
           checker,
           testsetHash: hash,
           testsetUri: this.uri(testsetKey),
+          validatorUri,
           testsCount: pkg.tests.length,
           samples: pkg.samples,
           createdBy: opts.actorId ?? null,

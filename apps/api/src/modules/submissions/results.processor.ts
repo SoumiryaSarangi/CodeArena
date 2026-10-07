@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { JudgeResult, type SubmissionVerdictData } from '@codearena/contracts';
 import { metrics, trace } from '@opentelemetry/api';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -10,6 +10,7 @@ import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
 import { publishEvent } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
+import { ValidationService } from './validation.service';
 
 const tracer = trace.getTracer('api');
 const processed = metrics.getMeter('api').createCounter('ca_results_processed_total', {
@@ -27,6 +28,8 @@ export type Outcome =
   | { kind: 'duplicate' }
   /** An older run version than the submission's current one: kept as history only. */
   | { kind: 'stale' }
+  /** A verdict for a setter's validation run (UI-04): stored on its item, nobody is notified. */
+  | { kind: 'validation' }
   /** Not trustworthy or not ours: the consumer moves it to `results:dlq`. */
   | { kind: 'parked'; reason: ParkReason; detail: string };
 
@@ -47,6 +50,8 @@ export class ResultsProcessor {
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(QUEUE_KEY_PREFIX) private readonly prefix: string,
     @Inject(LOGGER) private readonly log: Logger,
+    /** Absent when the processor is built by hand (tests, the CLI): such results are parked as before. */
+    @Optional() @Inject(ValidationService) private readonly validation?: ValidationService,
   ) {}
 
   /**
@@ -234,10 +239,14 @@ export class ResultsProcessor {
       .where(eq(customRuns.id, r.submissionId))
       .limit(1);
     if (!run) {
+      // Not a custom run either: it may be an item of a setter's validation run (UI-04).
+      const validated = await this.validation?.complete(tx, r);
+      if (validated)
+        return validated === 'applied' ? { kind: 'validation' } : { kind: 'duplicate' };
       return {
         kind: 'parked',
         reason: 'unknown-submission',
-        detail: `no submission or custom run ${r.submissionId}`,
+        detail: `no submission, custom run or validation item ${r.submissionId}`,
       };
     }
     const failedTest = r.tests.find((t) => t.verdict !== 'AC')?.no ?? null;

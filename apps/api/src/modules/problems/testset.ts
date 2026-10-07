@@ -45,3 +45,27 @@ export function buildTestset(tests: { no: number; in: Buffer; ans: Buffer }[]): 
   const data = Buffer.concat(parts);
   return { data, hash: createHash('sha256').update(data).digest('hex') };
 }
+
+/**
+ * Reads a testset archive written by `buildTestset` (flat NN.in / NN.ans, ustar) into
+ * name -> contents. Used by the setter screens to list and download tests. Anything that is not
+ * such an archive is an error rather than a guess.
+ */
+export function readTestset(data: Buffer): Map<string, Buffer> {
+  const files = new Map<string, Buffer>();
+  let off = 0;
+  while (off + BLOCK <= data.length) {
+    const h = data.subarray(off, off + BLOCK);
+    if (h.every((b) => b === 0)) break;
+    const name = h.toString('ascii', 0, 100).replace(/\0.*$/s, '');
+    const size = parseInt(h.toString('ascii', 124, 135).replace(/\0.*$/s, '').trim(), 8);
+    if (!/^[0-9]{2}\.(in|ans)$/.test(name) || !Number.isInteger(size) || size < 0) {
+      throw new Error(`not a testset archive (entry ${JSON.stringify(name)})`);
+    }
+    off += BLOCK;
+    if (off + size > data.length) throw new Error('testset archive is truncated');
+    files.set(name, data.subarray(off, off + size));
+    off += Math.ceil(size / BLOCK) * BLOCK;
+  }
+  return files;
+}

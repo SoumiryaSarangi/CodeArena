@@ -41,6 +41,8 @@ export const problemVersions = pgTable(
     checker: jsonb('checker').notNull(),
     testsetHash: text('testset_hash'),
     testsetUri: text('testset_uri'),
+    /** `s3://<bucket>/validators/<sha256>.cpp`: the testlib validator, run on every input by a validation run (FR-PROB-04). Null for versions imported before UI-04. */
+    validatorUri: text('validator_uri'),
     testsCount: integer('tests_count').notNull().default(0),
     samples: jsonb('samples').notNull().default([]),
     validationStatus: validationStatus('validation_status').notNull().default('pending'),
@@ -86,4 +88,30 @@ export const validationRuns = pgTable(
     finishedAt: ts('finished_at'),
   },
   (t) => [index().on(t.versionId)],
+);
+
+/**
+ * One judge job of a validation run (UI-04): a package solution, or the validator. `id` is the
+ * `submissionId` of the job sent to the judge, so the results consumer finds the item from the
+ * result alone (same idea as `custom_runs`). Only a `queued` item can be completed.
+ */
+export const validationItems = pgTable(
+  'validation_items',
+  {
+    id: uuid('id').primaryKey(),
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => validationRuns.id),
+    /** `solution` or `validator`. */
+    kind: text('kind').notNull(),
+    name: text('name').notNull(),
+    language: text('language').notNull(),
+    expectedVerdict: verdict('expected_verdict'),
+    status: runStatus('status').notNull().default('queued'),
+    /** `{verdict, timeMs, memKb, tests, compileLog?, message?, workerId?}` once done. */
+    result: jsonb('result'),
+    createdAt: createdAt(),
+    finishedAt: ts('finished_at'),
+  },
+  (t) => [index().on(t.runId)],
 );

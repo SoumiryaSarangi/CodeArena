@@ -1,4 +1,4 @@
-import type { JudgeJob, Lane, Language } from '@codearena/contracts';
+import type { JobMode, JudgeJob, Lane, Language } from '@codearena/contracts';
 import type { EnqueueInput } from './queue.service';
 
 /** The parts of a problem version a judge job needs. */
@@ -27,7 +27,7 @@ export function buildJob(
     customInput?: string;
   },
   version: JudgeableVersion,
-  mode: 'submit' | 'run',
+  mode: JobMode,
 ): EnqueueInput {
   if (!version.testsetHash || !version.testsetUri) {
     throw new Error(`problem version ${version.id} has no testset`);

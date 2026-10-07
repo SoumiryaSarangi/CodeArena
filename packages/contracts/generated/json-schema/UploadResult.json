@@ -1,0 +1,39 @@
+{
+  "$id": "UploadResult.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "outcome": {
+      "enum": [
+        "created",
+        "new-version",
+        "unchanged"
+      ],
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "testsCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "version": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "versionId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "outcome",
+    "slug",
+    "versionId",
+    "version",
+    "testsCount"
+  ],
+  "type": "object"
+}

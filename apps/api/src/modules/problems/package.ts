@@ -68,6 +68,22 @@ export interface ProblemPackage {
 
 export type PackageFiles = Map<string, Buffer>;
 
+/**
+ * The rules for a statement (FR-PROB-01, FR-PROB-07), shared by the package check and the
+ * statement editor: a title heading, the Input / Output / Notes sections, no raw HTML or script.
+ */
+export function checkStatement(statementMd: string): string[] {
+  const out: string[] = [];
+  if (!statementMd.trim().startsWith('# '))
+    out.push("statement.md must start with a '# Title' heading");
+  const found = new Set([...statementMd.matchAll(SECTION)].map((m) => m[1]));
+  for (const s of ['Input', 'Output', 'Notes'])
+    if (!found.has(s)) out.push(`statement.md has no '## ${s}' section`);
+  if (UNSAFE_HTML.test(statementMd))
+    out.push('statement contains raw HTML or script (only Markdown and KaTeX are allowed)');
+  return out;
+}
+
 export class PackageReadError extends Error {
   constructor(readonly problems: string[]) {
     super(problems.join('; '));
@@ -176,18 +192,8 @@ export function parsePackage(
   for (const f of ['statement.md', 'editorial.md', 'validator.cpp'])
     if (!files.has(f)) err(f, `${f} is missing`);
   const statementMd = text('statement.md') ?? '';
-  if (files.has('statement.md')) {
-    if (!statementMd.trim().startsWith('# '))
-      err('statement.md', "statement.md must start with a '# Title' heading");
-    const found = new Set([...statementMd.matchAll(SECTION)].map((m) => m[1]));
-    for (const s of ['Input', 'Output', 'Notes'])
-      if (!found.has(s)) err('statement.md', `statement.md has no '## ${s}' section`);
-    if (UNSAFE_HTML.test(statementMd))
-      err(
-        'statement.md',
-        'statement contains raw HTML or script (only Markdown and KaTeX are allowed)',
-      );
-  }
+  if (files.has('statement.md'))
+    for (const m of checkStatement(statementMd)) err('statement.md', m);
   if (meta.checker.kind === 'testlib' && !files.has('checker.cpp'))
     err('checker.cpp', 'checker kind is testlib but checker.cpp is missing');
   if (meta.checker.kind !== 'testlib' && files.has('checker.cpp'))

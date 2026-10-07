@@ -1,0 +1,54 @@
+{
+  "$id": "AdminVersionSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "testsCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "testsetHash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "validatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "validationStatus": {
+      "enum": [
+        "pending",
+        "running",
+        "passed",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "version": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "createdAt",
+    "testsCount",
+    "testsetHash",
+    "validationStatus",
+    "validatedAt"
+  ],
+  "type": "object"
+}

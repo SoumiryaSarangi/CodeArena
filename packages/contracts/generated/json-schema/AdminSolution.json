@@ -1,0 +1,22 @@
+{
+  "$id": "AdminSolution.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "expected": {
+      "$ref": "Verdict.json"
+    },
+    "language": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "language",
+    "expected"
+  ],
+  "type": "object"
+}

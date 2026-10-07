@@ -1,0 +1,80 @@
+{
+  "$id": "AdminProblemSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "difficulty": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "mine": {
+      "type": "boolean"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "testsCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "validationStatus": {
+      "anyOf": [
+        {
+          "enum": [
+            "pending",
+            "running",
+            "passed",
+            "failed"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "version": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "visibility": {
+      "enum": [
+        "private",
+        "contest",
+        "public"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "difficulty",
+    "visibility",
+    "version",
+    "testsCount",
+    "validationStatus",
+    "updatedAt",
+    "mine"
+  ],
+  "type": "object"
+}

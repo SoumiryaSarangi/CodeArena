@@ -1,0 +1,19 @@
+{
+  "$id": "VisibilityPatch.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "visibility": {
+      "enum": [
+        "private",
+        "contest",
+        "public"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "visibility"
+  ],
+  "type": "object"
+}

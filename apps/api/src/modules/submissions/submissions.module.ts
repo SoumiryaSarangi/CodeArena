@@ -8,6 +8,7 @@ import { SubmissionsService } from './submissions.service';
 import { QUEUE_KEY_PREFIX, QueueService } from './queue.service';
 import { ResultsConsumer } from './results.consumer';
 import { ResultsProcessor } from './results.processor';
+import { ValidationService } from './validation.service';
 
 // S-01: submit/run/list/detail/position endpoints. // QueueService is the enqueue side (Q-01); ResultsConsumer/ResultsProcessor the verdict side (Q-03).
 @Module({
@@ -21,6 +22,7 @@ import { ResultsProcessor } from './results.processor';
     ResultsProcessor,
     ResultsConsumer,
     Reconciler,
+    ValidationService,
   ],
   exports: [
     QUEUE_KEY_PREFIX,
@@ -30,6 +32,7 @@ import { ResultsProcessor } from './results.processor';
     ResultsProcessor,
     ResultsConsumer,
     Reconciler,
+    ValidationService,
   ],
 })
 export class SubmissionsModule {}

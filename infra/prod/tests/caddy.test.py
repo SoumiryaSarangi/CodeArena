@@ -29,6 +29,21 @@ class FakeApi(BaseHTTPRequestHandler):
     def log_message(self, *a):  # quiet
         pass
 
+    def do_POST(self):
+        n = int(self.headers.get("Content-Length", "0"))
+        got = 0
+        while got < n:
+            chunk = self.rfile.read(min(65536, n - got))
+            if not chunk:
+                break
+            got += len(chunk)
+        body = json.dumps({"path": self.path, "received": got, "method": "POST"}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         if self.path.startswith("/api/sse"):
             self.send_response(200)
@@ -128,6 +143,41 @@ class Edge(unittest.TestCase):
 
     def test_cors_is_only_for_the_stream(self):
         c, r = get("/api/problems", {"Origin": WEB_ORIGIN})
+        self.assertIsNone(r.getheader("Access-Control-Allow-Origin"))
+        r.read()
+        c.close()
+
+    def test_package_upload_has_cors_for_the_web_origin_only_and_carries_a_big_body(self):
+        # The preflight a browser sends before a cross-origin POST with an Authorization header.
+        c = http.client.HTTPConnection("127.0.0.1", EDGE, timeout=10)
+        c.request("OPTIONS", "/api/admin/problems/packages", headers={
+            "Origin": WEB_ORIGIN, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "authorization"})
+        r = c.getresponse()
+        r.read()
+        self.assertEqual(r.status, 204)
+        self.assertEqual(r.getheader("Access-Control-Allow-Origin"), WEB_ORIGIN)
+        self.assertIn("Authorization", r.getheader("Access-Control-Allow-Headers"))
+        self.assertEqual(r.getheader("Access-Control-Allow-Methods"), "POST")
+        c.close()
+        # A 12 MB upload is proxied whole, with the CORS header on the answer.
+        size = 12 * 1024 * 1024
+        c = http.client.HTTPConnection("127.0.0.1", EDGE, timeout=30)
+        c.request("POST", "/api/admin/problems/packages", body=b"x" * size, headers={
+            "Origin": WEB_ORIGIN, "Authorization": "Bearer t", "Content-Type": "multipart/form-data; boundary=b"})
+        r = c.getresponse()
+        body = json.loads(r.read())
+        self.assertEqual((r.status, body["received"], body["path"]), (200, size, "/api/admin/problems/packages"))
+        self.assertEqual(r.getheader("Access-Control-Allow-Origin"), WEB_ORIGIN)
+        c.close()
+
+    def test_other_admin_routes_get_no_cors(self):
+        c = http.client.HTTPConnection("127.0.0.1", EDGE, timeout=10)
+        c.request("OPTIONS", "/api/admin/problems", headers={"Origin": WEB_ORIGIN, "Access-Control-Request-Method": "GET"})
+        r = c.getresponse()
+        r.read()
+        self.assertIsNone(r.getheader("Access-Control-Allow-Origin"))
+        c.close()
+        c, r = get("/api/admin/problems", {"Origin": WEB_ORIGIN})
         self.assertIsNone(r.getheader("Access-Control-Allow-Origin"))
         r.read()
         c.close()

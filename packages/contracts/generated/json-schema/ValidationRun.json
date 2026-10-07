@@ -1,0 +1,53 @@
+{
+  "$id": "ValidationRun.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "finishedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "ValidationItem.json"
+      },
+      "type": "array"
+    },
+    "ok": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "versionId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "versionId",
+    "status",
+    "createdAt",
+    "finishedAt",
+    "ok",
+    "items"
+  ],
+  "type": "object"
+}

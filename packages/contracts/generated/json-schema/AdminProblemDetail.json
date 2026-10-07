@@ -1,0 +1,158 @@
+{
+  "$id": "AdminProblemDetail.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "current": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "checker": {
+              "additionalProperties": false,
+              "properties": {
+                "eps": {
+                  "type": "number"
+                },
+                "kind": {
+                  "enum": [
+                    "exact",
+                    "tokens",
+                    "float",
+                    "testlib"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            "editorialMd": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "limits": {
+              "additionalProperties": false,
+              "properties": {
+                "memMb": {
+                  "type": "number"
+                },
+                "outputKb": {
+                  "type": "number"
+                },
+                "timeMs": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "timeMs",
+                "memMb",
+                "outputKb"
+              ],
+              "type": "object"
+            },
+            "samples": {
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "solutions": {
+              "items": {
+                "$ref": "AdminSolution.json"
+              },
+              "type": "array"
+            },
+            "statementMd": {
+              "type": "string"
+            },
+            "validatorStored": {
+              "type": "boolean"
+            },
+            "version": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "statementMd",
+            "editorialMd",
+            "limits",
+            "checker",
+            "samples",
+            "solutions",
+            "validatorStored"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "difficulty": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "mine": {
+      "type": "boolean"
+    },
+    "practicePoints": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "slug": {
+      "type": "string"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "type": "string"
+    },
+    "versions": {
+      "items": {
+        "$ref": "AdminVersionSummary.json"
+      },
+      "type": "array"
+    },
+    "visibility": {
+      "enum": [
+        "private",
+        "contest",
+        "public"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "difficulty",
+    "tags",
+    "practicePoints",
+    "visibility",
+    "mine",
+    "versions",
+    "current"
+  ],
+  "type": "object"
+}
