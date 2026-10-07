@@ -113,6 +113,11 @@ jobs:
         run: |
           python3 -m pip install -q pyyaml
           python3 infra/prod/tests/compose.test.py
+      - name: Caddy behaviour tests (the real Caddyfile in front of a fake API)
+        run: |
+          set -e
+          curl -fsSL https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_linux_amd64.tar.gz | tar -xz -C "$RUNNER_TEMP" caddy
+          CADDY_BIN="$RUNNER_TEMP/caddy" python3 infra/prod/tests/caddy.test.py
       - name: Compose and Caddy files are valid
         env:
           API_IMAGE: ghcr.io/example/codearena-api@sha256:0000000000000000000000000000000000000000000000000000000000000000
@@ -121,7 +126,7 @@ jobs:
           cd infra/prod
           # The services read prod.env; it exists on the server, a bare checkout needs a placeholder.
           : > prod.env
-          printf '%s\n' API_HOST=api.example.test WEB_ORIGIN=https://web.example.test ACME_EMAIL= API_PRIVATE_IP=10.20.1.4 POSTGRES_PASSWORD=x REDIS_ADMIN_PASSWORD=x REDIS_API_PASSWORD=x REDIS_JUDGE_PASSWORD=x S3_API_ACCESS_KEY=x S3_API_SECRET_KEY=x S3_JUDGE_ACCESS_KEY=x S3_JUDGE_SECRET_KEY=x > ci.env
+          printf '%s\n' API_HOST=api.example.test WEB_ORIGIN=https://web.example.test API_PRIVATE_IP=10.20.1.4 POSTGRES_PASSWORD=x REDIS_ADMIN_PASSWORD=x REDIS_API_PASSWORD=x REDIS_JUDGE_PASSWORD=x S3_API_ACCESS_KEY=x S3_API_SECRET_KEY=x S3_JUDGE_ACCESS_KEY=x S3_JUDGE_SECRET_KEY=x > ci.env
           docker compose --env-file ci.env -f docker-compose.yml --profile tools config --quiet
           docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" -e API_HOST=api.example.test -e WEB_ORIGIN=https://web.example.test caddy:2 caddy validate --config /etc/caddy/Caddyfile
       - name: The API image builds and boots (liveness answers)

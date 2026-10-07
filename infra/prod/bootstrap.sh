@@ -16,7 +16,7 @@
 # deploy key's private half only ever goes from its file into a GitHub secret.
 set -euo pipefail
 
-api_ip="" private_ip="" judges="" web_url="" acme_email="" set_github=0 user=codearena
+api_ip="" private_ip="" judges="" web_url="" set_github=0 user=codearena
 key="${DEPLOY_KEY_FILE:-$HOME/.ssh/codearena_deploy}"
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -24,7 +24,6 @@ while [ $# -gt 0 ]; do
     --api-private-ip) private_ip="$2"; shift 2 ;;
     --judges) judges="$2"; shift 2 ;;
     --web-url) web_url="$2"; shift 2 ;;
-    --acme-email) acme_email="$2"; shift 2 ;;
     --set-github) set_github=1; shift ;;
     *) echo "unknown option $1" >&2; exit 1 ;;
   esac
@@ -65,7 +64,7 @@ echo "== 4/5 server secrets (generated on the server)"
 if ssh "$api" 'test -f /opt/codearena/prod.env'; then
   echo "prod.env already exists: leaving the secrets alone"
 else
-  ssh "$api" "/opt/codearena/init-env.sh init --api-ip '$api_ip' --api-private-ip '$private_ip' --web-url '$web_url' ${acme_email:+--acme-email '$acme_email'}"
+  ssh "$api" "/opt/codearena/init-env.sh init --api-ip '$api_ip' --api-private-ip '$private_ip' --web-url '$web_url'"
 fi
 
 echo "== 5/5 host keys and GitHub settings"

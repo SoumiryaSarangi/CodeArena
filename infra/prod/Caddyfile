@@ -1,10 +1,7 @@
 # Edge for the API VM (D-02). TLS certificates are obtained and renewed automatically (Let's
-# Encrypt, with ZeroSSL as fallback). API_HOST is api.<ip-with-dashes>.sslip.io until a real domain
+# Encrypt, with ZeroSSL as fallback; no contact e-mail is configured on purpose: an empty `email`
+# directive is a syntax error, so it is not offered). API_HOST is api.<ip-with-dashes>.sslip.io until a real domain
 # exists; WEB_ORIGIN is the Vercel site (https://something.vercel.app).
-{
-	email {$ACME_EMAIL:}
-}
-
 {$API_HOST} {
 	header {
 		Strict-Transport-Security "max-age=31536000"

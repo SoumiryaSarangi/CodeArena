@@ -128,6 +128,13 @@ class Caddy(unittest.TestCase):
         self.assertIn("503", self.block("/collab/*"))
         self.assertIn("lb_policy uri_hash", caddyfile)  # documented for when the instances exist
 
+    def test_no_directive_can_render_empty(self):
+        # An optional environment value in a directive that needs an argument (`email {$X:}` with X
+        # unset) is a syntax error and Caddy then refuses to start: found by running Caddy in CI.
+        for m in re.finditer(r"^\s*(\w[\w-]*)\s+\{\$[A-Z_]+:\}\s*$", caddyfile, re.M):
+            self.fail(f"directive '{m.group(1)}' has an optional value that can be empty")
+        self.assertNotIn("ACME_EMAIL", caddyfile)
+
     def test_the_site_name_comes_from_the_environment(self):
         self.assertIn("{$API_HOST} {", caddyfile)
 

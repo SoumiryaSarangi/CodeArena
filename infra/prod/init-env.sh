@@ -25,13 +25,12 @@ cmd="${1:-}"; shift || true
 
 case "$cmd" in
 init)
-  api_ip="" private_ip="" web_url="" acme_email="" force=0
+  api_ip="" private_ip="" web_url="" force=0
   while [ $# -gt 0 ]; do
     case "$1" in
       --api-ip) api_ip="$2"; shift 2 ;;
       --api-private-ip) private_ip="$2"; shift 2 ;;
       --web-url) web_url="$2"; shift 2 ;;
-      --acme-email) acme_email="$2"; shift 2 ;;
       --force) force=1; shift ;;
       *) die "unknown option $1" ;;
     esac
@@ -40,7 +39,6 @@ init)
   [[ "$api_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "--api-ip must be an IPv4 address"
   [[ "$private_ip" =~ ^10\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "--api-private-ip must be a 10.x.x.x address"
   [[ "$web_url" =~ ^https://[A-Za-z0-9.-]+$ ]] || die "--web-url must look like https://name.vercel.app (no path, no trailing slash)"
-  [ -z "$acme_email" ] || safe --acme-email "$acme_email"
   if [ -e "$ENV_FILE" ] && [ "$force" != 1 ]; then
     die "$ENV_FILE already exists; refusing to overwrite secrets (pass --force only if you mean to rotate everything)"
   fi
@@ -67,7 +65,6 @@ TRUST_PROXY=1
 # Edge (Caddy)
 API_HOST=$api_host
 WEB_ORIGIN=$web_url
-ACME_EMAIL=$acme_email
 API_PRIVATE_IP=$private_ip
 
 # API
