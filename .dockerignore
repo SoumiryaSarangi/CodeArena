@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/dist
+.git
+.github
+docs
+apps/web
+apps/worker
+apps/plag
+apps/collab
+problems-private
+infra
+tests
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log

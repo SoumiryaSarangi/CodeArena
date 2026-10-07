@@ -45,6 +45,14 @@ resource "azurerm_linux_virtual_machine" "api" {
   custom_data                     = base64encode(file("${path.module}/../cloud-init/api.yaml"))
   tags                            = local.tags
 
+  # custom_data (cloud-init) only runs at first boot, and Azure treats a change to it as "replace
+  # this VM". Editing the cloud-init files must never rebuild a running server, so changes are
+  # ignored here: they apply to VMs created from now on. Changing a running VM is done over SSH by
+  # the deploy pipeline (infra/prod), not by cloud-init.
+  lifecycle {
+    ignore_changes = [custom_data]
+  }
+
   admin_ssh_key {
     username   = var.admin_username
     public_key = var.ssh_public_key
@@ -108,6 +116,14 @@ resource "azurerm_linux_virtual_machine" "judge" {
   network_interface_ids           = [azurerm_network_interface.judge[count.index].id]
   custom_data                     = base64encode(file("${path.module}/../cloud-init/judge.yaml"))
   tags                            = merge(local.tags, { role = "judge" })
+
+  # custom_data (cloud-init) only runs at first boot, and Azure treats a change to it as "replace
+  # this VM". Editing the cloud-init files must never rebuild a running server, so changes are
+  # ignored here: they apply to VMs created from now on. Changing a running VM is done over SSH by
+  # the deploy pipeline (infra/prod), not by cloud-init.
+  lifecycle {
+    ignore_changes = [custom_data]
+  }
 
   admin_ssh_key {
     username   = var.admin_username

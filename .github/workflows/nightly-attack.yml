@@ -1,0 +1,48 @@
+name: nightly-attack
+
+# The sandbox attack suite, run nightly on a real judge VM with the real isolate (SD-§16,
+# ADR-009): the hosted-runner job in ci.yml often cannot run isolate. 03:00 IST.
+# It shares the judge's CPUs with the worker, so switch it off (DEPLOY_ENABLED=false or disable this
+# workflow) during a contest.
+on:
+  schedule:
+    - cron: '30 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-attack
+  cancel-in-progress: false
+
+jobs:
+  attack:
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/worker/go.mod
+      - name: Build the attack runner and pack the suite
+        working-directory: apps/worker
+        run: |
+          set -euo pipefail
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "$RUNNER_TEMP/attack" ./cmd/attack
+          tar -C "$GITHUB_WORKSPACE" -czf "$RUNNER_TEMP/suite.tar.gz" tests/attack-suite
+      - name: Run it on the first judge VM
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          API_HOST: ${{ vars.API_HOST }}
+          API_HOST_KEY: ${{ vars.API_HOST_KEY }}
+          JUDGE_HOST_KEYS: ${{ vars.JUDGE_HOST_KEYS }}
+          JUDGE_HOSTS: ${{ vars.JUDGE_HOSTS }}
+        run: |
+          set -euo pipefail
+          export SSH_CONFIG
+          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
+          first="${JUDGE_HOSTS%% *}"
+          infra/prod/ci/run-attack.sh "$RUNNER_TEMP/attack" "$RUNNER_TEMP/suite.tar.gz" "$first"

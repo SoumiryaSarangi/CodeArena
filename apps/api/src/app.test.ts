@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Module, Post } from '@nestjs/common';
+import { Body, Controller, Get, Module, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import type { INestApplication } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import request from 'supertest';
@@ -24,6 +25,10 @@ class TestController {
   boom(): never {
     throw new Error('secret database password leaked here');
   }
+  @Get('ip')
+  ip(@Req() req: Request) {
+    return { ip: req.ip };
+  }
   @Get('limited')
   @RateLimit({ scope, perMinute: 3 })
   limited() {
@@ -41,6 +46,41 @@ const redisUp = await new Redis(config.REDIS_URL, { lazyConnect: true, maxRetrie
   .catch(() => false);
 
 if (process.env.CI && !redisUp) throw new Error('CI requires the dev stack (scripts/dev-up.sh)');
+
+describe('D-02: behind a reverse proxy', () => {
+  const ipOf = async (trust: string | undefined) => {
+    const app = await createApp(
+      loadConfig({
+        NODE_ENV: 'test',
+        LOG_LEVEL: 'silent',
+        ...(trust ? { TRUST_PROXY: trust } : {}),
+      }),
+      [TestModule],
+    );
+    await app.init();
+    try {
+      const res = await request(app.getHttpServer())
+        .get('/api/t/ip')
+        .set('X-Forwarded-For', '203.0.113.9');
+      return res.body.ip as string;
+    } finally {
+      await app.close();
+    }
+  };
+
+  it('D-02: with TRUST_PROXY=1 the visitor address comes from X-Forwarded-For (rate limits see the visitor)', async () => {
+    expect(await ipOf('1')).toBe('203.0.113.9');
+  });
+
+  it('D-02: by default the header is ignored, so a client cannot fake its address', async () => {
+    expect(await ipOf(undefined)).not.toBe('203.0.113.9');
+  });
+
+  it('D-02: TRUST_PROXY must be a small whole number', () => {
+    expect(() => loadConfig({ NODE_ENV: 'test', TRUST_PROXY: '9' })).toThrow(/TRUST_PROXY/);
+    expect(() => loadConfig({ NODE_ENV: 'test', TRUST_PROXY: '-1' })).toThrow(/TRUST_PROXY/);
+  });
+});
 
 describe('F-05: config', () => {
   it('F-05: invalid configuration is rejected at boot', () => {

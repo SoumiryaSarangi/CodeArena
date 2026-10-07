@@ -1,0 +1,29 @@
+[Unit]
+Description=CodeArena judge worker
+Documentation=https://github.com/SoumiryaSarangi/CodeArena
+After=network-online.target isolate.service
+Wants=network-online.target
+Requires=isolate.service
+
+[Service]
+Type=simple
+# Never root: the worker refuses to start as root, and isolate (setuid) does the privileged part.
+User=codearena-judge
+Group=codearena-judge
+EnvironmentFile=/etc/codearena/worker.env
+ExecStart=/opt/codearena/bin/worker
+Restart=always
+RestartSec=3
+# SIGTERM stops claiming and lets running jobs finish; give them time before SIGKILL.
+KillSignal=SIGTERM
+TimeoutStopSec=90
+# Hardening that does NOT break isolate. `NoNewPrivileges` and a read-only /usr are deliberately
+# absent: isolate is a setuid binary and needs to configure cgroups and namespaces.
+ProtectHome=true
+PrivateTmp=false
+ProtectKernelModules=true
+ProtectControlGroups=false
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

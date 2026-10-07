@@ -1,0 +1,16 @@
+[Unit]
+Description=Prometheus node exporter (host metrics for the Grafana agent, O-01)
+After=network-online.target
+
+[Service]
+User=nobody
+# Listens on the private address only (set in /etc/default/node-exporter by provision.sh).
+EnvironmentFile=/etc/default/node-exporter
+ExecStart=/usr/local/bin/node_exporter --web.listen-address=${NODE_EXPORTER_LISTEN}
+Restart=always
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

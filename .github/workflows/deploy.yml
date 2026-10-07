@@ -1,0 +1,151 @@
+name: deploy
+
+# Merge to main -> CI passes -> this builds the API image, pushes it to GHCR, deploys it on the API
+# VM by digest (automatic rollback if it is not healthy), then updates the judge VMs one by one.
+# Nothing here runs until the repository variable DEPLOY_ENABLED is "true" (see infra/prod/README.md).
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      rollback_drill:
+        description: 'Rollback drill: deploy, but make the new release look unhealthy so the automatic rollback runs for real. The run is expected to FAIL; check the log says it rolled back.'
+        type: boolean
+        default: false
+      skip_judges:
+        description: 'Only deploy the API'
+        type: boolean
+        default: false
+
+# One deploy at a time, and never cancel one halfway.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_EXPORTER_VERSION: '1.12.1'
+  # From the release's published digest (GitHub API), so a swapped download is rejected.
+  NODE_EXPORTER_SHA256: 'b51d8a76aa2a9156a55d501aca6276fae09e262259a5e4e831d2c2222f084e63'
+
+jobs:
+  image:
+    if: vars.DEPLOY_ENABLED == 'true' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image name (lowercase, as registries require)
+        id: name
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-api" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.name.outputs.name }}:${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: The reference to deploy is the digest, not the tag
+        id: ref
+        run: echo "ref=${{ steps.name.outputs.name }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  worker:
+    needs: image
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/worker/go.mod
+      - name: Build the judge worker (static, linux/amd64)
+        working-directory: apps/worker
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o "$RUNNER_TEMP/worker" .
+      - name: Fetch node exporter (checksum pinned)
+        run: |
+          set -euo pipefail
+          f="node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64"
+          curl -fsSL -o "$RUNNER_TEMP/ne.tgz" "https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/${f}.tar.gz"
+          echo "${NODE_EXPORTER_SHA256}  $RUNNER_TEMP/ne.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/ne.tgz" -C "$RUNNER_TEMP" "${f}/node_exporter"
+          mv "$RUNNER_TEMP/${f}/node_exporter" "$RUNNER_TEMP/node_exporter"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: judge-binaries
+          path: |
+            ${{ runner.temp }}/worker
+            ${{ runner.temp }}/node_exporter
+          retention-days: 7
+
+  deploy-api:
+    needs: [image, worker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Deploy the API image (rolls back by itself if unhealthy)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          API_HOST: ${{ vars.API_HOST }}
+          API_HOST_KEY: ${{ vars.API_HOST_KEY }}
+          JUDGE_HOST_KEYS: ${{ vars.JUDGE_HOST_KEYS }}
+          IMAGE_REF: ${{ needs.image.outputs.ref }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE_UNHEALTHY: ${{ inputs.rollback_drill && '1' || '' }}
+        run: |
+          set -euo pipefail
+          export SSH_CONFIG
+          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
+          infra/prod/ci/deploy-api.sh
+
+  deploy-judges:
+    needs: [worker, deploy-api]
+    if: ${{ !inputs.skip_judges }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: judge-binaries
+          path: ${{ runner.temp }}/bin
+      - name: Update the judges, one at a time
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          API_HOST: ${{ vars.API_HOST }}
+          API_HOST_KEY: ${{ vars.API_HOST_KEY }}
+          JUDGE_HOST_KEYS: ${{ vars.JUDGE_HOST_KEYS }}
+          JUDGE_HOSTS: ${{ vars.JUDGE_HOSTS }}
+        run: |
+          set -euo pipefail
+          export SSH_CONFIG
+          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
+          infra/prod/ci/deploy-judges.sh "$RUNNER_TEMP/bin/worker" "$RUNNER_TEMP/bin/node_exporter"

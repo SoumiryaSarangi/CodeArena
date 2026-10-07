@@ -872,6 +872,8 @@ Config is validated with Zod (TS) / struct validation (Go) at boot; the process 
 
 PR: lint → typecheck → unit → integration (Testcontainers) → contracts freshness → e2e (Playwright, changed web) → attack suite (worker changes). Main: build images → push GHCR (tag = git SHA, deploy by digest) → SSH deploy → health check → auto-rollback to previous digest on failure. Vercel deploys web on push.
 
+*As built (D-02):* `ci.yml` also has an `infra` job (Terraform fmt/validate and the offline firewall tests, the shell tests for the deploy/provision/pipeline scripts with fake docker and ssh, the Compose/Caddy/storage-key structure tests, an image build and boot check, actionlint). `deploy.yml` runs after CI passes on `main` and only when the repository variable `DEPLOY_ENABLED` is `true`: image → GHCR by digest → `deploy.sh` on the API VM (pull, migrate with the new image, switch, health check on `/api/health/ready`, rollback to the previous digest) → worker binary to each judge through the API VM as jump host (each judge restores its previous binary if the new worker does not log `worker started`; the first failure stops the rollout). The pipeline uses one SSH key (`DEPLOY_SSH_KEY`, admin on both servers) with pinned host keys; the registry login is the workflow's own short-lived token and is removed from the server after each deploy. A manual `workflow_dispatch` with `rollback_drill` makes the new release look unhealthy to prove the rollback. `nightly-attack.yml` runs the attack suite on a judge at 03:00 IST. See `infra/prod/README.md` and `docs/runbooks/deploy.md`.
+
 ### 18.3 Backups and DR
 
 - Nightly `pg_dump` → Azure Blob (7 daily, 4 weekly). Manual backup before and after each contest.

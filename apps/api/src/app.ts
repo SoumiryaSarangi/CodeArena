@@ -19,7 +19,11 @@ export async function createApp(
     logger: false,
     bodyParser: false,
   });
-  app.getHttpAdapter().getInstance().disable('x-powered-by');
+  const express = app.getHttpAdapter().getInstance();
+  express.disable('x-powered-by');
+  // Behind Caddy every request arrives from the proxy; trust its X-Forwarded-For (one hop) so rate
+  // limits and logs see the visitor. 0 (default) = no proxy, never trust the header.
+  if (config.TRUST_PROXY > 0) express.set('trust proxy', config.TRUST_PROXY);
   app.setGlobalPrefix('api');
   app.use(requestId);
   app.use(csrfCookieMiddleware);

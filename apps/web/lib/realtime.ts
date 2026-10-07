@@ -23,6 +23,12 @@ export interface EventSourceLike {
 export interface RealtimeDeps {
   getTicket: (topics: string[]) => Promise<string>;
   createSource: (url: string) => EventSourceLike;
+  /**
+   * Where the stream lives. Empty = this origin (dev, via the Next rewrite). In production it is the
+   * API host, because Vercel rewrites cannot carry a long-lived stream reliably; the ticket in the
+   * URL is the credential, so no cookies are needed cross-origin (CORS is set by Caddy).
+   */
+  baseUrl?: string;
   /** Back-off steps in ms; the last one repeats. */
   backoffMs?: number[];
   random?: () => number;
@@ -99,7 +105,7 @@ export class RealtimeConnection {
     if (this.closed) return;
     const q = new URLSearchParams({ ticket, topics: this.topics.join(',') });
     if (this.lastId) q.set('lastEventId', this.lastId);
-    const es = this.deps.createSource(`/api/sse?${q}`);
+    const es = this.deps.createSource(`${this.deps.baseUrl ?? ''}/api/sse?${q}`);
     this.source = es;
     es.onopen = () => {
       this.failures = 0;
@@ -145,6 +151,8 @@ export function subscribe(
     getTicket: async (t) =>
       (await apiFetch<TicketResponse>('POST', '/realtime/ticket', { topics: t })).ticket,
     createSource: (url) => new EventSource(url) as unknown as EventSourceLike,
+    // Inlined at build time; set NEXT_PUBLIC_REALTIME_URL=https://api.<host> on Vercel.
+    baseUrl: (process.env.NEXT_PUBLIC_REALTIME_URL ?? '').replace(/\/$/, ''),
   });
   conn.start();
   return () => conn.close();

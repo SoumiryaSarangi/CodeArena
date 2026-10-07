@@ -1,0 +1,44 @@
+# Edge for the API VM (D-02). TLS certificates are obtained and renewed automatically (Let's
+# Encrypt, with ZeroSSL as fallback). API_HOST is api.<ip-with-dashes>.sslip.io until a real domain
+# exists; WEB_ORIGIN is the Vercel site (https://something.vercel.app).
+{
+	email {$ACME_EMAIL:}
+}
+
+{$API_HOST} {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# The realtime stream: straight from the browser to here (Vercel cannot carry it), so it needs
+	# CORS for the web origin. The one-time ticket in the URL is the credential; no cookies. No
+	# compression and no buffering, or events would arrive late (SD-§10).
+	@sse path /api/sse
+	handle @sse {
+		header Access-Control-Allow-Origin "{$WEB_ORIGIN}"
+		header Vary "Origin"
+		reverse_proxy api:4000 {
+			flush_interval -1
+		}
+	}
+
+	handle /api/* {
+		encode zstd gzip
+		reverse_proxy api:4000
+	}
+
+	# Collaborative pad (Day 12). Prepared, not deployed: when the two `collab` instances exist, replace
+	# this with
+	#     reverse_proxy collab1:1234 collab2:1234 { lb_policy uri_hash }
+	# so every request for one room id lands on the same instance (SD-§11.3 room-hash routing).
+	handle /collab/* {
+		respond "The collaborative pad is not deployed yet." 503
+	}
+
+	handle {
+		respond "CodeArena API" 200
+	}
+}

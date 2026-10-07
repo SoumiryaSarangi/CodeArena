@@ -18,6 +18,8 @@ const schema = z.object({
   S3_SECRET_KEY: z.string().default('codearena-dev'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
+  // How many reverse proxies sit in front of the API (Caddy = 1), so `req.ip` is the visitor, not the proxy.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   RATE_LIMIT_DEFAULT_PER_MIN: z.coerce.number().int().positive().default(120),
   // Prefix of every queue/stream key. Empty in production; tests set one so they never touch real queues.
   QUEUE_KEY_PREFIX: z.string().max(40).default(''),

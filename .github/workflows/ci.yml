@@ -82,6 +82,58 @@ jobs:
           JUDGE_REQUIRE_ISOLATE=1 go test ./cmd/attack/ ./internal/attacksuite/
           ../../scripts/attack
 
+  # D-02: everything that deploys the platform is tested on every change: the Terraform firewall
+  # rules (offline), the deploy/provision/pipeline scripts (fake docker and ssh), the generated
+  # production settings against the API's own config check, the Compose and Caddy files, and that the
+  # API image really builds and starts.
+  infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: 'Terraform: format, validate, offline firewall tests'
+        working-directory: infra/terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate
+          terraform test
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy, provisioning and pipeline scripts
+        run: |
+          set -e
+          for t in infra/prod/tests/*.test.sh; do echo "== $t"; bash "$t" < /dev/null; done
+      - name: Compose, Caddy and storage-key structure tests
+        run: |
+          python3 -m pip install -q pyyaml
+          python3 infra/prod/tests/compose.test.py
+      - name: Compose and Caddy files are valid
+        env:
+          API_IMAGE: ghcr.io/example/codearena-api@sha256:0000000000000000000000000000000000000000000000000000000000000000
+        run: |
+          set -e
+          cd infra/prod
+          printf '%s\n' API_HOST=api.example.test WEB_ORIGIN=https://web.example.test ACME_EMAIL= API_PRIVATE_IP=10.20.1.4 POSTGRES_PASSWORD=x REDIS_ADMIN_PASSWORD=x REDIS_API_PASSWORD=x REDIS_JUDGE_PASSWORD=x S3_API_ACCESS_KEY=x S3_API_SECRET_KEY=x S3_JUDGE_ACCESS_KEY=x S3_JUDGE_SECRET_KEY=x > ci.env
+          docker compose --env-file ci.env -f docker-compose.yml --profile tools config --quiet
+          docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" -e API_HOST=api.example.test -e WEB_ORIGIN=https://web.example.test caddy:2 caddy validate --config /etc/caddy/Caddyfile
+      - name: The API image builds and boots (liveness answers)
+        run: |
+          set -e
+          docker build -f apps/api/Dockerfile -t codearena-api:ci .
+          docker run -d --name api-smoke -p 4000:4000 -e NODE_ENV=development codearena-api:ci
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4000/api/health/live && break; sleep 2; done
+          curl -fsS http://127.0.0.1:4000/api/health/live || { docker logs api-smoke; exit 1; }
+      - name: Workflows are valid
+        run: |
+          bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) latest
+          ./actionlint
+
   python:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -257,6 +257,26 @@ describe('UI-02: realtime connection (FR-RT-01/02)', () => {
     conn.close();
   });
 
+  it('D-02: in production the stream is opened on the API host (baseUrl), the ticket call stays relative', async () => {
+    FakeSource.all = [];
+    const conn = new RealtimeConnection(
+      ['sub:abc'],
+      () => {},
+      () => {},
+      {
+        getTicket: async () => 'ticket-1',
+        createSource: (url) => new FakeSource(url),
+        baseUrl: 'https://api.example.test',
+      },
+    );
+    conn.start();
+    await tick(5);
+    expect(FakeSource.all[0]!.url).toBe(
+      'https://api.example.test/api/sse?ticket=ticket-1&topics=sub%3Aabc',
+    );
+    conn.close();
+  });
+
   it('after a drop it fetches a NEW ticket and resumes from the last event id', async () => {
     const { conn, states, tickets } = setup();
     conn.start();
