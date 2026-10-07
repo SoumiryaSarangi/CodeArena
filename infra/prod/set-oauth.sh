@@ -18,7 +18,7 @@ esac
 
 remote='cd /opt/codearena && set -e'
 for k in $keys; do remote="$remote; echo; echo '--> $k: paste the value once, then press Enter'; ./init-env.sh set $k"; done
-remote="$remote; echo; echo 'restarting the API...'; docker compose --env-file prod.env -f docker-compose.yml up -d --force-recreate api"
+remote="$remote; echo; echo 'restarting the API...'; API_IMAGE=\$(cat state/current) docker compose --env-file prod.env -f docker-compose.yml up -d --force-recreate api"
 remote="$remote; for i in \$(seq 1 30); do curl -fsS http://127.0.0.1:4000/api/health/ready >/dev/null 2>&1 && echo 'API is back up.' && exit 0; sleep 2; done; echo 'API did not come back: run docker compose logs api on the server'; exit 1"
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
