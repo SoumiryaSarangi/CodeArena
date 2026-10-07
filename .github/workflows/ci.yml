@@ -119,6 +119,8 @@ jobs:
         run: |
           set -e
           cd infra/prod
+          # The services read prod.env; it exists on the server, a bare checkout needs a placeholder.
+          : > prod.env
           printf '%s\n' API_HOST=api.example.test WEB_ORIGIN=https://web.example.test ACME_EMAIL= API_PRIVATE_IP=10.20.1.4 POSTGRES_PASSWORD=x REDIS_ADMIN_PASSWORD=x REDIS_API_PASSWORD=x REDIS_JUDGE_PASSWORD=x S3_API_ACCESS_KEY=x S3_API_SECRET_KEY=x S3_JUDGE_ACCESS_KEY=x S3_JUDGE_SECRET_KEY=x > ci.env
           docker compose --env-file ci.env -f docker-compose.yml --profile tools config --quiet
           docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" -e API_HOST=api.example.test -e WEB_ORIGIN=https://web.example.test caddy:2 caddy validate --config /etc/caddy/Caddyfile

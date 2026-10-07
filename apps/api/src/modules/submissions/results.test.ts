@@ -392,6 +392,23 @@ describe.skipIf(!ready)('Q-03: verdict consumer (needs the Compose Postgres and 
         return Number.POSITIVE_INFINITY;
       }
     };
+    // Entries the group has not been handed yet. Waiting for "nothing pending" alone is not enough:
+    // before the consumer has read anything there is nothing pending either, and on a slow machine a
+    // test would stop the consumer before it had processed a single result.
+    const undelivered = async () => {
+      try {
+        const groups = (await redis.xinfo('GROUPS', `${streamPrefix}results`)) as unknown[][];
+        for (const g of groups) {
+          const m = new Map<string, unknown>();
+          for (let i = 0; i < g.length; i += 2) m.set(String(g[i]), g[i + 1]);
+          if (m.get('name') === RESULTS_GROUP)
+            return Number(m.get('lag') ?? Number.POSITIVE_INFINITY);
+        }
+      } catch {
+        // no stream or group yet
+      }
+      return Number.POSITIVE_INFINITY;
+    };
     const post = (body: string) => redis.xadd(`${streamPrefix}results`, '*', 'result', body);
 
     beforeEach(() => {
@@ -430,7 +447,9 @@ describe.skipIf(!ready)('Q-03: verdict consumer (needs the Compose Postgres and 
         await until(
           'both acknowledged',
           async () =>
-            (await redis.xlen(`${streamPrefix}results`)) === 2 && (await pendingCount()) === 0,
+            (await redis.xlen(`${streamPrefix}results`)) === 2 &&
+            (await undelivered()) === 0 &&
+            (await pendingCount()) === 0,
         );
       });
       expect((await snapshot(id)).runs).toHaveLength(1);
