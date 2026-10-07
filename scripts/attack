@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Runs the sandbox-containment suite through the real judge engine in isolate
+# (needs scripts/setup-isolate-wsl.sh and scripts/setup-judge-runtimes.sh).
+#   scripts/attack                         # all cases under tests/attack-suite
+#   scripts/attack -v tests/attack-suite/selftest
+set -euo pipefail
+caller="$PWD"
+cd "$(dirname "$0")/../apps/worker"
+target="$caller/tests/attack-suite"
+args=()
+sawtarget=""
+for a in "$@"; do
+  case "$a" in
+    -*) args+=("$a") ;;
+    /*) args+=("$a"); sawtarget=1 ;;
+    *) args+=("$caller/$a"); sawtarget=1 ;;
+  esac
+done
+if [[ -z "$sawtarget" ]]; then
+  # default target is the repo's attack-suite dir
+  args+=("$(cd "$caller" && git rev-parse --show-toplevel 2>/dev/null || echo "$caller")/tests/attack-suite")
+fi
+exec go run ./cmd/attack "${args[@]}"
