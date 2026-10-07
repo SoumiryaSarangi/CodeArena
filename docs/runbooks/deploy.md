@@ -49,3 +49,7 @@ the new schema). Do not edit the database by hand during a contest.
 - Before: take a manual backup (D-03), run the deploy workflow once to confirm the pipeline is healthy,
   and switch the judges to `Standard_D2s_v5` (`infra/terraform/README.md`).
 - After: set it back to `true`.
+
+## Edge (Caddy) changes
+
+Caddy reads `infra/prod/Caddyfile` once when it starts, and the file is bind-mounted, so `docker compose up` alone does not notice an edit. `deploy.sh` therefore compares the Caddyfile with the one the edge was last started with (`state/caddyfile.sha`) after every healthy release: if it differs it runs `caddy validate`, and only a valid file recreates the edge container (certificates live in the `caddy_data` volume, so nothing is re-issued; expect about a second without TLS). A file that does not validate leaves the old edge running and the deploy log says `WARNING: the new Caddyfile does not validate`. A rolled-back release never touches the edge. To apply an edit by hand: `cd /opt/codearena && API_IMAGE=$(cat state/current) docker compose --env-file prod.env -f docker-compose.yml up -d --force-recreate --no-deps caddy`.

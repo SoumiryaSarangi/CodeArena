@@ -56,10 +56,32 @@ if ! compose run --rm migrate; then
 fi
 compose up -d api caddy
 
+# Caddy reads its Caddyfile once, and `compose up` does not recreate a container because a
+# bind-mounted file changed, so an edited Caddyfile would never reach the server by itself. After a
+# healthy release the edge is checked: when the Caddyfile differs from the one it was last started
+# with, it is validated and, if valid, the edge is recreated (certificates live in a volume). A
+# failure here never fails the deploy: the release is healthy and the old edge keeps serving.
+edge() {
+  local sum
+  sum="$(sha256sum "$APP_DIR/Caddyfile" | cut -d' ' -f1)"
+  [ "$(cat "$STATE/caddyfile.sha" 2>/dev/null || true)" = "$sum" ] && return 0
+  if ! compose run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1; then
+    log "WARNING: the new Caddyfile does not validate; the edge keeps its old configuration"
+    return 0
+  fi
+  if compose up -d --force-recreate --no-deps caddy; then
+    printf '%s\n' "$sum" > "$STATE/caddyfile.sha"
+    log "the edge was recreated with the new Caddyfile"
+  else
+    log "WARNING: the edge could not be recreated (docker compose logs caddy)"
+  fi
+}
+
 if healthy new; then
   printf '%s\n' "$previous" > "$STATE/previous"
   printf '%s\n' "$new" > "$STATE/current"
   docker image prune -f >/dev/null 2>&1 || true
+  edge
   log "healthy: $new is live"
   exit 0
 fi

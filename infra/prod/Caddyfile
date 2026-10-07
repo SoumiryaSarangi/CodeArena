@@ -22,14 +22,15 @@
 		}
 	}
 
-	# Problem package uploads (UI-04): a folder of tests can be tens of megabytes, more than the Vercel
-	# rewrite is meant to carry, so the browser sends it straight here with its bearer token (no cookie
-	# is involved). CORS for the web origin only, including the preflight a bearer header triggers.
-	@upload path /api/admin/problems/packages
+	# Problem package uploads and test downloads (UI-04): a folder of tests can be tens of megabytes, more
+	# than the Vercel rewrite is meant to carry, so the browser talks straight to here with its bearer
+	# token (no cookie is involved). CORS for the web origin only, including the preflight a bearer header triggers.
+	@upload path /api/admin/problems/packages /api/admin/problem-versions/*/tests.tar /api/admin/problem-versions/*/tests/*
 	handle @upload {
 		header Access-Control-Allow-Origin "{$WEB_ORIGIN}"
 		header Access-Control-Allow-Headers "Authorization"
-		header Access-Control-Allow-Methods "POST"
+		header Access-Control-Allow-Methods "GET, POST"
+		header Access-Control-Expose-Headers "Content-Disposition"
 		header Access-Control-Max-Age "600"
 		header Vary "Origin"
 		@preflight method OPTIONS

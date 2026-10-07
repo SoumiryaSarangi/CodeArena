@@ -15,6 +15,7 @@ setup() {
   T="$(mktemp -d)"
   export APP_DIR="$T/app" FAKE_LOG="$T/calls.log" FAKE_BAD_IMAGES="$T/bad_images"
   mkdir -p "$APP_DIR/state" "$T/bin"
+  printf 'edge v1\n' > "$APP_DIR/Caddyfile"
   : > "$FAKE_LOG"; : > "$FAKE_BAD_IMAGES"
   # docker: records every call with the API_IMAGE it ran under; can fail on demand.
   cat > "$T/bin/docker" <<'F'
@@ -23,6 +24,7 @@ echo "docker $* [API_IMAGE=${API_IMAGE:-}]" >> "$FAKE_LOG"
 case "$*" in
   *"run --rm migrate"*) [ "${FAKE_MIGRATE_FAIL:-}" = 1 ] && exit 1 ;;
   *" pull "*) [ "${FAKE_PULL_FAIL:-}" = 1 ] && exit 1 ;;
+  *"caddy validate"*) [ "${FAKE_CADDY_INVALID:-}" = 1 ] && exit 1 ;;
 esac
 exit 0
 F
@@ -37,7 +39,7 @@ F
   chmod +x "$T/bin/docker" "$T/bin/curl"
   export PATH="$T/bin:$PATH" HEALTH_TIMEOUT=2 HEALTH_INTERVAL=1
 }
-teardown() { rm -rf "$T"; unset FAKE_MIGRATE_FAIL FAKE_PULL_FAIL FORCE_UNHEALTHY; }
+teardown() { rm -rf "$T"; unset FAKE_MIGRATE_FAIL FAKE_PULL_FAIL FORCE_UNHEALTHY FAKE_CADDY_INVALID; }
 
 check() { # name, condition result (0 = ok)
   if [ "$2" = 0 ]; then pass=$((pass + 1)); echo "  ok   $1"; else fail=$((fail + 1)); echo "  FAIL $1"; fi
@@ -126,6 +128,31 @@ FORCE_UNHEALTHY=1 "$DEPLOY" "$NEW" >/dev/null 2>&1; rc=$?
 check "exits 1 because the drill made the new release look unhealthy" "$([ $rc = 1 ] && echo 0 || echo 1)"
 check "rolled back to the previous image" "$(has "up -d api [API_IMAGE=$OLD]" && echo 0 || echo 1)"
 check "the previous release is the one still recorded as live" "$([ "$(current)" = "$OLD" ] && echo 0 || echo 1)"
+teardown
+
+echo "- a changed Caddyfile reaches the edge (it is a bind mount: compose would not notice)"
+setup
+"$DEPLOY" "$NEW" >"$T/out.txt" 2>&1; rc=$?
+check "the first deploy validates the Caddyfile and recreates the edge once" "$([ $rc = 0 ] && has 'caddy validate --config /etc/caddy/Caddyfile' && has 'up -d --force-recreate --no-deps caddy' && echo 0 || echo 1)"
+check "the Caddyfile that was applied is remembered" "$([ "$(cat "$APP_DIR/state/caddyfile.sha")" = "$(sha256sum "$APP_DIR/Caddyfile" | cut -d' ' -f1)" ] && echo 0 || echo 1)"
+: > "$FAKE_LOG"
+"$DEPLOY" "$NEW" >/dev/null 2>&1
+check "an unchanged Caddyfile does not touch the edge again" "$(! has 'force-recreate' && ! has 'caddy validate' && echo 0 || echo 1)"
+printf 'edge v2\n' > "$APP_DIR/Caddyfile"
+: > "$FAKE_LOG"
+"$DEPLOY" "$NEW" >"$T/out.txt" 2>&1
+check "an edited Caddyfile recreates the edge" "$(has 'up -d --force-recreate --no-deps caddy' && grep -q 'edge was recreated' "$T/out.txt" && echo 0 || echo 1)"
+printf 'edge v3 (broken)\n' > "$APP_DIR/Caddyfile"
+: > "$FAKE_LOG"
+FAKE_CADDY_INVALID=1 "$DEPLOY" "$NEW" >"$T/out.txt" 2>&1; rc=$?
+check "a Caddyfile that does not validate is left out, the deploy still succeeds, and it says so" "$([ $rc = 0 ] && ! has 'force-recreate' && grep -q 'does not validate' "$T/out.txt" && [ "$(cat "$APP_DIR/state/caddyfile.sha")" != "$(sha256sum "$APP_DIR/Caddyfile" | cut -d' ' -f1)" ] && echo 0 || echo 1)"
+teardown
+
+echo "- a rolled-back release does not touch the edge"
+setup
+echo "$OLD" > "$APP_DIR/state/current"
+FORCE_UNHEALTHY=1 "$DEPLOY" "$NEW" >/dev/null 2>&1
+check "no validation and no recreation when the release is rejected" "$(! has 'caddy validate' && ! has 'force-recreate' && echo 0 || echo 1)"
 teardown
 
 echo "- two deploys cannot run at once"

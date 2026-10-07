@@ -157,7 +157,16 @@ class Edge(unittest.TestCase):
         self.assertEqual(r.status, 204)
         self.assertEqual(r.getheader("Access-Control-Allow-Origin"), WEB_ORIGIN)
         self.assertIn("Authorization", r.getheader("Access-Control-Allow-Headers"))
-        self.assertEqual(r.getheader("Access-Control-Allow-Methods"), "POST")
+        self.assertEqual(r.getheader("Access-Control-Allow-Methods"), "GET, POST")
+        c.close()
+        # The tests of a problem are downloaded the same way (they can be as large as the upload).
+        c = http.client.HTTPConnection("127.0.0.1", EDGE, timeout=10)
+        c.request("OPTIONS", "/api/admin/problem-versions/abc/tests.tar", headers={
+            "Origin": WEB_ORIGIN, "Access-Control-Request-Method": "GET", "Access-Control-Request-Headers": "authorization"})
+        r = c.getresponse()
+        r.read()
+        self.assertEqual((r.status, r.getheader("Access-Control-Allow-Origin")), (204, WEB_ORIGIN))
+        self.assertIn("Content-Disposition", r.getheader("Access-Control-Expose-Headers"))
         c.close()
         # A 12 MB upload is proxied whole, with the CORS header on the answer.
         size = 12 * 1024 * 1024
