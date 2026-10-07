@@ -68,7 +68,7 @@ else
 fi
 
 echo "== 5/5 host keys and GitHub settings"
-api_key="$(ssh-keyscan -q -t ed25519 "$api_ip" 2>/dev/null | head -1)"
+api_key="$(ssh-keyscan -t ed25519 "$api_ip" 2>/dev/null | grep -v '^#' | head -1 || true)"
 [ -n "$api_key" ] || die "could not read the API VM host key"
 judge_keys=""
 for j in $judges; do
