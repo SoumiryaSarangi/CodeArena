@@ -50,10 +50,10 @@ resource "azurerm_linux_virtual_machine" "api" {
     public_key = var.ssh_public_key
   }
 
-  # Lets the VM upload backups to Blob storage without any stored secret (D-03).
-  identity {
-    type = "SystemAssigned"
-  }
+  # No managed identity on purpose: creating one needs an object in the Entra tenant, and the
+  # university tenant's directory-object quota is exhausted ("FailedIdentityOperation ... directory
+  # object quota limit for the Tenant has been exceeded"). Backups use a container-scoped SAS
+  # token instead (storage.tf, D-03).
 
   os_disk {
     caching              = "ReadWrite"

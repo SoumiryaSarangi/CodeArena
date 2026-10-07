@@ -185,9 +185,11 @@ run "api_vm_is_reachable_the_way_we_decided" {
     error_message = "The API VM needs a static public IP."
   }
 
+  # The university Entra tenant has no room for new directory objects: a managed identity makes the
+  # VM fail to create ("directory object quota limit for the Tenant has been exceeded").
   assert {
-    condition     = azurerm_linux_virtual_machine.api.identity[0].type == "SystemAssigned"
-    error_message = "The API VM needs an identity to upload backups without a stored secret."
+    condition     = length(azurerm_linux_virtual_machine.api.identity) == 0
+    error_message = "The API VM must not request a managed identity (the tenant's directory quota is exhausted)."
   }
 }
 
@@ -259,11 +261,30 @@ run "backups_are_private_and_expire" {
   assert {
     condition = (
       azurerm_storage_account.backups.allow_nested_items_to_be_public == false &&
-      azurerm_storage_account.backups.shared_access_key_enabled == false &&
       azurerm_storage_account.backups.min_tls_version == "TLS1_2" &&
       azurerm_storage_account.backups.https_traffic_only_enabled == true
     )
-    error_message = "The backup account must be private, key-less, TLS 1.2 and HTTPS only."
+    error_message = "The backup account must be private, TLS 1.2 and HTTPS only."
+  }
+
+  # Key access is on only so the container SAS can be minted (no managed identity is possible in this
+  # tenant). What a stolen token could do is limited, and history is recoverable.
+  assert {
+    condition = (
+      data.azurerm_storage_account_blob_container_sas.backups.permissions[0].delete == false &&
+      data.azurerm_storage_account_blob_container_sas.backups.permissions[0].read == true &&
+      data.azurerm_storage_account_blob_container_sas.backups.permissions[0].write == true &&
+      data.azurerm_storage_account_blob_container_sas.backups.https_only == true
+    )
+    error_message = "The backup token must read/write/list this container only and must not be able to delete."
+  }
+
+  assert {
+    condition = (
+      azurerm_storage_account.backups.blob_properties[0].versioning_enabled == true &&
+      azurerm_storage_account.backups.blob_properties[0].delete_retention_policy[0].days >= 7
+    )
+    error_message = "Blob versioning and soft-delete must be on so an overwritten or deleted backup can be recovered."
   }
 
   assert {
@@ -274,11 +295,6 @@ run "backups_are_private_and_expire" {
   assert {
     condition     = azurerm_storage_management_policy.backups.rule[0].actions[0].base_blob[0].delete_after_days_since_modification_greater_than == 30
     error_message = "Backups must expire after 30 days by default."
-  }
-
-  assert {
-    condition     = azurerm_role_assignment.api_backups.role_definition_name == "Storage Blob Data Contributor"
-    error_message = "The API VM identity needs write access to the backups container."
   }
 
   assert {

@@ -85,6 +85,18 @@ variable "backup_retention_days" {
   default     = 30
 }
 
+variable "backup_sas_start" {
+  description = "When the backup upload token becomes valid (RFC 3339, UTC). Fixed, not `timestamp()`, so plans stay stable."
+  type        = string
+  default     = "2026-10-07T00:00:00Z"
+}
+
+variable "backup_sas_expiry" {
+  description = "When the backup upload token stops working. Renew by changing this and applying."
+  type        = string
+  default     = "2027-04-07T00:00:00Z"
+}
+
 variable "create_budget" {
   description = "Create the cost budget with alerts at 25/50/75 %. Set false if the subscription (Azure for Students) rejects Cost Management budgets."
   type        = bool

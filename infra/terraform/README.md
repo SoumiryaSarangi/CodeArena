@@ -49,9 +49,9 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
    terraform init
    terraform plan
    ```
-   You should see about 30 resources to add: a resource group, VNet and two subnets, two NSGs with
+   You should see about 31 resources to add: a resource group, VNet and two subnets, two NSGs with
    their rules, a public IP and NIC for the API VM, the API VM, one judge NIC + VM + temporary
-   public IP, a storage account + container + lifecycle policy + role assignment, and the budget.
+   public IP, a storage account + container + lifecycle policy, and the budget.
 5. **Apply**
    ```
    terraform apply
@@ -102,6 +102,9 @@ somewhere safe after every apply.
 
 ## If something fails
 
+- _"directory object quota limit for the Tenant has been exceeded"_ when creating a VM: the VM asked for a managed identity, and the university's Entra directory cannot hold more objects. This module therefore gives no VM an identity (backups use a container-scoped upload token instead, see `backup_container_sas`). If you ever add an identity and hit this, that is why.
+- Do **not** use `-var create_budget=false` unless the budget resource itself fails: it deletes an existing budget.
+
 - _"budget ... not supported"_ (Azure for Students): set `create_budget = false`. U0.2 already made one in the portal.
 - _"SkuNotAvailable" / "not allowed in this region"_: pick another size or region (step 2).
 - _"AuthorizationFailed" on the role assignment_: your login needs Owner on the subscription (Students accounts have it).
@@ -119,3 +122,13 @@ DNS/agent address; in steady state no internet at all, and no public IP. On the 
 subnet may reach only those two ports, so Postgres (5432) and everything else on the API VM is
 refused, even though the default Azure rules would have allowed it. The sandbox's own isolation (no
 network inside a box) is a second layer under this one.
+
+## Backups: the upload token
+
+There is no Azure identity for the API VM (see above), so D-03 uploads with a **SAS token limited to
+the `backups` container**: it can read, write and list, never delete, it expires on
+`backup_sas_expiry` (default 2027-04-07), and the account keeps blob versions and soft-deleted blobs
+for 14 days, so an overwritten or deleted backup is recoverable. Show it with
+`terraform output -raw backup_container_sas`. The token and the storage account key are stored in
+`terraform.tfstate`: keep that file private (it is gitignored), and never paste the token anywhere
+public.

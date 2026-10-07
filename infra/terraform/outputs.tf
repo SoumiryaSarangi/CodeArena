@@ -34,6 +34,12 @@ output "backup_container" {
   value = azurerm_storage_container.backups.name
 }
 
+output "backup_container_sas" {
+  description = "Upload token for the backups container (read/write/list, no delete). Sensitive: show with `terraform output -raw backup_container_sas`. D-03 puts it on the API VM."
+  value       = data.azurerm_storage_account_blob_container_sas.backups.sas
+  sensitive   = true
+}
+
 output "ssh" {
   description = "How to log in. Judges have no public address: jump through the API VM."
   value = {
