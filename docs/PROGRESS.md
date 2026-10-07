@@ -611,3 +611,11 @@ Ayush delegated the three open decisions; each was resolved as follows.
 - Deployed: API healthy through Vercel (`/api/health/ready` db/redis/s3 ok), GitHub sign-in works. Fixes it took: bootstrap read the host key with a flag this OpenSSH lacks (`ssh-keyscan -q`); the SSH admin user was not in the `docker` group (bootstrap now adds it); Turborepo strict env mode hid `API_PROXY_URL`/`NEXT_PUBLIC_REALTIME_URL` from the Vercel build (now listed in `turbo.json`); Google sign-in failed with `invalid_client` because the pasted client ID was stored repeated (a whole command block pasted into the hidden prompt).
 - `init-env.sh set` now trims spaces and refuses a Google client ID that is not exactly one real ID; new `infra/prod/set-oauth.sh google|github|all` sets values and restarts the API in one command. Tests: env.test.sh 29/29.
 - Lesson: one command per hidden prompt; give Ayush scripts, not multi-line pastes.
+
+## 2026-10-08 · D-02 · done (deployed and drilled)
+Built: production stack live on the Azure API VM (Caddy TLS on api.40-83-75-34.sslip.io, API, Postgres, Redis, SeaweedFS), Vercel web at https://code-arena-eta-mauve.vercel.app proxying `/api`, judge worker on the locked-down judge VM (lanes contest/interactive/practice/rejudge, concurrency 2), GitHub deploy pipeline gated by `DEPLOY_ENABLED`, `production` environment limited to `main`.
+Tests: first deploys green; Google and GitHub sign-in work end to end (onboarding reached). **Rollback drill passed** (run 37681902414: new release forced unhealthy, `rolled back … is live again`, health 200, API container healthy on the previous digest).
+Decisions: see the fix list in the entry above; deploys fire automatically after CI passes on `main`.
+Next: D-03 (backups), then P-02 (import problems into production).
+Ayush must: nothing for D-02. Keep `~/.ssh/codearena_deploy` private; back up `infra/terraform/terraform.tfstate`.
+Model: S · Sonnet 5.5
