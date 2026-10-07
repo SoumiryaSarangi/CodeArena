@@ -93,8 +93,9 @@ const (
 type JobMode string
 
 const (
-	JobModeRun    JobMode = "run"
-	JobModeSubmit JobMode = "submit"
+	JobModeRun      JobMode = "run"
+	JobModeSubmit   JobMode = "submit"
+	JobModeValidate JobMode = "validate"
 )
 
 type CheckerKind string

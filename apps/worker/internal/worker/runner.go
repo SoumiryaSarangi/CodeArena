@@ -62,6 +62,9 @@ func (r *Runner) Execute(ctx context.Context, job contracts.JudgeJob, progress j
 	if job.Mode == contracts.JobModeRun && job.CustomInput != nil {
 		return r.executeCustom(ctx, job, progress)
 	}
+	if job.Mode == contracts.JobModeValidate {
+		return r.executeValidate(ctx, job, progress)
+	}
 	ts, err := r.Cache.Get(ctx, job.Problem.TestsetHash, job.Problem.TestsetURI)
 	if err != nil {
 		return nil, err
@@ -115,6 +118,56 @@ func (r *Runner) executeCustom(ctx context.Context, job contracts.JudgeJob, prog
 	return r.Engine.RunCustom(ctx, slot, judge.CustomRequest{
 		Language: job.Language, Source: job.Source, Limits: job.Problem.Limits, Input: []byte(*job.CustomInput),
 	}, progress)
+}
+
+// executeValidate runs the problem's testlib validator (the job's source) on every input of its
+// testset, in the sandbox (FR-PROB-04). AC means every input is accepted; WA lists the rejected
+// inputs with the validator's message; CE is a validator that does not compile. A setter's
+// validator is untrusted code like any other: it is compiled and run in isolate boxes.
+func (r *Runner) executeValidate(ctx context.Context, job contracts.JudgeJob, progress judge.Progress) (*judge.Outcome, error) {
+	ts, err := r.Cache.Get(ctx, job.Problem.TestsetHash, job.Problem.TestsetURI)
+	if err != nil {
+		return nil, err
+	}
+	defer ts.Release()
+	slot, err := r.Pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = r.Pool.Release(context.WithoutCancel(ctx), slot) }()
+
+	progress(contracts.JudgePhaseCompiling, nil)
+	bin, err := judge.CompileChecker(ctx, r.Engine.Reg, slot.Compile, job.Source)
+	switch {
+	case errors.Is(err, judge.ErrCheckerCompile):
+		return &judge.Outcome{Verdict: contracts.VerdictCE, CompileLog: err.Error()}, nil
+	case err != nil:
+		return nil, err
+	}
+	progress(contracts.JudgePhaseRunning, nil)
+	out := &judge.Outcome{Verdict: contracts.VerdictAC}
+	for _, c := range ts.Cases {
+		in, _, err := ts.Load(c.No)
+		if err != nil {
+			return nil, err
+		}
+		ok, msg, err := judge.RunValidator(ctx, slot.Checker, bin, in)
+		if err != nil {
+			return nil, err
+		}
+		to := contracts.TestOutcome{No: int64(c.No), Verdict: contracts.VerdictAC}
+		if !ok {
+			out.Verdict = contracts.VerdictWA
+			if len(msg) > 256 {
+				msg = msg[:256]
+			}
+			to.CheckerMsg = &msg
+			to.Verdict = contracts.VerdictWA
+		}
+		out.Tests = append(out.Tests, to)
+		progress(contracts.JudgePhaseRunning, &to)
+	}
+	return out, nil
 }
 
 // checkerBinary returns the compiled testlib checker for a problem version,

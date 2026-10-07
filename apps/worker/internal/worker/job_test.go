@@ -90,6 +90,28 @@ func TestParseJob(t *testing.T) {
 			}
 		})
 	}
+	t.Run("FR-PROB-04: a validate job carries a C++17 validator", func(t *testing.T) {
+		ok := mutate(func(j *contracts.JudgeJob) { j.Mode = contracts.JobModeValidate; j.Language = contracts.LanguageCpp17 })
+		if j, err := ParseJob(ok); err != nil || j.Mode != contracts.JobModeValidate {
+			t.Fatalf("%+v %v", j, err)
+		}
+		for name, raw := range map[string]string{
+			"not C++": mutate(func(j *contracts.JudgeJob) {
+				j.Mode = contracts.JobModeValidate
+				j.Language = contracts.LanguagePython3
+			}),
+			"custom input": mutate(func(j *contracts.JudgeJob) {
+				j.Mode = contracts.JobModeValidate
+				j.Language = contracts.LanguageCpp17
+				in := "1"
+				j.CustomInput = &in
+			}),
+		} {
+			if _, err := ParseJob(raw); !errors.Is(err, ErrInvalidJob) {
+				t.Fatalf("validate job with %s was accepted: %v", name, err)
+			}
+		}
+	})
 	t.Run("accepts float with eps and testlib with a source", func(t *testing.T) {
 		for _, c := range []contracts.Checker{{Kind: contracts.CheckerKindFloat, Eps: &eps}, {Kind: contracts.CheckerKindTestlib, SourceURI: &bin}, {Kind: contracts.CheckerKindExact}} {
 			c := c

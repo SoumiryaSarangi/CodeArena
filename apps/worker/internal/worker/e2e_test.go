@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/judge"
@@ -81,6 +82,14 @@ func TestEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	valPair, err := os.ReadFile("../judge/testdata/val_pair.cpp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	valSmall, err := os.ReadFile("../judge/testdata/val_small.cpp")
+	if err != nil {
+		t.Fatal(err)
+	}
 	store := &memStore{
 		objects: map[string][]byte{"testsets/sum.tar": data, "checkers/ncmp.cpp": ncmp, "checkers/broken.cpp": broken},
 		opens:   map[string]*atomic.Int64{"testsets/sum.tar": {}, "checkers/ncmp.cpp": {}, "checkers/broken.cpp": {}},
@@ -125,6 +134,12 @@ func TestEndToEnd(t *testing.T) {
 	testlib := func(k string) contracts.Checker {
 		return contracts.Checker{Kind: contracts.CheckerKindTestlib, SourceURI: uri(k)}
 	}
+	validate := func(id, validator string) contracts.JudgeJob {
+		j := job(id, validator, tokens)
+		j.Mode = contracts.JobModeValidate
+		j.Language = contracts.LanguageCpp17
+		return j
+	}
 	custom := job("custom", sumC, tokens)
 	custom.Mode = contracts.JobModeRun
 	in := "1 2\n"
@@ -142,11 +157,14 @@ func TestEndToEnd(t *testing.T) {
 		{"tl-wa", job("tl-wa", wrong, testlib("ncmp.cpp")), contracts.VerdictWA},
 		{"jury", job("jury", sumC, testlib("broken.cpp")), contracts.VerdictSE},
 		{"custom", custom, contracts.VerdictAC},
+		{"val-ok", validate("val-ok", string(valPair)), contracts.VerdictAC},
+		{"val-bad", validate("val-bad", string(valSmall)), contracts.VerdictWA},
+		{"val-ce", validate("val-ce", "int main( {"), contracts.VerdictCE},
 	}
 	for _, c := range cases {
 		enqueue(t, rdb, c.j)
 	}
-	waitFor(t, "all results", func() bool { return streamLen(rdb, ResultsKey) == int64(len(cases)) })
+	waitWithin(t, 40*time.Second, "all results", func() bool { return streamLen(rdb, ResultsKey) == int64(len(cases)) })
 
 	got := map[string]contracts.JudgeResult{}
 	for _, r := range results(t, rdb) {
@@ -192,10 +210,25 @@ func TestEndToEnd(t *testing.T) {
 		if r.Output == nil || *r.Output != "3\n" || r.Stderr == nil || *r.Stderr != "" || len(r.Tests) != 1 {
 			t.Fatalf("%+v", r)
 		}
-		for _, id := range []string{"ac", "wa", "ce", "tl-ac", "tl-wa", "jury"} {
+		for _, id := range []string{"ac", "wa", "ce", "tl-ac", "tl-wa", "jury", "val-ok", "val-bad", "val-ce"} {
 			if got["sub-"+id].Output != nil || got["sub-"+id].Stderr != nil {
 				t.Fatalf("%s leaked program output", id)
 			}
+		}
+	})
+	t.Run("FR-PROB-04: a validate job checks every input and reports the rejected ones", func(t *testing.T) {
+		ok := got["sub-val-ok"]
+		if len(ok.Tests) != 2 || ok.Tests[0].Verdict != contracts.VerdictAC || ok.Tests[1].Verdict != contracts.VerdictAC {
+			t.Fatalf("%+v", ok)
+		}
+		bad := got["sub-val-bad"]
+		if len(bad.Tests) != 2 || bad.Tests[0].Verdict != contracts.VerdictAC || bad.Tests[1].Verdict != contracts.VerdictWA ||
+			bad.Tests[1].No != 2 || bad.Tests[1].CheckerMsg == nil || *bad.Tests[1].CheckerMsg == "" {
+			t.Fatalf("%+v", bad)
+		}
+		ce := got["sub-val-ce"]
+		if ce.CompileLog == nil || *ce.CompileLog == "" || len(ce.Tests) != 0 {
+			t.Fatalf("%+v", ce)
 		}
 	})
 	t.Run("FR-JUDGE-06: a broken checker publishes SE without dead-lettering", func(t *testing.T) {

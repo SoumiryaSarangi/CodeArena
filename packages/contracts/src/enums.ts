@@ -18,7 +18,7 @@ export const JudgePhase = z
   .meta({ id: 'JudgePhase' });
 export type JudgePhase = z.infer<typeof JudgePhase>;
 
-export const JobMode = z.enum(['submit', 'run']).meta({ id: 'JobMode' });
+export const JobMode = z.enum(['submit', 'run', 'validate']).meta({ id: 'JobMode' });
 export type JobMode = z.infer<typeof JobMode>;
 
 export const CheckerKind = z

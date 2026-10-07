@@ -59,8 +59,13 @@ func ParseJob(raw string) (contracts.JudgeJob, error) {
 		return j, invalid("runVersion must be >= 1 and seq >= 0")
 	case !validLane(j.Lane):
 		return j, invalid("unknown lane %q", j.Lane)
-	case j.Mode != contracts.JobModeRun && j.Mode != contracts.JobModeSubmit:
+	case j.Mode != contracts.JobModeRun && j.Mode != contracts.JobModeSubmit && j.Mode != contracts.JobModeValidate:
 		return j, invalid("unknown mode %q", j.Mode)
+	case j.Mode == contracts.JobModeValidate && j.Language != contracts.LanguageCpp17:
+		// The validator is a testlib program: C++ only, and its source is the job's source.
+		return j, invalid("a validate job carries a C++17 validator, not %q", j.Language)
+	case j.Mode == contracts.JobModeValidate && j.CustomInput != nil:
+		return j, invalid("a validate job takes no custom input")
 	case len(j.Source) > maxSourceBytes:
 		return j, invalid("source exceeds 64 KB")
 	case j.CustomInput != nil && len(*j.CustomInput) > maxInputBytes:

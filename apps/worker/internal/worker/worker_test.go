@@ -95,7 +95,13 @@ func start(t *testing.T, rdb *redis.Client, ex Executor, tweak func(*Config)) (*
 
 func waitFor(t *testing.T, what string, cond func() bool) {
 	t.Helper()
-	deadline := time.Now().Add(10 * time.Second)
+	waitWithin(t, 10*time.Second, what, cond)
+}
+
+// waitWithin is waitFor with a budget, for tests that compile C++ in sandbox boxes.
+func waitWithin(t *testing.T, budget time.Duration, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(budget)
 	for !cond() {
 		if time.Now().After(deadline) {
 			t.Fatalf("timed out waiting for %s", what)
