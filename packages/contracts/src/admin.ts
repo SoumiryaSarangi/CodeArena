@@ -78,6 +78,16 @@ export const AdminProblemDetail = z
         solutions: z.array(AdminSolution),
         /** False for versions imported before validators were stored: re-upload to validate them. */
         validatorStored: z.boolean(),
+        /** The most recent validation run of this version, so a reload shows its result. */
+        lastRun: z
+          .object({
+            id: z.string(),
+            status: z.enum(['queued', 'running', 'done', 'failed']),
+            ok: z.boolean().nullable(),
+            createdAt: iso,
+          })
+          .strict()
+          .nullable(),
       })
       .strict()
       .nullable(),

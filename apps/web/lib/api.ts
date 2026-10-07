@@ -102,36 +102,49 @@ export interface RequestOptions {
   idempotencyKey?: string;
   /** `required` fails with 401 for guests before calling; `optional` (default) adds a token if there is one. */
   auth?: 'optional' | 'required';
+  /**
+   * Call the API host itself (`NEXT_PUBLIC_REALTIME_URL`, the same origin the realtime stream uses)
+   * instead of the web origin's `/api` rewrite. For bodies the Vercel rewrite should not carry:
+   * package uploads and test downloads can be tens of megabytes. Bearer token only, no cookies, so
+   * no CSRF header either. Without that variable (dev) it falls back to the rewrite.
+   */
+  direct?: boolean;
 }
 
+const apiBase = (direct?: boolean) =>
+  direct ? (process.env.NEXT_PUBLIC_REALTIME_URL ?? '').replace(/\/$/, '') : '';
+
 /**
- * Calls the API through the web origin's `/api` rewrite (cookies stay first-party). Adds the bearer
- * token when signed in and the CSRF header on mutations; on a 401 it refreshes the token once and
- * retries. Failures become `ApiError`.
+ * Sends a request through the web origin's `/api` rewrite (cookies stay first-party), or directly
+ * to the API host with `opts.direct`. Adds the bearer token when signed in and the CSRF header on
+ * mutations; on a 401 it refreshes the token once and retries. A body is JSON unless it is
+ * `FormData`. Failures become `ApiError`; a success returns the raw response.
  */
-export async function apiFetch<T>(
+async function apiRequest(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   path: string,
-  body?: unknown,
-  opts: RequestOptions = {},
-  client: AuthClient = auth,
-  doFetch: Fetch = (...a) => fetch(...a),
-): Promise<T> {
+  body: unknown,
+  opts: RequestOptions,
+  client: AuthClient,
+  doFetch: Fetch,
+): Promise<Response> {
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   const send = async (token: string | null) => {
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
-    if (method !== 'GET') {
+    // A multipart body gets its Content-Type (with the boundary) from the browser.
+    if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
+    if (method !== 'GET' && !opts.direct) {
       const csrf = csrfFromCookie();
       if (csrf) headers['X-CSRF-Token'] = csrf;
     }
     if (opts.idempotencyKey) headers['Idempotency-Key'] = opts.idempotencyKey;
     try {
-      return await doFetch(`/api${path}`, {
+      return await doFetch(`${apiBase(opts.direct)}/api${path}`, {
         method,
         headers,
         signal: opts.signal,
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       });
     } catch (err) {
       if ((err as Error).name === 'AbortError') throw err;
@@ -148,7 +161,7 @@ export async function apiFetch<T>(
     token = await client.refresh();
     if (token) res = await send(token);
   }
-  if (res.ok) return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+  if (res.ok) return res;
 
   const problem = (await res.json().catch(() => null)) as Partial<ProblemDetails> | null;
   const retry = Number(res.headers.get('Retry-After'));
@@ -160,6 +173,34 @@ export async function apiFetch<T>(
     Number.isFinite(retry) && retry > 0 ? retry : undefined,
     problem?.errors,
   );
+}
+
+/** JSON in, JSON out (see `apiRequest`). */
+export async function apiFetch<T>(
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  path: string,
+  body?: unknown,
+  opts: RequestOptions = {},
+  client: AuthClient = auth,
+  doFetch: Fetch = (...a) => fetch(...a),
+): Promise<T> {
+  const res = await apiRequest(method, path, body, opts, client, doFetch);
+  return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+}
+
+/** The bytes of a GET (a file download), with the same token handling as every other call. */
+export async function apiBlob(
+  path: string,
+  opts: RequestOptions = {},
+  client: AuthClient = auth,
+  doFetch: Fetch = (...a) => fetch(...a),
+): Promise<{ blob: Blob; filename: string | null }> {
+  const res = await apiRequest('GET', path, undefined, opts, client, doFetch);
+  const disposition = res.headers.get('Content-Disposition') ?? '';
+  return {
+    blob: await res.blob(),
+    filename: /filename="([^"]+)"/.exec(disposition)?.[1] ?? null,
+  };
 }
 
 /** GET with the signed-in user's token when there is one (public data still works for guests). */

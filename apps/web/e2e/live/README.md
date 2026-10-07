@@ -16,3 +16,15 @@ E2E_LIVE=1 pnpm --filter @codearena/web e2e:live
 The spec mints its own user and refresh token with `apps/api/src/test/mint-session.ts`, so it does
 not need Google or GitHub. The dev passwords above are the Compose defaults; use your own if you
 changed them.
+
+## The setter screen spec (UI-04)
+
+`e2e/live/admin.spec.ts` uploads a copy of `problems/hop-distances` through the page as a minted
+**setter** (`mint-session.ts '' setter`), presses Validate and expects the real judge to confirm all
+eight items (seven solutions and the validator). Two things to know when running it:
+
+- Start the worker with **every lane**: `WORKER_LANES=contest,interactive,practice,rejudge`
+  (validation jobs use the `rejudge` lane; the default is `practice` only).
+- The dev database needs the latest migration: `pnpm --filter @codearena/api db:migrate`.
+
+`E2E_LIVE=1 pnpm --filter @codearena/web e2e:live` runs both live specs; `... admin` only this one.

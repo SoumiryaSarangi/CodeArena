@@ -35,6 +35,46 @@
             "id": {
               "type": "string"
             },
+            "lastRun": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "ok": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "status": {
+                      "enum": [
+                        "queued",
+                        "running",
+                        "done",
+                        "failed"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "ok",
+                    "createdAt"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "limits": {
               "additionalProperties": false,
               "properties": {
@@ -87,7 +127,8 @@
             "checker",
             "samples",
             "solutions",
-            "validatorStored"
+            "validatorStored",
+            "lastRun"
           ],
           "type": "object"
         },

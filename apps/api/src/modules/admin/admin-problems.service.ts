@@ -12,7 +12,13 @@ import { asc, desc, eq } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
 import { CONFIG, type Config } from '../../config/config';
 import { DB, type Db } from '../../db/db.module';
-import { packageSolutions, problemTags, problemVersions, problems } from '../../db/schema';
+import {
+  packageSolutions,
+  problemTags,
+  problemVersions,
+  problems,
+  validationRuns,
+} from '../../db/schema';
 import { S3 } from '../../s3/s3.module';
 import type { AuthUser } from '../auth/guards';
 import { assertCanManage } from '../problems/access';
@@ -182,6 +188,7 @@ export class AdminProblemsService {
             expected: s.expectedVerdict,
           })),
           validatorStored: current.validatorUri !== null,
+          lastRun: await this.lastRun(current.id),
         };
       }
       return {
@@ -204,6 +211,23 @@ export class AdminProblemsService {
         current: detail,
       };
     });
+  }
+
+  private async lastRun(versionId: string) {
+    const [run] = await this.db
+      .select()
+      .from(validationRuns)
+      .where(eq(validationRuns.versionId, versionId))
+      .orderBy(desc(validationRuns.createdAt))
+      .limit(1);
+    if (!run) return null;
+    const finished = run.status === 'done' || run.status === 'failed';
+    return {
+      id: run.id,
+      status: run.status,
+      ok: finished ? ((run.results as { ok?: boolean } | null)?.ok ?? false) : null,
+      createdAt: run.createdAt.toISOString(),
+    };
   }
 
   /** FR-PROB-01..03: a package folder becomes a new problem (private) or a new version of one. */

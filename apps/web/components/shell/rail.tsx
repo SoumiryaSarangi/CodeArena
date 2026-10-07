@@ -1,18 +1,31 @@
 'use client';
-import { Code, Home, Trophy, User, Users } from 'lucide-react';
+import { Code, Home, Trophy, User, Users, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
+import { useSession } from '@/lib/session';
 import { NAV } from '@/lib/shortcuts';
 
-const ICONS = { home: Home, code: Code, trophy: Trophy, users: Users, user: User } as const;
+const ICONS = {
+  home: Home,
+  code: Code,
+  trophy: Trophy,
+  users: Users,
+  user: User,
+  tool: Wrench,
+} as const;
+
+/** Setters and admins get one more entry (UI-04); the API checks the role on every call anyway. */
+const ADMIN = { href: '/admin/problems', label: 'Admin', icon: 'tool' } as const;
 
 /**
- * Left rail: icons at md, labels at xl; under md it becomes a bottom bar. Admin is added once
- * roles exist (F-06), as a role-gated entry.
+ * Left rail: icons at md, labels at xl; under md it becomes a bottom bar. Admin is a role-gated
+ * entry for setters and admins.
  */
 export function Rail() {
   const path = usePathname();
+  const { session } = useSession();
+  const items = session.status === 'authed' && session.me.role !== 'user' ? [...NAV, ADMIN] : NAV;
   return (
     <nav
       aria-label="Main"
@@ -22,7 +35,7 @@ export function Rail() {
         'xl:w-48',
       )}
     >
-      {NAV.map(({ href, label, icon }) => {
+      {items.map(({ href, label, icon }) => {
         const Icon = ICONS[icon];
         const active = path === href || path.startsWith(`${href}/`);
         return (

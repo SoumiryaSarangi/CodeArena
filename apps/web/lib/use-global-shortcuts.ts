@@ -3,9 +3,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { GO_ROUTES } from './shortcuts';
 
+// Monaco takes its input through its own element (a textarea, or an edit-context div that is not
+// `contenteditable`), so anything inside an editor counts as typing too.
 const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement &&
-  (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+  (el.isContentEditable ||
+    ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) ||
+    el.closest('.monaco-editor, [role="textbox"]') !== null);
+
+const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta']);
 
 /** ⌘K / Ctrl+K, `?`, `/` (focus search) and the `g` navigation sequences (UI_UX §13). Ignored while typing. */
 export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () => void }) {
@@ -34,6 +40,10 @@ export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () =>
       } else if (Date.now() - armedAt < 1000 && GO_ROUTES[e.key]) {
         armedAt = 0;
         router.push(GO_ROUTES[e.key]!);
+      } else if (!MODIFIER_KEYS.has(e.key)) {
+        // `g` then the next key: any other key cancels the sequence, so "g ... p" typed a moment
+        // apart is not "g p".
+        armedAt = 0;
       }
     };
     window.addEventListener('keydown', onKey);

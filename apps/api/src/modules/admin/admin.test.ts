@@ -264,6 +264,7 @@ describe.skipIf(!ready)(
         });
         expect(res.body.current.statementMd).toMatch(/^# /);
         expect(res.body.current.solutions).toHaveLength(SOLUTIONS);
+        expect(res.body.current.lastRun).toBeNull();
         expect(res.body.versions).toHaveLength(1);
       });
 
@@ -478,6 +479,12 @@ describe.skipIf(!ready)(
         expect(alt.source).toBe(pkgFiles.get('solutions/alt.py')!.toString('utf8'));
         const [v] = await db.select().from(problemVersions).where(eq(problemVersions.id, vid));
         expect(v!.validationStatus).toBe('running');
+        const detail = await call('get', '/admin/problems/hop-validate', setter.token);
+        expect(detail.body.current.lastRun).toMatchObject({
+          id: runId,
+          status: 'running',
+          ok: null,
+        });
       });
 
       it('only one run per version at a time', async () => {

@@ -39,7 +39,7 @@ export interface StubOptions {
   /** Answer the next submit with 429. */
   rateLimit?: { retryAfter: number };
   /** The signed-in user's role (default user). */
-  role?: 'user' | 'admin';
+  role?: 'user' | 'setter' | 'admin';
   /** Taken handles for the availability check. */
   takenHandles?: string[];
   /** Handles that look free but are taken by the time you save (a race): saving answers 409. */
