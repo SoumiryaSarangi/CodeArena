@@ -75,7 +75,8 @@ class Compose(unittest.TestCase):
         for name in ("migrate", "s3-init"):
             self.assertEqual(services[name]["profiles"], ["tools"])
             self.assertEqual(services[name]["restart"], "no")
-        self.assertEqual(services["migrate"]["command"], ["pnpm", "db:migrate"])
+        # node directly, never through pnpm (it reinstalls dependencies, which the container user cannot do)
+        self.assertEqual(services["migrate"]["command"], ["node", "--import", "tsx", "src/db/cli.ts", "migrate"])
 
     def test_the_api_reads_its_settings_from_prod_env(self):
         for name in ("api", "migrate"):

@@ -51,7 +51,7 @@ services:
   migrate:
     image: ${API_IMAGE:?API_IMAGE is set by deploy.sh}
     env_file: prod.env
-    command: ['pnpm', 'db:migrate']
+    command: ['node', '--import', 'tsx', 'src/db/cli.ts', 'migrate']
     profiles: ['tools']
     restart: 'no'
     depends_on:
