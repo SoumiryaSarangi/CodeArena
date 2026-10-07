@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { AdminNav } from '@/components/admin/admin-nav';
-import { ProblemList } from '@/components/admin/problem-list';
+import { ContestAdminList } from '@/components/admin/contest-list';
 import { SetterGate } from '@/components/admin/setter-gate';
 
-export const metadata: Metadata = { title: 'Problems · Admin' };
+export const metadata: Metadata = { title: 'Contests · Admin' };
 
-export default function AdminProblemsPage() {
+export default function AdminContestsPage() {
   return (
-    <SetterGate>
+    <SetterGate min="admin" what="contests">
       <div className="flex flex-col gap-6">
         <AdminNav />
-        <ProblemList />
+        <ContestAdminList />
       </div>
     </SetterGate>
   );

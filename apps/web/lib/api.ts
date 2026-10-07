@@ -121,7 +121,7 @@ const apiBase = (direct?: boolean) =>
  * `FormData`. Failures become `ApiError`; a success returns the raw response.
  */
 async function apiRequest(
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   body: unknown,
   opts: RequestOptions,
@@ -177,7 +177,7 @@ async function apiRequest(
 
 /** JSON in, JSON out (see `apiRequest`). */
 export async function apiFetch<T>(
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   body?: unknown,
   opts: RequestOptions = {},
