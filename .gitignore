@@ -14,3 +14,10 @@ __pycache__/
 test-results/
 playwright-report/
 apps/web/public/monaco/
+
+# Terraform: state can hold sensitive values; the lock file (.terraform.lock.hcl) IS committed.
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/*.tfvars
+infra/terraform/crash.log

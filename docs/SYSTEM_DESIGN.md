@@ -879,7 +879,7 @@ PR: lint → typecheck → unit → integration (Testcontainers) → contracts f
 
 ### 18.4 Cost model (Azure for Students, $100)
 
-Steady state: 1 API VM + 1 judge VM (B-series). Contest/load-test days: +2 judge VMs for a few hours. Budget alerts at 25/50/75%. Check the Azure pricing calculator before choosing sizes.
+Steady state: 1 API VM + 1 judge VM (B-series). Contest/load-test days: +2 judge VMs for a few hours, on a non-burstable size (`Standard_D2s_v5`: burstable CPUs are throttled under sustained judging). Budget alerts at 25/50/75%. Check the Azure pricing calculator before choosing sizes. The infrastructure is `infra/terraform/` (see its README and ADR-013's addendum).
 
 ---
 

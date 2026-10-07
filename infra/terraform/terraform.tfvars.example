@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars (gitignored) and fill in. Nothing here is a secret except that the file
+# names your subscription, so it stays out of git.
+
+subscription_id = "00000000-0000-0000-0000-000000000000" # az account show --query id -o tsv
+ssh_public_key  = "ssh-ed25519 AAAA... you@laptop"       # cat ~/.ssh/id_ed25519.pub
+
+# location = "centralindia"   # change if the subscription does not allow it (README, step 2)
+
+# Steady state: one judge. Before the load test and contest day, scale up and use a non-burstable size:
+# judge_count   = 3
+# judge_vm_size = "Standard_D2s_v5"   # B2s is burstable and gets throttled under sustained judging
+
+# First apply: leave judge_bootstrap at its default (true). Once cloud-init has finished on the
+# judge VM(s), run:  terraform apply -var judge_bootstrap=false
+
+# Extra people to e-mail at 25/50/75 % of the budget (subscription Owners are always notified):
+# budget_alert_emails = ["you@example.com"]
+# create_budget       = false   # only if apply fails on the budget (README, "If something fails")

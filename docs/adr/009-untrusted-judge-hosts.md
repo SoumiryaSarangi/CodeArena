@@ -42,3 +42,7 @@ Residual risk: the kernel itself is shared; a kernel exploit from inside a box r
 
 Operational notes: (1) after any change run `docker compose up -d --force-recreate redis`; a dev Redis created before Q-04 has the old, narrower `judge` rules and will refuse the worker's `XPENDING`, `MULTI` and crash-counter commands. (2) The API's dev default `REDIS_URL` still uses `admin` for convenience; production must set the `api` user. (3) Residual power of a compromised judge: it can acknowledge or delete jobs it can see (the reconciler re-enqueues them), post wrong results for jobs it was given (schema and run-version checks limit this), and fake heartbeats.
 
+
+## Addendum (D-01, 2026-10-07): network enforcement on Azure
+
+The judge subnet's network security group enforces the rule above one layer below the worker: no inbound except SSH from the API subnet; outbound only to Redis (6379) and object storage (8333) on the API subnet and Azure's platform address (DNS, agent); everything else denied, and the API subnet's own NSG refuses every other port from the judge subnet (the default VNet-wide allow would otherwise let a judge reach Postgres). Judge VMs have no managed identity and, in steady state, no public IP. One deliberate exception: during `judge_bootstrap` (first boot or a maintenance window) a judge has a temporary public IP and open internet egress so cloud-init can install packages; VNet-internal traffic other than Redis/S3 stays denied even then. Tested offline in `infra/terraform/tests/network.tftest.hcl`.

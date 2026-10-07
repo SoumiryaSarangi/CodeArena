@@ -20,3 +20,12 @@ The web app deploys to Vercel. REST goes through a Vercel `/api` rewrite so cook
 ## Consequences
 
 Cheap and reproducible. Cost: we operate Postgres backups and upgrades ourselves, and Azure for Students activation is a dependency for the deploy cards.
+
+## Addendum (D-01, 2026-10-07): how the Terraform is set up
+
+- **Code:** `infra/terraform/` (azurerm ~> 4, local state, gitignored; lock file committed). Ayush runs `plan`/`apply`; offline `terraform test` (mock provider) asserts the firewall properties so a careless edit fails in CI instead of production.
+- **Sizes:** API VM and judge VMs default to `Standard_B2s` as above (approved by Ayush). B-series is burstable: sustained judging exhausts the CPU credits and the VM is throttled, which skews timings. `Standard_D2s_v5` (non-burstable) is the documented upgrade for the load test and contest day, one variable (`judge_vm_size`).
+- **Judge bootstrap exception:** a judge VM needs the internet once (packages, isolate source). `judge_bootstrap = true` (first apply) attaches a temporary public IP and keeps egress open; `judge_bootstrap = false` removes the public IP and adds the catch-all egress deny. This avoids a NAT Gateway (about $32/month). Even in bootstrap mode a judge cannot reach anything else inside the VNet (the database included).
+- **SSH:** key-only SSH on the API VM is open to the internet (Ayush's decision) so GitHub Actions can deploy; password login is off and fail2ban runs (cloud-init). Judge VMs are reachable only by SSH from the API VM (jump host).
+- **Backups:** private Blob container, no storage account key (shared-key access off); the API VM's managed identity gets `Storage Blob Data Contributor` on the container, so D-03 uploads need no stored secret. Retention is 30 days by lifecycle policy (simpler than SD-§18.3's 7 daily + 4 weekly; D-03 can label weekly dumps inside the window).
+- **Budget:** `azurerm_consumption_budget_resource_group` with alerts at 25/50/75 %; optional (`create_budget`) because Azure for Students may not offer Cost Management budgets.
