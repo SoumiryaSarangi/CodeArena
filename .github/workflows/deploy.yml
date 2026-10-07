@@ -120,8 +120,8 @@ jobs:
         run: |
           set -euo pipefail
           export SSH_CONFIG
-          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
-          infra/prod/ci/deploy-api.sh
+          SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
+          bash infra/prod/ci/deploy-api.sh
 
   deploy-judges:
     needs: [worker, deploy-api]
@@ -147,5 +147,5 @@ jobs:
         run: |
           set -euo pipefail
           export SSH_CONFIG
-          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
-          infra/prod/ci/deploy-judges.sh "$RUNNER_TEMP/bin/worker" "$RUNNER_TEMP/bin/node_exporter"
+          SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
+          bash infra/prod/ci/deploy-judges.sh "$RUNNER_TEMP/bin/worker" "$RUNNER_TEMP/bin/node_exporter"

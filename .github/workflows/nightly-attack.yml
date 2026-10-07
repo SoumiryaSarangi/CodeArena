@@ -43,6 +43,6 @@ jobs:
         run: |
           set -euo pipefail
           export SSH_CONFIG
-          SSH_CONFIG="$(infra/prod/ci/ssh-config.sh)"
+          SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
           first="${JUDGE_HOSTS%% *}"
-          infra/prod/ci/run-attack.sh "$RUNNER_TEMP/attack" "$RUNNER_TEMP/suite.tar.gz" "$first"
+          bash infra/prod/ci/run-attack.sh "$RUNNER_TEMP/attack" "$RUNNER_TEMP/suite.tar.gz" "$first"
