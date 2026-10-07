@@ -21,8 +21,10 @@ ssh_api 'test -f /opt/codearena/prod.env' || { echo "/opt/codearena/prod.env is 
 
 echo "== uploading production files"
 # prod/* to the top of /opt/codearena, redis/ next to it; never the tests or this CI directory.
-tar -C "$infra" -cz --transform 's,^prod/,,' --exclude='prod/tests' --exclude='prod/ci' prod redis \
-  | ssh_api 'tar -xz -C /opt/codearena && chmod +x /opt/codearena/deploy.sh /opt/codearena/init-env.sh'
+# scripts/restore-test.sh (the weekly restore test, D-03) goes to the top level too.
+tar -cz --transform 's,^prod/,,' --transform 's,^scripts/,,' --exclude='prod/tests' --exclude='prod/ci' \
+    -C "$infra" prod redis -C "$infra/.." scripts/restore-test.sh \
+  | ssh_api 'tar -xz -C /opt/codearena && chmod +x /opt/codearena/deploy.sh /opt/codearena/init-env.sh /opt/codearena/backup.sh /opt/codearena/restore-test.sh'
 
 echo "== deploying $IMAGE_REF"
 logout() { ssh_api 'docker logout ghcr.io >/dev/null 2>&1 || true' || true; }

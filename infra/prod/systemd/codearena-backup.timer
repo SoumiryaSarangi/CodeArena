@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly CodeArena backup, 03:00 IST (21:30 UTC)
+
+[Timer]
+OnCalendar=*-*-* 21:30:00 UTC
+RandomizedDelaySec=5min
+# If the VM was off at 03:00, run as soon as it is back.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

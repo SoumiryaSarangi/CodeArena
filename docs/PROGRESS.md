@@ -619,3 +619,12 @@ Decisions: see the fix list in the entry above; deploys fire automatically after
 Next: D-03 (backups), then P-02 (import problems into production).
 Ayush must: nothing for D-02. Keep `~/.ssh/codearena_deploy` private; back up `infra/terraform/terraform.tfstate`.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · D-03 · done
+Built: `infra/prod/backup.sh` (pg_dump -Fc from the Postgres container, readability check, upload with the container SAS, size + SHA-256 verified read-back, failed-run metric that keeps the last-success time, optional `--label` for manual runs); `scripts/restore-test.sh --latest|--file` (throwaway Postgres, every table in the dump must exist, `users` must have rows, always cleans up); systemd timers (backup nightly 03:00 IST, restore test Sundays 04:00 IST); `infra/prod/enable-backups.sh` (run from Ayush's machine: SAS from Terraform state straight to `/opt/codearena/backup.env` mode 600 over stdin, installs timers, first backup + restore test); deploys now also ship backup.sh/units/restore-test.sh; `docs/runbooks/backup-restore.md`, README section, SD-§18.3 as-built.
+Tests: `backup.test.sh` 22 (good path, SAS never on argv/logs, tiny/empty/unreadable dump refused, upload and read-back mismatches fail, labels, bad config), `restore.test.sh` 7 on a REAL Postgres (good dump passes; empty users, truncated dump, missing file fail; no container left), `enable-backups.test.sh` 11; existing suites still green. Covers NFR-REL-04. **Accept met on the live server:** first backup `pg/codearena-20261007T203702Z-first.dump` (86,430 bytes) uploaded and verified; restore test PASS (38 tables, 7 rows); timers active.
+Decisions: retention is Azure's 30-day lifecycle rule (30 dailies) instead of 7 daily + 4 weekly because the upload token cannot delete. The env file is read as text, never sourced (a SAS contains `&`; the test caught this). Bug the real-Postgres test caught: `docker exec -i psql` inside the row-count loop swallowed the table list.
+Scope gap (follow-up): object-store packages and hidden tests (SeaweedFS volume) are NOT in this backup; they re-import from `problems*/`. Revisit when contest packages go live (P-02).
+Next: P-02 (contest problem tooling, tag P: plan mode). Alerting on `backup.prom` arrives with O-01 (Grafana).
+Ayush must: before 2027-04-07 renew the upload token (runbook). Optionally `ssh codearena@40.83.75.34 '/opt/codearena/backup.sh --label pre-contest'` before Warm-up #1.
+Model: S · Sonnet 5.5

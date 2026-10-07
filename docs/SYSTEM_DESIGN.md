@@ -877,6 +877,7 @@ PR: lint → typecheck → unit → integration (Testcontainers) → contracts f
 ### 18.3 Backups and DR
 
 - Nightly `pg_dump` → Azure Blob (7 daily, 4 weekly). Manual backup before and after each contest.
+- *As built (D-03):* `infra/prod/backup.sh` (systemd timer, 03:00 IST) dumps in custom format, checks the dump reads back, uploads with a container-scoped SAS (no delete, token on stdin only), then verifies size and SHA-256; retention is Azure's lifecycle rule (30 daily dumps instead of 7 daily + 4 weekly: the SAS cannot delete, and the cost is cents). `scripts/restore-test.sh` restores the newest dump into a throwaway Postgres and requires every table plus rows in `users`; a weekly timer runs it. Scope is Postgres only (object-store packages re-import from `problems*/`). Procedure: `docs/runbooks/backup-restore.md`.
 - RPO 24 h (contest days: minutes, via manual backups); RTO 1 h (restore script tested weekly).
 
 ### 18.4 Cost model (Azure for Students, $100)

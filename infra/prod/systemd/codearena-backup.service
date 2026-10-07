@@ -1,0 +1,12 @@
+[Unit]
+Description=CodeArena Postgres backup to Azure Blob (D-03)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=codearena
+ExecStart=/opt/codearena/backup.sh
+TimeoutStartSec=30min
+Nice=10

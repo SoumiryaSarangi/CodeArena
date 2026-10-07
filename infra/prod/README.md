@@ -119,4 +119,31 @@ back to; do the drill after a second deploy.)
 
 - Importing the practice problems into production (`pnpm problem:import` is not in the API image yet): needs the admin upload (P-02/UI-04).
 - The collaborative pad service (`/collab`) answers 503 until Day 12.
+- Alerting on `backup.prom` (a stale or failed backup) comes with Grafana Cloud wiring (O-01).
 - Grafana Cloud wiring (O-01). Node exporter is installed on the judges and listens on the private address, ready for it.
+
+## Backups (D-03)
+
+Postgres is the source of truth, so it is backed up every night to the private `backups` container in Azure Blob.
+
+**Turn it on (once, from your machine, after the first deploy):**
+
+```bash
+infra/prod/enable-backups.sh
+```
+
+It reads the storage account, container and upload token from your local Terraform state (the token is never
+printed), writes them to `/opt/codearena/backup.env` on the API VM (mode 600), installs two systemd timers,
+then takes a first backup and restores it into a throwaway database to prove it works.
+
+| What                                                                                                                       | When                   | Where it runs                                                        |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
+| `backup.sh`: `pg_dump` → check readable → upload → verify size and SHA-256                                                 | every night 03:00 IST  | API VM, timer `codearena-backup.timer`                               |
+| `restore-test.sh --latest`: restore the newest dump into a temporary Postgres, check every table and that `users` has rows | every Sunday 04:00 IST | API VM, timer `codearena-restore-test.timer`                         |
+| `backup.sh --label pre-contest`: a manual backup (before and after each contest)                                           | when you run it        | `ssh codearena@<api> '/opt/codearena/backup.sh --label pre-contest'` |
+
+Look at them: `systemctl list-timers 'codearena-*'`, `journalctl -u codearena-backup -n 30`,
+`cat /opt/codearena/state/backup.prom` (last result, last good time and size, metrics for Grafana later).
+Backups are kept 30 days (Azure lifecycle rule; the upload token cannot delete). The upload token expires
+on `backup_sas_expiry`: before then change that date in `terraform.tfvars`, `terraform apply`, and run
+`infra/prod/enable-backups.sh --no-first-run` again. Restoring for real: `docs/runbooks/backup-restore.md`.

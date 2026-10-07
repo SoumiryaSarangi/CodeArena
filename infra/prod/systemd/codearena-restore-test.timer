@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly CodeArena restore test, Sunday 04:00 IST (Saturday 22:30 UTC)
+
+[Timer]
+OnCalendar=Sat 22:30:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

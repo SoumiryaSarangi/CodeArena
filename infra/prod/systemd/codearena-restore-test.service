@@ -1,0 +1,13 @@
+[Unit]
+Description=CodeArena weekly restore test: restore the newest backup into a throwaway Postgres (D-03)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=codearena
+Environment=METRIC_FILE=/opt/codearena/state/restore-test.prom
+ExecStart=/opt/codearena/restore-test.sh --latest
+TimeoutStartSec=30min
+Nice=10
