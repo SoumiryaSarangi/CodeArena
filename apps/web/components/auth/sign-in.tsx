@@ -31,7 +31,14 @@ export function SignIn() {
       </div>
       <p className="text-13 text-text-3">
         We store your name, email and avatar from the provider, and the code you submit. Nothing
-        else.
+        else.{' '}
+        <a href="/privacy" className="text-accent underline">
+          Privacy
+        </a>
+        {' · '}
+        <a href="/terms" className="text-accent underline">
+          Terms
+        </a>
       </p>
     </div>
   );

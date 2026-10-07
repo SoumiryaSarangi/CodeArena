@@ -45,6 +45,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link href="/status" className="hover:text-text">
               Status
             </Link>
+            <Link href="/privacy" className="hover:text-text">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-text">
+              Terms
+            </Link>
           </footer>
         </div>
         <CommandPalette
