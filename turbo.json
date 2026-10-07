@@ -2,7 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "dev": { "cache": false, "persistent": true },
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"],
+      "env": ["API_PROXY_URL", "NEXT_PUBLIC_REALTIME_URL"]
+    },
     "typecheck": { "dependsOn": ["^build"] },
     "test": { "dependsOn": ["^build"] }
   }
