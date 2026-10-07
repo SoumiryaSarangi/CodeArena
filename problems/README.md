@@ -29,6 +29,28 @@ pnpm problem:import --publish problems/       # structure check + upload tests t
 
 `validate-problem` runs through the real judge engine in isolate boxes (needs `scripts/setup-isolate-wsl.sh` and `scripts/setup-judge-runtimes.sh`). Structure alone is also checked in plain `go test ./...` (`TestRepositoryProblems`).
 
+## Stress testing (P-02)
+
+`validate-problem` proves the declared solutions get their expected verdicts on the committed tests. A **stress test** goes further: it asks whether the reference itself is right, by comparing it with an obviously-correct brute force on thousands of small random inputs.
+
+```
+scripts/stress-test.py problems-private/                  # every package that has a stress/ directory, 1000 cases each
+scripts/stress-test.py -n 5000 -j 8 problems-private/ferry-pairs
+pnpm problems:stress problems-private/                    # the same through pnpm
+python3 -m unittest scripts/tests/test_stress.py          # tests of the tool itself (needs g++)
+```
+
+A package opts in with two files:
+
+```
+stress/small.py     `small.py <seed>` prints ONE valid, small input (deterministic per seed; vary size and edge values)
+stress/brute.cpp    exhaustive solution that is obviously correct (subsets, all paths, all splits); .py also works
+```
+
+For every seed the tool runs `small.py`, **fails the package if `validator.cpp` rejects the input** (a case that breaks the constraints would hide bugs), runs the brute force, `solutions/main.cpp` and every other solution declared `expected: AC`, and compares outputs token by token. The first mismatch prints the seed and saves the input and every program's output to a temp directory, never into the repository. Only `checker: tokens` packages are supported. It runs trusted package code on the host, like `problem-build.py`.
+
+Brute forces should use a *different method* from the reference (for example, enumerate all subsets rather than sort and prefix-sum). Keep inputs tiny (n up to about 12) so exhaustive search is instant, and make `small.py` cover zeros, ties and extremes, because large-value overflows are caught by the large tests and the independent AC solutions in `validate-problem`, not here.
+
 ## Conventions
 
 - Every package has an AC reference in C++ and an AC solution in Python written a different way, so a wrong reference cannot hide: the two must agree on every test.

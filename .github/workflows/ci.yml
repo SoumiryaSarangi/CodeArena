@@ -47,6 +47,9 @@ jobs:
       - run: test -z "$(gofmt -l .)"
       - run: go vet ./...
       - run: go test ./...
+      - name: Problem tooling tests (stress-test.py)
+        working-directory: .
+        run: python3 -m unittest scripts/tests/test_stress.py
 
   attack:
     # Sandbox-containment suite (J-07, FR-JUDGE-10). isolate needs systemd +
