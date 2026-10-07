@@ -65,9 +65,10 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
    ssh -J codearena@<api-ip> codearena@<judge-private-ip> 'cloud-init status --wait'
    ./lock-judges.sh
    ```
-   The script runs two applies (it detaches the judge's temporary public IP first, because Azure
-   will not delete an IP that is still attached, and Terraform does not order those steps by
-   itself), then adds the rule that blocks all other egress. Type `yes` at each prompt. Check:
+   The script first detaches the judge's temporary public IP with the Azure CLI (Azure will not
+   delete an IP that is still attached, and Terraform does not order those two steps by itself, even
+   with `-target`), then runs `terraform apply -var judge_bootstrap=false`, which deletes the IP and
+   adds the rule that blocks all other egress. Type `yes` at the prompt. Check:
    ```
    ssh -J codearena@<api-ip> codearena@<judge-private-ip> 'curl -m 5 -sI https://example.com >/dev/null 2>&1 && echo "INTERNET OPEN (bad)" || echo "no internet (good)"'
    ```

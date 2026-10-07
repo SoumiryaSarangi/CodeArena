@@ -26,6 +26,11 @@ output "judge_bootstrap_public_ips" {
   value       = azurerm_public_ip.judge_bootstrap[*].ip_address
 }
 
+output "judge_nic_names" {
+  description = "Used by lock-judges.sh to detach the temporary public IPs."
+  value       = azurerm_network_interface.judge[*].name
+}
+
 output "backup_storage_account" {
   value = azurerm_storage_account.backups.name
 }
