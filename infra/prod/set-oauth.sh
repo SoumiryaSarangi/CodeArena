@@ -21,4 +21,8 @@ for k in $keys; do remote="$remote; echo; echo '--> $k: paste the value once, th
 remote="$remote; echo; echo 'restarting the API...'; docker compose --env-file prod.env -f docker-compose.yml up -d --force-recreate api"
 remote="$remote; for i in \$(seq 1 30); do curl -fsS http://127.0.0.1:4000/api/health/ready >/dev/null 2>&1 && echo 'API is back up.' && exit 0; sleep 2; done; echo 'API did not come back: run docker compose logs api on the server'; exit 1"
 
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Make sure the server has the current checker (a deploy also uploads it).
+scp -q -i "$key" "$here/init-env.sh" "$user@$host:/opt/codearena/init-env.sh"
+
 exec ssh -t -i "$key" "$user@$host" "$remote"
