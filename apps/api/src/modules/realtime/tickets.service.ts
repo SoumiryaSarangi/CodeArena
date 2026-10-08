@@ -107,6 +107,9 @@ export class TicketsService {
       if (contest[2] === 'board') return; // public board once the contest is published
       if (!user) return deny();
       if (admin) return;
+      // `u:{userId}` carries private answers: only its owner (C-05).
+      const priv = /^u:([0-9a-f-]{36})$/.exec(contest[2]!);
+      if (priv && priv[1] !== user.id) return deny();
       const [p] = await this.db
         .select({ uid: participants.userId })
         .from(participants)

@@ -18,7 +18,9 @@ import { useNow, useServerClock, formatSpan } from '@/lib/contest-time';
 import { cn } from '@/lib/cn';
 import { contestDetail, contestProblem, contestProblems } from '@/lib/contests';
 import { signInHref, useSession } from '@/lib/session';
+import { useContestMessages } from '@/lib/use-contest-messages';
 import { useLiveBoard } from '@/lib/use-live-board';
+import { ClarificationsDrawer } from './clarifications-drawer';
 
 type Load<T> = { s: 'loading' } | { s: 'ready'; v: T } | { s: 'error'; err: ApiError };
 
@@ -57,6 +59,8 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
     me ? { id: me.id, admin: me.role === 'admin' } : null,
     ready && !!contest && contest.state !== 'scheduled',
   );
+
+  const messages = useContestMessages(slug, contest?.id, me?.id, ready && !!me && !!contest);
 
   useEffect(() => {
     if (!ready) return;
@@ -174,6 +178,18 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-3">
+          <ClarificationsDrawer
+            slug={slug}
+            labels={(list?.items ?? []).map((p) => p.label)}
+            items={messages.items}
+            notes={messages.notes}
+            unread={messages.unread}
+            unreadIds={messages.unreadIds}
+            canAsk={running}
+            onAsked={messages.added}
+            onOpen={messages.markRead}
+            defaultLabel={label}
+          />
           <Button asChild variant="ghost" size="sm">
             <Link href={`/c/${slug}/board`}>Board</Link>
           </Button>

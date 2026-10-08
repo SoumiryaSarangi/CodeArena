@@ -58,7 +58,26 @@ export const brow = (
   };
 };
 
+type Clar = {
+  id: string;
+  problemLabel: string | null;
+  question: string;
+  answer: string | null;
+  isPublic: boolean;
+  mine: boolean;
+  createdAt: string;
+  answeredAt: string | null;
+  askerId: string;
+  askerHandle: string;
+};
+
 export interface ContestStub {
+  /** Clarifications: what the contestant lists (`mine` ones plus public answers) and the admin inbox. */
+  clarifications: Clar[];
+  asked: Record<string, unknown>[];
+  answered: { id: string; body: Record<string, unknown> }[];
+  announced: string[];
+  announcements: { id: string; body: string; createdAt: string }[];
   /** What `/board` answers; tests change it between requests. */
   board: { version: number; frozen: boolean; rows: BRow[] };
   boardRequests: number;
@@ -96,6 +115,36 @@ export async function stubContests(
       ],
     },
     boardRequests: 0,
+    clarifications: [
+      {
+        id: 'q1',
+        problemLabel: 'B',
+        question: 'Is the grid always square?',
+        answer: null,
+        isPublic: false,
+        mine: false,
+        createdAt: '2026-10-10T13:10:00.000Z',
+        answeredAt: null,
+        askerId: 'u9',
+        askerHandle: 'amy',
+      },
+      {
+        id: 'q2',
+        problemLabel: null,
+        question: 'Can we leave the room?',
+        answer: 'Yes, quietly.',
+        isPublic: true,
+        mine: false,
+        createdAt: '2026-10-10T13:05:00.000Z',
+        answeredAt: '2026-10-10T13:06:00.000Z',
+        askerId: 'u7',
+        askerHandle: 'zed',
+      },
+    ],
+    asked: [],
+    answered: [],
+    announced: [],
+    announcements: [],
     registers: [],
     created: [],
     patches: [],
@@ -130,6 +179,7 @@ export async function stubContests(
     registered: reg,
   });
   const detail = () => ({
+    id: 'cid-1',
     slug: 'warm-up-1',
     title: 'CodeArena Warm-up #1',
     state: stateNow(),
@@ -278,10 +328,71 @@ export async function stubContests(
     });
   });
 
+  const strip = (c: Clar) => {
+    const { askerId, askerHandle, ...rest } = c;
+    void askerId;
+    void askerHandle;
+    return rest;
+  };
+  await page.route('**/api/contests/warm-up-1/clarifications', (r) => {
+    if (r.request().method() === 'POST') {
+      const body = r.request().postDataJSON() as { problemLabel?: string | null; question: string };
+      st.asked.push(body);
+      const item: Clar = {
+        id: `mine-${st.asked.length}`,
+        problemLabel: body.problemLabel ?? null,
+        question: body.question,
+        answer: null,
+        isPublic: false,
+        mine: true,
+        createdAt: new Date().toISOString(),
+        answeredAt: null,
+        askerId: 'u1',
+        askerHandle: 'riya_k',
+      };
+      st.clarifications.push(item);
+      return json(r, strip(item), 201);
+    }
+    return json(r, {
+      items: st.clarifications.filter((c) => c.mine || (c.isPublic && c.answer)).map(strip),
+    });
+  });
+  await page.route('**/api/contests/warm-up-1/announcements', (r) =>
+    json(r, { items: st.announcements }),
+  );
+  await page.route(
+    '**/api/admin/contests/11111111-1111-4111-8111-111111111111/clarifications',
+    (r) => json(r, { items: st.clarifications }),
+  );
+  await page.route('**/api/admin/clarifications/*/answer', (r) => {
+    const id = r.request().url().split('/').at(-2)!;
+    const body = r.request().postDataJSON() as { answer: string; isPublic: boolean };
+    st.answered.push({ id, body });
+    const c = st.clarifications.find((x) => x.id === id)!;
+    Object.assign(c, {
+      answer: body.answer,
+      isPublic: body.isPublic,
+      answeredAt: new Date().toISOString(),
+    });
+    return json(r, c);
+  });
+  await page.route(
+    '**/api/admin/contests/11111111-1111-4111-8111-111111111111/announcements',
+    (r) => {
+      const body = r.request().postDataJSON() as { body: string };
+      st.announced.push(body.body);
+      return json(
+        r,
+        { id: `n${st.announced.length}`, body: body.body, createdAt: new Date().toISOString() },
+        201,
+      );
+    },
+  );
+
   // ---- admin ----
   const admin = () => ({
-    id: '11111111-1111-4111-8111-111111111111',
     ...detail(),
+    id: '11111111-1111-4111-8111-111111111111',
     state: st.published ? stateNow() : 'draft',
     problems: st.problemPuts.length
       ? (st.problemPuts.at(-1) as { items: { label: string; slug: string }[] }).items.map((i) => ({

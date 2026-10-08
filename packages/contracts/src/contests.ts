@@ -124,6 +124,8 @@ export const ContestList = z
 export type ContestList = z.infer<typeof ContestList>;
 
 export const ContestDetail = ContestSummary.extend({
+  /** For realtime topics (`contest:{id}:clar`). */
+  id: z.string(),
   description: z.string(),
   rules: ContestRules,
   /** Clients compute countdowns from this, not from their own clock (FR-CONT-03). */
@@ -176,7 +178,6 @@ export const AdminContestProblem = z
   .strict();
 
 export const AdminContestDetail = ContestDetail.extend({
-  id: z.string(),
   problems: z.array(AdminContestProblem),
 })
   .strict()
@@ -259,3 +260,101 @@ export const BoardDiffData = z
   .strict()
   .meta({ id: 'BoardDiffData' });
 export type BoardDiffData = z.infer<typeof BoardDiffData>;
+
+/** Clarifications and announcements (C-05, FR-CONT-04). */
+export const ClarificationCreate = z
+  .object({
+    /** A problem label, or absent for a general question. */
+    problemLabel: z
+      .string()
+      .regex(/^[A-Z]$/)
+      .nullish(),
+    question: z.string().trim().min(1).max(2000),
+  })
+  .strict()
+  .meta({ id: 'ClarificationCreate' });
+export type ClarificationCreate = z.infer<typeof ClarificationCreate>;
+
+export const ClarificationItem = z
+  .object({
+    id: z.string(),
+    problemLabel: z.string().nullable(),
+    question: z.string(),
+    answer: z.string().nullable(),
+    /** An answer for everyone (the question is then shown to everyone too). */
+    isPublic: z.boolean(),
+    /** I asked it. */
+    mine: z.boolean(),
+    createdAt: iso,
+    answeredAt: iso.nullable(),
+  })
+  .strict()
+  .meta({ id: 'ClarificationItem' });
+export type ClarificationItem = z.infer<typeof ClarificationItem>;
+
+export const ClarificationList = z
+  .object({ items: z.array(ClarificationItem) })
+  .strict()
+  .meta({ id: 'ClarificationList' });
+export type ClarificationList = z.infer<typeof ClarificationList>;
+
+export const AdminClarificationItem = ClarificationItem.extend({
+  askerId: z.string(),
+  askerHandle: z.string(),
+})
+  .strict()
+  .meta({ id: 'AdminClarificationItem' });
+export type AdminClarificationItem = z.infer<typeof AdminClarificationItem>;
+
+export const AdminClarificationList = z
+  .object({ items: z.array(AdminClarificationItem) })
+  .strict()
+  .meta({ id: 'AdminClarificationList' });
+export type AdminClarificationList = z.infer<typeof AdminClarificationList>;
+
+export const ClarificationAnswer = z
+  .object({ answer: z.string().trim().min(1).max(2000), isPublic: z.boolean() })
+  .strict()
+  .meta({ id: 'ClarificationAnswer' });
+export type ClarificationAnswer = z.infer<typeof ClarificationAnswer>;
+
+export const AnnouncementCreate = z
+  .object({ body: z.string().trim().min(1).max(2000) })
+  .strict()
+  .meta({ id: 'AnnouncementCreate' });
+export type AnnouncementCreate = z.infer<typeof AnnouncementCreate>;
+
+export const Announcement = z
+  .object({ id: z.string(), body: z.string(), createdAt: iso })
+  .strict()
+  .meta({ id: 'Announcement' });
+export type Announcement = z.infer<typeof Announcement>;
+
+export const AnnouncementList = z
+  .object({ items: z.array(Announcement) })
+  .strict()
+  .meta({ id: 'AnnouncementList' });
+export type AnnouncementList = z.infer<typeof AnnouncementList>;
+
+/**
+ * Events (SD-§10). `clar.new` goes to `admin:contest:{id}:clar` with the asker. `clar.answer` goes to
+ * `contest:{id}:clar` (public answers) or `contest:{id}:u:{userId}` (a private answer to its asker)
+ * and never names the asker. `announce.new` goes to `contest:{id}:clar` with an `Announcement`.
+ */
+export const ClarificationNewEvent = z
+  .object({ contestId: z.string(), item: AdminClarificationItem })
+  .strict()
+  .meta({ id: 'ClarificationNewEvent' });
+export type ClarificationNewEvent = z.infer<typeof ClarificationNewEvent>;
+
+export const ClarificationEvent = z
+  .object({ contestId: z.string(), item: ClarificationItem })
+  .strict()
+  .meta({ id: 'ClarificationEvent' });
+export type ClarificationEvent = z.infer<typeof ClarificationEvent>;
+
+export const AnnouncementEvent = z
+  .object({ contestId: z.string(), item: Announcement })
+  .strict()
+  .meta({ id: 'AnnouncementEvent' });
+export type AnnouncementEvent = z.infer<typeof AnnouncementEvent>;

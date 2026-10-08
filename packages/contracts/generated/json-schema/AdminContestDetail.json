@@ -109,11 +109,11 @@
     "problemCount",
     "registeredCount",
     "registered",
+    "id",
     "description",
     "rules",
     "serverNow",
     "canRegister",
-    "id",
     "problems"
   ],
   "type": "object"

@@ -1,0 +1,18 @@
+{
+  "$id": "AnnouncementEvent.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contestId": {
+      "type": "string"
+    },
+    "item": {
+      "$ref": "Announcement.json"
+    }
+  },
+  "required": [
+    "contestId",
+    "item"
+  ],
+  "type": "object"
+}

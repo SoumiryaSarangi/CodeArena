@@ -1,0 +1,22 @@
+{
+  "$id": "Announcement.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "body": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "body",
+    "createdAt"
+  ],
+  "type": "object"
+}

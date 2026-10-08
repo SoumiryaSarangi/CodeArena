@@ -10,16 +10,27 @@ import {
   Put,
   Req,
 } from '@nestjs/common';
-import { ContestCreate, ContestPatch, ContestProblemsPut } from '@codearena/contracts';
+import {
+  AnnouncementCreate,
+  ClarificationAnswer,
+  ClarificationCreate,
+  ContestCreate,
+  ContestPatch,
+  ContestProblemsPut,
+} from '@codearena/contracts';
 import type { Request } from 'express';
 import { RateLimit } from '../../rate-limit/rate-limit';
 import { Public, RequireHandle, Roles } from '../auth/guards';
 import { ContestsService } from './contests.service';
+import { MessagesService } from './messages.service';
 
 /** Contests for contestants and guests (SRS §3.2.7). A bearer token, when sent, adds `registered`. */
 @Controller('contests')
 export class ContestsController {
-  constructor(@Inject(ContestsService) private readonly contests: ContestsService) {}
+  constructor(
+    @Inject(ContestsService) private readonly contests: ContestsService,
+    @Inject(MessagesService) private readonly messages: MessagesService,
+  ) {}
 
   @Public()
   @Get()
@@ -47,6 +58,24 @@ export class ContestsController {
     return this.contests.boardOf(slug, req.user);
   }
 
+  @Get(':slug/clarifications')
+  clarifications(@Req() req: Request, @Param('slug') slug: string) {
+    return this.messages.list(slug, req.user!);
+  }
+
+  @RequireHandle()
+  @RateLimit({ scope: 'clarify', perMinute: 6 })
+  @Post(':slug/clarifications')
+  @HttpCode(201)
+  ask(@Req() req: Request, @Param('slug') slug: string, @Body() body: unknown) {
+    return this.messages.ask(slug, req.user!, ClarificationCreate.parse(body));
+  }
+
+  @Get(':slug/announcements')
+  announcements(@Req() req: Request, @Param('slug') slug: string) {
+    return this.messages.announcements(slug, req.user!);
+  }
+
   @Public()
   @Get(':slug/problems')
   problems(@Req() req: Request, @Param('slug') slug: string) {
@@ -64,7 +93,21 @@ export class ContestsController {
 @Roles('admin')
 @Controller('admin/contests')
 export class ContestsAdminController {
-  constructor(@Inject(ContestsService) private readonly contests: ContestsService) {}
+  constructor(
+    @Inject(ContestsService) private readonly contests: ContestsService,
+    @Inject(MessagesService) private readonly messages: MessagesService,
+  ) {}
+
+  @Get(':id/clarifications')
+  inbox(@Param('id') id: string) {
+    return this.messages.inbox(id);
+  }
+
+  @Post(':id/announcements')
+  @HttpCode(201)
+  announce(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.messages.announce(id, req.user!, AnnouncementCreate.parse(body));
+  }
 
   @Get()
   list() {
@@ -96,5 +139,18 @@ export class ContestsAdminController {
   @Put(':id/problems')
   problems(@Param('id') id: string, @Body() body: unknown) {
     return this.contests.putProblems(id, ContestProblemsPut.parse(body));
+  }
+}
+
+/** FR-CONT-04: admins answer a question, privately or for everyone. */
+@Roles('admin')
+@Controller('admin/clarifications')
+export class ClarificationsAdminController {
+  constructor(@Inject(MessagesService) private readonly messages: MessagesService) {}
+
+  @Post(':id/answer')
+  @HttpCode(200)
+  answer(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.messages.answer(id, req.user!, ClarificationAnswer.parse(body));
   }
 }

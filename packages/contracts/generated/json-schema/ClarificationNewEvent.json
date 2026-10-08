@@ -1,0 +1,18 @@
+{
+  "$id": "ClarificationNewEvent.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contestId": {
+      "type": "string"
+    },
+    "item": {
+      "$ref": "AdminClarificationItem.json"
+    }
+  },
+  "required": [
+    "contestId",
+    "item"
+  ],
+  "type": "object"
+}

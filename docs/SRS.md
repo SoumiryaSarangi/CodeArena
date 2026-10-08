@@ -156,6 +156,8 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 
 *As built (C-04, arena):* `POST /api/runs` takes the same two forms as submissions (`problemSlug`, or `contestSlug` + `label`) with the same gating: 422 `contest-not-started` before the start, registration required while running, allowed after the end; runs use the `practice` lane and never touch the board. `GET /api/contests/{slug}/problems/{label}` now includes `checker` (`{kind, eps?}`; never the checker source).
 
+*As built (C-05, clarifications):* `GET/POST /api/contests/{slug}/clarifications` (registered contestants and admins; `GET` returns my questions plus every public answer; `POST {problemLabel?, question ≤ 2000}` only while the contest runs, 6 per minute, `contest-not-started` / `contest-ended` otherwise), `GET /api/contests/{slug}/announcements`, and for admins `GET /api/admin/contests/{id}/clarifications` (the inbox, with askers), `POST /api/admin/clarifications/{id}/answer {answer, isPublic}` (also edits an answer), `POST /api/admin/contests/{id}/announcements {body}`; answers and announcements are written to the audit log. Realtime topics: `admin:contest:{id}:clar` (`clar.new`, with the asker), `contest:{id}:clar` (`clar.answer` for public answers, `announce.new`; registered contestants), `contest:{id}:u:{userId}` (`clar.answer` for a private answer; only that user, or an admin, can open it). Public events never name the asker.
+
 **Profiles and ratings**: GET `/api/users/{handle}` · `/rating-history` · `/activity?from&to` · `/solved-stats` (Guest).
 
 **AI Coach**

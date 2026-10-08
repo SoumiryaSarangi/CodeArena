@@ -128,6 +128,7 @@ export class ContestsService {
   ): ContestDetail {
     return {
       ...this.summary(c, now, n, registered),
+      id: c.id,
       description: c.description,
       rules: ContestRules.parse(c.rules),
       serverNow: iso(now),
@@ -327,7 +328,7 @@ export class ContestsService {
       .innerJoin(problemVersions, eq(problemVersions.id, contestProblems.versionId))
       .where(eq(contestProblems.contestId, c.id))
       .orderBy(asc(contestProblems.position));
-    return { id: c.id, ...this.detailOf(c, now, n.get(c.id), false), problems: rows };
+    return { ...this.detailOf(c, now, n.get(c.id), false), problems: rows };
   }
 
   async create(body: ContestCreate, adminId: string): Promise<AdminContestDetail> {

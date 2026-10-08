@@ -1,4 +1,12 @@
 import type {
+  AdminClarificationItem,
+  AdminClarificationList,
+  Announcement,
+  AnnouncementList,
+  ClarificationAnswer,
+  ClarificationCreate,
+  ClarificationItem,
+  ClarificationList,
   AdminContestDetail,
   AdminContestList,
   BoardSnapshot,
@@ -67,4 +75,42 @@ export const contestProblem = (slug: string, label: string, signal?: AbortSignal
     `/contests/${enc(slug)}/problems/${enc(label)}`,
     undefined,
     { auth: 'optional', signal },
+  );
+
+export const clarifications = (slug: string, signal?: AbortSignal) =>
+  apiFetch<ClarificationList>('GET', `/contests/${enc(slug)}/clarifications`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const askClarification = (slug: string, body: ClarificationCreate) =>
+  apiFetch<ClarificationItem>('POST', `/contests/${enc(slug)}/clarifications`, body, {
+    auth: 'required',
+  });
+
+export const announcements = (slug: string, signal?: AbortSignal) =>
+  apiFetch<AnnouncementList>('GET', `/contests/${enc(slug)}/announcements`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const adminInbox = (id: string, signal?: AbortSignal) =>
+  apiFetch<AdminClarificationList>('GET', `/admin/contests/${enc(id)}/clarifications`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const answerClarification = (id: string, body: ClarificationAnswer) =>
+  apiFetch<AdminClarificationItem>('POST', `/admin/clarifications/${enc(id)}/answer`, body, {
+    auth: 'required',
+  });
+
+export const announce = (id: string, body: string) =>
+  apiFetch<Announcement>(
+    'POST',
+    `/admin/contests/${enc(id)}/announcements`,
+    { body },
+    {
+      auth: 'required',
+    },
   );

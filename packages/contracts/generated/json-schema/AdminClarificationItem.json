@@ -1,0 +1,59 @@
+{
+  "$id": "AdminClarificationItem.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "answer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "answeredAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "askerHandle": {
+      "type": "string"
+    },
+    "askerId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isPublic": {
+      "type": "boolean"
+    },
+    "mine": {
+      "type": "boolean"
+    },
+    "problemLabel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "question": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "problemLabel",
+    "question",
+    "answer",
+    "isPublic",
+    "mine",
+    "createdAt",
+    "answeredAt",
+    "askerId",
+    "askerHandle"
+  ],
+  "type": "object"
+}

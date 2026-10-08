@@ -1,5 +1,6 @@
 'use client';
 import type { AdminContestDetail, AdminProblemSummary, ContestRules } from '@codearena/contracts';
+import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { StateLabel } from '@/components/contests/state-label';
 import { Button } from '@/components/ui/button';
@@ -164,6 +165,14 @@ export function ContestEditor({ id }: { id: string }) {
             </div>
           </div>
         )}
+        {c.state !== 'draft' ? (
+          <p className="text-14">
+            <Link href={`/admin/contests/${c.id}/ops`} className="underline">
+              Open the operations console
+            </Link>{' '}
+            <span className="text-text-2">(clarifications and announcements)</span>
+          </p>
+        ) : null}
         <div>
           {c.state === 'draft' ? (
             <Button
