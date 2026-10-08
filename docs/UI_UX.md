@@ -291,6 +291,7 @@ Each screen lists: purpose · layout · content · interactions · states · res
 - Header: avatar, handle, rating (number + tier word, no colour-only tiers), joined date.
 - Rating chart, heatmap, solved by difficulty (bar list), solved by tag (top 10 list), contest history table.
 - Own profile: settings link (default language, theme, sign out everywhere, delete account).
+- *As built (C-08):* `/u/[handle]` shows the handle, the rating, the rating graph (a plain SVG line with a dot per contest; its label gives the range and the contest history table under it carries every number) and the contest history (newest first: contest link to its board, rank, change with a sign, rating after). The heatmap, solved stats and settings link come with UI-05. The final scoreboard (state Final) gains a Rating column, `1432 (+32)` with the old rating in the tooltip and screen-reader text; participants who were not rated show a dash. The ops console has Finalize… (confirm dialog; only after the end) and, once final, Recompute ratings.
 
 ### S13 Interview (`/interview`, `/r/[roomId]`)
 - **List:** "New room" (problem search or blank, language, duration), my rooms (open/closed, date, role, "Replay").

@@ -1,0 +1,68 @@
+{
+  "$id": "RatingHistory.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "handle": {
+      "type": "string"
+    },
+    "history": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "contestSlug": {
+            "type": "string"
+          },
+          "contestTitle": {
+            "type": "string"
+          },
+          "delta": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "endedAt": {
+            "type": "string"
+          },
+          "newRating": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "oldRating": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "rank": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contestSlug",
+          "contestTitle",
+          "endedAt",
+          "rank",
+          "oldRating",
+          "newRating",
+          "delta"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "rating": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "handle",
+    "rating",
+    "history"
+  ],
+  "type": "object"
+}

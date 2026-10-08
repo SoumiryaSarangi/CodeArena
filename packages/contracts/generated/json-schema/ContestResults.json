@@ -1,0 +1,25 @@
+{
+  "$id": "ContestResults.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "changes": {
+      "items": {
+        "$ref": "RatingChangeRow.json"
+      },
+      "type": "array"
+    },
+    "rated": {
+      "type": "boolean"
+    },
+    "serverNow": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "serverNow",
+    "rated",
+    "changes"
+  ],
+  "type": "object"
+}

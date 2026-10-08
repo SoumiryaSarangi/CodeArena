@@ -1,5 +1,10 @@
 'use client';
-import type { BoardDiffData, BoardSnapshot, ContestDetail } from '@codearena/contracts';
+import type {
+  BoardDiffData,
+  BoardSnapshot,
+  ContestDetail,
+  ContestResults,
+} from '@codearena/contracts';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -9,7 +14,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
 import { applyDiff } from '@/lib/board';
 import { useNow, useServerClock } from '@/lib/contest-time';
-import { boardSnapshot, contestDetail } from '@/lib/contests';
+import { boardSnapshot, contestDetail, contestResults } from '@/lib/contests';
 import { cn } from '@/lib/cn';
 import { subscribe, type ConnectionState } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
@@ -38,6 +43,7 @@ export function Scoreboard({ slug }: { slug: string }) {
   const reduce = useReducedMotion();
   const [contest, setContest] = useState<ContestDetail | null>(null);
   const [board, setBoard] = useState<BoardSnapshot | null>(null);
+  const [results, setResults] = useState<ContestResults | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [conn, setConn] = useState<ConnectionState>('connecting');
   const [attempt, setAttempt] = useState(0);
@@ -58,9 +64,13 @@ export function Scoreboard({ slug }: { slug: string }) {
     if (session.status === 'loading') return;
     const ctl = new AbortController();
     Promise.all([contestDetail(slug, ctl.signal), boardSnapshot(slug, ctl.signal)])
-      .then(([c, b]) => {
+      .then(async ([c, b]) => {
+        // Once final, the rating changes sit beside the standings (C-08). Missing is fine.
+        const r =
+          c.state === 'finalized' ? await contestResults(slug, ctl.signal).catch(() => null) : null;
         setContest(c);
         setBoard(b);
+        setResults(r);
         setError(null);
       })
       .catch((e: unknown) => {
@@ -171,6 +181,8 @@ export function Scoreboard({ slug }: { slug: string }) {
   const chip = chipFor(contest, frozen, admin);
   const meInRows = myId ? rows.some((r) => r.userId === myId) : false;
   const labels = board.problems.map((p) => p.label);
+  const ratingBy = results?.rated ? new Map(results.changes.map((c) => [c.userId, c])) : null;
+  const extra = ratingBy ? 1 : 0;
 
   return (
     <div className="flex min-w-0 max-w-full flex-col gap-4">
@@ -238,6 +250,11 @@ export function Scoreboard({ slug }: { slug: string }) {
                 <th scope="col" className={cn(TH, 'text-right')}>
                   Penalty
                 </th>
+                {ratingBy ? (
+                  <th scope="col" className={cn(TH, 'text-right')}>
+                    Rating
+                  </th>
+                ) : null}
                 {board.problems.map((p) => (
                   <th key={p.label} scope="col" className={cn(TH, 'min-w-20 text-center')}>
                     <span className="font-mono">{p.label}</span>
@@ -252,7 +269,7 @@ export function Scoreboard({ slug }: { slug: string }) {
             <tbody>
               {windowed && first > 0 ? (
                 <tr aria-hidden style={{ height: first * ROW_H }}>
-                  <td colSpan={4 + labels.length} />
+                  <td colSpan={4 + extra + labels.length} />
                 </tr>
               ) : null}
               {visible.map((r, k) => {
@@ -292,6 +309,11 @@ export function Scoreboard({ slug }: { slug: string }) {
                     </th>
                     <td className={cn(TD, 'text-right font-mono tabular-nums')}>{r.solved}</td>
                     <td className={cn(TD, 'text-right font-mono tabular-nums')}>{r.penalty}</td>
+                    {ratingBy ? (
+                      <td className={cn(TD, 'text-right font-mono tabular-nums')}>
+                        <RatingDelta change={ratingBy.get(r.userId)} />
+                      </td>
+                    ) : null}
                     {labels.map((l) => (
                       <td key={l} className={cn(TD, 'text-center')}>
                         <ScoreCell cell={r.cells[l]} flash={flash.has(`${r.userId}:${l}`)} />
@@ -302,7 +324,7 @@ export function Scoreboard({ slug }: { slug: string }) {
               })}
               {windowed && last < rows.length ? (
                 <tr aria-hidden style={{ height: (rows.length - last) * ROW_H }}>
-                  <td colSpan={4 + labels.length} />
+                  <td colSpan={4 + extra + labels.length} />
                 </tr>
               ) : null}
             </tbody>
@@ -313,6 +335,28 @@ export function Scoreboard({ slug }: { slug: string }) {
         ✓ solved at that minute · ★ first to solve · +n rejected attempts · ?n pending
       </p>
     </div>
+  );
+}
+
+/** `1400 → 1423 (+23)`: the sign and the numbers carry the meaning, colour only repeats it. */
+function RatingDelta({
+  change,
+}: {
+  change?: { oldRating: number; newRating: number; delta: number };
+}) {
+  if (!change) return <span className="text-text-3">—</span>;
+  const sign = change.delta > 0 ? '+' : change.delta < 0 ? '−' : '±';
+  return (
+    <span title={`${change.oldRating} → ${change.newRating}`}>
+      {change.newRating}{' '}
+      <span className="text-text-2">
+        ({sign}
+        {Math.abs(change.delta)})
+      </span>
+      <span className="sr-only">
+        , rating changed from {change.oldRating} to {change.newRating}
+      </span>
+    </span>
   );
 }
 

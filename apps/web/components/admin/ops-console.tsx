@@ -9,6 +9,8 @@ import {
   dlqList,
   dlqRequeue,
   extendContest,
+  finalizeContest,
+  recomputeRatings,
   opsSummary,
   rebuildBoard,
   rejudge,
@@ -51,6 +53,7 @@ export function OpsConsole({
   const [failure, setFailure] = useState<Error | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [finalOpen, setFinalOpen] = useState(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -211,6 +214,34 @@ export function OpsConsole({
         >
           Rebuild board
         </Button>
+        {contest.state === 'ended' ? (
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={busy !== null}
+            onClick={() => setFinalOpen(true)}
+          >
+            Finalize…
+          </Button>
+        ) : null}
+        {contest.state === 'finalized' ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={busy === 'recompute'}
+            disabled={busy !== null}
+            onClick={() =>
+              run('recompute', async () => {
+                const r = await recomputeRatings(contest.id);
+                return r.differing === 0
+                  ? `Ratings recomputed: the same ${r.changes} results.`
+                  : `Ratings recomputed: ${r.differing} of ${r.changes} changed.`;
+              })
+            }
+          >
+            Recompute ratings
+          </Button>
+        ) : null}
         {over ? (
           <Button asChild variant="secondary" size="sm">
             <Link href={`/c/${contest.slug}/board?present=1`}>Open resolver</Link>
@@ -288,6 +319,32 @@ export function OpsConsole({
       </div>
 
       <RejudgeDialog contest={contest} open={open} onOpenChange={setOpen} onDone={setMsg} />
+      <Dialog open={finalOpen} onOpenChange={setFinalOpen}>
+        <DialogContent
+          title="Finalize this contest?"
+          description="The standings stop being frozen and ratings are computed. This cannot be undone."
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setFinalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setFinalOpen(false);
+                void run('finalize', async () => {
+                  const r = await finalizeContest(contest.id);
+                  return r.rated
+                    ? `Finalised. Ratings changed for ${r.changes} participants.`
+                    : 'Finalised. This contest is unrated (unrated rules or fewer than 5 participants).';
+                });
+              }}
+            >
+              Finalize
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

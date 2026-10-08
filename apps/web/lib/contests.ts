@@ -18,6 +18,10 @@ import type {
   ContestProblemList,
   ContestProblemsPut,
   ContestExtendResult,
+  ContestResults,
+  FinalizeResult,
+  RatingHistory,
+  RecomputeResult,
   DlqList,
   OpsSummary,
   Rejudge,
@@ -161,4 +165,28 @@ export const dlqList = (signal?: AbortSignal) =>
 export const dlqRequeue = (entryId: string) =>
   apiFetch<{ lane: string }>('POST', `/admin/dlq/${enc(entryId)}/requeue`, undefined, {
     auth: 'required',
+  });
+
+// ---- finalising and ratings (C-08) ----
+
+export const finalizeContest = (id: string) =>
+  apiFetch<FinalizeResult>('POST', `/admin/contests/${enc(id)}/finalize`, undefined, {
+    auth: 'required',
+  });
+
+export const recomputeRatings = (id: string) =>
+  apiFetch<RecomputeResult>('POST', `/admin/contests/${enc(id)}/recompute-ratings`, undefined, {
+    auth: 'required',
+  });
+
+export const contestResults = (slug: string, signal?: AbortSignal) =>
+  apiFetch<ContestResults>('GET', `/contests/${enc(slug)}/results`, undefined, {
+    auth: 'optional',
+    signal,
+  });
+
+export const ratingHistory = (handle: string, signal?: AbortSignal) =>
+  apiFetch<RatingHistory>('GET', `/users/${enc(handle)}/ratings`, undefined, {
+    auth: 'optional',
+    signal,
   });

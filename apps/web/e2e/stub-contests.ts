@@ -92,6 +92,18 @@ export interface ContestStub {
     rejudged: Record<string, unknown>[];
     rebuilds: number;
     requeued: string[];
+    finalized: boolean;
+    finalizes: number;
+    recomputes: number;
+    /** What `/results` and the finalize call answer. */
+    changes: {
+      userId: string;
+      handle: string;
+      rank: number;
+      oldRating: number;
+      newRating: number;
+      delta: number;
+    }[];
     /** Make the next extend fail with this message. */
     extendError?: string;
   };
@@ -112,6 +124,8 @@ export async function stubContests(
     /** Server clock minus browser clock. */
     clockSkewMs?: number;
     registered?: boolean;
+    /** The contest is final (C-08). */
+    finalized?: boolean;
     publishError?: boolean;
     noLateRegistration?: boolean;
   } = {},
@@ -163,6 +177,14 @@ export async function stubContests(
       rejudged: [],
       rebuilds: 0,
       requeued: [],
+      finalized: false,
+      finalizes: 0,
+      recomputes: 0,
+      changes: [
+        { userId: 'u9', handle: 'amy', rank: 1, oldRating: 1400, newRating: 1432, delta: 32 },
+        { userId: 'u1', handle: 'riya_k', rank: 2, oldRating: 1500, newRating: 1493, delta: -7 },
+        { userId: 'u7', handle: 'zed', rank: 3, oldRating: 1300, newRating: 1300, delta: 0 },
+      ],
     },
     clarifications: [
       {
@@ -207,7 +229,13 @@ export async function stubContests(
   const endsAt = () => new Date(startsAt().getTime() + o.durationMin * 60_000);
   const serverNow = () => new Date(Date.now() + o.clockSkewMs);
   const stateNow = () =>
-    serverNow() < startsAt() ? 'scheduled' : serverNow() < endsAt() ? 'running' : 'ended';
+    st.ops.finalized || opts.finalized
+      ? 'finalized'
+      : serverNow() < startsAt()
+        ? 'scheduled'
+        : serverNow() < endsAt()
+          ? 'running'
+          : 'ended';
 
   const summary = (
     slug: string,
@@ -553,6 +581,62 @@ export async function stubContests(
   await page.route('**/api/admin/rejudge', (r) => {
     st.ops.rejudged.push(r.request().postDataJSON() as Record<string, unknown>);
     return json(r, { queued: 3, skipped: 1, truncated: false });
+  });
+
+  // ---- finalising and ratings (C-08) ----
+  await page.route('**/api/contests/warm-up-1/results', (r) =>
+    st.ops.finalized || opts.finalized
+      ? json(r, { serverNow: serverNow().toISOString(), rated: true, changes: st.ops.changes })
+      : json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404),
+  );
+  await page.route(`**/api/admin/contests/${ID}/finalize`, (r) => {
+    st.ops.finalizes += 1;
+    st.ops.finalized = true;
+    return json(r, { rated: true, changes: st.ops.changes.length });
+  });
+  await page.route(`**/api/admin/contests/${ID}/recompute-ratings`, (r) => {
+    st.ops.recomputes += 1;
+    return json(r, { differing: 0, changes: st.ops.changes.length });
+  });
+  await page.route('**/api/users/*/ratings', (r) => {
+    const handle = decodeURIComponent(r.request().url().split('/').at(-2)!);
+    if (handle === 'ghost') {
+      return json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404);
+    }
+    if (handle === 'newbie') return json(r, { handle, rating: 1400, history: [] });
+    return json(r, {
+      handle,
+      rating: 1493,
+      history: [
+        {
+          contestSlug: 'c-one',
+          contestTitle: 'Contest One',
+          endedAt: '2026-09-01T12:00:00Z',
+          rank: 4,
+          oldRating: 1400,
+          newRating: 1450,
+          delta: 50,
+        },
+        {
+          contestSlug: 'c-two',
+          contestTitle: 'Contest Two',
+          endedAt: '2026-09-15T12:00:00Z',
+          rank: 9,
+          oldRating: 1450,
+          newRating: 1420,
+          delta: -30,
+        },
+        {
+          contestSlug: 'warm-up-1',
+          contestTitle: 'Warm-up #1',
+          endedAt: '2026-10-10T15:30:00Z',
+          rank: 2,
+          oldRating: 1420,
+          newRating: 1493,
+          delta: 73,
+        },
+      ],
+    });
   });
 
   return st;

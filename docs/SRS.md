@@ -139,7 +139,7 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 | POST `/api/admin/contests/{id}/announcements` | Admin | Broadcast |
 | POST `/api/admin/clarifications/{id}/answer` | Admin | `{answer, isPublic}` |
 | POST `/api/admin/contests/{id}/problems/{label}/visibility` | Admin | Hide/unhide, `{hidden}`. *As built (C-07):* `contest_problems.hidden` (migration 0005); a hidden problem is not listed, not accepted for submits and runs, and is dropped from the board, which is rebuilt. Re-saving the problem list resets it. |
-| POST `/api/admin/contests/{id}/finalize` | Admin | Finalize → ratings, reviews queued |
+| POST `/api/admin/contests/{id}/finalize` | Admin | Finalize → ratings, reviews queued. *As built (C-08):* ended contests only, once; answer `{rated, changes}`; reviews are queued by the AI cards. Also `POST .../recompute-ratings` → `{differing, changes}`; `GET /contests/{slug}/results` (guest, 404 until final) → `{serverNow, rated, changes:[{userId, handle, rank, oldRating, newRating, delta}]}`; `GET /users/{handle}/ratings` (guest) → `{handle, rating, history:[{contestSlug, contestTitle, endedAt, rank, oldRating, newRating, delta}]}`. |
 | POST `/api/admin/contests/{id}/rebuild-board` | Admin | Rebuild from Postgres |
 | POST `/api/admin/contests/{id}/resolver/{start\|step\|auto\|stop}` | Admin | Resolver control. *As built (C-06): not built; the ceremony runs in the admin's browser from `GET /contests/{slug}/board?view=frozen` (admin: the frozen view) and the live board.* |
 | GET `/api/admin/ops/summary` | Admin | Lanes, workers, p50/p95, DLQ count, subs/min. *As built (C-07):* lane depth = jobs not yet read by the `judges` group; workers come from the `hb:*` heartbeats; times are submit→verdict over 15 min. |
