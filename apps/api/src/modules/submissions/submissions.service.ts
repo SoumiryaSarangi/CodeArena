@@ -122,7 +122,10 @@ export class SubmissionsService {
    * `contest` lane, stamped with the contest minute and the freeze flag; after the end → accepted
    * as practice (no contest id, so it never touches the board).
    */
-  private async target(userId: string, body: CreateSubmission) {
+  private async target(
+    userId: string,
+    body: Pick<CreateSubmission, 'problemSlug' | 'contestSlug' | 'label'>,
+  ) {
     if (body.contestSlug === undefined) {
       return { version: await this.version(body.problemSlug!), lane: 'practice' as const };
     }
@@ -228,7 +231,7 @@ export class SubmissionsService {
       try {
         const language = this.checkLanguage(body.language);
         this.checkSize(body.source, body.input);
-        const version = await this.version(body.problemSlug);
+        const { version } = await this.target(userId, body);
         const samples = version.samples as { in: string; out: string }[];
         let inputs: string[];
         if (body.sampleIds) {

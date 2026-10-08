@@ -157,6 +157,9 @@ export const ContestProblemDetail = ContestProblemItem.extend({
   statementMd: z.string(),
   samples: z.array(z.object({ in: z.string(), out: z.string() }).strict()),
   testsCount: z.number().int(),
+  checker: z
+    .object({ kind: z.enum(['exact', 'tokens', 'float', 'testlib']), eps: z.number().optional() })
+    .strict(),
 })
   .strict()
   .meta({ id: 'ContestProblemDetail' });

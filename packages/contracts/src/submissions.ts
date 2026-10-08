@@ -44,7 +44,13 @@ export type SubmissionCreated = z.infer<typeof SubmissionCreated>;
 /** POST /api/runs: either `input` or `sampleIds` (1-based sample numbers), never both. */
 export const CreateRun = z
   .object({
-    problemSlug: z.string().min(1).max(100),
+    /** Practice: the problem. Contest: `contestSlug` + `label` instead (exactly one form). */
+    problemSlug: z.string().min(1).max(100).optional(),
+    contestSlug: z.string().min(1).max(100).optional(),
+    label: z
+      .string()
+      .regex(/^[A-Z]$/)
+      .optional(),
     language: z.string().min(1).max(20),
     source: z.string().min(1),
     /** ≤ 1 MB; over that is 413. */
@@ -55,6 +61,14 @@ export const CreateRun = z
   .refine((r) => (r.input === undefined) !== (r.sampleIds === undefined), {
     message: 'give exactly one of input or sampleIds',
     path: ['input'],
+  })
+  .refine((r) => (r.problemSlug !== undefined) !== (r.contestSlug !== undefined), {
+    message: 'Send either problemSlug or contestSlug with label',
+    path: ['problemSlug'],
+  })
+  .refine((r) => (r.contestSlug === undefined) === (r.label === undefined), {
+    message: 'contestSlug and label go together',
+    path: ['label'],
   })
   .meta({ id: 'CreateRun' });
 export type CreateRun = z.infer<typeof CreateRun>;

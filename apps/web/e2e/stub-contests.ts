@@ -174,6 +174,46 @@ export async function stubContests(
     st.registered = true;
     return json(r, detail(), 201);
   });
+  await page.route(/\/api\/contests\/warm-up-1\/problems\/[A-Z]$/, (r) => {
+    const label = r.request().url().split('/').at(-1)!;
+    if (stateNow() === 'scheduled') {
+      return json(
+        r,
+        {
+          type: 'https://codearena.dev/errors/not-found',
+          title: 'Not found',
+          status: 404,
+          code: 'not-found',
+        },
+        404,
+      );
+    }
+    if (!st.registered) {
+      return json(
+        r,
+        {
+          type: 'https://codearena.dev/errors/forbidden',
+          title: 'Forbidden',
+          status: 403,
+          code: 'forbidden',
+          detail: 'Register for the contest to see its problems',
+        },
+        403,
+      );
+    }
+    const title = label === 'A' ? 'Chai Bill' : 'Lantern Lighting';
+    return json(r, {
+      label,
+      title,
+      slug: label === 'A' ? 'chai-bill' : 'lantern-lighting',
+      difficulty: 800,
+      limits: { timeMs: 500, memMb: 256, outputKb: 1024 },
+      statementMd: `# ${title}\n\nGiven $n$ cups, print the bill.\n\n## Input\n\nOne integer.\n\n## Output\n\nOne integer.\n\n## Notes\n\nNothing special for ${label}.\n`,
+      samples: [{ in: '2\n', out: '10\n' }],
+      testsCount: 12,
+      checker: { kind: 'tokens' },
+    });
+  });
   await page.route('**/api/contests/warm-up-1/problems', (r) => {
     if (stateNow() === 'scheduled') {
       return json(

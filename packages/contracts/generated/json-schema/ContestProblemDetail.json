@@ -3,6 +3,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "checker": {
+      "additionalProperties": false,
+      "properties": {
+        "eps": {
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "exact",
+            "tokens",
+            "float",
+            "testlib"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
     "difficulty": {
       "maximum": 9007199254740991,
       "minimum": -9007199254740991,
@@ -73,7 +94,8 @@
     "limits",
     "statementMd",
     "samples",
-    "testsCount"
+    "testsCount",
+    "checker"
   ],
   "type": "object"
 }

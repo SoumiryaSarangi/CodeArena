@@ -154,6 +154,8 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 
 *As built (C-02, board):* `GET /api/contests/{slug}/board` → `BoardSnapshot` `{serverNow, version, frozen, problems:[{label, solvedCount, firstSolverId}], rows:[{rank, userId, handle, solved, penalty, lastAcMinute, score, cells:{label:{attempts, acMinute, pending, first}}}]}`; public once published (draft: 404 except admins); from `freezeAt` until finalize non-admins get the frozen view, with their own cells live (FR-BOARD-05). `board.diff` events go to `contest:{id}:board` (public view) and `admin:contest:{id}:board` (live), at most 2 per second per contest, each with the board `version`; a client applies only diffs newer than its snapshot and re-ranks by `score`. `POST /api/admin/contests/{id}/rebuild-board` → `{version}`. Contest rules now limit `penaltyMinutes` to 0–40 and contests to 1023 minutes (SD-§9.2).
 
+*As built (C-04, arena):* `POST /api/runs` takes the same two forms as submissions (`problemSlug`, or `contestSlug` + `label`) with the same gating: 422 `contest-not-started` before the start, registration required while running, allowed after the end; runs use the `practice` lane and never touch the board. `GET /api/contests/{slug}/problems/{label}` now includes `checker` (`{kind, eps?}`; never the checker source).
+
 **Profiles and ratings**: GET `/api/users/{handle}` · `/rating-history` · `/activity?from&to` · `/solved-stats` (Guest).
 
 **AI Coach**

@@ -251,10 +251,13 @@ export function Drawer({
   value,
   onValue,
   children,
+  tabs = DRAWER_TABS,
 }: {
   value: DrawerTab;
   onValue: (t: DrawerTab) => void;
-  children: Record<DrawerTab, React.ReactNode>;
+  children: Partial<Record<DrawerTab, React.ReactNode>>;
+  /** The tabs to show, in order (a contest has no Coach, FR-CONT-08). */
+  tabs?: { id: DrawerTab; label: string }[];
 }) {
   return (
     <Tabs
@@ -263,13 +266,13 @@ export function Drawer({
       className="flex size-full min-h-0 flex-col"
     >
       <TabsList aria-label="Output" className="px-3">
-        {DRAWER_TABS.map((t, i) => (
+        {tabs.map((t, i) => (
           <TabsTrigger key={t.id} value={t.id} aria-keyshortcuts={`Alt+${i + 1}`}>
             {t.label}
           </TabsTrigger>
         ))}
       </TabsList>
-      {DRAWER_TABS.map((t) => (
+      {tabs.map((t) => (
         <TabsContent key={t.id} value={t.id} className="min-h-0 flex-1 overflow-auto">
           {children[t.id]}
         </TabsContent>

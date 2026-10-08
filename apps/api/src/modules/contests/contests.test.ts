@@ -499,6 +499,44 @@ describe.skipIf(!ready)(
         expect((await submit(user.token, {})).status).toBe(400);
       });
 
+      it('C-04: sample and custom runs work on contest problems under the same rules', async () => {
+        const run = (token: string, body: object) =>
+          call('post', '/runs', token, { language: 'cpp17', source: 'int main(){}', ...body });
+        const { id, slug } = await makeContest(60 * MIN);
+        const user = await makeUser('user');
+        await call('post', `/contests/${slug}/register`, user.token);
+        const early = await run(user.token, { contestSlug: slug, label: 'A', sampleIds: [1] });
+        expect(early.status).toBe(422);
+        expect(early.body.code).toBe('contest-not-started');
+        await setTimes(id, -MIN, 60 * MIN);
+        const ok = await run(user.token, { contestSlug: slug, label: 'A', sampleIds: [1] });
+        expect(ok.status, JSON.stringify(ok.body)).toBe(201);
+        expect(ok.body.runIds).toHaveLength(1);
+        const custom = await run(user.token, { contestSlug: slug, label: 'B', input: '1 2\n' });
+        expect(custom.status).toBe(201);
+        const stranger = await makeUser('user');
+        expect(
+          (await run(stranger.token, { contestSlug: slug, label: 'A', input: '1' })).status,
+        ).toBe(403);
+        expect((await run(user.token, { contestSlug: slug, label: 'Q', input: '1' })).status).toBe(
+          404,
+        );
+        expect(
+          (
+            await run(user.token, {
+              problemSlug: PUBLIC,
+              contestSlug: slug,
+              label: 'A',
+              input: '1',
+            })
+          ).status,
+        ).toBe(400);
+        // The statement for the arena carries the checker kind, never its source.
+        const detail = await call('get', `/contests/${slug}/problems/A`, user.token);
+        expect(detail.body.checker).toEqual({ kind: expect.any(String) });
+        expect(JSON.stringify(detail.body)).not.toContain('sourceUri');
+      });
+
       it('FR-SUB-03: an ordinary public problem still goes to the practice lane', async () => {
         const user = await makeUser('user');
         const r = await submit(user.token, { problemSlug: PUBLIC });

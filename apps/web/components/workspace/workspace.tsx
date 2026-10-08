@@ -34,7 +34,7 @@ import { StatementPane } from './statement-pane';
 import { useJudging } from './use-judging';
 
 /** `true` from 1024 px (UI_UX S05); null before the first client render, so no layout is guessed. */
-function useWide(): boolean | null {
+export function useWide(): boolean | null {
   return useSyncExternalStore(
     (cb) => {
       const m = window.matchMedia('(min-width: 1024px)');
@@ -107,14 +107,31 @@ export function Workspace({ slug }: { slug: string }) {
   return <WorkspaceView problem={state.problem} wide={wide} />;
 }
 
-function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolean }) {
-  const slug = problem.slug;
+export function WorkspaceView({
+  problem,
+  wide,
+  contest,
+  onVerdict,
+}: {
+  problem: ProblemDetail;
+  wide: boolean;
+  /** Contest mode (S09): submissions go to the contest, drafts are kept per contest problem, no Coach. */
+  contest?: { slug: string; label: string };
+  onVerdict?: () => void;
+}) {
+  // Drafts, layout and sign-in return paths are keyed by this, so a contest problem and its
+  // practice twin never share code.
+  const slug = contest ? `${contest.slug}~${contest.label}` : problem.slug;
+  const here = contest ? `/c/${contest.slug}/${contest.label}` : `/p/${problem.slug}`;
+  const tabs = contest ? DRAWER_TABS.filter((t) => t.id !== 'coach') : DRAWER_TABS;
   const mod = useModLabel();
   const { session } = useSession();
   const signedIn = session.status === 'authed';
   const hasHandle = session.status === 'authed' && !!session.me.handle;
   const judging = useJudging({
-    slug,
+    slug: problem.slug,
+    contest,
+    onVerdict,
     testsCount: problem.testsCount,
     samples: problem.samples,
     signedIn,
@@ -206,6 +223,8 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
     });
 
   // Shortcuts outside the editor (inside it Monaco's own commands fire, so skip those events).
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
   const act = useRef({ doSubmit, doRun });
   useEffect(() => {
     act.current = { doSubmit, doRun };
@@ -218,8 +237,10 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
         if (e.shiftKey) act.current.doSubmit();
         else act.current.doRun();
       } else if (e.altKey && !e.ctrlKey && !e.metaKey && /^[1-4]$/.test(e.key)) {
+        const t = tabsRef.current[Number(e.key) - 1];
+        if (!t) return;
         e.preventDefault();
-        setTab(DRAWER_TABS[Number(e.key) - 1]!.id);
+        setTab(t.id);
         setMobileTab('console');
       }
     };
@@ -232,17 +253,14 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
     err?.kind === 'signin' ? (
       <>
         Sign in to run and submit code.{' '}
-        <Link className="underline" href={signInHref(`/p/${slug}`)}>
+        <Link className="underline" href={signInHref(here)}>
           Sign in
         </Link>
       </>
     ) : err?.kind === 'handle' ? (
       <>
         Choose a handle before you submit.{' '}
-        <Link
-          className="underline"
-          href={`/onboarding?returnTo=${encodeURIComponent(`/p/${slug}`)}`}
-        >
+        <Link className="underline" href={`/onboarding?returnTo=${encodeURIComponent(here)}`}>
           Choose a handle
         </Link>
       </>
@@ -274,7 +292,7 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
   );
   const statement = <StatementPane problem={problem} onRunSample={runSample} canRun={signedIn} />;
   const drawer = (
-    <Drawer value={tab} onValue={setTab}>
+    <Drawer value={tab} onValue={setTab} tabs={tabs}>
       {{
         console: (
           <ConsoleTab
@@ -299,7 +317,7 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
           />
         ),
         submissions: <SubmissionsTab items={judging.history} signedIn={signedIn} />,
-        coach: <CoachTab />,
+        coach: contest ? null : <CoachTab />,
       }}
     </Drawer>
   );
@@ -307,7 +325,9 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        <h1 className="text-20 font-semibold tracking-[-0.01em]">{problem.title}</h1>
+        <h1 className="text-20 font-semibold tracking-[-0.01em]">
+          {contest ? `${contest.label}. ${problem.title}` : problem.title}
+        </h1>
         <ConnectionPill state={judging.connection} />
       </div>
       {banner ? (
@@ -380,8 +400,8 @@ function WorkspaceView({ problem, wide }: { problem: ProblemDetail; wide: boolea
         </>
       )}
       <p className="hidden text-12 text-text-3 lg:block">
-        <Kbd>{mod} ↵</Kbd> runs · <Kbd>{mod} ⇧ ↵</Kbd> submits · <Kbd>Alt 1–4</Kbd> switches tabs ·{' '}
-        <Kbd>Ctrl M</Kbd> lets Tab leave the editor
+        <Kbd>{mod} ↵</Kbd> runs · <Kbd>{mod} ⇧ ↵</Kbd> submits · <Kbd>Alt 1–{tabs.length}</Kbd>{' '}
+        switches tabs · <Kbd>Ctrl M</Kbd> lets Tab leave the editor
       </p>
     </div>
   );

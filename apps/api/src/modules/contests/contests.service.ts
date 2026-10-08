@@ -226,6 +226,7 @@ export class ContestsService {
         statementMd: problemVersions.statementMd,
         samples: problemVersions.samples,
         testsCount: problemVersions.testsCount,
+        checker: problemVersions.checker,
       })
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))
@@ -266,6 +267,14 @@ export class ContestsService {
       statementMd: r.statementMd,
       samples: r.samples as ContestProblemDetail['samples'],
       testsCount: r.testsCount,
+      // The checker's source location stays server-side (FR-PROB-06).
+      checker:
+        (r.checker as { eps?: number }).eps === undefined
+          ? { kind: (r.checker as { kind: ContestProblemDetail['checker']['kind'] }).kind }
+          : {
+              kind: (r.checker as { kind: ContestProblemDetail['checker']['kind'] }).kind,
+              eps: (r.checker as { eps: number }).eps,
+            },
     };
   }
 

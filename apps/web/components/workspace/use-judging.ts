@@ -37,12 +37,26 @@ const newKey = () =>
  */
 export function useJudging(opts: {
   slug: string;
+  /** A contest problem: submissions and runs go to `contestSlug` + `label` (FR-SUB-03). */
+  contest?: { slug: string; label: string };
+  /** Called when a submission's verdict is in (the arena refreshes its problem states). */
+  onVerdict?: () => void;
   testsCount: number;
   samples: { in: string; out: string }[];
   signedIn: boolean;
   hasHandle: boolean;
 }) {
-  const { slug, testsCount, signedIn, hasHandle } = opts;
+  const { slug, testsCount, signedIn, hasHandle, contest } = opts;
+  const contestSlug = contest?.slug;
+  const contestLabel = contest?.label;
+  const onVerdictRef = useRef(opts.onVerdict);
+  onVerdictRef.current = opts.onVerdict;
+  /** The problem part of a submit or run body. */
+  const target = useCallback(
+    () =>
+      contestSlug && contestLabel ? { contestSlug, label: contestLabel } : { problemSlug: slug },
+    [contestSlug, contestLabel, slug],
+  );
   const [live, setLive] = useState<LiveSubmission | null>(null);
   const [detail, setDetail] = useState<SubmissionDetail | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -121,6 +135,7 @@ export function useJudging(opts: {
       // the verdict itself is already on screen; the detail is a bonus
     }
     if (alive.current) setHistoryKey((k) => k + 1);
+    onVerdictRef.current?.();
   }, []);
 
   const submit = useCallback(
@@ -131,7 +146,7 @@ export function useJudging(opts: {
       setLive(startSubmission('pending', testsCount));
       subSubscription.current?.();
       try {
-        const body: CreateSubmission = { problemSlug: slug, language, source };
+        const body: CreateSubmission = { ...target(), language, source };
         const created = await apiFetch<SubmissionCreated>('POST', '/submissions', body, {
           auth: 'required',
           idempotencyKey: newKey(),
@@ -155,7 +170,7 @@ export function useJudging(opts: {
         if (alive.current) setSubmitting(false);
       }
     },
-    [submitting, retryIn, guard, testsCount, slug, finishSubmission, fail],
+    [submitting, retryIn, guard, testsCount, target, finishSubmission, fail],
   );
 
   const run = useCallback(
@@ -163,7 +178,7 @@ export function useJudging(opts: {
       if (running || !guard()) return;
       setRunning(true);
       try {
-        const body: CreateRun = { problemSlug: slug, language, source, ...what };
+        const body: CreateRun = { ...target(), language, source, ...what };
         const created = await apiFetch<RunCreated>('POST', '/runs', body, {
           auth: 'required',
           idempotencyKey: newKey(),
@@ -212,7 +227,7 @@ export function useJudging(opts: {
         fail(err);
       }
     },
-    [running, guard, slug, fail],
+    [running, guard, target, fail],
   );
 
   return {

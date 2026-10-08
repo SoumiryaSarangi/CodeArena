@@ -147,7 +147,9 @@ export function ContestLobby({ slug }: { slug: string }) {
       ) : state === 'running' ? (
         <div className="flex flex-col gap-1">
           <span className="text-13 text-text-2">Ends in</span>
-          <Timer endsAt={Date.parse(c.endsAt) - offset} className="text-32 sm:text-48" />
+          <span className="text-32 sm:text-48">
+            <Timer endsAt={Date.parse(c.endsAt) - offset} />
+          </span>
         </div>
       ) : null}
       <span role="status" className="sr-only">
@@ -254,13 +256,9 @@ export function ContestLobby({ slug }: { slug: string }) {
               {problems.items.map((p) => (
                 <li key={p.label} className="flex items-baseline gap-3 px-3 py-2 text-14">
                   <span className="w-5 font-mono font-medium">{p.label}</span>
-                  {state === 'ended' || state === 'finalized' ? (
-                    <Link href={`/p/${p.slug}`} className="hover:underline">
-                      {p.title}
-                    </Link>
-                  ) : (
-                    <span>{p.title}</span>
-                  )}
+                  <Link href={`/c/${slug}/${p.label}`} className="hover:underline">
+                    {p.title}
+                  </Link>
                   <span className="ml-auto font-mono text-13 text-text-2">
                     {p.limits.timeMs} ms · {p.limits.memMb} MB
                   </span>

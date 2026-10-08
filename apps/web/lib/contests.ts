@@ -6,6 +6,7 @@ import type {
   ContestDetail,
   ContestList,
   ContestPatch,
+  ContestProblemDetail,
   ContestProblemList,
   ContestProblemsPut,
 } from '@codearena/contracts';
@@ -59,3 +60,11 @@ export const boardSnapshot = (slug: string, signal?: AbortSignal) =>
     auth: 'optional',
     signal,
   });
+
+export const contestProblem = (slug: string, label: string, signal?: AbortSignal) =>
+  apiFetch<ContestProblemDetail>(
+    'GET',
+    `/contests/${enc(slug)}/problems/${enc(label)}`,
+    undefined,
+    { auth: 'optional', signal },
+  );
