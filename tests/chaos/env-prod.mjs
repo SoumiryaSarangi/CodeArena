@@ -64,10 +64,12 @@ export async function prodEnv({ minJudges = 2 } = {}) {
           `a real contest is running (${real.map((c) => c.slug).join(', ')}): not drilling`,
         );
       const n = await judgesReporting();
-      if (n < 2)
+      if (n < minJudges) {
         throw new Error(
-          `${n} judge(s) report; the drills need 2 (run scripts/scale-judges.sh up 1 first)`,
+          `${n} judge(s) report; these drills need ${minJudges} (run scripts/scale-judges.sh up 1 first)`,
         );
+      }
+      judgeCount = n;
       if (run('az', ['account', 'show']).status !== 0) throw new Error('az is not logged in');
     },
 

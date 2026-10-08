@@ -79,3 +79,58 @@ Verdicts: RE 11 · TLE 44 · WA 108 · AC 337
 | python3 | 169 | 0.92 s | 0.39 s | 2.40 s |
 <!--data {"label":"judges=2 (B2s_v2)","judges":2,"accepted":500,"submissions":500,"judged":500,"queueWaitP50":0.0029890000000000003,"queueWaitP95":0.5088921499999988,"ttvP50":0.38339100000000004,"ttvP95":2.0752273499999987,"drainSeconds":2.24075,"throughput":3.9964192083892836,"mean":{"cpp17":0.4435317220543807,"python3":0.9172130177514793},"scaleSeconds":null} -->
 <!-- /load:judges=2-B2s_v2- -->
+
+## Failure drills (O-06)
+
+Each drill judges a real contest of fake users, injects one fault and waits until every accepted
+submission has a verdict. **Detected** = the first signal an operator would see (a judge gone from the ops
+summary, a failed health check, a dead letter); **healthy** = the API answers again; **all judged** = the
+fault until every accepted submission had its verdict; **after the last submit** = how long the last verdict took once submissions stopped (the lag the fault left behind). A drill passes only if every verdict exists exactly
+once, nothing is stuck and the board equals the rebuild from Postgres (NFR-REL-01, FR-BOARD-03).
+
+### How to read the drills (written by hand; the blocks below are generated)
+
+- **Production passes all six drills; so does the local stack.** In each, every accepted submission got exactly one verdict, nothing stayed claimed or parked, and the board equalled the rebuild from Postgres.
+- **A worker kill is invisible on production** (systemd restarts it within 3 s, before the console's 10 s threshold) and the other judge or the restarted one finishes the job; the last verdict came 4.5 s after the last submit. A judge VM that really stops (deallocated) vanishes from the console after about 11 s and the remaining judge takes over (31 s after the last submit with one judge left); the VM was back and reporting 26 s after `az vm start`.
+- **The production API took about 40 s to come back after a kill** (locally 5.6 s): it starts TypeScript directly with `tsx`, so a cold start compiles on boot. 37 of 60 submissions were refused during that time (connection refused: the contestant sees an error and resubmits); the 23 accepted ones were judged once. Follow-up X-13 in PROGRESS.
+- **A Redis restart costs a few seconds of refused submissions:** clean restart about 5 s (6 of 60 refused), hard kill about 16 s (13 refused). A refused submission is stored as `failed` and the contestant gets an error, by design; nothing accepted was lost, and the live stream kept delivering events without reconnecting. Follow-up X-14 (retry safely with the idempotency key).
+- **The poison drill found a real defect** (re-queueing a dead job kept its old run version, so the retry's verdict was discarded and the contestant stayed on SE); fixed in O-06 and shown passing on production: dead letter visible after 5 s, Re-queue ended in AC at run 2, dead-letter queue empty.
+- Local numbers: a laptop, 2 workers of concurrency 1; the frozen worker is a SIGSTOP. "All judged after" is dominated by the 40 s of traffic; the useful figure is "after the last submit".
+
+<!-- drills:local -->
+### local
+
+Run 2026-10-08 18:08 UTC.
+
+| Drill | Fault | Detected after | Healthy after | All judged after | After the last submit | Accepted / refused | Result |
+|---|---|---|---|---|---|---|---|
+| Kill a judge worker while it is judging | kill -9 of the worker process | 9.2 s | 0.1 s | 27.6 s | 3.2 s | 60 / 0 | ✓ pass |
+| Kill the API while submissions arrive | kill -9 of the API process (container) | 0 s | 5.6 s | 27.6 s | 3.2 s | 53 / 7 | ✓ pass |
+| Restart Redis (clean shutdown) | docker restart of Redis (flushes its append-only file) | 0.8 s | 1.3 s | 27.6 s | 3.2 s | 60 / 0 | ✓ pass |
+| Kill Redis hard (up to 1 s of writes can be lost) | kill -9 of Redis, then start it again | 0.4 s | 2.8 s | 27.6 s | 3.2 s | 60 / 0 | ✓ pass |
+| A judge VM stops (frozen, then back) | the judge stops answering; later it comes back and may publish late | 8.7 s | 0 s | 49.5 s | 25.1 s | 60 / 0 | ✓ pass |
+| A poison submission reaches the dead-letter queue | a job whose testset cannot be fetched (the outage ends later) | 1.3 s | 1.3 s | 26.7 s | 2.3 s | 60 / 0 | ✓ pass |
+
+- kill-worker: killed chaos-b
+- freeze-judge: stopped chaos-a
+- freeze-judge: back after 0 s
+<!-- /drills:local -->
+
+<!-- drills:production -->
+### production
+
+Run 2026-10-08 18:15 UTC.
+
+| Drill | Fault | Detected after | Healthy after | All judged after | After the last submit | Accepted / refused | Result |
+|---|---|---|---|---|---|---|---|
+| Kill a judge worker while it is judging | kill -9 of the worker process | no signal | 3.3 s | 52.4 s | 4.5 s | 60 / 0 | ✓ pass |
+| Kill the API while submissions arrive | kill -9 of the API process (container) | 4.1 s | 39.8 s | 43.7 s | 4 s | 23 / 37 | ✓ pass |
+| Restart Redis (clean shutdown) | docker restart of Redis (flushes its append-only file) | 3.6 s | 5.1 s | 28.5 s | 4 s | 54 / 6 | ✓ pass |
+| Kill Redis hard (up to 1 s of writes can be lost) | kill -9 of Redis, then start it again | 4 s | 15.7 s | 28 s | 3.5 s | 47 / 13 | ✓ pass |
+| A judge VM stops (frozen, then back) | the judge stops answering; later it comes back and may publish late | 10.9 s | 1.9 s | 55.4 s | 31 s | 60 / 0 | ✓ pass |
+| A poison submission reaches the dead-letter queue | a job whose testset cannot be fetched (the outage ends later) | 5.3 s | 5.6 s | 35.7 s | 11.2 s | 60 / 0 | ✓ pass |
+
+- kill-worker: killed vm-codearena-prod-judge-0
+- freeze-judge: stopped vm-codearena-prod-judge-1
+- freeze-judge: back after 26.2 s
+<!-- /drills:production -->
