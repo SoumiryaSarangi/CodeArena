@@ -23,6 +23,7 @@ import { contestState } from '../contests/state';
 import { MessagesService } from '../contests/messages.service';
 import { buildJob } from '../submissions/job-builder';
 import { laneDepth } from '../submissions/lane-depth';
+import { liveWorkers } from '../submissions/live-workers';
 import { QUEUE_KEY_PREFIX, QueueService } from '../submissions/queue.service';
 
 const tracer = trace.getTracer('api');
@@ -33,7 +34,6 @@ const actions = metrics.getMeter('api').createCounter('ca_ops_actions_total', {
 const LANES: Lane[] = ['contest', 'interactive', 'practice', 'rejudge'];
 /** One rejudge request handles at most this many submissions (run it again for the rest). */
 export const REJUDGE_LIMIT = 2000;
-const HEARTBEAT_STALE_MS = 60_000;
 
 interface Actor {
   id: string;
@@ -260,7 +260,7 @@ export class OpsService {
               depth: await laneDepth(this.redis, this.prefix, lane),
             })),
           ),
-          this.workers(now),
+          liveWorkers(this.redis, this.prefix, now),
           this.db.execute<{ p50: number | null; p95: number | null; n: number }>(sql`
             select
               percentile_cont(0.5) within group (order by extract(epoch from (judged_at - created_at)) * 1000) as p50,
@@ -293,47 +293,6 @@ export class OpsService {
         span.end();
       }
     });
-  }
-
-  private async workers(now: number): Promise<OpsSummary['workers']> {
-    const out: OpsSummary['workers'] = [];
-    let cursor = '0';
-    do {
-      const [next, keys] = await this.redis.scan(
-        cursor,
-        'MATCH',
-        `${this.prefix}hb:*`,
-        'COUNT',
-        100,
-      );
-      cursor = next;
-      if (keys.length === 0) continue;
-      const values = await this.redis.mget(keys);
-      for (const raw of values) {
-        if (!raw) continue;
-        try {
-          const hb = JSON.parse(raw) as {
-            workerId: string;
-            lanes: string[];
-            ts: number;
-            busy: number;
-            concurrency: number;
-          };
-          const ageMs = Math.max(0, now - hb.ts);
-          if (ageMs > HEARTBEAT_STALE_MS) continue;
-          out.push({
-            id: hb.workerId,
-            lanes: hb.lanes,
-            busy: hb.busy,
-            concurrency: hb.concurrency,
-            ageMs,
-          });
-        } catch {
-          // a heartbeat we cannot read is not a worker we can show
-        }
-      }
-    } while (cursor !== '0');
-    return out.sort((a, b) => a.id.localeCompare(b.id));
   }
 
   /** FR-OPS-01: the jobs judges gave up on, newest first. */

@@ -330,6 +330,8 @@ Each screen lists: purpose · layout · content · interactions · states · res
 ### S18 Status / under the hood (`/status`)
 - Health rows (API, Judges, Realtime, Interview pad) with state words + icons; live queue depth and p95; "Security: 25/25 sandbox attacks blocked (last run 02:10 today)"; load-test table from METRICS; architecture diagram (SVG from SD-§3.2); "How judging works" 5-step explainer.
 
+- *As built (O-02):* `/status` (public, no sign-in) re-reads `GET /api/status` every 5 s. It shows a headline in words (All systems operational / Some systems are degraded / Judging is down), then a row per component (API, Database, Judging queue, Judges, Live updates, Interview pad) each with an icon, a state word (Operational, Degraded, Down, Not released) and one sentence of detail, then tiles for verdict time p50/p95 over 15 minutes, submissions judged and contests hosted, and the queue depth per lane. Below: "How judging works" in five steps, the architecture as an SVG with a text alternative, the security section (28 nightly attack programs, with the live GitHub Actions badge of the last run, because the nightly run happens on GitHub and the API does not hold its result), and the load test, which says "Not measured yet" until O-03 fills it. If the status call fails the page says "Status unavailable". The top bar's system dot now follows the same data (every 30 s): Systems normal / Degraded performance / Judging is down / Status unknown, always with the word, and links to `/status`.
+
 ---
 
 ## §9. Key flows (with error branches)

@@ -200,7 +200,7 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 
 Collab exposes (private network): POST `/internal/collab/{roomId}/broadcast` `{type, payload}` (service token).
 
-**Platform**: GET `/api/status` (Guest, cached 5 s) · GET `/api/health/live` · `/api/health/ready` · POST `/api/events` (User, batch ≤ 50).
+**Platform**: GET `/api/status` (Guest, cached 5 s; *as built (O-02):* `{serverNow, overall, components[{id,label,state,detail}], queue[{lane,depth}], p50Ms, p95Ms, totals{submissionsJudged, contestsHosted}}`; "down" for the database, Redis or no judge reporting, "degraded" for more than 20 contest jobs waiting, the pad is "planned"; cached in the API for 5 s and `Cache-Control: public, max-age=5`) · GET `/api/health/live` · `/api/health/ready` · POST `/api/events` (User, batch ≤ 50).
 
 #### 3.1.4 SSE interface
 `GET https://api.<domain>/sse?ticket=<t>&topics=<comma list>` — see SD-§10 for envelope, types, authorisation, and resume. Payload schemas are Zod contracts `SseEvent<T>` in `packages/contracts`.

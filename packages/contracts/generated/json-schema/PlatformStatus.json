@@ -1,0 +1,122 @@
+{
+  "$id": "PlatformStatus.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "components": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "id": {
+            "enum": [
+              "api",
+              "database",
+              "queue",
+              "judges",
+              "realtime",
+              "pad"
+            ],
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "ok",
+              "degraded",
+              "down",
+              "planned"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "state",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "overall": {
+      "enum": [
+        "ok",
+        "degraded",
+        "down"
+      ],
+      "type": "string"
+    },
+    "p50Ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "p95Ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "queue": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "lane": {
+            "$ref": "Lane.json"
+          }
+        },
+        "required": [
+          "lane",
+          "depth"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "serverNow": {
+      "type": "string"
+    },
+    "totals": {
+      "additionalProperties": false,
+      "properties": {
+        "contestsHosted": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "submissionsJudged": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "submissionsJudged",
+        "contestsHosted"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "serverNow",
+    "overall",
+    "components",
+    "queue",
+    "p50Ms",
+    "p95Ms",
+    "totals"
+  ],
+  "type": "object"
+}

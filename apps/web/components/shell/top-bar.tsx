@@ -7,11 +7,34 @@ import { Kbd } from '../ui/kbd';
 import { useModLabel } from '../shortcut-sheet';
 import { signInHref, useSession } from '@/lib/session';
 import { usePathname } from 'next/navigation';
+import { usePlatformStatus } from '@/lib/status';
 
 export function Wordmark() {
   return (
     <Link href="/" className="font-mono text-14 font-semibold text-text">
       codearena<span className="text-accent">▍</span>
+    </Link>
+  );
+}
+
+const DOT = {
+  ok: { word: 'Systems normal', dot: 'bg-success' },
+  degraded: { word: 'Degraded performance', dot: 'bg-warning' },
+  down: { word: 'Judging is down', dot: 'bg-danger' },
+  unknown: { word: 'Status unknown', dot: 'bg-text-3' },
+} as const;
+
+/** The system dot of UI_UX §S01: the word beside it, never colour alone; links to the status page. */
+function SystemDot() {
+  const s = usePlatformStatus(30_000);
+  const d = s === null ? null : s === 'error' ? DOT.unknown : DOT[s.overall];
+  return (
+    <Link
+      href="/status"
+      className="hidden items-center gap-1.5 text-12 text-text-2 hover:text-text sm:inline-flex"
+    >
+      <span className={`size-2 rounded-full ${d?.dot ?? 'bg-text-3'}`} aria-hidden />
+      {d?.word ?? 'Checking status'}
     </Link>
   );
 }
@@ -52,11 +75,7 @@ export function TopBar({ onPalette, onSheet }: { onPalette: () => void; onSheet:
           <span className="hidden sm:inline">Search</span>
           <Kbd className="hidden sm:inline-flex">{mod} K</Kbd>
         </Button>
-        {/* Live status arrives with the sys:status SSE topic (Q cards); static "ok" until then. */}
-        <span className="hidden items-center gap-1.5 text-12 text-text-2 sm:inline-flex">
-          <span className="size-2 rounded-full bg-success" aria-hidden />
-          Systems normal
-        </span>
+        <SystemDot />
         <IconButton label="Keyboard shortcuts" onClick={onSheet}>
           <Keyboard className="size-4" aria-hidden />
         </IconButton>

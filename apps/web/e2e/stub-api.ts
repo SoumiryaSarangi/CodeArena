@@ -64,6 +64,33 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
     runResults: {} as Record<string, object>,
     /** What `GET /api/submissions/:id` answers, by id. */
     details: {} as Record<string, object>,
+    /** What `GET /api/status` answers (O-02). */
+    status: {
+      serverNow: new Date().toISOString(),
+      overall: 'ok',
+      components: [
+        { id: 'api', label: 'API', state: 'ok', detail: 'Answering requests' },
+        { id: 'database', label: 'Database', state: 'ok', detail: 'Reachable' },
+        { id: 'queue', label: 'Judging queue', state: 'ok', detail: 'Jobs are being picked up' },
+        { id: 'judges', label: 'Judges', state: 'ok', detail: '2 judges reporting' },
+        {
+          id: 'realtime',
+          label: 'Live updates',
+          state: 'ok',
+          detail: 'Verdicts and scoreboards stream live',
+        },
+        { id: 'pad', label: 'Interview pad', state: 'planned', detail: 'Not released yet' },
+      ],
+      queue: [
+        { lane: 'contest', depth: 0 },
+        { lane: 'interactive', depth: 0 },
+        { lane: 'practice', depth: 3 },
+        { lane: 'rejudge', depth: 0 },
+      ],
+      p50Ms: 1200,
+      p95Ms: 3400,
+      totals: { submissionsJudged: 1234, contestsHosted: 2 },
+    } as Record<string, unknown>,
   };
 
   const context: BrowserContext = page.context();
@@ -125,6 +152,7 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
 
   await page.route('**/api/problems?**', (r) => json(r, { items: [], nextCursor: null }));
   await page.route('**/api/problems/tags', (r) => json(r, { items: [] }));
+  await page.route('**/api/status', (r) => json(r, state.status));
   await page.route('**/api/health/live', (r) => json(r, { status: 'ok' }));
   await page.route('**/api/auth/refresh', (r) => {
     calls.refreshes++;
