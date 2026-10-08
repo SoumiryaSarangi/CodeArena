@@ -862,3 +862,11 @@ Decisions: 500 is retried too (the API answers 500 "could not queue" when Redis 
 Next: AI-01..04 (AI-02 and AI-04 need `/model opusplan`), or X-15.
 Ayush must: nothing.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · X-15 · done (the console shows judge worker restarts)
+Built: the worker's heartbeat now carries `startedAt` (process start). A small API timer (`WorkerWatch`, every 3 s, off in tests like the reconciler) compares each heartbeat's `startedAt` with the last one seen (`ops:boot:{id}`); a change is a restart, stored in `ops:restarts:{id}` (24 h, idempotent, so several API instances are fine). `GET /admin/ops/summary` workers gain `uptimeMs`, `restarts5m`, `lastRestartAgoMs` (additive contract change, schema regenerated); the ops console judges table has a new column: "up 3 h", or in red "restarted 3× (last 40 s ago)". This closes the O-06 gap where a kill that systemd healed in 3 s was invisible. The judge Redis ACL is unchanged (no new commands for judges).
+Tests: API ops 9 (new: a worker restarting inside its heartbeat window is counted once per restart, summary shows 2 restarts and uptime), worker Go suite green (heartbeat test checks `startedAt`), web unit 113, Playwright ops 12 and contests 33 (console shows "restarted 3×"). Lint clean apart from `next-env.d.ts`.
+Decisions: only restarts seen while the API runs are counted (a restart during an API outage shows the new `startedAt` on the next look but is still counted, since the comparison is with the stored previous value); workers deployed before this change show "—" until the next judge deploy (the pipeline installs the new worker on the judges).
+Next: AI-01..04 (AI-02 and AI-04 need `/model opusplan`).
+Ayush must: nothing; the new column appears on the judge after the next deploy.
+Model: S · Sonnet 5.5

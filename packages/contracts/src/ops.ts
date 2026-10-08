@@ -61,6 +61,12 @@ export const OpsSummary = z
           concurrency: z.number().int().min(0),
           /** Milliseconds since its last heartbeat. */
           ageMs: z.number().int().min(0),
+          /** Milliseconds since this process started; null for a worker that does not report it. */
+          uptimeMs: z.number().int().min(0).nullable(),
+          /** Restarts seen in the last 5 minutes (X-15). */
+          restarts5m: z.number().int().min(0),
+          /** Milliseconds since the last restart seen in the last 24 hours; null: none. */
+          lastRestartAgoMs: z.number().int().min(0).nullable(),
         })
         .strict(),
     ),

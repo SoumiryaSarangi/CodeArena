@@ -24,6 +24,7 @@ import { createTestDatabase, postgresReachable } from '../../test/db';
 import { ACCESS_TOKENS, type AccessTokens } from '../auth/keys';
 import { parsePackage, readPackageDirectory } from '../problems/package';
 import { buildJob } from '../submissions/job-builder';
+import { noteRestarts } from '../submissions/live-workers';
 import { ProblemImporter } from '../problems/problems.import';
 
 const config = loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' });
@@ -432,6 +433,40 @@ describe.skipIf(!ready)(
       expect(s.body.p50Ms).toBeGreaterThan(0);
       expect(s.body.submissionsPerMin).toBeGreaterThan(0);
       expect(s.body.dlq).toBe(0);
+    });
+
+    it('X-15: a worker that restarts inside its heartbeat window shows as restarted in the summary', async () => {
+      const key = `${prefix}hb:w-flap`;
+      const beat = (startedAt: number, ts: number) =>
+        redis.set(
+          key,
+          JSON.stringify({
+            workerId: 'w-flap',
+            lanes: ['contest'],
+            ts,
+            busy: 0,
+            concurrency: 2,
+            startedAt,
+          }),
+          'EX',
+          30,
+        );
+      const now = Date.now();
+      await beat(now - 60 * MIN, now - 1000);
+      expect(await noteRestarts(redis, prefix, now)).toBe(0); // first sighting: nothing to compare with
+      expect(await noteRestarts(redis, prefix, now)).toBe(0); // same process
+      await beat(now - 20_000, now - 500); // the unit restarted and wrote its heartbeat at once
+      expect(await noteRestarts(redis, prefix, now)).toBe(1);
+      expect(await noteRestarts(redis, prefix, now)).toBe(0); // not counted twice
+      await beat(now - 5000, now - 100);
+      expect(await noteRestarts(redis, prefix, now)).toBe(1);
+      const s = await call('get', '/admin/ops/summary', admin.token);
+      const w = s.body.workers.find((x: { id: string }) => x.id === 'w-flap');
+      expect(w.restarts5m).toBe(2);
+      expect(w.lastRestartAgoMs).toBeGreaterThanOrEqual(5000);
+      expect(w.lastRestartAgoMs).toBeLessThan(5000 + MIN);
+      expect(w.uptimeMs).toBeGreaterThanOrEqual(5000);
+      await redis.del(key, `${prefix}ops:boot:w-flap`, `${prefix}ops:restarts:w-flap`);
     });
 
     it('FR-OPS-01: dead letters are listed and can be put back on their lane', async () => {

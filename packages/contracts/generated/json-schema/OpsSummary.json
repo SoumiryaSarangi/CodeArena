@@ -75,6 +75,35 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "lastRestartAgoMs": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "restarts5m": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "uptimeMs": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -82,7 +111,10 @@
           "lanes",
           "busy",
           "concurrency",
-          "ageMs"
+          "ageMs",
+          "uptimeMs",
+          "restarts5m",
+          "lastRestartAgoMs"
         ],
         "type": "object"
       },

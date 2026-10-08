@@ -44,6 +44,7 @@ test.describe('C-07: contest operations (S16)', () => {
     await expect(w1).toContainText('1.5 s ago');
     const w2 = page.getByRole('row', { name: /judge-2/ });
     await expect(w2).toContainText('Unhealthy');
+    await expect(w2.getByTestId('restarts')).toContainText('restarted 3×');
     await expect(w2).toContainText('14.0 s ago');
   });
 

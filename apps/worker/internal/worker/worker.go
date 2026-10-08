@@ -557,16 +557,19 @@ type Heartbeat struct {
 	Ts          int64    `json:"ts"`
 	Busy        int64    `json:"busy"`
 	Concurrency int      `json:"concurrency"`
+	// StartedAt is when this process started (ms): a new value under the same worker id is a restart (X-15).
+	StartedAt int64 `json:"startedAt"`
 }
 
 func (w *Worker) heartbeat(ctx context.Context) {
+	startedAt := w.cfg.Now().UnixMilli()
 	beat := func() {
 		lanes := make([]string, len(w.cfg.Lanes))
 		for i, l := range w.cfg.Lanes {
 			lanes[i] = string(l)
 		}
 		b, _ := json.Marshal(Heartbeat{WorkerID: w.cfg.WorkerID, Lanes: lanes, Ts: w.cfg.Now().UnixMilli(),
-			Busy: w.busy.Load(), Concurrency: w.cfg.Concurrency})
+			Busy: w.busy.Load(), Concurrency: w.cfg.Concurrency, StartedAt: startedAt})
 		c, cancel := context.WithTimeout(ctx, 2*time.Second)
 		defer cancel()
 		if err := w.cfg.Redis.Set(c, HeartbeatKey(w.cfg.WorkerID), b, HeartbeatTTL).Err(); err != nil && ctx.Err() == nil {

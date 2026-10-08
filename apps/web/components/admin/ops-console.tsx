@@ -40,6 +40,16 @@ function Tile({ label, children, tone }: { label: string; children: ReactNode; t
  * S16 (C-07): queue and judge health, and the actions an organiser needs mid-contest: extend,
  * hide a problem, rejudge, rebuild the board, put dead-lettered jobs back. Polls every 5 s.
  */
+/** "40 s", "5 min", "3 h" for a duration in ms. */
+const ago = (ms: number | null) =>
+  ms === null
+    ? '?'
+    : ms < 90_000
+      ? `${Math.round(ms / 1000)} s`
+      : ms < 90 * 60_000
+        ? `${Math.round(ms / 60_000)} min`
+        : `${Math.round(ms / 3_600_000)} h`;
+
 export function OpsConsole({
   contest,
   onChanged,
@@ -138,6 +148,9 @@ export function OpsConsole({
               <th scope="col" className="py-1 pr-4 font-medium">
                 Lanes
               </th>
+              <th scope="col" className="py-1 pr-4 font-medium">
+                Restarts (5 min)
+              </th>
               <th scope="col" className="py-1 font-medium">
                 Last heartbeat
               </th>
@@ -158,6 +171,16 @@ export function OpsConsole({
                     {w.busy}/{w.concurrency}
                   </td>
                   <td className="py-1 pr-4 text-13 text-text-2">{w.lanes.join(', ')}</td>
+                  <td
+                    className={cn('py-1 pr-4 text-13', w.restarts5m > 0 && 'text-danger')}
+                    data-testid="restarts"
+                  >
+                    {w.restarts5m > 0
+                      ? `restarted ${w.restarts5m}× (last ${ago(w.lastRestartAgoMs)} ago)`
+                      : w.uptimeMs === null
+                        ? '—'
+                        : `up ${ago(w.uptimeMs)}`}
+                  </td>
                   <td className={cn('py-1 font-mono tabular-nums', stale && 'text-danger')}>
                     {(w.ageMs / 1000).toFixed(1)} s ago
                   </td>
