@@ -43,8 +43,12 @@ const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 /** Providers that have a key; the others' models are skipped. */
 export function providersFromConfig(c: Pick<Config, 'GROQ_API_KEY' | 'GEMINI_API_KEY'>) {
   const out: Partial<Record<ProviderName, Provider>> = {};
-  if (c.GROQ_API_KEY) out.groq = groqProvider(c.GROQ_API_KEY);
-  if (c.GEMINI_API_KEY) out.gemini = new GeminiProvider(c.GEMINI_API_KEY);
+  // `not-configured` is the placeholder init-env.sh / set-ai.sh leave until a real key is stored.
+  const real = (v?: string) => (v && v !== 'not-configured' ? v : undefined);
+  const groq = real(c.GROQ_API_KEY);
+  const gemini = real(c.GEMINI_API_KEY);
+  if (groq) out.groq = groqProvider(groq);
+  if (gemini) out.gemini = new GeminiProvider(gemini);
   return out;
 }
 

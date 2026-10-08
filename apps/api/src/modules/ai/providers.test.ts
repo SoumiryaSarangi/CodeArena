@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GeminiProvider } from './providers/gemini';
 import { groqProvider } from './providers/openai-compatible';
+import { providersFromConfig } from './router';
 import { ProviderError, parseRetryAfter } from './types';
 
 const reply = (body: unknown, init: ResponseInit = {}) =>
@@ -83,5 +84,13 @@ describe('AI-01: providers', () => {
     ).toBe(5000);
     expect(parseRetryAfter(null)).toBeUndefined();
     expect(parseRetryAfter('soon')).toBeUndefined();
+  });
+
+  it('AI-01: a provider is on only when it has a real key (the placeholder counts as none)', () => {
+    expect(Object.keys(providersFromConfig({}))).toEqual([]);
+    expect(
+      Object.keys(providersFromConfig({ GROQ_API_KEY: 'not-configured', GEMINI_API_KEY: 'AIza1' })),
+    ).toEqual(['gemini']);
+    expect(Object.keys(providersFromConfig({ GROQ_API_KEY: 'gsk_1' }))).toEqual(['groq']);
   });
 });
