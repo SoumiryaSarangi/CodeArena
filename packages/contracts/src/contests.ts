@@ -333,6 +333,23 @@ export const Announcement = z
   .meta({ id: 'Announcement' });
 export type Announcement = z.infer<typeof Announcement>;
 
+/**
+ * The reply to POST /admin/contests/{id}/announcements: the announcement plus how far it got, so the
+ * organiser can tell "nobody is connected" from "sent" (C-09). `reached` counts the live streams
+ * open on this API instance at that moment; contestants who open the page later still see it.
+ */
+export const AnnouncementSent = z
+  .object({
+    id: z.string(),
+    body: z.string(),
+    createdAt: iso,
+    reached: z.number().int().min(0),
+    registered: z.number().int().min(0),
+  })
+  .strict()
+  .meta({ id: 'AnnouncementSent' });
+export type AnnouncementSent = z.infer<typeof AnnouncementSent>;
+
 export const AnnouncementList = z
   .object({ items: z.array(Announcement) })
   .strict()

@@ -5,9 +5,11 @@ import type {
   ContestProblemList,
   ProblemDetail,
 } from '@codearena/contracts';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useImmersive } from '@/components/shell/app-shell';
 import { Timer } from '@/components/timer';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -18,9 +20,8 @@ import { useNow, useServerClock, formatSpan } from '@/lib/contest-time';
 import { cn } from '@/lib/cn';
 import { contestDetail, contestProblem, contestProblems } from '@/lib/contests';
 import { signInHref, useSession } from '@/lib/session';
-import { useContestMessages } from '@/lib/use-contest-messages';
 import { useLiveBoard } from '@/lib/use-live-board';
-import { ClarificationsDrawer } from './clarifications-drawer';
+import { ContestMessagesButton } from './messages-button';
 
 type Load<T> = { s: 'loading' } | { s: 'ready'; v: T } | { s: 'error'; err: ApiError };
 
@@ -49,6 +50,8 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
   const [problem, setProblem] = useState<Load<ContestProblemDetail>>({ s: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [over, setOver] = useState(false);
+  // The contest has the whole window while it runs (C-09); "Show menu" brings the app bars back.
+  const [full, setFull] = useState(true);
 
   const me = session.status === 'authed' ? session.me : null;
   const ready = session.status !== 'loading';
@@ -59,8 +62,6 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
     me ? { id: me.id, admin: me.role === 'admin' } : null,
     ready && !!contest && contest.state !== 'scheduled',
   );
-
-  const messages = useContestMessages(slug, contest?.id, me?.id, ready && !!me && !!contest);
 
   useEffect(() => {
     if (!ready) return;
@@ -87,6 +88,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
 
   const endsAt = contest ? Date.parse(contest.endsAt) : Infinity;
   const running = contest?.state === 'running' && now < endsAt;
+  useImmersive(running && full);
   // "Contest over": once, when the clock passes the end while this page is open.
   const wasRunning = useRef(false);
   useEffect(() => {
@@ -136,6 +138,10 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
     );
   }
 
+  const items = list?.items ?? [];
+  const at = items.findIndex((p) => p.label === label);
+  const prev = at > 0 ? items[at - 1] : undefined;
+  const next = at >= 0 ? items[at + 1] : undefined;
   const mine = me ? board?.rows.find((r) => r.userId === me.id) : undefined;
   const freezeAt = contest?.freezeAt ? Date.parse(contest.freezeAt) : null;
   const frozen = running && freezeAt !== null && now >= freezeAt && me?.role !== 'admin';
@@ -144,7 +150,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border-strong bg-surface-1 px-3 py-2">
         <nav aria-label="Contest problems" className="flex flex-wrap items-center gap-1">
-          {(list?.items ?? []).map((p) => {
+          {items.map((p) => {
             const cell = mine?.cells[p.label];
             const solvedBy = board?.problems.find((b) => b.label === p.label)?.solvedCount ?? 0;
             const state =
@@ -177,19 +183,48 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-3">
-          <ClarificationsDrawer
-            slug={slug}
+        <div className="flex items-center gap-1" role="group" aria-label="Move between problems">
+          {prev ? (
+            <Button asChild variant="ghost" size="sm">
+              <Link
+                href={`/c/${slug}/${prev.label}`}
+                aria-label={`Previous problem, ${prev.label}`}
+              >
+                <ChevronLeft className="size-4" aria-hidden />
+                <span className="max-sm:sr-only">Previous</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" disabled aria-label="Previous problem">
+              <ChevronLeft className="size-4" aria-hidden />
+              <span className="max-sm:sr-only">Previous</span>
+            </Button>
+          )}
+          {next ? (
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/c/${slug}/${next.label}`} aria-label={`Next problem, ${next.label}`}>
+                <span className="max-sm:sr-only">Next</span>
+                <ChevronRight className="size-4" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" disabled aria-label="Next problem">
+              <span className="max-sm:sr-only">Next</span>
+              <ChevronRight className="size-4" aria-hidden />
+            </Button>
+          )}
+        </div>
+        <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1">
+          <ContestMessagesButton
             labels={(list?.items ?? []).map((p) => p.label)}
-            items={messages.items}
-            notes={messages.notes}
-            unread={messages.unread}
-            unreadIds={messages.unreadIds}
             canAsk={running}
-            onAsked={messages.added}
-            onOpen={messages.markRead}
             defaultLabel={label}
           />
+          {running ? (
+            <Button variant="ghost" size="sm" onClick={() => setFull((f) => !f)}>
+              {full ? 'Show menu' : 'Full view'}
+            </Button>
+          ) : null}
           <Button asChild variant="ghost" size="sm">
             <Link href={`/c/${slug}/board`}>Board</Link>
           </Button>

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BoardModule } from '../board/board.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import {
   ClarificationsAdminController,
   ContestsAdminController,
@@ -11,7 +12,7 @@ import { MessagesService } from './messages.service';
 // C-01: contest model, registration, contest-scoped problem access and the admin CRUD. The lane
 // choice for a contest submission lives in SubmissionsService (it needs the queue).
 @Module({
-  imports: [BoardModule],
+  imports: [BoardModule, RealtimeModule],
   controllers: [ContestsController, ContestsAdminController, ClarificationsAdminController],
   providers: [ContestsService, MessagesService],
   exports: [ContestsService, MessagesService],

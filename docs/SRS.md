@@ -136,7 +136,7 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 | POST/PATCH `/api/admin/contests[/{id}]` | Admin | Create/edit contest |
 | PUT `/api/admin/contests/{id}/problems` | Admin | Set problem list (only validated versions) |
 | POST `/api/admin/contests/{id}/extend` | Admin | `{minutes}` (1–180) + auto-announcement. *As built (C-07):* refused once the contest is over or if it would pass 1023 minutes; the freeze time does not move; audit-logged. |
-| POST `/api/admin/contests/{id}/announcements` | Admin | Broadcast |
+| POST `/api/admin/contests/{id}/announcements` | Admin | Broadcast. *As built (C-09):* replies `201 {id, body, createdAt, reached, registered}`: `reached` = live streams open on `contest:{id}:clar` on this API instance when it was published, `registered` = participants. |
 | POST `/api/admin/clarifications/{id}/answer` | Admin | `{answer, isPublic}` |
 | POST `/api/admin/contests/{id}/problems/{label}/visibility` | Admin | Hide/unhide, `{hidden}`. *As built (C-07):* `contest_problems.hidden` (migration 0005); a hidden problem is not listed, not accepted for submits and runs, and is dropped from the board, which is rebuilt. Re-saving the problem list resets it. |
 | POST `/api/admin/contests/{id}/finalize` | Admin | Finalize → ratings, reviews queued. *As built (C-08):* ended contests only, once; answer `{rated, changes}`; reviews are queued by the AI cards. Also `POST .../recompute-ratings` → `{differing, changes}`; `GET /contests/{slug}/results` (guest, 404 until final) → `{serverNow, rated, changes:[{userId, handle, rank, oldRating, newRating, delta}]}`; `GET /users/{handle}/ratings` (guest) → `{handle, rating, history:[{contestSlug, contestTitle, endedAt, rank, oldRating, newRating, delta}]}`. |

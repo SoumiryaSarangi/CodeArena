@@ -305,9 +305,10 @@ describe.skipIf(!ready)(
         answer: 'For all.',
         isPublic: true,
       });
-      await call('post', `/admin/contests/${c.id}/announcements`, admin.token, {
+      const sent = await call('post', `/admin/contests/${c.id}/announcements`, admin.token, {
         body: 'Lunch at one.',
       });
+      expect(sent.status).toBe(201);
       await settle();
       l.stop();
       const by = (topic: string, type: string) =>
@@ -333,6 +334,33 @@ describe.skipIf(!ready)(
       expect(by(`contest:${c.id}:clar`, 'announce.new')[0]!.data.item).toMatchObject({
         body: 'Lunch at one.',
       });
+    });
+
+    it('C-09: the organiser learns how many live streams an announcement reached', async () => {
+      await times(-MIN, 120 * MIN);
+      const u = await registered();
+      const topic = `contest:${c.id}:clar`;
+      const post = (text: string) =>
+        call('post', `/admin/contests/${c.id}/announcements`, admin.token, { body: text });
+      const before = await post('Nobody connected yet.');
+      expect(before.body).toMatchObject({ reached: 0 });
+      expect(before.body.registered).toBeGreaterThanOrEqual(1);
+
+      await app.listen(0, '127.0.0.1');
+      const { port } = app.getHttpServer().address() as { port: number };
+      const t = (await call('post', '/realtime/ticket', u.token, { topics: [topic] })).body;
+      const ctl = new AbortController();
+      const res = await fetch(
+        `http://127.0.0.1:${port}/api/sse?ticket=${t.ticket}&topics=${encodeURIComponent(topic)}`,
+        { signal: ctl.signal },
+      );
+      expect(res.status).toBe(200);
+      await res.body!.getReader().read(); // the stream is open: `retry: 3000`
+      await settle();
+      expect((await post('One contestant is watching.')).body.reached).toBe(1);
+      ctl.abort();
+      await settle();
+      expect((await post('The contestant left.')).body.reached).toBe(0);
     });
 
     it('FR-AUTH-09: announcements are admin-only to post, registered-only to read', async () => {

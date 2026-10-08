@@ -145,9 +145,14 @@ export function ContestOps({ id }: { id: string }) {
     setNoteBusy(true);
     setNoteFailure(null);
     try {
-      await announce(id, note);
+      const r = await announce(id, note);
       setNote('');
-      setSent('Announcement sent to every registered contestant.');
+      setSent(
+        `Announcement posted for ${r.registered} registered contestant${r.registered === 1 ? '' : 's'}. ` +
+          (r.reached > 0
+            ? `${r.reached} connected right now saw it live; everyone else sees it when they open the contest.`
+            : 'Nobody is connected right now; each contestant sees it as a banner when they open the contest.'),
+      );
     } catch (err) {
       setNoteFailure(err as Error);
     } finally {

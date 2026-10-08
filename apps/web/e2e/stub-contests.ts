@@ -466,7 +466,13 @@ export async function stubContests(
       st.announced.push(body.body);
       return json(
         r,
-        { id: `n${st.announced.length}`, body: body.body, createdAt: new Date().toISOString() },
+        {
+          id: `n${st.announced.length}`,
+          body: body.body,
+          createdAt: new Date().toISOString(),
+          reached: 3,
+          registered: 12,
+        },
         201,
       );
     },

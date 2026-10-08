@@ -5,6 +5,7 @@ import type {
   AnnouncementEvent,
   AnnouncementCreate,
   AnnouncementList,
+  AnnouncementSent,
   ClarificationAnswer,
   ClarificationCreate,
   ClarificationEvent,
@@ -13,9 +14,9 @@ import type {
   ClarificationList,
   Role,
 } from '@codearena/contracts';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { metrics, trace } from '@opentelemetry/api';
-import { and, asc, desc, eq, isNotNull, or } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, or, sql } from 'drizzle-orm';
 import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import { ProblemError } from '../../common/problem';
@@ -33,6 +34,7 @@ import {
 import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
 import { publishEvent } from '../realtime/events';
+import { SseHub } from '../realtime/sse.hub';
 import { contestState } from './state';
 
 const tracer = trace.getTracer('api');
@@ -62,6 +64,7 @@ export class MessagesService {
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(CONFIG) config: Config,
     @Inject(LOGGER) private readonly log: Logger,
+    @Optional() @Inject(SseHub) private readonly hub?: SseHub,
   ) {
     this.prefix = config.QUEUE_KEY_PREFIX;
   }
@@ -280,7 +283,11 @@ export class MessagesService {
     });
   }
 
-  async announce(contestId: string, admin: Actor, body: AnnouncementCreate): Promise<Announcement> {
+  async announce(
+    contestId: string,
+    admin: Actor,
+    body: AnnouncementCreate,
+  ): Promise<AnnouncementSent> {
     return tracer.startActiveSpan('contests.announce', async (span) => {
       try {
         const c = await this.byId(contestId);
@@ -298,7 +305,15 @@ export class MessagesService {
         const a = this.toAnnouncement(row!);
         const event: AnnouncementEvent = { contestId: c.id, item: a };
         await this.publish(`contest:${c.id}:clar`, 'announce.new', event);
-        return a;
+        const [reg] = await this.db
+          .select({ n: sql<number>`count(*)::int` })
+          .from(participants)
+          .where(eq(participants.contestId, c.id));
+        return {
+          ...a,
+          reached: this.hub?.listeners(`contest:${c.id}:clar`) ?? 0,
+          registered: reg?.n ?? 0,
+        };
       } finally {
         span.end();
       }

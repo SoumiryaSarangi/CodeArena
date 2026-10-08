@@ -18,6 +18,7 @@ import { boardSnapshot, contestDetail, contestResults } from '@/lib/contests';
 import { cn } from '@/lib/cn';
 import { subscribe, type ConnectionState } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
+import { ContestMessagesButton } from './messages-button';
 import { ScoreCell } from './score-cell';
 
 /** UI_UX §7: tables of more than this many rows are windowed (fixed 36 px rows). */
@@ -193,6 +194,10 @@ export function Scoreboard({ slug }: { slug: string }) {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <ConnectionPill state={conn} />
+          <ContestMessagesButton
+            labels={(board?.problems ?? []).map((p) => p.label)}
+            canAsk={contest.state === 'running'}
+          />
           <Button asChild variant="ghost" size="sm">
             <Link href={`/c/${slug}`}>Contest page</Link>
           </Button>

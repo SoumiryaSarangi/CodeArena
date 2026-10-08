@@ -272,10 +272,8 @@ test.describe('C-05: admin inbox and announcements (S16)', () => {
     await page.getByRole('button', { name: 'Send announcement' }).click();
     await expect.poll(() => st.announced).toEqual(['Water is in the corridor.']);
     await expect(
-      page
-        .getByRole('status')
-        .filter({ hasText: 'Announcement sent to every registered contestant.' }),
-    ).toBeVisible();
+      page.getByRole('status').filter({ hasText: 'Announcement posted for 12 registered' }),
+    ).toContainText('3 connected right now saw it live');
     await expect(page.getByLabel('Message')).toHaveValue('');
   });
 });
@@ -328,3 +326,122 @@ for (const theme of ['dark', 'light'] as const) {
     });
   }
 }
+
+const NOTE = { id: 'n1', body: 'Lunch is at one.', createdAt: '2026-10-10T13:35:00.000Z' };
+const sendNote = (page: Page) =>
+  emit(
+    page,
+    'clar',
+    'announce.new',
+    '5-3',
+    { contestId: 'cid-1', item: NOTE },
+    'contest:cid-1:clar',
+  );
+const banner = (page: Page) => page.getByRole('status').filter({ hasText: 'Lunch is at one.' });
+
+test.describe('C-09: announcements reach every contest page', () => {
+  test('on the contest page (not only a problem): a banner that stays, until dismissed', async ({
+    page,
+  }) => {
+    await stubApi(page);
+    const st = await stubContests(page, RUNNING);
+    await page.goto('/c/warm-up-1');
+    await streamOpen(page, 'contest:cid-1:clar');
+    await sendNote(page);
+    await expect(banner(page)).toBeVisible();
+    st.announcements.push(NOTE);
+    await page.waitForTimeout(6000); // the toast is gone by now
+    await expect(banner(page)).toBeVisible();
+    await page.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(banner(page)).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(banner(page)).toHaveCount(0);
+  });
+
+  test('the scoreboard shows it too, and the drawer button is there', async ({ page }) => {
+    await stubApi(page);
+    const st = await stubContests(page, RUNNING);
+    st.announcements.push(NOTE);
+    await page.goto('/c/warm-up-1/board');
+    await expect(banner(page)).toBeVisible();
+    await drawerButton(page).click();
+    await expect(page.getByRole('region', { name: 'Announcements' })).toContainText(NOTE.body);
+  });
+
+  test('an announcement that was sent earlier shows when a contestant opens the contest later', async ({
+    page,
+  }) => {
+    await stubApi(page);
+    const st = await stubContests(page, RUNNING);
+    st.announcements.push(NOTE);
+    await page.goto('/c/warm-up-1/A');
+    await expect(banner(page)).toBeVisible();
+  });
+
+  test('a contestant who is not registered gets no banner and no stream', async ({ page }) => {
+    await stubApi(page);
+    const st = await stubContests(page, { ...RUNNING, registered: false });
+    st.announcements.push(NOTE);
+    await page.goto('/c/warm-up-1');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(banner(page)).toHaveCount(0);
+  });
+
+  test('after the contest the old announcements are no longer pushed in front of the page', async ({
+    page,
+  }) => {
+    await stubApi(page);
+    const st = await stubContests(page, {
+      startsInSec: -300 * 60,
+      durationMin: 120,
+      registered: true,
+    });
+    st.announcements.push(NOTE);
+    await page.goto('/c/warm-up-1');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(banner(page)).toHaveCount(0);
+  });
+});
+
+test.describe('C-09: moving between problems and the full view', () => {
+  test('Next and Previous walk the problem list, and are off at the ends', async ({ page }) => {
+    await arena(page);
+    await expect(page.getByRole('button', { name: 'Previous problem' })).toBeDisabled();
+    await page.getByRole('link', { name: 'Next problem, B' }).click();
+    await expect(page).toHaveURL(/\/c\/warm-up-1\/B$/);
+    await expect(page.getByRole('button', { name: 'Next problem' })).toBeDisabled();
+    await page.getByRole('link', { name: 'Previous problem, A' }).click();
+    await expect(page).toHaveURL(/\/c\/warm-up-1\/A$/);
+  });
+
+  test('while the contest runs the app bars are hidden; Show menu brings them back', async ({
+    page,
+  }) => {
+    await arena(page);
+    await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+    await expect(page.getByRole('contentinfo')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Show menu' }).click();
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+    await page.getByRole('button', { name: 'Full view' }).click();
+    await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+  });
+
+  test('after the end the normal layout is back and there is no toggle', async ({ page }) => {
+    await arena(page, { startsInSec: -300 * 60, durationMin: 120, registered: true });
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show menu' })).toHaveCount(0);
+  });
+
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 390, height: 800 },
+  ]) {
+    test(`the full view has no accessibility violations at ${size.width}px`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await arena(page);
+      const r = await new AxeBuilder({ page }).analyze();
+      expect(r.violations).toEqual([]);
+    });
+  }
+});

@@ -89,6 +89,11 @@ export class SseHub implements OnModuleDestroy {
     return this.count;
   }
 
+  /** Streams open on this instance for a topic right now (C-09: "sent to N connected"). */
+  listeners(topic: string): number {
+    return this.byTopic.get(topic)?.size ?? 0;
+  }
+
   private channel(topic: string) {
     return `${this.prefix}rt:${topic}`;
   }

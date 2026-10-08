@@ -17,7 +17,9 @@ import {
   useServerClock,
 } from '@/lib/contest-time';
 import { contestDetail, contestProblems, registerForContest } from '@/lib/contests';
+import { useContestMessagesContext } from '@/lib/contest-messages';
 import { signInHref, useSession } from '@/lib/session';
+import { ContestMessagesButton } from './messages-button';
 import { StateLabel } from './state-label';
 
 const LANG_NAMES: Record<string, string> = {
@@ -32,6 +34,7 @@ const LANG_NAMES: Record<string, string> = {
 /** S08: countdown, rules, registration, and (once readable) the problem list. */
 export function ContestLobby({ slug }: { slug: string }) {
   const { session } = useSession();
+  const messages = useContestMessagesContext();
   const path = usePathname();
   const [c, setC] = useState<ContestDetail | null>(null);
   const [problems, setProblems] = useState<ContestProblemList | null>(null);
@@ -93,12 +96,13 @@ export function ContestLobby({ slug }: { slug: string }) {
     setRegError(null);
     try {
       setC(await registerForContest(slug));
+      messages?.reload();
     } catch (e) {
       setRegError(e instanceof ApiError ? e.message : 'Could not register. Try again.');
     } finally {
       setRegistering(false);
     }
-  }, [slug]);
+  }, [slug, messages]);
 
   if (error) {
     return error.status === 404 ? (
@@ -181,6 +185,10 @@ export function ContestLobby({ slug }: { slug: string }) {
             <Link href={`/c/${slug}/board`}>Scoreboard</Link>
           </Button>
         ) : null}
+        <ContestMessagesButton
+          labels={(problems?.items ?? []).map((p) => p.label)}
+          canAsk={state === 'running'}
+        />
         {state === 'scheduled' ? (
           <Button variant="ghost" onClick={downloadIcs}>
             <CalendarPlus className="size-4" aria-hidden /> Add to calendar

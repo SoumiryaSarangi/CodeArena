@@ -1,7 +1,7 @@
 import type {
   AdminClarificationItem,
   AdminClarificationList,
-  Announcement,
+  AnnouncementSent,
   AnnouncementList,
   ClarificationAnswer,
   ClarificationCreate,
@@ -121,7 +121,7 @@ export const answerClarification = (id: string, body: ClarificationAnswer) =>
   });
 
 export const announce = (id: string, body: string) =>
-  apiFetch<Announcement>(
+  apiFetch<AnnouncementSent>(
     'POST',
     `/admin/contests/${enc(id)}/announcements`,
     { body },
