@@ -787,7 +787,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 ### Day 8 — Thu 8 Oct · Load test + AI Coach
 
 🧑 **Ayush**
-- **U8.1** Before the load test: `scripts/scale-judges.sh up 2` (3 judges; wraps `terraform apply`, Claude can run it with you). After: `scripts/scale-judges.sh to 1`. ⏱ 20 min
+- **U8.1** Before the load test: `scripts/scale-judges.sh up 1` (2 judges, the quota maximum; wraps `terraform apply`, Claude can run it with you). After: `scripts/scale-judges.sh to 1`. ⏱ 20 min
 - **U8.2** Review hint samples: rate 20 hints as good/bad/leaky. Your labels become part of the eval set. ⏱ 60 min
 - **U8.3** Contest reminder message; aim for 30 registered. ⏱ 10 min
 - **U8.4** Explain-back: CodeHelp guardrails; what "leak rate" means and how it's measured. ⏱ 30 min
@@ -971,7 +971,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 ## 10. Contest-day runbook (Sat 10 Oct)
 
 **T-5 h (2:00 PM)**
-- [ ] `scripts/scale-judges.sh up 3` → all 4 judges show heartbeats in the ops console
+- [ ] `scripts/scale-judges.sh up 1` → both judges (the most this subscription's quota allows) show heartbeats in the ops console
 - [ ] Nightly attack suite green; `/health` green; Grafana alerts armed
 - [ ] Backup taken manually; restore test from last night passed
 - [ ] Run all 6 problems' Validate again in prod
@@ -983,7 +983,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 - [ ] Hints confirmed disabled for contest problems (try one)
 
 **During (7:00–9:00 PM)**
-- Watch: lane depth, p95, DLQ, worker heartbeats. If p95 > 10 s for 2 min → `scale-judges.sh up 2 --allow-running-contest` more (opens the judge firewall for a few minutes; see the runbook).
+- Watch: lane depth, p95, DLQ, worker heartbeats. If p95 > 10 s for 2 min and only 1 judge runs → `scale-judges.sh up 1 --allow-running-contest` (opens the judge firewall for a few minutes; see the runbook).
 - DLQ entry → inspect, re-enqueue once; if it repeats, rejudge the submission after the contest.
 - Wrong test data discovered → fix package → rejudge that problem → announce.
 - A judge VM dies → the reaper re-delivers its jobs; confirm in the console.

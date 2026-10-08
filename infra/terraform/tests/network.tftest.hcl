@@ -216,8 +216,9 @@ run "judge_count_scales_vms" {
   command = plan
 
   variables {
-    judge_count   = 3
-    judge_vm_size = "Standard_D2s_v5"
+    judge_count     = 3
+    judge_vm_size   = "Standard_D2s_v5"
+    judge_bootstrap = false # three temporary IPs at once would exceed the subscription's quota
   }
 
   assert {
@@ -229,6 +230,45 @@ run "judge_count_scales_vms" {
     condition     = alltrue([for v in azurerm_linux_virtual_machine.judge : v.size == "Standard_D2s_v5" && v.disable_password_authentication])
     error_message = "judge_vm_size must apply to every judge, and password login must be off."
   }
+}
+
+# Adding judges to a running fleet: only the new ones get the temporary IP (Azure for Students allows
+# 3 public IPs per region and the API VM uses one), and the plan refuses more than 2 at a time.
+run "adding_judges_gives_public_ips_to_the_new_ones_only" {
+  command = plan
+
+  variables {
+    judge_count          = 3
+    judge_bootstrap      = true
+    judge_bootstrap_from = 1
+  }
+
+  assert {
+    condition     = length(azurerm_public_ip.judge_bootstrap) == 2
+    error_message = "Only the two new judges need a temporary public IP."
+  }
+
+  assert {
+    condition     = azurerm_network_interface.judge[0].ip_configuration[0].public_ip_address_id == null
+    error_message = "An existing judge must not get a public IP back."
+  }
+
+  assert {
+    condition     = azurerm_public_ip.judge_bootstrap[0].name == "pip-codearena-prod-judge-1-bootstrap" && azurerm_public_ip.judge_bootstrap[1].name == "pip-codearena-prod-judge-2-bootstrap"
+    error_message = "Each temporary IP is named after the judge it belongs to."
+  }
+}
+
+run "more_than_two_new_judges_at_once_is_refused" {
+  command = plan
+
+  variables {
+    judge_count          = 4
+    judge_bootstrap      = true
+    judge_bootstrap_from = 1
+  }
+
+  expect_failures = [azurerm_public_ip.judge_bootstrap]
 }
 
 run "judge_count_zero_is_allowed" {

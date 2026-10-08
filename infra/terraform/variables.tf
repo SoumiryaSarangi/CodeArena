@@ -79,6 +79,22 @@ variable "judge_bootstrap" {
   default     = true
 }
 
+variable "judge_bootstrap_from" {
+  description = <<-EOT
+    Only with judge_bootstrap = true: the index of the first judge that still needs the temporary
+    public IP. Judges below it are already set up and keep no public IP, so adding judges to a running
+    fleet gives IPs to the new ones only. Azure for Students allows 3 public IPs per region and the API
+    VM uses one, so at most 2 judges can be bootstrapped at a time (a plan with more is refused).
+    scripts/scale-judges.sh sets this; the first apply leaves it at 0.
+  EOT
+  type        = number
+  default     = 0
+  validation {
+    condition     = var.judge_bootstrap_from >= 0 && floor(var.judge_bootstrap_from) == var.judge_bootstrap_from
+    error_message = "judge_bootstrap_from must be a whole number, 0 or more."
+  }
+}
+
 variable "backup_retention_days" {
   description = "Backups older than this are deleted automatically."
   type        = number

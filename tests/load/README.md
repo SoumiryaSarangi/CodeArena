@@ -1,7 +1,7 @@
 # Load test (O-03)
 
-500 submissions in 2 minutes (≈ 4.2/s, SD-§2.1) with 200 browsers watching the contest board, run at 1, 3 and 6
-judge VMs. The results go to [`docs/METRICS.md`](../../docs/METRICS.md) next to SD-§2.3's predictions.
+500 submissions in 2 minutes (≈ 4.2/s, SD-§2.1) with 200 browsers watching the contest board, run at 1 and 2
+judge VMs (3 and 6 are not possible on this subscription's quota). The results go to [`docs/METRICS.md`](../../docs/METRICS.md) next to SD-§2.3's predictions.
 
 | Piece                                   | What it does                                                                                                                                                                                                                                          |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -35,8 +35,9 @@ node scripts/metrics-report.mjs --run /tmp/run-1.json --report /tmp/report-1.jso
 tests/load/prod.sh cleanup && rm /tmp/load-seed.json
 ```
 
-One run per judge count: scale the judges (`scripts/scale-judges.sh up 2` for 3 judges, `up 3` more for 6; it waits until they
-report), then repeat with a fresh seed and `--judges 3`. A drained 1-judge run takes
+One run per judge count: scale the judges (`scripts/scale-judges.sh up 1` for 2 judges; it waits until they report),
+then repeat with a fresh seed and `--judges 2`. This Azure for Students subscription allows 2 judges at most (6 vCPUs per
+region in total, no D2s_v5 quota), so 3 and 6 judges cannot be measured without a quota increase. A drained 1-judge run takes
 about 15 minutes (`--drain-timeout` is 40 minutes). To time a scale-out, start
 `node tests/load/burst.mjs watch --api $API --seed /tmp/load-seed.json --out /tmp/scale.json` just before the
 `scripts/scale-judges.sh up …` (the script also prints its own timings), press Ctrl-C when the new worker has appeared, and pass `--scale /tmp/scale.json` to

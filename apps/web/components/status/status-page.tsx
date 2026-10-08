@@ -130,6 +130,12 @@ const STEPS = [
 ] as const;
 
 /** S18: the public status page: live health, how it is built, how it is protected. */
+/** Measured by the O-03 burst test (docs/METRICS.md), 8 Oct 2026, production judges. */
+const LOAD_TEST = [
+  { judges: '1', wait: '26.1 s / 48.6 s', verdict: '26.6 s / 50.8 s', drain: '58 s' },
+  { judges: '2', wait: '0.0 s / 0.5 s', verdict: '0.4 s / 2.1 s', drain: '2 s' },
+];
+
 export function StatusPage() {
   const s = usePlatformStatus(POLL_MS);
   return (
@@ -205,8 +211,52 @@ export function StatusPage() {
 
       <Section id="load" title="Load test">
         <p className="text-14 text-text-2">
-          Not measured yet. The burst test (500 submissions in 2 minutes with 200 live listeners)
-          runs before the first big contest; its numbers will appear here.
+          500 submissions in 2 minutes (about 4 a second, C++ and Python, accepted, wrong, too slow
+          and crashing programs) from 150 test accounts, with 200 live listeners on the scoreboard.
+          Measured on the production judges on 8 October 2026; every submission got its verdict.
+        </p>
+        <div
+          className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          role="region"
+          aria-label="Burst test results"
+          tabIndex={0}
+        >
+          <table className="w-full min-w-[32rem] text-14">
+            <caption className="sr-only">Burst test results by number of judge servers</caption>
+            <thead>
+              <tr className="text-left text-13 text-text-2">
+                <th scope="col" className="py-1 pr-3 font-medium">
+                  Judge servers
+                </th>
+                <th scope="col" className="py-1 pr-3 font-medium">
+                  Wait in the queue (median / 95th)
+                </th>
+                <th scope="col" className="py-1 pr-3 font-medium">
+                  Submit to verdict (median / 95th)
+                </th>
+                <th scope="col" className="py-1 font-medium">
+                  Queue empty after the last submit
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {LOAD_TEST.map((r) => (
+                <tr key={r.judges} className="border-t border-border">
+                  <th scope="row" className="py-1.5 pr-3 text-left font-medium">
+                    {r.judges}
+                  </th>
+                  <td className="py-1.5 pr-3 font-mono">{r.wait}</td>
+                  <td className="py-1.5 pr-3 font-mono">{r.verdict}</td>
+                  <td className="py-1.5 font-mono">{r.drain}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-13 text-text-3">
+          The test problems are quick to judge (about half a second a submission). A contest with
+          heavier problems takes longer, which is why a second judge runs during contests. Full
+          numbers are in the project&apos;s metrics file.
         </p>
       </Section>
     </div>

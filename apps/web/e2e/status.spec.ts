@@ -89,7 +89,10 @@ test.describe('O-02: status page (S18)', () => {
       'href',
       /actions\/workflows\/nightly-attack\.yml$/,
     );
-    await expect(page.getByText('Not measured yet.')).toBeVisible();
+    await expect(page.getByRole('table', { name: /Burst test results by number/ })).toContainText(
+      '26.6 s / 50.8 s',
+    );
+    await expect(page.getByRole('row', { name: /^2 / })).toContainText('0.4 s / 2.1 s');
   });
 
   test('the top bar shows the same state in words and links to the page', async ({ page }) => {

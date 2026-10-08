@@ -80,14 +80,24 @@ resource "azurerm_linux_virtual_machine" "api" {
 # ---------------------------------------------------------------------------------------------
 # Judge VMs: run untrusted code (ADR-009). No public IP in steady state.
 # ---------------------------------------------------------------------------------------------
+# One per judge that still has to be set up (index >= judge_bootstrap_from), named after the judge.
 resource "azurerm_public_ip" "judge_bootstrap" {
-  count               = var.judge_bootstrap ? var.judge_count : 0
-  name                = "pip-${local.name}-judge-${count.index}-bootstrap"
+  count               = var.judge_bootstrap ? max(0, var.judge_count - var.judge_bootstrap_from) : 0
+  name                = "pip-${local.name}-judge-${count.index + var.judge_bootstrap_from}-bootstrap"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = local.tags
+
+  lifecycle {
+    # Azure for Students: 3 public IPs per region, one is the API VM's. Fail in the plan, not halfway
+    # through an apply that has already opened the judge firewall.
+    precondition {
+      condition     = var.judge_count - var.judge_bootstrap_from <= 2
+      error_message = "At most 2 judges can be bootstrapped at a time (the subscription allows 3 public IPs, the API VM uses 1). Add judges in rounds of 2: scripts/scale-judges.sh does this."
+    }
+  }
 }
 
 resource "azurerm_network_interface" "judge" {
@@ -101,7 +111,7 @@ resource "azurerm_network_interface" "judge" {
     name                          = "primary"
     subnet_id                     = azurerm_subnet.judge.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = var.judge_bootstrap ? azurerm_public_ip.judge_bootstrap[count.index].id : null
+    public_ip_address_id          = var.judge_bootstrap && count.index >= var.judge_bootstrap_from ? azurerm_public_ip.judge_bootstrap[count.index - var.judge_bootstrap_from].id : null
   }
 }
 

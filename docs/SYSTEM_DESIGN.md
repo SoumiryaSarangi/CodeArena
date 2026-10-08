@@ -47,6 +47,8 @@
 
 Measure the real value in O-03 and replace this estimate in `METRICS.md`.
 
+*Measured (O-03, production, 8 Oct 2026, `docs/METRICS.md`):* mean service time C++ 0.44-0.51 s, Python 0.92-1.12 s on the three test problems (not the 4 s above), so one judge sustained 2.8 submissions/s and cleared the 500-in-2-minutes burst 58 s after the last submit (§2.3 predicted ~15 min); two judges: queue wait p95 0.5 s. Only 1 and 2 judges can run on this subscription (6 vCPU region quota).
+
 *As built (O-03):* the harness is `tests/load/` (driver, rehearsal and production runbook) plus `apps/api/src/modules/load/` (seed, report, cleanup of tagged fake data); `scripts/metrics-report.mjs` writes `docs/METRICS.md`. Service time per language is read from the journey stored with each verdict (`claimed` → verdict). Queue wait = worker claim − submit. Java is not measured: no package has a Java solution yet.
 
 ### 2.3 Throughput and queueing (Little's law: L = λW)
