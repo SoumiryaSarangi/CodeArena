@@ -492,7 +492,7 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | NFR-SEC-03 | Secrets only in env/GitHub secrets; never logged; `.env*` denied to Claude Code (I). |
 | NFR-SEC-04 | Dependency scanning (Dependabot) and CodeQL on every PR; no high/critical open issues at release (I). |
 | NFR-SEC-05 | Authorisation tests for every resource type (submissions, notes, hidden tests, admin routes) (T). |
-| NFR-SEC-06 | Rate limits per FR-SUB-04, FR-AI-06, ticket 30/min, events 60/min (T). |
+| NFR-SEC-06 | Rate limits per FR-SUB-04, FR-AI-06, ticket 30/min, events 60/min (T). *As built (X-10):* a route without its own limit allows 120/min per signed-in user and 600/min per address when nobody is signed in (`RATE_LIMIT_DEFAULT_PER_MIN`, `RATE_LIMIT_ANON_PER_MIN`); `POST /auth/refresh` is 30/min per refresh-token cookie, not per address; `GET /sse` has no per-address limit (its credential is a single-use ticket, limited per user at 30/min). Bucket keys carry the queue key prefix, so tests do not share buckets. |
 | NFR-SEC-07 | Judge VM network: no inbound from internet; egress only to Redis and MinIO private IPs (I via Terraform). |
 
 #### 3.3.5 Usability

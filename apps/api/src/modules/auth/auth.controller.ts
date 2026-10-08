@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import type { AccessToken } from '@codearena/contracts';
 import type { Request, Response } from 'express';
 import { ProblemError } from '../../common/problem';
+import { RateLimit } from '../../rate-limit/rate-limit';
 import { readCookie, REFRESH_COOKIE, refreshCookie } from './cookies';
 import { Public } from './guards';
 import { ACCESS_TOKENS, type AccessTokens } from './keys';
@@ -25,6 +26,7 @@ export class AuthController {
 
   /** FR-AUTH-05: rotate the refresh token, return a fresh 15-minute access token. */
   @Public()
+  @RateLimit({ scope: 'refresh', perMinute: 30, by: 'refresh-cookie' }) // X-10: per session, not per address
   @Post('refresh')
   @HttpCode(200)
   async refresh(

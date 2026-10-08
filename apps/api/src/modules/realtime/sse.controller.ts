@@ -4,6 +4,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { ProblemError } from '../../common/problem';
 import { CONFIG, type Config } from '../../config/config';
+import { RateLimit } from '../../rate-limit/rate-limit';
 import { Public } from '../auth/guards';
 import { Connection, MAX_TOPICS, SseHub } from './sse.hub';
 import { TicketsService } from './tickets.service';
@@ -41,7 +42,10 @@ export class SseController {
    * FR-RT-01..03: `GET /sse?ticket=&topics=a,b`. The ticket (single use, 60 s) fixes who is asking
    * and which topics they may watch. `Last-Event-ID` (header, as EventSource sends it) resumes.
    */
+  // X-10: not limited per address. Contestants behind one campus address all connect within a minute
+  // of the start; the credential is a single-use ticket, and tickets are limited per user (30/min).
   @Public()
+  @RateLimit(false)
   @Get()
   async stream(
     @Req() req: Request,

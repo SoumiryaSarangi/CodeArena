@@ -22,7 +22,14 @@ const schema = z.object({
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
   // How many reverse proxies sit in front of the API (Caddy = 1), so `req.ip` is the visitor, not the proxy.
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+  /** Per signed-in user, for routes without their own limit. */
   RATE_LIMIT_DEFAULT_PER_MIN: z.coerce.number().int().positive().default(120),
+  /**
+   * Per address, for routes without their own limit when nobody is signed in (X-10). Larger on purpose:
+   * a whole campus shares one address, and behind the Vercel rewrite every visitor looks like one of
+   * a few Vercel addresses. Abuse that matters is limited per user or per session instead.
+   */
+  RATE_LIMIT_ANON_PER_MIN: z.coerce.number().int().positive().default(600),
   // Prefix of every queue/stream key. Empty in production; tests set one so they never touch real queues.
   QUEUE_KEY_PREFIX: z.string().max(40).default(''),
   // Q-05: realtime. The bridge copies worker progress into the replay buffer (one leader at a time).

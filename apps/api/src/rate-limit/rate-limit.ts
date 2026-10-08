@@ -6,6 +6,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { createHash } from 'node:crypto';
 import { metrics } from '@opentelemetry/api';
 import type { Request } from 'express';
 import type { Redis } from 'ioredis';
@@ -13,13 +14,20 @@ import type { Logger } from 'pino';
 import { ProblemError } from '../common/problem';
 import { CONFIG, type Config } from '../config/config';
 import { REDIS } from '../redis/redis.module';
+import { readCookie, REFRESH_COOKIE } from '../modules/auth/cookies';
 import { LOGGER } from '../telemetry/logger';
 
 export interface RateLimitOptions {
-  /** Bucket name, part of the Redis key `rl:{scope}:{id}`. */
+  /** Bucket name, part of the Redis key `{prefix}rl:{scope}:{id}` (the prefix is empty in production; tests set one). */
   scope: string;
   /** Burst size and refill amount per minute. */
   perMinute: number;
+  /**
+   * Whose bucket. Default: the signed-in user, else the address. `refresh-cookie`: one bucket per
+   * refresh-token cookie (a session), so visitors who share an address, or who all arrive through the
+   * Vercel rewrite, do not share a limit; without the cookie the anonymous default applies.
+   */
+  by?: 'refresh-cookie';
 }
 
 const META = 'rate-limit';
@@ -70,19 +78,26 @@ export class RateLimitGuard implements CanActivate {
       ctx.getClass(),
     ]);
     if (opts === false) return true;
-    const { scope, perMinute } = opts ?? {
-      scope: 'default',
-      perMinute: this.config.RATE_LIMIT_DEFAULT_PER_MIN,
-    };
 
     const req = ctx.switchToHttp().getRequest<Request & { user?: { id: string } }>();
-    const id = req.user?.id ?? req.ip ?? 'unknown';
+    const cookie = opts?.by === 'refresh-cookie' ? readCookie(req, REFRESH_COOKIE) : undefined;
+    // Signed in: the user's own bucket. Not signed in: the address, with the larger anonymous default.
+    const fallback = {
+      scope: 'default',
+      perMinute: req.user
+        ? this.config.RATE_LIMIT_DEFAULT_PER_MIN
+        : this.config.RATE_LIMIT_ANON_PER_MIN,
+    };
+    const { scope, perMinute } = opts && (opts.by === undefined || cookie) ? opts : fallback;
+    const id = cookie
+      ? `s:${createHash('sha256').update(cookie).digest('hex').slice(0, 24)}`
+      : (req.user?.id ?? req.ip ?? 'unknown');
     try {
       if (this.redis.status === 'wait') await this.redis.connect();
       const [allowed, retryMs] = (await this.redis.eval(
         SCRIPT,
         1,
-        `rl:${scope}:${id}`,
+        `${this.config.QUEUE_KEY_PREFIX}rl:${scope}:${id}`,
         perMinute,
         perMinute / 60_000,
       )) as [number, number];
