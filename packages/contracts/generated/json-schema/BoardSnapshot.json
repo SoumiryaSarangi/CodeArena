@@ -3,6 +3,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "contestId": {
+      "type": "string"
+    },
     "frozen": {
       "type": "boolean"
     },
@@ -50,6 +53,7 @@
     }
   },
   "required": [
+    "contestId",
     "serverNow",
     "version",
     "frozen",

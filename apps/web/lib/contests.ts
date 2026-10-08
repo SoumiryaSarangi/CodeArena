@@ -1,6 +1,7 @@
 import type {
   AdminContestDetail,
   AdminContestList,
+  BoardSnapshot,
   ContestCreate,
   ContestDetail,
   ContestList,
@@ -51,4 +52,10 @@ export const patchContest = (id: string, body: ContestPatch) =>
 export const putContestProblems = (id: string, body: ContestProblemsPut) =>
   apiFetch<AdminContestDetail>('PUT', `/admin/contests/${enc(id)}/problems`, body, {
     auth: 'required',
+  });
+
+export const boardSnapshot = (slug: string, signal?: AbortSignal) =>
+  apiFetch<BoardSnapshot>('GET', `/contests/${enc(slug)}/board`, undefined, {
+    auth: 'optional',
+    signal,
   });

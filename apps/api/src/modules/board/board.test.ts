@@ -488,6 +488,7 @@ describe.skipIf(!ready)('C-02: leaderboard engine (needs the Compose Postgres an
     const guest = await call('get', `/contests/${c.slug}/board`);
     expect(guest.status).toBe(200);
     expect(guest.body.frozen).toBe(true);
+    expect(guest.body.contestId).toBe(c.id);
     const rowA = guest.body.rows.find((r: { userId: string }) => r.userId === a.id);
     expect(rowA).toMatchObject({ solved: 0, rank: 2 });
     expect(rowA.cells.A).toEqual({ attempts: 1, acMinute: null, pending: 1, first: false });

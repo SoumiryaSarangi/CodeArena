@@ -686,3 +686,11 @@ Next: C-03 scoreboard UI (tag S, `/model sonnet`), then C-04 arena. Follow-ups: 
 Ayush must: nothing new. The U6.1/U6.2 steps in the C-01 entry still stand; keep penalty at 20 (now max 40).
 
 Model: O · Opus 5.5 (plan and build)
+
+## 2026-10-08 · C-03 · done
+Built: `/c/[slug]/board` (S10): a real table with sticky header and sticky Rank/Handle columns, `ScoreCell` (✓ mm, ★ first solve, +n, ?n; words for screen readers), solve counts in the column headers, state chip (Live / Live (admin view) / Frozen / Final / Ended / Not started), a freeze notice, Jump to me, a connection pill, the legend, and a link from the lobby once the contest has started. `lib/board.ts` (`applyDiff`, `rankRows`, `describeCell`) patches the snapshot from `board.diff` events in place; Motion `layout` rank glide (off under reduced motion), one-time first-solve flash, windowing above 200 rows without a new dependency (only `motion`, which is on the approved list, was added). `BoardSnapshot` gained `contestId` (additive) for the realtime topics.
+Tests: web unit 85 (8 new: re-ranking, ties, stale and replayed diffs, first-solve handover, resync, cell descriptions) with two mutation checks (version guard removed, ties broken by index: each fails a test); Playwright 111 (17 new: table content, diffs re-rank without re-reading the snapshot, ties share a rank, first-solve flash, own-rank announcement only, reconnect re-reads, lobby link, freeze chip and notice, own-row diff refreshes during the freeze, admin view on the admin topic, 600 rows windowed with Jump to me, axe dark/light at 1280 and 390, no page-level horizontal scroll), stable 3 runs in a row. Covers FR-BOARD-04 (client side), FR-BOARD-05 (display), FR-BOARD-07.
+Decisions: no virtualisation library (not on the approved list): fixed-height windowing is about 20 lines; a viewer's own live cells during the freeze are fetched with a snapshot, not carried in diffs, because the public topic must not leak them; ties are shown in handle order; an absolutely positioned `sr-only` span inside the scroll box made the page overflow at 390 px until the box was `relative` (found by the overflow check).
+Next: C-04 contest arena (tag S): the workspace in contest mode with problem tabs, the timer and the end-of-contest modal. Then C-05 clarifications.
+Ayush must: nothing new.
+Model: S · Sonnet 5.5

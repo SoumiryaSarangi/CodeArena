@@ -19,7 +19,49 @@ const RULES = {
   lateRegistration: true,
 };
 
+import { rankRows } from '../lib/board';
+
+type Cell = { attempts: number; acMinute: number | null; pending: number; first: boolean };
+type BRow = {
+  userId: string;
+  handle: string;
+  solved: number;
+  penalty: number;
+  lastAcMinute: number | null;
+  score: number;
+  cells: Record<string, Cell>;
+};
+const cell = (over: Partial<Cell> = {}): Cell => ({
+  attempts: 0,
+  acMinute: null,
+  pending: 0,
+  first: false,
+  ...over,
+});
+/** A board row whose score orders the way the packed score does for these tiny inputs. */
+export const brow = (
+  userId: string,
+  handle: string,
+  cells: Record<string, Partial<Cell>>,
+): BRow => {
+  const full = Object.fromEntries(Object.entries(cells).map(([l, c]) => [l, cell(c)]));
+  const solved = Object.values(full).filter((c) => c.acMinute !== null);
+  const penalty = solved.reduce((n, c) => n + c.acMinute! + 20 * c.attempts, 0);
+  return {
+    userId,
+    handle,
+    solved: solved.length,
+    penalty,
+    lastAcMinute: solved.length ? Math.max(...solved.map((c) => c.acMinute!)) : null,
+    score: solved.length * 1e6 - penalty,
+    cells: full,
+  };
+};
+
 export interface ContestStub {
+  /** What `/board` answers; tests change it between requests. */
+  board: { version: number; frozen: boolean; rows: BRow[] };
+  boardRequests: number;
   registers: string[];
   created: Record<string, unknown>[];
   patches: Record<string, unknown>[];
@@ -43,6 +85,17 @@ export async function stubContests(
 ): Promise<ContestStub> {
   const o = { startsInSec: 3600, durationMin: 120, clockSkewMs: 0, ...opts };
   const st: ContestStub = {
+    board: {
+      version: 1,
+      frozen: false,
+      rows: [
+        brow('u9', 'amy', { A: { acMinute: 12, first: true }, B: { acMinute: 40, attempts: 2 } }),
+        brow('u1', 'riya_k', { A: { acMinute: 30, attempts: 1 }, B: { pending: 1 } }),
+        brow('u7', 'zed', { A: { attempts: 3 } }),
+        brow('u8', 'bob', {}),
+      ],
+    },
+    boardRequests: 0,
     registers: [],
     created: [],
     patches: [],
@@ -165,6 +218,23 @@ export async function stubContests(
           limits: { timeMs: 500, memMb: 256, outputKb: 1024 },
         },
       ],
+    });
+  });
+
+  await page.route('**/api/contests/warm-up-1/board', (r) => {
+    st.boardRequests += 1;
+    const rows = rankRows(st.board.rows);
+    return json(r, {
+      contestId: 'cid-1',
+      serverNow: serverNow().toISOString(),
+      version: st.board.version,
+      frozen: st.board.frozen,
+      problems: ['A', 'B'].map((label) => ({
+        label,
+        solvedCount: rows.filter((x) => x.cells[label]?.acMinute != null).length,
+        firstSolverId: rows.find((x) => x.cells[label]?.first)?.userId ?? null,
+      })),
+      rows,
     });
   });
 

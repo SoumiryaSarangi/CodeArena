@@ -62,6 +62,7 @@
 
   --animate-judging: judging 1.2s ease-in-out infinite;
   --animate-fill: fill var(--dur-fast) cubic-bezier(0.2, 0, 0, 1);
+  --animate-flash: flash 1.4s ease-out 1;
 
   @keyframes judging {
     0%,
@@ -70,6 +71,14 @@
     }
     50% {
       opacity: 1;
+    }
+  }
+  @keyframes flash {
+    from {
+      background-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    }
+    to {
+      background-color: transparent;
     }
   }
   @keyframes fill {

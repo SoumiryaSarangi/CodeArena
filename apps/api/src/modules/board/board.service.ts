@@ -466,6 +466,7 @@ export class BoardService implements OnModuleDestroy {
           };
         });
         return {
+          contestId: c.id,
           serverNow: now.toISOString(),
           version: Number(version ?? 0),
           frozen,

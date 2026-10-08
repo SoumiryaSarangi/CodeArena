@@ -174,6 +174,11 @@ export function ContestLobby({ slug }: { slug: string }) {
         {!registered && !c.canRegister && state === 'running' ? (
           <span className="text-13 text-text-2">Registration closed when the contest started.</span>
         ) : null}
+        {state !== 'scheduled' ? (
+          <Button asChild variant="secondary">
+            <Link href={`/c/${slug}/board`}>Scoreboard</Link>
+          </Button>
+        ) : null}
         {state === 'scheduled' ? (
           <Button variant="ghost" onClick={downloadIcs}>
             <CalendarPlus className="size-4" aria-hidden /> Add to calendar

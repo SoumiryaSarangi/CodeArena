@@ -220,6 +220,8 @@ export type BoardRow = z.infer<typeof BoardRow>;
 
 export const BoardSnapshot = z
   .object({
+    /** For the realtime topics `contest:{id}:board` / `admin:contest:{id}:board`. */
+    contestId: z.string(),
     serverNow: iso,
     /** Diffs with a lower or equal version are already included. */
     version: z.number().int().min(0),
