@@ -17,6 +17,11 @@ import type {
   ContestProblemDetail,
   ContestProblemList,
   ContestProblemsPut,
+  ContestExtendResult,
+  DlqList,
+  OpsSummary,
+  Rejudge,
+  RejudgeResult,
 } from '@codearena/contracts';
 import { apiFetch } from './api';
 
@@ -120,3 +125,40 @@ export const announce = (id: string, body: string) =>
       auth: 'required',
     },
   );
+
+// ---- operations (C-07, S16) ----
+
+export const opsSummary = (signal?: AbortSignal) =>
+  apiFetch<OpsSummary>('GET', '/admin/ops/summary', undefined, { auth: 'required', signal });
+
+export const extendContest = (id: string, minutes: number) =>
+  apiFetch<ContestExtendResult>(
+    'POST',
+    `/admin/contests/${enc(id)}/extend`,
+    { minutes },
+    { auth: 'required' },
+  );
+
+export const rebuildBoard = (id: string) =>
+  apiFetch<{ version: number }>('POST', `/admin/contests/${enc(id)}/rebuild-board`, undefined, {
+    auth: 'required',
+  });
+
+export const setProblemHidden = (id: string, label: string, hidden: boolean) =>
+  apiFetch<{ hidden: boolean }>(
+    'POST',
+    `/admin/contests/${enc(id)}/problems/${enc(label)}/visibility`,
+    { hidden },
+    { auth: 'required' },
+  );
+
+export const rejudge = (body: { scope: Rejudge['scope']; id: string; urgent: boolean }) =>
+  apiFetch<RejudgeResult>('POST', '/admin/rejudge', body, { auth: 'required' });
+
+export const dlqList = (signal?: AbortSignal) =>
+  apiFetch<DlqList>('GET', '/admin/dlq', undefined, { auth: 'required', signal });
+
+export const dlqRequeue = (entryId: string) =>
+  apiFetch<{ lane: string }>('POST', `/admin/dlq/${enc(entryId)}/requeue`, undefined, {
+    auth: 'required',
+  });

@@ -232,7 +232,7 @@ export class ContestsService {
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))
       .innerJoin(problemVersions, eq(problemVersions.id, contestProblems.versionId))
-      .where(eq(contestProblems.contestId, contestId))
+      .where(and(eq(contestProblems.contestId, contestId), eq(contestProblems.hidden, false)))
       .orderBy(asc(contestProblems.position));
   }
 
@@ -318,10 +318,12 @@ export class ContestsService {
     const rows = await this.db
       .select({
         label: contestProblems.label,
+        problemId: problems.id,
         slug: problems.slug,
         title: problems.title,
         version: problemVersions.version,
         validationStatus: problemVersions.validationStatus,
+        hidden: contestProblems.hidden,
       })
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))

@@ -36,6 +36,13 @@
       "when": 1791414117270,
       "tag": "0004_bitter_mojo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791423612978,
+      "tag": "0005_silly_crusher_hogan",
+      "breakpoints": true
     }
   ]
 }

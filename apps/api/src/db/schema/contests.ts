@@ -44,6 +44,8 @@ export const contestProblems = pgTable(
       .notNull()
       .references(() => problemVersions.id),
     position: integer('position').notNull(),
+    /** Pulled from the contest (C-07): not shown, not accepted, not on the board. */
+    hidden: boolean('hidden').notNull().default(false),
   },
   (t) => [primaryKey({ columns: [t.contestId, t.label] })],
 );

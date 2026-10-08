@@ -83,6 +83,18 @@ export interface ContestStub {
   /** What `/board?view=frozen` answers (the resolver's starting point); the live rows when unset. */
   frozenRows?: BRow[];
   boardRequests: number;
+  /** Operations console (C-07). */
+  ops: {
+    summary: Record<string, unknown>;
+    dlq: Record<string, unknown>[];
+    hidden: Record<string, boolean>;
+    extended: number[];
+    rejudged: Record<string, unknown>[];
+    rebuilds: number;
+    requeued: string[];
+    /** Make the next extend fail with this message. */
+    extendError?: string;
+  };
   registers: string[];
   created: Record<string, unknown>[];
   patches: Record<string, unknown>[];
@@ -117,6 +129,41 @@ export async function stubContests(
       ],
     },
     boardRequests: 0,
+    ops: {
+      summary: {
+        serverNow: new Date().toISOString(),
+        lanes: [
+          { lane: 'contest', depth: 2 },
+          { lane: 'interactive', depth: 0 },
+          { lane: 'practice', depth: 5 },
+          { lane: 'rejudge', depth: 0 },
+        ],
+        workers: [
+          { id: 'judge-1', lanes: ['contest', 'practice'], busy: 1, concurrency: 2, ageMs: 1500 },
+          { id: 'judge-2', lanes: ['contest'], busy: 0, concurrency: 2, ageMs: 14000 },
+        ],
+        p50Ms: 1200,
+        p95Ms: 3400,
+        submissionsPerMin: 4.2,
+        dlq: 1,
+      },
+      dlq: [
+        {
+          entryId: '1700000000000-0',
+          reason: 'crash-loop',
+          error: 'worker died 3 times',
+          lane: 'contest',
+          submissionId: 'aaaaaaaa-1111-4111-8111-111111111111',
+          workerId: 'judge-1',
+          at: null,
+        },
+      ],
+      hidden: {},
+      extended: [],
+      rejudged: [],
+      rebuilds: 0,
+      requeued: [],
+    },
     clarifications: [
       {
         id: 'q1',
@@ -405,10 +452,12 @@ export async function stubContests(
     problems: st.problemPuts.length
       ? (st.problemPuts.at(-1) as { items: { label: string; slug: string }[] }).items.map((i) => ({
           label: i.label,
+          problemId: `pid-${i.label}`,
           slug: i.slug,
           title: 'Hop Distances',
           version: 1,
           validationStatus: 'passed',
+          hidden: st.ops.hidden[i.label] ?? false,
         }))
       : [],
   });
@@ -468,5 +517,43 @@ export async function stubContests(
     st.problemPuts.push(r.request().postDataJSON() as Record<string, unknown>);
     return json(r, admin());
   });
+  // ---- operations (C-07) ----
+  const ID = '11111111-1111-4111-8111-111111111111';
+  await page.route('**/api/admin/ops/summary', (r) => json(r, st.ops.summary));
+  await page.route('**/api/admin/dlq', (r) => json(r, { items: st.ops.dlq }));
+  await page.route('**/api/admin/dlq/*/requeue', (r) => {
+    const entry = r.request().url().split('/').at(-2)!;
+    st.ops.requeued.push(entry);
+    st.ops.dlq = st.ops.dlq.filter((d) => d.entryId !== entry);
+    return json(r, { lane: 'contest' });
+  });
+  await page.route(`**/api/admin/contests/${ID}/extend`, (r) => {
+    if (st.ops.extendError) {
+      const message = st.ops.extendError;
+      st.ops.extendError = undefined;
+      return json(r, { code: 'validation', title: message, status: 400, type: 'x' }, 400);
+    }
+    const { minutes } = r.request().postDataJSON() as { minutes: number };
+    st.ops.extended.push(minutes);
+    return json(r, {
+      endsAt: new Date(Date.now() + minutes * 60_000).toISOString(),
+      announcementId: 'n1',
+    });
+  });
+  await page.route(`**/api/admin/contests/${ID}/rebuild-board`, (r) => {
+    st.ops.rebuilds += 1;
+    return json(r, { version: 7 });
+  });
+  await page.route(`**/api/admin/contests/${ID}/problems/*/visibility`, (r) => {
+    const label = r.request().url().split('/').at(-2)!;
+    const { hidden } = r.request().postDataJSON() as { hidden: boolean };
+    st.ops.hidden[label] = hidden;
+    return json(r, { hidden });
+  });
+  await page.route('**/api/admin/rejudge', (r) => {
+    st.ops.rejudged.push(r.request().postDataJSON() as Record<string, unknown>);
+    return json(r, { queued: 3, skipped: 1, truncated: false });
+  });
+
   return st;
 }

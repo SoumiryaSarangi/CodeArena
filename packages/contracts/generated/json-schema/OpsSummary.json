@@ -1,0 +1,102 @@
+{
+  "$id": "OpsSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "dlq": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "lanes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "lane": {
+            "$ref": "Lane.json"
+          }
+        },
+        "required": [
+          "lane",
+          "depth"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "p50Ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "p95Ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "serverNow": {
+      "type": "string"
+    },
+    "submissionsPerMin": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "workers": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "ageMs": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "busy": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "concurrency": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lanes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "lanes",
+          "busy",
+          "concurrency",
+          "ageMs"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "serverNow",
+    "lanes",
+    "workers",
+    "p50Ms",
+    "p95Ms",
+    "submissionsPerMin",
+    "dlq"
+  ],
+  "type": "object"
+}

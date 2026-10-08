@@ -141,7 +141,7 @@ export class BoardService implements OnModuleDestroy {
     return this.db
       .select({ label: contestProblems.label, versionId: contestProblems.versionId })
       .from(contestProblems)
-      .where(eq(contestProblems.contestId, cid))
+      .where(and(eq(contestProblems.contestId, cid), eq(contestProblems.hidden, false)))
       .orderBy(asc(contestProblems.position));
   }
 

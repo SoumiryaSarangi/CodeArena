@@ -1,0 +1,1 @@
+ALTER TABLE "contest_problems" ADD COLUMN "hidden" boolean DEFAULT false NOT NULL;

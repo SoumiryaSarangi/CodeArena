@@ -1,0 +1,16 @@
+{
+  "$id": "ContestExtend.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "minutes": {
+      "maximum": 180,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "minutes"
+  ],
+  "type": "object"
+}

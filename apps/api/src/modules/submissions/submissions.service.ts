@@ -149,7 +149,13 @@ export class SubmissionsService {
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))
       .innerJoin(problemVersions, eq(problemVersions.id, contestProblems.versionId))
-      .where(and(eq(contestProblems.contestId, c.id), eq(contestProblems.label, body.label!)))
+      .where(
+        and(
+          eq(contestProblems.contestId, c.id),
+          eq(contestProblems.label, body.label!),
+          eq(contestProblems.hidden, false),
+        ),
+      )
       .limit(1);
     if (!row || !row.testsetHash) throw new ProblemError('not-found', 'No such problem');
     if (state === 'scheduled') {

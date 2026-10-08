@@ -14,6 +14,7 @@ import { adminContest, adminInbox, announce, answerClarification } from '@/lib/c
 import { subscribe } from '@/lib/realtime';
 import { cn } from '@/lib/cn';
 import { ActionError } from './problem-errors';
+import { OpsConsole } from './ops-console';
 
 /** Open questions first (oldest first: they have waited longest), then answered ones. */
 const order = (items: AdminClarificationItem[]) => {
@@ -27,9 +28,9 @@ const order = (items: AdminClarificationItem[]) => {
 };
 
 /**
- * S16, the part C-05 owns: the clarification inbox (answer privately or for everyone; `j`/`k` move,
- * `r` replies) and the announcement box. The rest of the ops console (extend, hide a problem,
- * rejudge, rebuild, workers) arrives with C-07.
+ * S16: the queue and judge panel with the contest actions (`OpsConsole`, C-07), the announcement
+ * box and the clarification inbox (answer privately or for everyone; `j`/`k` move, `r` replies;
+ * C-05).
  */
 export function ContestOps({ id }: { id: string }) {
   const [contest, setContest] = useState<AdminContestDetail | null>(null);
@@ -186,6 +187,8 @@ export function ContestOps({ id }: { id: string }) {
       <p role="status" className="text-13 text-v-ac">
         {sent}
       </p>
+
+      <OpsConsole contest={contest} onChanged={() => setAttempt((n) => n + 1)} />
 
       <form onSubmit={post} className="flex flex-col gap-2" aria-label="Announcement">
         <h2 className="text-16 font-medium">Announce to everyone</h2>

@@ -1,0 +1,18 @@
+{
+  "$id": "ContestExtendResult.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "announcementId": {
+      "type": "string"
+    },
+    "endsAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "endsAt",
+    "announcementId"
+  ],
+  "type": "object"
+}

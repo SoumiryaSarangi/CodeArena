@@ -170,10 +170,13 @@ export type ContestProblemDetail = z.infer<typeof ContestProblemDetail>;
 export const AdminContestProblem = z
   .object({
     label: z.string(),
+    problemId: z.string(),
     slug: z.string(),
     title: z.string(),
     version: z.number().int(),
     validationStatus: z.enum(['pending', 'running', 'passed', 'failed']).nullable(),
+    /** Hidden from contestants and the board (C-07). */
+    hidden: z.boolean(),
   })
   .strict();
 

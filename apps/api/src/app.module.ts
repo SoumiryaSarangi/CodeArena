@@ -8,6 +8,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContestsModule } from './modules/contests/contests.module';
+import { OpsModule } from './modules/ops/ops.module';
 import { ProblemsModule } from './modules/problems/problems.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
@@ -50,6 +51,7 @@ export class AppModule {
         ProblemsModule,
         SubmissionsModule,
         ContestsModule,
+        OpsModule,
         RealtimeModule,
         AdminModule,
         AiModule,

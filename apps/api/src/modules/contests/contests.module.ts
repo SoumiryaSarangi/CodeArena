@@ -14,6 +14,6 @@ import { MessagesService } from './messages.service';
   imports: [BoardModule],
   controllers: [ContestsController, ContestsAdminController, ClarificationsAdminController],
   providers: [ContestsService, MessagesService],
-  exports: [ContestsService],
+  exports: [ContestsService, MessagesService],
 })
 export class ContestsModule {}

@@ -135,16 +135,16 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 | GET `/api/admin/problem-versions/{vid}/tests.zip` | Setter (owner)/Admin | Download tests |
 | POST/PATCH `/api/admin/contests[/{id}]` | Admin | Create/edit contest |
 | PUT `/api/admin/contests/{id}/problems` | Admin | Set problem list (only validated versions) |
-| POST `/api/admin/contests/{id}/extend` | Admin | `{minutes}` + auto-announcement |
+| POST `/api/admin/contests/{id}/extend` | Admin | `{minutes}` (1–180) + auto-announcement. *As built (C-07):* refused once the contest is over or if it would pass 1023 minutes; the freeze time does not move; audit-logged. |
 | POST `/api/admin/contests/{id}/announcements` | Admin | Broadcast |
 | POST `/api/admin/clarifications/{id}/answer` | Admin | `{answer, isPublic}` |
-| POST `/api/admin/contests/{id}/problems/{label}/visibility` | Admin | Hide/unhide |
+| POST `/api/admin/contests/{id}/problems/{label}/visibility` | Admin | Hide/unhide, `{hidden}`. *As built (C-07):* `contest_problems.hidden` (migration 0005); a hidden problem is not listed, not accepted for submits and runs, and is dropped from the board, which is rebuilt. Re-saving the problem list resets it. |
 | POST `/api/admin/contests/{id}/finalize` | Admin | Finalize → ratings, reviews queued |
 | POST `/api/admin/contests/{id}/rebuild-board` | Admin | Rebuild from Postgres |
 | POST `/api/admin/contests/{id}/resolver/{start\|step\|auto\|stop}` | Admin | Resolver control. *As built (C-06): not built; the ceremony runs in the admin's browser from `GET /contests/{slug}/board?view=frozen` (admin: the frozen view) and the live board.* |
-| GET `/api/admin/ops/summary` | Admin | Lanes, workers, p50/p95, DLQ count, subs/min |
+| GET `/api/admin/ops/summary` | Admin | Lanes, workers, p50/p95, DLQ count, subs/min. *As built (C-07):* lane depth = jobs not yet read by the `judges` group; workers come from the `hb:*` heartbeats; times are submit→verdict over 15 min. |
 | GET `/api/admin/dlq` · POST `/api/admin/dlq/{entryId}/requeue` | Admin | DLQ |
-| POST `/api/admin/rejudge` | Admin | `{scope: submission\|problem\|contest, id, urgent?}` |
+| POST `/api/admin/rejudge` | Admin | `{scope: submission\|problem\|contest, id, urgent?}`. *As built (C-07):* `id` is a submission, problem or contest id; the run version goes up and a job for the original problem version goes to the `rejudge` lane (`contest` if urgent); submissions still waiting are skipped; at most 2000 per call (`truncated`); the old verdict stays until the new result arrives; audit-logged. Answer `{queued, skipped, truncated}`. |
 | POST `/api/admin/submissions/{id}/disqualify` | Admin | `{reason, clusterId}` → board recompute |
 | GET `/api/admin/audit` | Admin | Audit log |
 

@@ -1,0 +1,44 @@
+{
+  "$id": "DlqEntry.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "entryId": {
+      "type": "string"
+    },
+    "error": {
+      "type": "string"
+    },
+    "lane": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "submissionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "workerId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entryId",
+    "reason",
+    "error",
+    "lane",
+    "submissionId",
+    "workerId",
+    "at"
+  ],
+  "type": "object"
+}

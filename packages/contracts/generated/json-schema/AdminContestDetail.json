@@ -30,7 +30,13 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "hidden": {
+            "type": "boolean"
+          },
           "label": {
+            "type": "string"
+          },
+          "problemId": {
             "type": "string"
           },
           "slug": {
@@ -63,10 +69,12 @@
         },
         "required": [
           "label",
+          "problemId",
           "slug",
           "title",
           "version",
-          "validationStatus"
+          "validationStatus",
+          "hidden"
         ],
         "type": "object"
       },
