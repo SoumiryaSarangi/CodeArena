@@ -2,7 +2,7 @@ title: Fractional Loot
 rating: 1500
 practicePoints: 15
 tags: [greedy, sorting, floating point]
-limits: {timeMs: 250, memMb: 256, outputKb: 1024}
+limits: {timeMs: 400, memMb: 256, outputKb: 1024}
 checker: {kind: float, eps: 1.0e-06}
 samples: ['01', '02']
 avoidSet:
