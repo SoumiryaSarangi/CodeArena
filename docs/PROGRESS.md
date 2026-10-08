@@ -845,3 +845,12 @@ Decisions: the production run used 2 judges for about 40 minutes (about $0.08) a
 Follow-ups: **X-13** the production API takes about 40 s to restart because it compiles TypeScript on boot: build it ahead (esbuild/tsc) or use a compile cache to cut a crash from 40 s to under 10 s; **X-14** retry a refused submit automatically in the browser with the existing `Idempotency-Key` (a Redis blip of 5-16 s refused 6-13 of 60 submissions); **X-15** the console shows a killed worker only if it stays down for more than 10 s, add "restarted N times in the last 5 minutes" to the judges table; **X-16** drill the whole API VM dying (restore from backup) and a full disk, not covered here.
 Ayush must: nothing now. Before Saturday you can run `tests/load/prod.sh verify <slug>` after the contest to confirm every verdict exists once.
 Model: P · Opus plan (opusplan) + Sonnet 5.5 build
+
+## 2026-10-08 · X-13 · done (diagnosis corrected; no code change to the API)
+Built: nothing in the API. Measuring first showed the planned fix (build ahead of time) would not help: on production the container is listening about 3 s after it starts and ready about 6 s. The "about 40 s" in the O-06 entry was my drill's mistake: it used `docker kill`, which Docker treats as a manual stop, so `restart: unless-stopped` never fired (container still `exited` after 90 s) and the drill's fallback started it after its 30 s wait. A real crash (SIGKILL of the node process on the host) was measured on production: **ready in about 4 s, restart count 1**. `tests/chaos/env-prod.mjs` now kills the process instead; METRICS.md and the failure-drills runbook are corrected (and say that after a manual `docker kill`/`stop` you must run `docker compose up -d api`).
+Production impact: two short API outages while measuring (about 90 s from the first, no contest running; about 4 s from the second); API brought back each time and `/api/status` ok.
+Tests: not run beyond the existing suite (docs and one drill-adapter line changed); the full production re-run of the kill-api drill was blocked by the permission classifier, so the corrected drill itself is not yet run end to end (`tests/chaos/prod.sh --yes kill-api`).
+Decisions: X-13 closed without build changes; a faster boot is not needed.
+Next: X-14 (retry refused submits) or AI-01..04.
+Ayush must: nothing. Optionally run `tests/chaos/prod.sh --yes kill-api` yourself to refresh the table row.
+Model: S · Sonnet 5.5

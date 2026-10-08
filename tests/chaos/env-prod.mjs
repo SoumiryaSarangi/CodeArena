@@ -161,8 +161,13 @@ export async function prodEnv({ minJudges = 2 } = {}) {
       return performance.now() - t0;
     },
     async killApi() {
-      ssh(`docker kill ${containerId('api')}`);
-      // `restart: unless-stopped` should bring it back; if it does not within 30 s, do what an operator would.
+      // A crash, not `docker kill`: Docker treats a manual kill as a stop and never restarts the container
+      // (measured: still down after 90 s), while a process that dies is restarted by `unless-stopped`.
+      must(
+        ssh(`sudo -n kill -9 $(docker inspect -f '{{.State.Pid}}' ${containerId('api')})`),
+        'kill the API process',
+      );
+      // If it does not come back within 30 s, do what an operator would.
       const up = await waitUntil(ready, { timeoutMs: 30_000, everyMs: 500 });
       if (!up.ok) ssh(compose('up -d api'));
     },
