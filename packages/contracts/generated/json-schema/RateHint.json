@@ -1,0 +1,14 @@
+{
+  "$id": "RateHint.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "helpful": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "helpful"
+  ],
+  "type": "object"
+}

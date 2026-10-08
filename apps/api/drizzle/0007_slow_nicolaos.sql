@@ -1,0 +1,1 @@
+ALTER TABLE "problem_versions" ADD COLUMN "avoid_set" jsonb DEFAULT '{}'::jsonb NOT NULL;

@@ -1,0 +1,68 @@
+{
+  "$id": "HintState.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "disabledReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effectivePoints": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "levels": {
+      "items": {
+        "$ref": "HintItem.json"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "type": "array"
+    },
+    "penaltyPercent": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "practicePoints": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "remainingThisHour": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "enabled",
+    "disabledReason",
+    "levels",
+    "practicePoints",
+    "effectivePoints",
+    "penaltyPercent",
+    "remainingThisHour"
+  ],
+  "type": "object"
+}

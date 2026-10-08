@@ -155,6 +155,7 @@ export class ProblemImporter {
         isDeepStrictEqual(last.limits, pkg.limits) &&
         isDeepStrictEqual(last.checker, checker) &&
         isDeepStrictEqual(last.samples, pkg.samples) &&
+        isDeepStrictEqual(last.avoidSet, pkg.avoidSet) &&
         (last.validatorUri === null || last.validatorUri === validatorUri) &&
         problem!.difficulty === pkg.rating &&
         JSON.stringify(await this.solutionsOf(tx, last.id)) ===
@@ -201,6 +202,7 @@ export class ProblemImporter {
           validatorUri,
           testsCount: pkg.tests.length,
           samples: pkg.samples,
+          avoidSet: pkg.avoidSet,
           createdBy: opts.actorId ?? null,
         })
         .returning({ id: problemVersions.id });

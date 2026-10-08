@@ -107,6 +107,23 @@ export class AiLedger {
     return { ok: false, retryAfterS: Math.max(1, (window + 1) * windowS - Math.floor(now / 1000)) };
   }
 
+  /** Uses made so far in the current window of a `take` counter (for "N left this hour"). */
+  async count(scope: string, key: string, windowS: number, now = Date.now()): Promise<number> {
+    await whenReady(this.redis);
+    const window = Math.floor(now / 1000 / windowS);
+    return Number((await this.redis.get(this.k('rl', scope, key, window))) ?? 0);
+  }
+
+  /** A short exclusive lock (one generation at a time per user, problem and level). */
+  async tryLock(key: string, ttlS: number): Promise<boolean> {
+    await whenReady(this.redis);
+    return (await this.redis.set(this.k('lock', key), '1', 'EX', ttlS, 'NX')) === 'OK';
+  }
+
+  async unlock(key: string) {
+    await this.redis.del(this.k('lock', key));
+  }
+
   /** Token accounting per feature, model and day (FR-AI-10). */
   async account(feature: string, model: string, usage: Usage, now = Date.now()) {
     const k = this.k('usage', dayKey(now));

@@ -44,6 +44,8 @@ export const problemVersions = pgTable(
     /** `s3://<bucket>/validators/<sha256>.cpp`: the testlib validator, run on every input by a validation run (FR-PROB-04). Null for versions imported before UI-04. */
     validatorUri: text('validator_uri'),
     testsCount: integer('tests_count').notNull().default(0),
+    /** AI-02: `{"1": [terms], "2": [terms]}`: words a hint of that level or lower must not use (setter-defined). */
+    avoidSet: jsonb('avoid_set').notNull().default({}),
     samples: jsonb('samples').notNull().default([]),
     validationStatus: validationStatus('validation_status').notNull().default('pending'),
     validatedAt: ts('validated_at'),

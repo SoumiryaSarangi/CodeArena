@@ -309,6 +309,7 @@ export class AdminProblemsService {
             validatorUri: last.validatorUri,
             testsCount: last.testsCount,
             samples: last.samples,
+            avoidSet: last.avoidSet,
             // Same tests, solutions, limits and checker: whatever was proved still holds.
             validationStatus:
               last.validationStatus === 'running' ? 'pending' : last.validationStatus,

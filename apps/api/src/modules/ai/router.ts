@@ -61,7 +61,7 @@ export function providersFromConfig(c: Pick<Config, 'GROQ_API_KEY' | 'GEMINI_API
 @Injectable()
 export class AiRouter {
   readonly settings: AiSettings;
-  private readonly providers: Partial<Record<ProviderName, Provider>>;
+  private providers: Partial<Record<ProviderName, Provider>>;
   private readonly sleep: (ms: number) => Promise<void>;
 
   constructor(
@@ -74,6 +74,11 @@ export class AiRouter {
     this.settings = aiSettings(config);
     this.providers = providers ?? providersFromConfig(config);
     this.sleep = sleep ?? defaultSleep;
+  }
+
+  /** Test seam: replaces the providers (the real ones need keys and network). */
+  useProviders(providers: Partial<Record<ProviderName, Provider>>) {
+    this.providers = providers;
   }
 
   /** True if at least one configured provider appears in some chain (otherwise AI is switched off). */
