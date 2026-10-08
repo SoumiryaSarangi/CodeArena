@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import {
@@ -54,8 +55,9 @@ export class ContestsController {
 
   @Public()
   @Get(':slug/board')
-  board(@Req() req: Request, @Param('slug') slug: string) {
-    return this.contests.boardOf(slug, req.user);
+  board(@Req() req: Request, @Param('slug') slug: string, @Query('view') view?: string) {
+    // `?view=frozen` is for the resolver and only changes anything for an admin (C-06).
+    return this.contests.boardOf(slug, req.user, view === 'frozen' ? 'frozen' : undefined);
   }
 
   @Get(':slug/clarifications')

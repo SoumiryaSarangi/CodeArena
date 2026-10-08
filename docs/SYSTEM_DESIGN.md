@@ -260,6 +260,8 @@ All steps run in one Lua script per update for atomicity.
 - Steps are deterministic and replayable from the submissions table.
 - *As built (C-02):* there is no `COPY` at `freeze_at`. `board:{cid}:frozen` and `board:{cid}:frozen:cells` are kept up to date with every update, computed from the same submissions with every attempt made after the freeze shown as pending. Non-admins read them from `freeze_at` until the contest is finalized; a signed-in contestant sees their own cells live in place of the frozen ones (rank and totals stay frozen; FR-BOARD-05).
 
+- *As built (C-06):* the resolver is a pure function in the web app (`apps/web/lib/resolver.ts`), not server state: the admin's browser reads the frozen view (`?view=frozen`) and the live view and walks one to the other, bottom rank first and leftmost cell first, with the packed score recomputed per step. Nothing is written to `resolver:{cid}`. It is deterministic, so a replay gives the same sequence, and its end equals the live board (tested on 200 random contests).
+
 ### 5.7 Realtime connection
 
 ```mermaid

@@ -80,6 +80,8 @@ export interface ContestStub {
   announcements: { id: string; body: string; createdAt: string }[];
   /** What `/board` answers; tests change it between requests. */
   board: { version: number; frozen: boolean; rows: BRow[] };
+  /** What `/board?view=frozen` answers (the resolver's starting point); the live rows when unset. */
+  frozenRows?: BRow[];
   boardRequests: number;
   registers: string[];
   created: Record<string, unknown>[];
@@ -311,9 +313,8 @@ export async function stubContests(
     });
   });
 
-  await page.route('**/api/contests/warm-up-1/board', (r) => {
-    st.boardRequests += 1;
-    const rows = rankRows(st.board.rows);
+  const boardJson = (r: Route, source: BRow[]) => {
+    const rows = rankRows(source);
     return json(r, {
       contestId: 'cid-1',
       serverNow: serverNow().toISOString(),
@@ -326,7 +327,14 @@ export async function stubContests(
       })),
       rows,
     });
+  };
+  await page.route('**/api/contests/warm-up-1/board', (r) => {
+    st.boardRequests += 1;
+    return boardJson(r, st.board.rows);
   });
+  await page.route(/\/api\/contests\/warm-up-1\/board\?view=frozen$/, (r) =>
+    boardJson(r, st.frozenRows ?? st.board.rows),
+  );
 
   const strip = (c: Clar) => {
     const { askerId, askerHandle, ...rest } = c;

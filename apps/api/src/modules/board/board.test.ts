@@ -511,6 +511,25 @@ describe.skipIf(!ready)('C-02: leaderboard engine (needs the Compose Postgres an
     expect(live.body.rows[0].cells.A).toMatchObject({ attempts: 1, acMinute: 120 });
   });
 
+  it('FR-BOARD-06: ?view=frozen gives an admin the public view (the resolver start); others are unchanged', async () => {
+    const { c, start } = await makeContest({ count: 1, ago: 200, freezeAfter: 100 });
+    const a = pool[0]!;
+    await register(c.id, a.id);
+    await processor.handle(result(await addSub(c.id, start, a.id, 0, 120, 100), 'AC'));
+    const url = `/contests/${c.slug}/board?view=frozen`;
+    const asAdmin = await call('get', url, admin.token);
+    expect(asAdmin.body.frozen).toBe(true);
+    expect(asAdmin.body.rows[0]).toMatchObject({ solved: 0 });
+    expect(asAdmin.body.rows[0].cells.A).toMatchObject({ acMinute: null, pending: 1 });
+    // The live view is still the default for an admin.
+    expect((await call('get', `/contests/${c.slug}/board`, admin.token)).body.rows[0].solved).toBe(
+      1,
+    );
+    // The owner's own live overlay is not something the parameter can switch off or on for others.
+    const own = await call('get', url, a.token);
+    expect(own.body.rows[0].cells.A).toMatchObject({ acMinute: 120 });
+  });
+
   it('a draft board is 404 for everyone but admins; before the start rows are empty', async () => {
     const { c } = await makeContest({ status: 'draft' });
     expect((await call('get', `/contests/${c.slug}/board`)).status).toBe(404);

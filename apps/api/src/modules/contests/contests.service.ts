@@ -280,9 +280,9 @@ export class ContestsService {
   }
 
   /** GET /contests/{slug}/board (C-02): public once published; frozen view per FR-BOARD-05. */
-  async boardOf(slug: string, viewer?: Viewer): Promise<BoardSnapshot> {
+  async boardOf(slug: string, viewer?: Viewer, view?: 'frozen'): Promise<BoardSnapshot> {
     const c = await this.bySlug(slug, viewer);
-    return this.board.snapshot(c, viewer);
+    return this.board.snapshot(c, viewer, view);
   }
 
   /** POST /admin/contests/{id}/rebuild-board (FR-BOARD-08). */

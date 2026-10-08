@@ -63,11 +63,17 @@ export const putContestProblems = (id: string, body: ContestProblemsPut) =>
     auth: 'required',
   });
 
-export const boardSnapshot = (slug: string, signal?: AbortSignal) =>
-  apiFetch<BoardSnapshot>('GET', `/contests/${enc(slug)}/board`, undefined, {
-    auth: 'optional',
-    signal,
-  });
+/** `view: 'frozen'` is for the resolver and only differs from the live board for an admin. */
+export const boardSnapshot = (slug: string, signal?: AbortSignal, view?: 'frozen') =>
+  apiFetch<BoardSnapshot>(
+    'GET',
+    `/contests/${enc(slug)}/board${view ? `?view=${view}` : ''}`,
+    undefined,
+    {
+      auth: 'optional',
+      signal,
+    },
+  );
 
 export const contestProblem = (slug: string, label: string, signal?: AbortSignal) =>
   apiFetch<ContestProblemDetail>(

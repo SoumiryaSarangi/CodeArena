@@ -377,8 +377,9 @@ export class BoardService implements OnModuleDestroy {
   }
 
   /** Whether `viewer` gets the frozen (public) view right now (PRD §9.2, FR-BOARD-05). */
-  static frozenFor(c: ContestRow, now: Date, viewer?: BoardViewer) {
-    if (viewer?.role === 'admin') return false;
+  static frozenFor(c: ContestRow, now: Date, viewer?: BoardViewer, forceFrozen = false) {
+    // An admin sees the live board, except when asking for the frozen one (the resolver, C-06).
+    if (viewer?.role === 'admin') return forceFrozen;
     return c.freezeAt !== null && now >= c.freezeAt && c.status !== 'finalized';
   }
 
@@ -412,19 +413,21 @@ export class BoardService implements OnModuleDestroy {
   }
 
   /** GET /contests/{slug}/board: the whole board for this viewer. */
-  async snapshot(c: ContestRow, viewer?: BoardViewer): Promise<BoardSnapshot> {
+  async snapshot(c: ContestRow, viewer?: BoardViewer, view?: 'frozen'): Promise<BoardSnapshot> {
     return tracer.startActiveSpan('board.snapshot', async (span) => {
       try {
         const now = new Date();
         const k = this.keys(c.id);
         if ((await this.redis.exists(k.live)) === 0) await this.rebuild(c.id, 'missing');
-        const frozen = BoardService.frozenFor(c, now, viewer);
+        const frozen = BoardService.frozenFor(c, now, viewer, view === 'frozen');
         const zkey = frozen ? k.frozen : k.live;
         const hkey = frozen ? k.frozenCells : k.cells;
         const [scored, cells, liveCells, version, problems, people] = await Promise.all([
           this.redis.zrevrange(zkey, 0, -1, 'WITHSCORES'),
           this.redis.hgetall(hkey),
-          frozen && viewer ? this.redis.hgetall(k.cells) : Promise.resolve(null),
+          frozen && viewer && viewer.role !== 'admin'
+            ? this.redis.hgetall(k.cells)
+            : Promise.resolve(null),
           this.redis.get(k.version),
           this.problemsOf(c.id),
           this.db

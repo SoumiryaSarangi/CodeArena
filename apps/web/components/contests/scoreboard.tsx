@@ -184,6 +184,11 @@ export function Scoreboard({ slug }: { slug: string }) {
           <Button asChild variant="ghost" size="sm">
             <Link href={`/c/${slug}`}>Contest page</Link>
           </Button>
+          {admin && (contest.state === 'ended' || contest.state === 'finalized') ? (
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/c/${slug}/board?present=1`}>Present resolver</Link>
+            </Button>
+          ) : null}
           {meInRows ? (
             <Button size="sm" onClick={jumpToMe}>
               Jump to me

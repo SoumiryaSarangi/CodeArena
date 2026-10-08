@@ -710,3 +710,11 @@ Decisions: a public answer shows the question to everyone (the asker stays anony
 Next: C-06 resolver ceremony (tag S), then C-07 ops console (extend, hide a problem, rejudge, rebuild-board button), then C-08 ratings (S·high). Warm-up #1 can already run with C-01 to C-05.
 Ayush must: nothing new. For Warm-up #1: after creating the contest, open `/admin/contests/<id>/ops` on the day to answer questions and make announcements.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · C-06 · done
+Built: **Web**: resolver ceremony at `/c/[slug]/board?present=1` (admins; "Present resolver" button on the scoreboard after the end): full-screen presenter view, Space = next reveal, A = auto (1.2 s), Esc = exit, plus Next / Auto / Skip to final / Start over / Exit buttons, "Revealing n/total" counter, spoken result of each reveal, rows glide (off under reduced motion). `lib/resolver.ts` is a pure stepper (lowest-ranked row with a difference, leftmost differing cell, packed score recomputed, re-rank). **API**: `GET /contests/{slug}/board?view=frozen` gives an admin the frozen (public) view; it changes nothing for anyone else.
+Tests: web unit 90 (5 new: 200 random contests end exactly on the live board, step order property over 60 more, a solve moving a row, no steps when nothing was frozen, score edges); API 229 (1 new: `?view=frozen`); Playwright 158 (10 new: Space-by-Space order, end equals the live scoreboard cell by cell, auto mode, start over and Esc, admin-only and the presenter link, no steps, axe dark/light at 1280 and 390), three runs in a row stable. Mutation check (reveal from the top rank): caught. Covers FR-BOARD-06.
+Decisions: the ceremony state is client-side (it is the admin's shared screen), so the SRS `resolver/{start|step|auto|stop}` endpoints and `resolver:{cid}` are not built (noted in SRS, SD, UI_UX); a reload restarts it; the end equals the unfrozen board by construction and by test. `pnpm check`'s prettier step still flags Ayush's uncommitted `apps/web/next-env.d.ts` (not touched).
+Next: C-07 admin contest ops console (tag S): extend, hide a problem, rejudge, rebuild-board button, lane depths, workers, DLQ. Then C-08 ratings (S·high, needs `/effort high`).
+Ayush must: try it once on the dry-run contest after it ends (open the scoreboard as admin → Present resolver) so you know the keys before Saturday 9:15 PM.
+Model: S · Sonnet 5.5

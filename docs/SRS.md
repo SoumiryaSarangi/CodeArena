@@ -141,7 +141,7 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 | POST `/api/admin/contests/{id}/problems/{label}/visibility` | Admin | Hide/unhide |
 | POST `/api/admin/contests/{id}/finalize` | Admin | Finalize → ratings, reviews queued |
 | POST `/api/admin/contests/{id}/rebuild-board` | Admin | Rebuild from Postgres |
-| POST `/api/admin/contests/{id}/resolver/{start\|step\|auto\|stop}` | Admin | Resolver control |
+| POST `/api/admin/contests/{id}/resolver/{start\|step\|auto\|stop}` | Admin | Resolver control. *As built (C-06): not built; the ceremony runs in the admin's browser from `GET /contests/{slug}/board?view=frozen` (admin: the frozen view) and the live board.* |
 | GET `/api/admin/ops/summary` | Admin | Lanes, workers, p50/p95, DLQ count, subs/min |
 | GET `/api/admin/dlq` · POST `/api/admin/dlq/{entryId}/requeue` | Admin | DLQ |
 | POST `/api/admin/rejudge` | Admin | `{scope: submission\|problem\|contest, id, urgent?}` |
