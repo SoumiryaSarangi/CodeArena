@@ -26,8 +26,9 @@ say "building the worker"
 (cd "$ROOT/apps/worker" && go build -o "$TMP/worker" .)
 
 say "starting the API on :$PORT and one worker"
+# `node --import tsx` is one process (npx would leave a child behind when the script ends).
 (cd "$ROOT/apps/api" && PORT="$PORT" NODE_ENV=development LOG_LEVEL=warn RATE_LIMIT_DEFAULT_PER_MIN=100000 \
-  npx tsx src/main.ts >"$TMP/api.log" 2>&1) &
+  exec node --import tsx src/main.ts >"$TMP/api.log" 2>&1) &
 PIDS+=("$!")
 env -i PATH="$PATH" HOME="$HOME" \
   REDIS_URL="redis://judge:judge-dev@localhost:6379" \

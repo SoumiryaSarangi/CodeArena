@@ -5,6 +5,7 @@
 //
 //   node scripts/metrics-report.mjs --run run.json --report report.json --label "judges=1" [--scale scale.json]
 //        [--out docs/METRICS.md]
+//   node scripts/metrics-report.mjs --drills drills.json [--out docs/METRICS.md]       (O-06 failure drills)
 //
 // run.json    from tests/load/burst.mjs run     (what a client saw)
 // report.json from load-cli report              (what the database recorded)
@@ -156,12 +157,77 @@ export function update(doc, parts) {
   return withBlock.replace(SUMMARY, summaryTable(withBlock));
 }
 
+const DRILL_HEADING = '## Failure drills (O-06)';
+const DRILL_INTRO = `Each drill judges a real contest of fake users, injects one fault and waits until every accepted
+submission has a verdict. **Detected** = the first signal an operator would see (a judge gone from the ops
+summary, a failed health check, a dead letter); **healthy** = the API answers again; **all judged** = the
+fault until every accepted submission had its verdict; **after the last submit** = how long the last verdict took once submissions stopped (the lag the fault left behind). A drill passes only if every verdict exists exactly
+once, nothing is stuck and the board equals the rebuild from Postgres (NFR-REL-01, FR-BOARD-03).`;
+const sec = (v) => (v === null || v === undefined ? 'no signal' : `${v} s`);
+
+/** The block for one environment's drills. */
+export function renderDrills({ environment, at, results }) {
+  const key = keyOf(environment);
+  const lines = [
+    `<!-- drills:${key} -->`,
+    `### ${environment}`,
+    '',
+    `Run ${String(at).slice(0, 16).replace('T', ' ')} UTC.`,
+    '',
+  ];
+  lines.push(
+    '| Drill | Fault | Detected after | Healthy after | All judged after | After the last submit | Accepted / refused | Result |',
+  );
+  lines.push('|---|---|---|---|---|---|---|---|');
+  for (const r of results) {
+    const subs = r.submissions
+      ? `${r.submissions.accepted} / ${r.submissions.refusedDuringFault}`
+      : '–';
+    lines.push(
+      `| ${r.title} | ${r.fault ?? ''} | ${sec(r.detectSeconds)} | ${sec(r.healthySeconds ?? null)} | ${sec(r.recoverSeconds ?? null)} | ${sec(r.tailSeconds ?? null)} | ${subs} | ${r.pass ? '✓ pass' : '✗ FAIL'} |`,
+    );
+  }
+  const bad = results.filter((r) => !r.pass);
+  if (bad.length > 0) {
+    lines.push('', 'What failed:');
+    for (const r of bad) {
+      for (const c of r.checks.filter((x) => !x.ok))
+        lines.push(`- ${r.scenario}: ${c.name}${c.detail ? ` (${c.detail})` : ''}`);
+      if (r.error) lines.push(`- ${r.scenario}: ${r.error.split('\n')[0]}`);
+    }
+  }
+  const notes = results.flatMap((r) => (r.notes ?? []).map((n) => `${r.scenario}: ${n}`));
+  if (notes.length > 0) lines.push('', ...notes.map((n) => `- ${n}`));
+  lines.push(`<!-- /drills:${key} -->`);
+  return lines.join('\n');
+}
+
+/** Adds or replaces the drill block of this environment under the drills heading. */
+export function updateDrills(doc, drills) {
+  const base = doc.trim() === '' ? HEADER : doc;
+  const key = keyOf(drills.environment);
+  const block = renderDrills(drills);
+  const re = new RegExp(`<!-- drills:${key} -->[\\s\\S]*?<!-- /drills:${key} -->`);
+  if (re.test(base)) return base.replace(re, block);
+  const withHeading = base.includes(DRILL_HEADING)
+    ? base
+    : `${base.trimEnd()}\n\n${DRILL_HEADING}\n\n${DRILL_INTRO}\n`;
+  return `${withHeading.trimEnd()}\n\n${block}\n`;
+}
+
 function main() {
   const rest = process.argv.slice(2);
   const arg = (n) => {
     const i = rest.indexOf(`--${n}`);
     return i >= 0 ? rest[i + 1] : undefined;
   };
+  if (arg('drills')) {
+    const out = arg('out') ?? 'docs/METRICS.md';
+    const doc = existsSync(out) ? readFileSync(out, 'utf8') : '';
+    writeFileSync(out, updateDrills(doc, JSON.parse(readFileSync(arg('drills'), 'utf8'))));
+    console.log(`updated ${out} (failure drills)`);
+    return;
+  }
   const runFile = arg('run');
   const reportFile = arg('report');
   const label = arg('label');

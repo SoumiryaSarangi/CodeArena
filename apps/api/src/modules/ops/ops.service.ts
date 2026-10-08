@@ -342,7 +342,38 @@ export class OpsService {
         void seq;
         void jobId;
         void enqueuedAt;
-        await this.queue.enqueue(job);
+        // O-06: an `execution-failed` job has already stored an SE verdict for its run version (the
+        // worker publishes SE, then dead-letters it). Putting it back with the same version would
+        // have its result thrown away as a duplicate, so the contestant would stay on SE: a
+        // submission that already has a verdict gets a new run version, like a rejudge.
+        let runVersion = job.runVersion;
+        const bumped = await this.db
+          .update(submissions)
+          .set({ currentRunVersion: sql`${submissions.currentRunVersion} + 1` })
+          .where(
+            and(
+              eq(submissions.id, job.submissionId),
+              inArray(submissions.status, ['done', 'failed']),
+            ),
+          )
+          .returning({ runVersion: submissions.currentRunVersion });
+        if (bumped[0]) runVersion = bumped[0].runVersion;
+        try {
+          await this.queue.enqueue({ ...job, runVersion });
+        } catch (e) {
+          if (bumped[0]) {
+            await this.db
+              .update(submissions)
+              .set({ currentRunVersion: sql`${submissions.currentRunVersion} - 1` })
+              .where(
+                and(
+                  eq(submissions.id, job.submissionId),
+                  eq(submissions.currentRunVersion, bumped[0].runVersion),
+                ),
+              );
+          }
+          throw e;
+        }
         await this.redis.xdel(key, entryId);
         await this.audit(actor, 'dlq.requeue', 'job', entryId, { submissionId: job.submissionId });
         actions.add(1, { action: 'dlq-requeue' });

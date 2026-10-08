@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { keyOf, renderRun, summaryTable, update, upsertBlock } from './metrics-report.mjs';
+import {
+  keyOf,
+  renderDrills,
+  renderRun,
+  summaryTable,
+  update,
+  updateDrills,
+  upsertBlock,
+} from './metrics-report.mjs';
 
 const stat = (p50, p95, max, mean = p50) => ({ n: 10, mean, p50, p95, max });
 const run = (judges) => ({
@@ -77,4 +85,84 @@ test('O-03: upsertBlock leaves other keys untouched and keyOf makes safe markers
   const doc = upsertBlock('# x\n', 'a', '<!-- load:a -->\nA\n<!-- /load:a -->');
   const doc2 = upsertBlock(doc, 'b', '<!-- load:b -->\nB\n<!-- /load:b -->');
   assert.match(upsertBlock(doc2, 'a', '<!-- load:a -->\nA2\n<!-- /load:a -->'), /A2[\s\S]*B/);
+});
+
+const drill = (scenario, pass, over = {}) => ({
+  scenario,
+  title: `Drill ${scenario}`,
+  fault: 'kill -9',
+  pass,
+  detectSeconds: 4.2,
+  healthySeconds: 0.1,
+  recoverSeconds: 27.6,
+  tailSeconds: 2.5,
+  submissions: { sent: 60, accepted: 60, refusedDuringFault: 0 },
+  checks: pass
+    ? []
+    : [
+        {
+          name: 'the board equals the rebuild from Postgres',
+          ok: false,
+          detail: 'u1: score 5 before, 4 after',
+        },
+      ],
+  notes: [],
+  ...over,
+});
+
+test('O-06: a drills block has a row per drill with the three timings and the result', () => {
+  const b = renderDrills({
+    environment: 'local',
+    at: '2026-10-08T15:00:00Z',
+    results: [drill('kill-worker', true), drill('kill-api', true, { detectSeconds: null })],
+  });
+  assert.match(b, /<!-- drills:local -->/);
+  assert.match(
+    b,
+    /\| Drill kill-worker \| kill -9 \| 4\.2 s \| 0\.1 s \| 27\.6 s \| 2\.5 s \| 60 \/ 0 \| ✓ pass \|/,
+  );
+  assert.match(b, /\| Drill kill-api \|.*no signal/);
+  assert.doesNotMatch(b, /What failed/);
+});
+
+test('O-06: a failed drill says which check failed, and a note is kept', () => {
+  const b = renderDrills({
+    environment: 'production',
+    at: '2026-10-08T15:00:00Z',
+    results: [drill('kill-worker', false, { notes: ['killed judge-0'] })],
+  });
+  assert.match(b, /✗ FAIL/);
+  assert.match(
+    b,
+    /kill-worker: the board equals the rebuild from Postgres \(u1: score 5 before, 4 after\)/,
+  );
+  assert.match(b, /- kill-worker: killed judge-0/);
+});
+
+test('O-06: each environment has its own block under one heading; a rerun replaces only its own', () => {
+  let doc = updateDrills('# Metrics\n\nnotes\n', {
+    environment: 'local',
+    at: '2026-10-08T15:00:00Z',
+    results: [drill('a', true)],
+  });
+  doc = updateDrills(doc, {
+    environment: 'production',
+    at: '2026-10-08T16:00:00Z',
+    results: [drill('a', false)],
+  });
+  assert.equal(doc.match(/## Failure drills \(O-06\)/g).length, 1);
+  assert.equal(doc.match(/<!-- drills:/g).length, 2);
+  const rerun = updateDrills(doc, {
+    environment: 'local',
+    at: '2026-10-09T09:00:00Z',
+    results: [drill('b', true)],
+  });
+  assert.equal(rerun.match(/<!-- drills:local -->/g).length, 1);
+  assert.match(rerun, /Drill b/);
+  assert.doesNotMatch(
+    rerun,
+    /Drill a \| kill -9 \| 4\.2 s \| 0\.1 s \| 27\.6 s \| 2\.5 s \| 60 \/ 0 \| ✓ pass/,
+  );
+  assert.match(rerun, /✗ FAIL/); // production untouched
+  assert.match(rerun, /notes/);
 });

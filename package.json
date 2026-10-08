@@ -23,7 +23,8 @@
     "problems:validate": "scripts/validate-problem problems/",
     "problems:stress": "python3 scripts/stress-test.py",
     "attack": "scripts/attack",
-    "load:test": "node --test tests/load/lib.test.mjs scripts/metrics-report.test.mjs",
+    "load:test": "node --test tests/load/lib.test.mjs tests/chaos/lib.test.mjs scripts/metrics-report.test.mjs",
+    "chaos:local": "node tests/chaos/drill.mjs local",
     "load:local": "tests/load/local.sh"
   },
   "devDependencies": {

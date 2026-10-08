@@ -23,6 +23,7 @@ import { ResultsProcessor } from '../submissions/results.processor';
 import { createTestDatabase, postgresReachable } from '../../test/db';
 import { ACCESS_TOKENS, type AccessTokens } from '../auth/keys';
 import { parsePackage, readPackageDirectory } from '../problems/package';
+import { buildJob } from '../submissions/job-builder';
 import { ProblemImporter } from '../problems/problems.import';
 
 const config = loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' });
@@ -503,6 +504,85 @@ describe.skipIf(!ready)(
       expect(
         (await db.select().from(auditLog).where(eq(auditLog.action, 'dlq.requeue'))).length,
       ).toBe(1);
+    });
+
+    /** A dead-lettered job for a submission, as the worker writes it (`execution-failed`). */
+    const deadJob = async (id: string, runVersion: number) => {
+      const row = await subRow(id);
+      const [v] = await db
+        .select()
+        .from(problemVersions)
+        .where(eq(problemVersions.id, row.problemVersionId));
+      const job = buildJob(
+        { id, language: 'cpp17', source: 'int main(){}', lane: 'contest', runVersion },
+        {
+          problemId: '',
+          title: '',
+          id: v!.id,
+          testsetHash: v!.testsetHash,
+          testsetUri: v!.testsetUri,
+          limits: v!.limits,
+          checker: v!.checker,
+          samples: v!.samples,
+        } as never,
+        'submit',
+      );
+      const raw = JSON.stringify({
+        ...job,
+        seq: 1,
+        jobId: `j-${id}`,
+        enqueuedAt: 1,
+        traceparent: `00-${'1'.repeat(32)}-${'2'.repeat(16)}-01`,
+      });
+      return redis.xadd(
+        `${prefix}jobs:dlq`,
+        '*',
+        'job',
+        raw,
+        'reason',
+        'execution-failed',
+        'error',
+        'testset missing',
+        'workerId',
+        'w1',
+        'lane',
+        'contest',
+        'entry',
+        '9-0',
+        'ts',
+        String(Date.now()),
+      );
+    };
+
+    it('O-06: re-queueing a dead job whose run already stored a verdict starts a new run, so the new verdict counts', async () => {
+      const u = await makeUser();
+      const id = await addSub(u.id, P1, { status: 'queued', verdict: null, judgedAt: null });
+      const processor = app.get(ResultsProcessor);
+      // What the worker does with a job it cannot run: publishes SE, then dead-letters it.
+      expect((await processor.handle(result(id, 'SE', 1))).kind).toBe('applied');
+      const entry = await deadJob(id, 1);
+
+      const ok = await call('post', `/admin/dlq/${entry}/requeue`, admin.token);
+      expect(ok.status).toBe(200);
+      expect((await subRow(id)).currentRunVersion).toBe(2);
+      const queued = (await jobs('contest')).filter((j) => j.submissionId === id);
+      expect(queued).toEqual([expect.objectContaining({ runVersion: 2 })]);
+
+      // The retry's result is for run 2: it replaces the SE instead of being thrown away as a duplicate.
+      expect((await processor.handle(result(id, 'AC', 2))).kind).toBe('applied');
+      expect((await subRow(id)).verdict).toBe('AC');
+      expect((await redis.xrange(`${prefix}jobs:dlq`, entry!, entry!)).length).toBe(0);
+    });
+
+    it('O-06: re-queueing a dead job whose submission has no verdict yet keeps its run version', async () => {
+      const u = await makeUser();
+      const id = await addSub(u.id, P1, { status: 'judging', verdict: null, judgedAt: null });
+      const entry = await deadJob(id, 1);
+      expect((await call('post', `/admin/dlq/${entry}/requeue`, admin.token)).status).toBe(200);
+      expect((await subRow(id)).currentRunVersion).toBe(1);
+      expect((await jobs('contest')).filter((j) => j.submissionId === id)).toEqual([
+        expect.objectContaining({ runVersion: 1 }),
+      ]);
     });
   },
 );
