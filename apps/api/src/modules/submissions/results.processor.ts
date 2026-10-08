@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { JudgeResult, type SubmissionVerdictData } from '@codearena/contracts';
-import { metrics, trace } from '@opentelemetry/api';
+import { context, metrics, trace } from '@opentelemetry/api';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
@@ -8,6 +8,7 @@ import { DB, type Db } from '../../db/db.module';
 import { customRuns, judgeRuns, submissions, testResults } from '../../db/schema';
 import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
+import { contextFromTraceparent, traceKey } from '../../telemetry/trace-context';
 import { publishEvent } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 import { BoardService } from '../board/board.service';
@@ -18,13 +19,27 @@ const processed = metrics.getMeter('api').createCounter('ca_results_processed_to
   description: 'Judge results handled, by outcome',
 });
 
+const verdicts = metrics.getMeter('api').createCounter('ca_verdicts_total', {
+  description: 'Verdicts stored for submissions, by verdict and language',
+});
+const timeToVerdict = metrics.getMeter('api').createHistogram('ca_time_to_verdict_seconds', {
+  unit: 's',
+  description: 'From submission to stored verdict, by lane and language',
+});
+
 /** FR-SUB-06: only this much of a compile log is stored. */
 export const MAX_COMPILE_LOG_BYTES = 16 * 1024;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type Outcome =
   /** First time this (submission, run version) was seen: stored, and the user was told. */
-  | { kind: 'applied'; event: SubmissionVerdictData; contest?: ContestRef }
+  | {
+      kind: 'applied';
+      event: SubmissionVerdictData;
+      contest?: ContestRef;
+      /** For the verdict metrics; absent for custom runs. */
+      stats?: { lane: string; language: string; createdAt: Date };
+    }
   /** Already stored (a replay, or another API instance won the race): nothing changed. */
   | { kind: 'duplicate' }
   /** An older run version than the submission's current one: kept as history only. */
@@ -73,7 +88,9 @@ export class ResultsProcessor {
    * the caller retries; permanent problems are returned as `parked`.
    */
   async handle(raw: string): Promise<Outcome> {
-    return tracer.startActiveSpan('results.handle', async (span) => {
+    // The result carries no trace id: the one the job was enqueued under was kept at enqueue.
+    const parent = await this.traceOf(raw);
+    return tracer.startActiveSpan('queue.result', {}, parent, async (span) => {
       try {
         const outcome = await this.process(raw);
         processed.add(1, { outcome: outcome.kind });
@@ -87,6 +104,23 @@ export class ResultsProcessor {
         span.end();
       }
     });
+  }
+
+  private async traceOf(raw: string) {
+    try {
+      const { submissionId, runVersion } = JSON.parse(raw) as {
+        submissionId?: unknown;
+        runVersion?: unknown;
+      };
+      if (typeof submissionId !== 'string' || typeof runVersion !== 'number') {
+        return context.active();
+      }
+      return contextFromTraceparent(
+        await this.redis.get(traceKey(this.prefix, submissionId, runVersion)),
+      );
+    } catch {
+      return context.active();
+    }
   }
 
   private async process(raw: string): Promise<Outcome> {
@@ -117,6 +151,9 @@ export class ResultsProcessor {
           contestId: submissions.contestId,
           userId: submissions.userId,
           versionId: submissions.problemVersionId,
+          lane: submissions.lane,
+          language: submissions.language,
+          createdAt: submissions.createdAt,
         })
         .from(submissions)
         .where(eq(submissions.id, r.submissionId))
@@ -197,6 +234,7 @@ export class ResultsProcessor {
           memKb: r.memKb,
           failedTest,
         },
+        stats: { lane: sub.lane, language: sub.language, createdAt: sub.createdAt },
         ...(sub.contestId
           ? { contest: { contestId: sub.contestId, userId: sub.userId, versionId: sub.versionId } }
           : {}),
@@ -204,6 +242,13 @@ export class ResultsProcessor {
     });
 
     if (outcome.kind === 'applied') {
+      if (outcome.stats) {
+        verdicts.add(1, { verdict: outcome.event.verdict, language: outcome.stats.language });
+        timeToVerdict.record((Date.now() - outcome.stats.createdAt.getTime()) / 1000, {
+          lane: outcome.stats.lane,
+          language: outcome.stats.language,
+        });
+      }
       await this.publish(outcome.event);
       // After the commit, so the board reads the stored verdict (C-02). Never throws.
       if (outcome.contest) {

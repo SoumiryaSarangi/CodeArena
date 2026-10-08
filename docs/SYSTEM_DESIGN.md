@@ -767,6 +767,8 @@ Design responses: model routing above; prompt compression (pre-summarised statem
 
 Span names: `http <route>` · `queue.enqueue` · `judge.claim` · `judge.compile` · `judge.test` (attr `test.no`) · `judge.checker` · `queue.result` · `board.update` · `sse.publish` · `ai.<task>` · `collab.store` · `plag.run`. The API injects W3C `traceparent` into `JudgeJob`; the worker continues the trace, so one submission is one trace.
 
+- *As built (O-01):* the span tree of one submission is `http POST /api/submissions` → `submissions.submit` → `queue.enqueue` → (worker, continued from the job's `traceparent`) `judge.job` → `judge.claim` (starts at the enqueue time, so it draws the wait in the queue), `judge.compile`, `judge.test` (attr `test.no`, `verdict`; each with a `judge.checker` child), `judge.publish`; and, back in the API, `queue.result` → `board.update`, `sse.publish`. The HTTP middleware makes its span active so everything started during the request is a child (before O-01 each service span was a root of its own trace). The worker's result carries no trace id, so `queue.enqueue` stores the job's traceparent at `trace:{submissionId}:{runVersion}` (1 h TTL) and `queue.result` parents itself on it; no contract change. Shipping: API and judges → OpenTelemetry Collector on the API VM (port 4318, private address for the judges; ADR-009 addendum) → Grafana Cloud OTLP. Exports every 10 s. Errors: `@sentry/node` in the API (5xx only, with request and trace id, request and user data stripped) and `@sentry/nextjs` in the browser (errors only, same stripping); both inert without a DSN. Logs are not shipped (JSON on the VM). Dashboards and alert rules are in `infra/grafana/` and a test checks every metric they use is emitted.
+
 ### 15.2 Metrics (Prometheus names)
 
 | Metric | Type | Labels |
@@ -775,9 +777,9 @@ Span names: `http <route>` · `queue.enqueue` · `judge.claim` · `judge.compile
 | `ca_queue_wait_seconds` | histogram | lane |
 | `ca_time_to_verdict_seconds` | histogram | lane, language |
 | `ca_judge_busy_ratio` | gauge | worker |
-| `ca_judge_calibration_ms` | gauge | worker |
+| `ca_judge_calibration_ms` | gauge | worker | *(not built: the worker has no calibration step yet)* |
 | `ca_verdicts_total` | counter | verdict, language |
-| `ca_dlq_total` | counter | reason |
+| `ca_dlq_total` | counter | reason | *(as built: two series, `ca_queue_dlq_total` from the worker and `ca_results_dlq_total` from the API)* |
 | `ca_sse_connections` | gauge | — |
 | `ca_board_update_seconds` | histogram | — |
 | `ca_ai_tokens_total` | counter | model, task |

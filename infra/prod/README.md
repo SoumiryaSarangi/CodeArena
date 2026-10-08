@@ -119,8 +119,27 @@ back to; do the drill after a second deploy.)
 
 - Importing the practice problems into production (`pnpm problem:import` is not in the API image yet): needs the admin upload (P-02/UI-04).
 - The collaborative pad service (`/collab`) answers 503 until Day 12.
-- Alerting on `backup.prom` (a stale or failed backup) comes with Grafana Cloud wiring (O-01).
-- Grafana Cloud wiring (O-01). Node exporter is installed on the judges and listens on the private address, ready for it.
+- Alerting on `backup.prom` (a stale or failed backup), and host metrics of the judges (node exporter listens on the private address; scraping it needs another firewall rule, deliberately not opened in O-01).
+- Logs in Grafana (Loki): logs stay structured JSON in `docker compose logs` for now.
+
+## Observability (O-01)
+
+Traces and metrics: API and judges send OTLP/HTTP to the OpenTelemetry Collector on the API VM (`otelcol` in `docker-compose.yml`, profile `observability`, config `otelcol.yaml`), which forwards to Grafana Cloud. It starts only after the Grafana settings exist.
+
+1. Apply the firewall change (new port 4318 from the judge subnet, ADR-009 addendum): `terraform apply` in `infra/terraform`.
+2. `infra/prod/set-grafana.sh`: hidden prompts for the OTLP endpoint, instance ID and token of your Grafana Cloud stack; it stores them in `prod.env`, adds `OTEL_EXPORTER_OTLP_ENDPOINT` for the API (`http://otelcol:4318`) and for the judges (`judge-worker.env`, the collector's private address), starts the collector and restarts the API. Later deploys keep the collector in step with `otelcol.yaml`.
+3. Re-run the deploy workflow so the judges receive the new `worker.env` and restart.
+4. `infra/grafana/push.sh https://<stack>.grafana.net` uploads the dashboards and alert rules (see `infra/grafana/README.md`).
+5. Sentry (optional): `./init-env.sh ensure prod SENTRY_DSN not-configured && ./init-env.sh set SENTRY_DSN` on the server, then recreate the API. For the web app set `NEXT_PUBLIC_SENTRY_DSN` in the Vercel project settings.
+
+**UptimeRobot** (free, 5-minute interval; 1-minute on paid plans): create three HTTP(s) monitors and send alerts to your e-mail/phone:
+
+| Monitor                                  | URL                                   | Expect |
+| ---------------------------------------- | ------------------------------------- | ------ |
+| API liveness                             | `https://<api host>/api/health/live`  | 200    |
+| API readiness (database, Redis, storage) | `https://<api host>/api/health/ready` | 200    |
+| Web                                      | `https://<web url>/`                  | 200    |
+| Status page (after O-02)                 | `https://<web url>/status`            | 200    |
 
 ## Backups (D-03)
 

@@ -1,6 +1,9 @@
 import type { SseEventType } from '@codearena/contracts';
+import { trace } from '@opentelemetry/api';
 import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
+
+const tracer = trace.getTracer('api');
 
 /** SD-§7: replay buffer of `evt:{topic}`. */
 export const EVT_MAXLEN = 2000;
@@ -25,6 +28,24 @@ export interface RealtimeMessage<T = unknown> {
  * itself lives in Postgres and a reconnecting client reads it).
  */
 export async function publishEvent<T>(
+  redis: Redis,
+  prefix: string,
+  log: Logger,
+  topic: string,
+  type: SseEventType,
+  data: T,
+): Promise<string | null> {
+  return tracer.startActiveSpan('sse.publish', async (span) => {
+    span.setAttributes({ 'sse.type': type });
+    try {
+      return await publish(redis, prefix, log, topic, type, data);
+    } finally {
+      span.end();
+    }
+  });
+}
+
+async function publish<T>(
   redis: Redis,
   prefix: string,
   log: Logger,

@@ -33,6 +33,10 @@ const meter = metrics.getMeter('api');
 const updates = meter.createCounter('ca_board_updates_total', {
   description: 'Board cell updates, by outcome',
 });
+const updateSeconds = meter.createHistogram('ca_board_update_seconds', {
+  unit: 's',
+  description: 'Time to recompute and store one board cell',
+});
 const rebuilds = meter.createCounter('ca_board_rebuilds_total', {
   description: 'Boards rebuilt from Postgres, by reason',
 });
@@ -188,7 +192,9 @@ export class BoardService implements OnModuleDestroy {
    * update is idempotent.
    */
   async update(contestId: string, userId: string, versionId: string): Promise<void> {
+    const start = process.hrtime.bigint();
     await this.attempt(contestId, userId, versionId, 0);
+    updateSeconds.record(Number(process.hrtime.bigint() - start) / 1e9);
   }
 
   private async attempt(cid: string, uid: string, versionId: string, n: number): Promise<void> {

@@ -1,0 +1,322 @@
+[
+  {
+    "uid": "ca-dlq",
+    "title": "Dead letters appeared",
+    "ruleGroup": "codearena",
+    "folderUID": "__FOLDER__",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "0s",
+    "condition": "C",
+    "annotations": {
+      "summary": "A job or result was parked in a dead-letter stream (ops console: Dead letters)."
+    },
+    "labels": {
+      "severity": "page",
+      "service": "codearena"
+    },
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__PROM__",
+        "model": {
+          "refId": "A",
+          "expr": "sum(increase(ca_queue_dlq_total[10m])) + sum(increase(ca_results_dlq_total[10m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "B",
+          "type": "reduce",
+          "expression": "A",
+          "reducer": "last",
+          "settings": {
+            "mode": "dropNN"
+          }
+        }
+      },
+      {
+        "refId": "C",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "C",
+          "type": "threshold",
+          "expression": "B",
+          "conditions": [
+            {
+              "evaluator": {
+                "type": "gt",
+                "params": [0]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "uid": "ca-no-judge",
+    "title": "No judge heartbeat for 30 s",
+    "ruleGroup": "codearena",
+    "folderUID": "__FOLDER__",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "0s",
+    "condition": "C",
+    "annotations": {
+      "summary": "No judge worker is reporting; submissions will wait."
+    },
+    "labels": {
+      "severity": "page",
+      "service": "codearena"
+    },
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 120,
+          "to": 0
+        },
+        "datasourceUid": "__PROM__",
+        "model": {
+          "refId": "A",
+          "expr": "absent_over_time(ca_judge_busy_ratio[1m])",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "B",
+          "type": "reduce",
+          "expression": "A",
+          "reducer": "last",
+          "settings": {
+            "mode": "dropNN"
+          }
+        }
+      },
+      {
+        "refId": "C",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "C",
+          "type": "threshold",
+          "expression": "B",
+          "conditions": [
+            {
+              "evaluator": {
+                "type": "gt",
+                "params": [0]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "uid": "ca-p95",
+    "title": "Time to verdict p95 above 10 s",
+    "ruleGroup": "codearena",
+    "folderUID": "__FOLDER__",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "condition": "C",
+    "annotations": {
+      "summary": "Contest-lane p95 time to verdict is above 10 s (SLO 15 s)."
+    },
+    "labels": {
+      "severity": "page",
+      "service": "codearena"
+    },
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__PROM__",
+        "model": {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ca_time_to_verdict_seconds_bucket{lane=\"contest\"}[5m])))",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "B",
+          "type": "reduce",
+          "expression": "A",
+          "reducer": "last",
+          "settings": {
+            "mode": "dropNN"
+          }
+        }
+      },
+      {
+        "refId": "C",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "C",
+          "type": "threshold",
+          "expression": "B",
+          "conditions": [
+            {
+              "evaluator": {
+                "type": "gt",
+                "params": [10]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "uid": "ca-5xx",
+    "title": "API 5xx share above 2 %",
+    "ruleGroup": "codearena",
+    "folderUID": "__FOLDER__",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "condition": "C",
+    "annotations": {
+      "summary": "More than 2 % of API requests fail."
+    },
+    "labels": {
+      "severity": "page",
+      "service": "codearena"
+    },
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__PROM__",
+        "model": {
+          "refId": "A",
+          "expr": "sum(rate(ca_http_request_seconds_count{status=~\"5..\"}[5m])) / sum(rate(ca_http_request_seconds_count[5m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "B",
+          "type": "reduce",
+          "expression": "A",
+          "reducer": "last",
+          "settings": {
+            "mode": "dropNN"
+          }
+        }
+      },
+      {
+        "refId": "C",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "C",
+          "type": "threshold",
+          "expression": "B",
+          "conditions": [
+            {
+              "evaluator": {
+                "type": "gt",
+                "params": [0.02]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "uid": "ca-board",
+    "title": "Board propagation p95 above 5 s",
+    "ruleGroup": "codearena",
+    "folderUID": "__FOLDER__",
+    "noDataState": "OK",
+    "execErrState": "Error",
+    "for": "2m",
+    "condition": "C",
+    "annotations": {
+      "summary": "Verdict-to-event delivery is slow; scoreboards lag."
+    },
+    "labels": {
+      "severity": "page",
+      "service": "codearena"
+    },
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 600,
+          "to": 0
+        },
+        "datasourceUid": "__PROM__",
+        "model": {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ca_verdict_to_sse_seconds_bucket[5m])))",
+          "instant": true,
+          "intervalMs": 1000,
+          "maxDataPoints": 43200
+        }
+      },
+      {
+        "refId": "B",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "B",
+          "type": "reduce",
+          "expression": "A",
+          "reducer": "last",
+          "settings": {
+            "mode": "dropNN"
+          }
+        }
+      },
+      {
+        "refId": "C",
+        "datasourceUid": "__expr__",
+        "model": {
+          "refId": "C",
+          "type": "threshold",
+          "expression": "B",
+          "conditions": [
+            {
+              "evaluator": {
+                "type": "gt",
+                "params": [5]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

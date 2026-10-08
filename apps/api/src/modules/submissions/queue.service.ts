@@ -1,12 +1,14 @@
 import { randomBytes } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, type OnModuleDestroy } from '@nestjs/common';
 import { JudgeJob, type Lane } from '@codearena/contracts';
-import { context, metrics, propagation, trace } from '@opentelemetry/api';
+import { metrics, trace, type ObservableResult } from '@opentelemetry/api';
 import type { Redis } from 'ioredis';
 import { ProblemError } from '../../common/problem';
 import { REDIS } from '../../redis/redis.module';
 import { whenReady } from '../../redis/ready';
+import { laneDepth } from './lane-depth';
 import { uuidv7 } from '../../db/uuid';
+import { TRACE_KEY_TTL_S, activeTraceparent, traceKey } from '../../telemetry/trace-context';
 
 /** Key prefix for tests, so they never touch real queue keys. Production uses ''. */
 export const QUEUE_KEY_PREFIX = Symbol('QUEUE_KEY_PREFIX');
@@ -42,12 +44,32 @@ local id = redis.call('XADD', KEYS[2], '*', 'job', body)
 return { seq, id }
 `;
 
+const LANES: Lane[] = ['contest', 'interactive', 'practice', 'rejudge'];
+const depthGauge = metrics.getMeter('api').createObservableGauge('ca_queue_depth', {
+  description: 'Jobs waiting in a lane (not yet read by a judge)',
+});
+
 @Injectable()
-export class QueueService {
+export class QueueService implements OnModuleDestroy {
+  /** Observed on every metrics export; removed again when the service goes away. */
+  private readonly observeDepth = async (r: ObservableResult) => {
+    await Promise.all(
+      LANES.map(async (lane) =>
+        r.observe(await laneDepth(this.redis, this.prefix, lane), { lane }),
+      ),
+    );
+  };
+
   constructor(
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(QUEUE_KEY_PREFIX) private readonly prefix: string,
-  ) {}
+  ) {
+    depthGauge.addCallback(this.observeDepth);
+  }
+
+  onModuleDestroy() {
+    depthGauge.removeCallback(this.observeDepth);
+  }
 
   seqKey(lane: Lane) {
     return `${this.prefix}seq:${lane}`;
@@ -87,6 +109,16 @@ export class QueueService {
         if (!body.startsWith(SEQ_PREFIX)) throw new Error('job JSON lost its seq-first layout');
 
         await whenReady(this.redis);
+        // The result comes back without a trace id; this lets its handling rejoin the trace. Losing
+        // it only splits the trace in two, so a failure here is not worth failing the enqueue.
+        await this.redis
+          .set(
+            traceKey(this.prefix, parsed.data.submissionId, parsed.data.runVersion),
+            parsed.data.traceparent,
+            'EX',
+            TRACE_KEY_TTL_S,
+          )
+          .catch(() => undefined);
         const [seq, entryId] = (await this.redis.eval(
           ENQUEUE,
           2,
@@ -117,8 +149,8 @@ function withoutSeq(job: JudgeJob): Omit<JudgeJob, 'seq'> {
 
 /** W3C traceparent of the active span, or a fresh random one when there is none. */
 export function currentTraceparent(): string {
-  const carrier: Record<string, string> = {};
-  propagation.inject(context.active(), carrier);
-  if (carrier.traceparent) return carrier.traceparent;
-  return `00-${randomBytes(16).toString('hex')}-${randomBytes(8).toString('hex')}-01`;
+  return (
+    activeTraceparent() ??
+    `00-${randomBytes(16).toString('hex')}-${randomBytes(8).toString('hex')}-01`
+  );
 }

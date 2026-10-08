@@ -42,7 +42,7 @@ run "steady_state_judge_is_locked_down" {
     error_message = "The internet-egress allow must not exist in steady state."
   }
 
-  # Everything a judge may send out: only Redis/S3 on the API subnet and Azure's platform address.
+  # Everything a judge may send out: only Redis/S3/OTLP on the API subnet and Azure's platform address.
   assert {
     condition = alltrue([
       for r in values(azurerm_network_security_rule.judge) :
@@ -54,9 +54,9 @@ run "steady_state_judge_is_locked_down" {
   assert {
     condition = alltrue([
       for r in values(azurerm_network_security_rule.judge) :
-      r.direction != "Outbound" || r.access != "Allow" || r.destination_address_prefix != "10.20.1.0/24" || contains(["6379", "8333"], r.destination_port_range)
+      r.direction != "Outbound" || r.access != "Allow" || r.destination_address_prefix != "10.20.1.0/24" || contains(["6379", "8333", "4318"], r.destination_port_range)
     ])
-    error_message = "Towards the API subnet a judge may only use Redis (6379) and object storage (8333)."
+    error_message = "Towards the API subnet a judge may only use Redis (6379), object storage (8333) and the telemetry collector (4318)."
   }
 }
 
@@ -142,8 +142,8 @@ run "judges_cannot_reach_the_database_or_anything_else_on_the_api_vm" {
     condition = join(",", sort([
       for r in values(azurerm_network_security_rule.api) :
       r.destination_port_range if r.source_address_prefix == "10.20.2.0/24" && r.access == "Allow"
-    ])) == "6379,8333"
-    error_message = "From the judge subnet the API VM must accept only Redis (6379) and object storage (8333)."
+    ])) == "4318,6379,8333"
+    error_message = "From the judge subnet the API VM must accept only the telemetry collector (4318), Redis (6379) and object storage (8333)."
   }
 
   assert {

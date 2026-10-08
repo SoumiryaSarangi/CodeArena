@@ -72,6 +72,22 @@ check "show-keys lists what is set without printing any secret" "$(echo "$shown"
 out="$(validate "$APP_DIR/prod.env")"
 check "the config is still valid after an update" "$([[ "$out" == OK* ]] && echo 0 || echo 1)"
 
+echo "- ensure (O-01: adds settings an older install does not have, never changes existing ones)"
+"$INIT" ensure prod GRAFANA_TOKEN not-configured >/dev/null 2>&1
+check "ensure adds a missing key" "$(grep -q '^GRAFANA_TOKEN=not-configured$' "$APP_DIR/prod.env" && echo 0 || echo 1)"
+"$INIT" ensure prod GRAFANA_TOKEN something-else >/dev/null 2>&1
+check "ensure leaves an existing value alone" "$([ "$(pw GRAFANA_TOKEN)" = not-configured ] && echo 0 || echo 1)"
+printf 'glc_abc+/=\n' | "$INIT" set GRAFANA_TOKEN >/dev/null 2>&1
+check "a token with + / = is accepted by set" "$([ "$(pw GRAFANA_TOKEN)" = 'glc_abc+/=' ] && echo 0 || echo 1)"
+"$INIT" ensure judge OTEL_EXPORTER_OTLP_ENDPOINT http://10.20.1.4:4318 >/dev/null 2>&1
+check "ensure judge adds the collector address to the judge file only" "$(grep -q '^OTEL_EXPORTER_OTLP_ENDPOINT=http://10.20.1.4:4318$' "$APP_DIR/judge-worker.env" && ! grep -q OTEL "$APP_DIR/prod.env" && echo 0 || echo 1)"
+"$INIT" ensure prod BAD_VALUE 'x;rm -rf /' >/dev/null 2>&1
+check "ensure refuses unsafe values" "$([ $? != 0 ] && ! grep -q BAD_VALUE "$APP_DIR/prod.env" && echo 0 || echo 1)"
+"$INIT" ensure other KEY v >/dev/null 2>&1
+check "ensure refuses an unknown file" "$([ $? != 0 ] && echo 0 || echo 1)"
+out="$(validate "$APP_DIR/prod.env")"
+check "the config is still valid with the Grafana keys" "$([[ "$out" == OK* ]] && echo 0 || echo 1)"
+
 echo
 echo "passed: $pass  failed: $fail"
 [ "$fail" = 0 ]

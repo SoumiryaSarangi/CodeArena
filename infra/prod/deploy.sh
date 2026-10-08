@@ -77,11 +77,30 @@ edge() {
   fi
 }
 
+# The collector (O-01) only runs once Grafana settings exist (set-grafana.sh). Like the edge, it reads
+# its config once, so a changed otelcol.yaml recreates it. Never fails the deploy.
+telemetry() {
+  grep -q '^GRAFANA_TOKEN=.\+' "$APP_DIR/prod.env" 2>/dev/null || return 0
+  grep -q '^GRAFANA_TOKEN=not-configured$' "$APP_DIR/prod.env" && return 0
+  local sum
+  sum="$(sha256sum "$APP_DIR/otelcol.yaml" | cut -d' ' -f1)"
+  if [ "$(cat "$STATE/otelcol.sha" 2>/dev/null || true)" = "$sum" ] && compose --profile observability ps --status running --services 2>/dev/null | grep -qx otelcol; then
+    return 0
+  fi
+  if compose --profile observability up -d --force-recreate --no-deps otelcol; then
+    printf '%s\n' "$sum" > "$STATE/otelcol.sha"
+    log "the collector was (re)started"
+  else
+    log "WARNING: the collector could not be started (docker compose logs otelcol)"
+  fi
+}
+
 if healthy new; then
   printf '%s\n' "$previous" > "$STATE/previous"
   printf '%s\n' "$new" > "$STATE/current"
   docker image prune -f >/dev/null 2>&1 || true
   edge
+  telemetry || true
   log "healthy: $new is live"
   exit 0
 fi

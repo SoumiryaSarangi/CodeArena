@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 import type { Logger } from 'pino';
 import { ZodError } from 'zod';
 import { LOGGER } from '../telemetry/logger';
+import { reportError } from '../telemetry/sentry';
 import { ProblemError } from './problem';
 
 export const zodIssues = (e: ZodError) =>
@@ -61,6 +62,7 @@ export class ProblemFilter implements ExceptionFilter {
     } else {
       // Unexpected: log the cause, never leak it. `instance` is the request ID (SRS §3.1.8).
       this.log.error({ err: exception, requestId: req.id }, 'unhandled error');
+      reportError(exception, req.id);
       problem = new ProblemError('internal');
     }
 

@@ -1,4 +1,4 @@
-import { metrics, SpanStatusCode, trace } from '@opentelemetry/api';
+import { context, metrics, SpanStatusCode, trace } from '@opentelemetry/api';
 import type { NextFunction, Request, Response } from 'express';
 import type { Logger } from 'pino';
 
@@ -29,6 +29,8 @@ export function httpTelemetry(log: Logger) {
         'request',
       );
     });
-    next();
+    // The span is the active one while the request is handled, so every span started on the way
+    // (queue.enqueue, board.update, ...) is its child: one request, one trace (SD-§15.1).
+    context.with(trace.setSpan(context.active(), span), next);
   };
 }

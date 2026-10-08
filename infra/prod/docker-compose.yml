@@ -46,6 +46,23 @@ services:
       retries: 6
       start_period: 20s
 
+  # Telemetry (O-01): receives OTLP from the API (inside this network) and from the judges (private
+  # address, port 4318), forwards to Grafana Cloud. Off until `set-grafana.sh` has stored the Grafana
+  # settings: it is in a profile, so a plain `up` never starts it without them.
+  otelcol:
+    <<: *restart
+    image: otel/opentelemetry-collector-contrib:0.131.0
+    profiles: ['observability']
+    command: ['--config=/etc/otelcol/config.yaml']
+    # Only the Grafana settings, not the rest of prod.env (database, signing keys).
+    environment:
+      GRAFANA_OTLP_ENDPOINT: ${GRAFANA_OTLP_ENDPOINT:-}
+      GRAFANA_INSTANCE_ID: ${GRAFANA_INSTANCE_ID:-}
+      GRAFANA_TOKEN: ${GRAFANA_TOKEN:-}
+    ports: ['${API_PRIVATE_IP:?}:4318:4318']
+    volumes:
+      - ./otelcol.yaml:/etc/otelcol/config.yaml:ro
+
   # One-off: applies database migrations with the new image before the API is switched over.
   # `docker compose run --rm migrate`
   migrate:

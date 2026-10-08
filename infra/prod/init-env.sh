@@ -3,6 +3,7 @@
 #
 #   ./init-env.sh init --api-ip 40.83.75.34 --api-private-ip 10.20.1.4 --web-url https://codearena.vercel.app
 #   ./init-env.sh set OAUTH_GOOGLE_CLIENT_ID          # prompts (hidden), updates one value
+#   ./init-env.sh ensure prod|judge KEY VALUE         # adds KEY=VALUE if the key is missing (not secret values)
 #   ./init-env.sh show-keys                           # lists which keys are set (never the values)
 #
 # Every password and key is generated here with openssl, so no secret is ever typed, pasted into a
@@ -147,6 +148,17 @@ set)
   echo "$key updated (${#value} characters)."
   ;;
 
+ensure)
+  which="${1:-}" key="${2:-}" value="${3:-}"
+  case "$which" in prod) file="$ENV_FILE" ;; judge) file="$JUDGE_ENV_FILE" ;; *) die "usage: init-env.sh ensure prod|judge KEY VALUE" ;; esac
+  [[ "$key" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "KEY must be in capitals"
+  [ -f "$file" ] || die "$file does not exist; run init first"
+  safe "$key" "$value"
+  # Existing values are never touched (use `set` to change one); this only adds what an older
+  # install does not have yet.
+  if grep -q "^$key=" "$file"; then echo "$key is already in $(basename "$file")."; else printf '%s=%s\n' "$key" "$value" >> "$file"; echo "$key added to $(basename "$file")."; fi
+  ;;
+
 show-keys)
   [ -f "$ENV_FILE" ] || die "$ENV_FILE does not exist"
   grep -v '^#' "$ENV_FILE" | grep '=' | while IFS= read -r line; do
@@ -156,6 +168,6 @@ show-keys)
   ;;
 
 *)
-  die "usage: init-env.sh init|set|show-keys (see the header of this file)"
+  die "usage: init-env.sh init|set|ensure|show-keys (see the header of this file)"
   ;;
 esac

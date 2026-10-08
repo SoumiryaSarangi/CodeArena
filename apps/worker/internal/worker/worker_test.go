@@ -395,10 +395,39 @@ func TestTelemetry(t *testing.T) {
 	})
 	enqueue(t, rdb, validJob("1"))
 	waitFor(t, "result", func() bool { return streamLen(rdb, ResultsKey) == 1 })
-	waitFor(t, "span", func() bool { return len(rec.Ended()) == 1 })
+	waitFor(t, "spans", func() bool {
+		for _, s := range rec.Ended() {
+			if s.Name() == "judge.job" {
+				return true
+			}
+		}
+		return false
+	})
+	find := func(name string) sdktrace.ReadOnlySpan {
+		for _, s := range rec.Ended() {
+			if s.Name() == name {
+				return s
+			}
+		}
+		t.Fatalf("no %s span", name)
+		return nil
+	}
 
+	t.Run("NFR-OBS-01: judge.claim shows the queue wait and judge.publish the commit, inside the job", func(t *testing.T) {
+		job := find("judge.job")
+		for _, n := range []string{"judge.claim", "judge.publish"} {
+			s := find(n)
+			if s.Parent().SpanID() != job.SpanContext().SpanID() || s.SpanContext().TraceID() != job.SpanContext().TraceID() {
+				t.Fatalf("%s: parent %s trace %s", n, s.Parent().SpanID(), s.SpanContext().TraceID())
+			}
+		}
+		// The claim span begins when the job was enqueued, so the trace shows the wait.
+		if !find("judge.claim").StartTime().Before(find("judge.job").StartTime()) {
+			t.Fatal("judge.claim should start before judge.job")
+		}
+	})
 	t.Run("a judge.job span is a child of the job's traceparent", func(t *testing.T) {
-		s := rec.Ended()[0]
+		s := find("judge.job")
 		if s.Name() != "judge.job" || s.SpanContext().TraceID().String() != "0af7651916cd43dd8448eb211c80319c" ||
 			s.Parent().SpanID().String() != "b7ad6b7169203331" {
 			t.Fatalf("%s trace=%s parent=%s", s.Name(), s.SpanContext().TraceID(), s.Parent().SpanID())

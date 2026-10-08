@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
@@ -39,7 +40,7 @@ func Setup(ctx context.Context, service, workerID string) (shutdown func(context
 		return nil, err
 	}
 	tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(te), sdktrace.WithResource(res))
-	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(me)), sdkmetric.WithResource(res))
+	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(me, sdkmetric.WithInterval(10*time.Second))), sdkmetric.WithResource(res))
 	otel.SetTracerProvider(tp)
 	otel.SetMeterProvider(mp)
 	return func(ctx context.Context) error {

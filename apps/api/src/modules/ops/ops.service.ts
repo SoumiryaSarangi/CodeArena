@@ -22,6 +22,7 @@ import { BoardService } from '../board/board.service';
 import { contestState } from '../contests/state';
 import { MessagesService } from '../contests/messages.service';
 import { buildJob } from '../submissions/job-builder';
+import { laneDepth } from '../submissions/lane-depth';
 import { QUEUE_KEY_PREFIX, QueueService } from '../submissions/queue.service';
 
 const tracer = trace.getTracer('api');
@@ -30,7 +31,6 @@ const actions = metrics.getMeter('api').createCounter('ca_ops_actions_total', {
 });
 
 const LANES: Lane[] = ['contest', 'interactive', 'practice', 'rejudge'];
-const GROUP = 'judges';
 /** One rejudge request handles at most this many submissions (run it again for the rest). */
 export const REJUDGE_LIMIT = 2000;
 const HEARTBEAT_STALE_MS = 60_000;
@@ -254,7 +254,12 @@ export class OpsService {
       try {
         const now = Date.now();
         const [lanes, workers, times, dlq] = await Promise.all([
-          Promise.all(LANES.map(async (lane) => ({ lane, depth: await this.depth(lane) }))),
+          Promise.all(
+            LANES.map(async (lane) => ({
+              lane,
+              depth: await laneDepth(this.redis, this.prefix, lane),
+            })),
+          ),
           this.workers(now),
           this.db.execute<{ p50: number | null; p95: number | null; n: number }>(sql`
             select
@@ -288,21 +293,6 @@ export class OpsService {
         span.end();
       }
     });
-  }
-
-  private async depth(lane: Lane): Promise<number> {
-    const key = `${this.prefix}jobs:${lane}`;
-    try {
-      const groups = (await this.redis.xinfo('GROUPS', key)) as unknown[][];
-      for (const g of groups) {
-        const m: Record<string, unknown> = {};
-        for (let i = 0; i < g.length; i += 2) m[String(g[i])] = g[i + 1];
-        if (m.name === GROUP && typeof m.lag === 'number') return m.lag;
-      }
-      return await this.redis.xlen(key);
-    } catch {
-      return 0;
-    }
   }
 
   private async workers(now: number): Promise<OpsSummary['workers']> {

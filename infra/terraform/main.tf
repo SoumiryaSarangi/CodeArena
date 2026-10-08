@@ -8,10 +8,11 @@ locals {
   api_subnet   = "10.20.1.0/24"
   judge_subnet = "10.20.2.0/24"
 
-  # Ports the judges may use on the API VM, and nothing else (ADR-009): Redis for jobs/results and
-  # SeaweedFS (S3) for the testsets. Postgres (5432) is deliberately absent: judges hold no database
+  # Ports the judges may use on the API VM, and nothing else (ADR-009): Redis for jobs/results,
+  # SeaweedFS (S3) for the testsets and, since O-01, the OpenTelemetry collector (OTLP/HTTP) for the
+  # worker's traces and metrics. Postgres (5432) is deliberately absent: judges hold no database
   # credentials and cannot reach the database.
-  judge_to_api_ports = { redis = "6379", s3 = "8333" }
+  judge_to_api_ports = { redis = "6379", s3 = "8333", otlp = "4318" }
 }
 
 resource "azurerm_resource_group" "main" {

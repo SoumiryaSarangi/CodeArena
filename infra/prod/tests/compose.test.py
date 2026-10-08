@@ -87,6 +87,41 @@ class Compose(unittest.TestCase):
             self.assertIn(v, compose["volumes"])
 
 
+class Telemetry(unittest.TestCase):
+    """O-01: the collector is optional, private, and sees only the Grafana settings."""
+
+    def test_the_collector_is_a_profile_service_so_up_never_starts_it_unconfigured(self):
+        self.assertEqual(services["otelcol"]["profiles"], ["observability"])
+        self.assertEqual(services["otelcol"]["restart"], "unless-stopped")
+
+    def test_it_listens_on_the_private_address_only(self):
+        self.assertEqual(ports("otelcol"), ["${API_PRIVATE_IP:?}:4318:4318"])
+
+    def test_it_does_not_get_the_rest_of_prod_env(self):
+        self.assertNotIn("env_file", services["otelcol"])
+        self.assertEqual(
+            sorted(services["otelcol"]["environment"]),
+            ["GRAFANA_INSTANCE_ID", "GRAFANA_OTLP_ENDPOINT", "GRAFANA_TOKEN"],
+        )
+
+    def test_an_unconfigured_install_still_renders(self):
+        # `${X:-}` rather than `${X:?}`: the compose file must parse before set-grafana.sh has run.
+        for v in services["otelcol"]["environment"].values():
+            self.assertTrue(v.endswith(":-}"), v)
+
+    def test_the_image_is_pinned(self):
+        self.assertRegex(services["otelcol"]["image"], r":\d+\.\d+\.\d+$")
+
+    def test_the_config_has_no_secret_and_reads_the_environment(self):
+        text = (PROD / "otelcol.yaml").read_text()
+        for name in ("GRAFANA_INSTANCE_ID", "GRAFANA_TOKEN", "GRAFANA_OTLP_ENDPOINT"):
+            self.assertIn("${env:" + name + "}", text)
+        cfg = yaml.safe_load(text)
+        self.assertEqual(cfg["receivers"]["otlp"]["protocols"]["http"]["endpoint"], "0.0.0.0:4318")
+        self.assertIn("memory_limiter", cfg["service"]["pipelines"]["traces"]["processors"])
+        self.assertEqual(sorted(cfg["service"]["pipelines"]), ["metrics", "traces"])
+
+
 class S3Identities(unittest.TestCase):
     def test_the_judge_key_can_only_read_and_list(self):
         ids = json.loads(s3_tmpl)["identities"]

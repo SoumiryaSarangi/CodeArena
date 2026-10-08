@@ -104,6 +104,7 @@ type instruments struct {
 	seconds     metric.Float64Histogram
 	inflight    metric.Int64UpDownCounter
 	jury        metric.Int64Counter
+	queueWait   metric.Float64Histogram
 }
 
 // New applies defaults and builds the metrics.
@@ -176,6 +177,20 @@ func New(cfg Config) (*Worker, error) {
 		return nil, err
 	}
 	if w.m.leaseLost, err = cfg.Meter.Int64Counter("ca_queue_lease_lost_total", metric.WithDescription("Jobs abandoned because another worker took them over")); err != nil {
+		return nil, err
+	}
+	if w.m.queueWait, err = cfg.Meter.Float64Histogram("ca_queue_wait_seconds", metric.WithUnit("s"), metric.WithDescription("From enqueue to a judge claiming the job, by lane")); err != nil {
+		return nil, err
+	}
+	busyRatio, err := cfg.Meter.Float64ObservableGauge("ca_judge_busy_ratio", metric.WithDescription("Jobs in progress over this worker's concurrency"))
+	if err != nil {
+		return nil, err
+	}
+	if _, err = cfg.Meter.RegisterCallback(func(_ context.Context, o metric.Observer) error {
+		o.ObserveFloat64(busyRatio, float64(w.busy.Load())/float64(w.cfg.Concurrency),
+			metric.WithAttributes(attribute.String("worker", w.cfg.WorkerID)))
+		return nil
+	}, busyRatio); err != nil {
 		return nil, err
 	}
 	return w, nil
@@ -367,7 +382,16 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 		attribute.String("worker.id", w.cfg.WorkerID)))
 	defer span.End()
 
+	// The wait in the queue, drawn as a span that starts when the job was enqueued (SD-§15.1).
 	start := w.cfg.Now()
+	if job.EnqueuedAt > 0 {
+		enq := time.UnixMilli(job.EnqueuedAt)
+		_, claim := w.cfg.Tracer.Start(spanCtx, "judge.claim", trace.WithTimestamp(enq))
+		claim.End(trace.WithTimestamp(start))
+		w.m.queueWait.Record(ctx, max(0, start.Sub(enq).Seconds()),
+			metric.WithAttributes(attribute.String("lane", string(job.Lane))))
+	}
+
 	w.busy.Add(1)
 	w.m.inflight.Add(ctx, 1)
 	defer func() { w.busy.Add(-1); w.m.inflight.Add(ctx, -1) }()
@@ -414,10 +438,15 @@ func (w *Worker) handle(ctx context.Context, stream string, msg redis.XMessage) 
 	}
 
 	result := ToResult(job, outcome, w.cfg.WorkerID, w.cfg.Now().UnixMilli())
-	if err := w.publishResult(ctx, stream, msg.ID, result); err != nil {
+	pubCtx, pubSpan := w.cfg.Tracer.Start(spanCtx, "judge.publish")
+	if err := w.publishResult(pubCtx, stream, msg.ID, result); err != nil {
+		pubSpan.RecordError(err)
+		pubSpan.SetStatus(codes.Error, err.Error())
+		pubSpan.End()
 		w.cfg.Log.Error("could not publish the result, left pending", "entry", msg.ID, "err", err)
 		return
 	}
+	pubSpan.End()
 	w.publishProgress(spanCtx, job, contracts.JudgePhaseDone, nil)
 
 	span.SetAttributes(attribute.String("verdict", string(outcome.Verdict)))

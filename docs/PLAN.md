@@ -210,7 +210,7 @@ Everything else is **S**.
 
 ### 4.2 Approved dependencies
 
-- **Web:** next, react, tailwindcss, shadcn/ui (Radix), @tanstack/react-query, zustand, @monaco-editor/react, motion (Framer Motion), react-resizable-panels, cmdk, sonner, react-hook-form, zod, react-markdown + remark-math + rehype-katex + rehype-sanitize, recharts, yjs, y-monaco, @hocuspocus/provider, y-indexeddb, perfect-freehand, lucide-react, geist (font).
+- **Web:** next, react, tailwindcss, shadcn/ui (Radix), @tanstack/react-query, zustand, @monaco-editor/react, motion (Framer Motion), react-resizable-panels, cmdk, sonner, react-hook-form, zod, react-markdown + remark-math + rehype-katex + rehype-sanitize, recharts, @sentry/nextjs (approved by Ayush for O-01, 2026-10-08), yjs, y-monaco, @hocuspocus/provider, y-indexeddb, perfect-freehand, lucide-react, geist (font).
 - **API/collab:** @nestjs/*, drizzle-orm, drizzle-kit, pg, ioredis, zod, jose, @hocuspocus/server + extension-database + extension-redis, @opentelemetry/*, pino, @aws-sdk/client-s3, @sentry/node.
 - **Worker (Go):** go-redis v9, minio-go, OpenTelemetry Go SDK, `log/slog`.
 - **Plagiarism (Python, managed with uv):** tree-sitter + grammars (cpp, python, java, c, javascript), transformers, torch (CPU), numpy, scikit-learn, networkx, pytest; dev: ruff, mypy.

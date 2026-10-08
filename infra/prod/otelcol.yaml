@@ -1,0 +1,42 @@
+# OpenTelemetry Collector on the API VM (O-01). The API (inside the Compose network) and the judge
+# workers (private subnet, port 4318) send OTLP/HTTP here; everything is forwarded to Grafana Cloud.
+# Credentials come from prod.env (GRAFANA_*), set with infra/prod/set-grafana.sh. Nothing here is a secret.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 200
+    spike_limit_mib: 50
+  batch:
+    timeout: 5s
+
+extensions:
+  basicauth/grafana:
+    client_auth:
+      username: ${env:GRAFANA_INSTANCE_ID}
+      password: ${env:GRAFANA_TOKEN}
+  health_check:
+    endpoint: 127.0.0.1:13133
+
+exporters:
+  otlphttp/grafana:
+    endpoint: ${env:GRAFANA_OTLP_ENDPOINT}
+    auth:
+      authenticator: basicauth/grafana
+
+service:
+  extensions: [health_check, basicauth/grafana]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/grafana]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/grafana]

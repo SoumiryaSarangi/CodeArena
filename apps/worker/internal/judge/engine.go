@@ -9,7 +9,17 @@ import (
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/contracts"
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/languages"
 	"github.com/SoumiryaSarangi/CodeArena/apps/worker/internal/sandbox"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
+
+// startSpan starts a child of the job's span (`judge.job`, from the worker) with the same tracer
+// provider, so a test can inject one and an unconfigured worker gets no-ops (SD-§15.1).
+func startSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+	return trace.SpanFromContext(ctx).TracerProvider().Tracer("codearena/worker").
+		Start(ctx, name, trace.WithAttributes(attrs...))
+}
 
 // Test is one ordered test case, supplied by the test cache (J-04).
 type Test struct {
@@ -90,20 +100,37 @@ func (e *Engine) Run(ctx context.Context, slot *sandbox.Slot, req Request, progr
 	}
 
 	progress(contracts.JudgePhaseCompiling, nil)
-	comp, err := e.Reg.Compile(ctx, slot.Compile, l, req.Source)
+	cctx, cspan := startSpan(ctx, "judge.compile", attribute.String("language", string(req.Language)))
+	comp, err := e.Reg.Compile(cctx, slot.Compile, l, req.Source)
 	switch {
 	case errors.Is(err, languages.ErrSourceTooLarge):
+		cspan.SetAttributes(attribute.Bool("compile.ok", false))
+		cspan.End()
 		return &Outcome{Verdict: contracts.VerdictCE, CompileLog: fmt.Sprintf("source is larger than %d KB", languages.MaxSourceBytes>>10)}, nil
 	case err != nil:
+		cspan.RecordError(err)
+		cspan.SetStatus(codes.Error, err.Error())
+		cspan.End()
 		return nil, err
 	case !comp.OK:
+		cspan.SetAttributes(attribute.Bool("compile.ok", false))
+		cspan.End()
 		return &Outcome{Verdict: contracts.VerdictCE, CompileLog: comp.Log}, nil
 	}
+	cspan.SetAttributes(attribute.Bool("compile.ok", true))
+	cspan.End()
 
 	progress(contracts.JudgePhaseRunning, nil)
 	out := &Outcome{Verdict: contracts.VerdictAC}
 	for _, t := range req.Tests {
-		to, jury, err := e.runTest(ctx, slot, l, comp.Artifacts, req, t)
+		tctx, tspan := startSpan(ctx, "judge.test", attribute.Int64("test.no", int64(t.No)))
+		to, jury, err := e.runTest(tctx, slot, l, comp.Artifacts, req, t)
+		tspan.SetAttributes(attribute.String("verdict", string(to.Verdict)), attribute.Int64("time.ms", to.TimeMS))
+		if err != nil {
+			tspan.RecordError(err)
+			tspan.SetStatus(codes.Error, err.Error())
+		}
+		tspan.End()
 		if err != nil {
 			return nil, err
 		}
@@ -187,6 +214,9 @@ func (e *Engine) runTest(ctx context.Context, slot *sandbox.Slot, l *languages.L
 		return to, "", nil
 	}
 
+	kctx, kspan := startSpan(ctx, "judge.checker", attribute.String("checker.kind", string(req.Checker.Kind)))
+	defer kspan.End()
+	ctx = kctx
 	var res CheckResult
 	if req.Checker.Kind == contracts.CheckerKindTestlib {
 		if len(req.CheckerBinary) == 0 {
