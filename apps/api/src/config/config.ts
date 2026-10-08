@@ -44,6 +44,19 @@ const schema = z.object({
   // Q-03: whether this instance reads the `results` stream. Default on, except under NODE_ENV=test.
   RESULT_CONSUMER: z.enum(['on', 'off']).optional(),
 
+  // AI layer (AI-01). No key = that provider's models are skipped; no keys at all = AI features answer "busy".
+  GROQ_API_KEY: z.string().min(1).optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  /** JSON overrides of the task → model chains and the daily budgets (see modules/ai/ai.config.ts). */
+  AI_ROUTES: z.string().optional(),
+  AI_BUDGETS: z.string().optional(),
+  AI_GLOBAL_PER_MIN: z.coerce.number().int().positive().default(25),
+  AI_USER_PER_HOUR: z.coerce.number().int().positive().default(30),
+  AI_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
+  AI_RETRY_MAX_WAIT_MS: z.coerce.number().int().min(0).default(8_000),
+  // Whether this instance reads the `ai:jobs` stream. Default on, except under NODE_ENV=test.
+  AI_WORKER: z.enum(['on', 'off']).optional(),
+
   // Auth (F-06). PEM keys may arrive as one line with literal "\n" (scripts/gen-keys.sh output).
   JWT_PRIVATE_KEY: pem.optional(),
   JWT_PUBLIC_KEY: pem.optional(),
