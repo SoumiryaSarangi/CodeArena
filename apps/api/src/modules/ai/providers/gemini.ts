@@ -2,6 +2,8 @@ import { type Provider, ProviderError, parseRetryAfter } from '../types';
 
 type Fetch = typeof fetch;
 
+export const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
+
 /** Google AI Studio `generateContent` over HTTP (free tier). The key goes in a header, never the URL. */
 export class GeminiProvider implements Provider {
   readonly name = 'gemini' as const;
@@ -10,7 +12,8 @@ export class GeminiProvider implements Provider {
   constructor(
     private readonly apiKey: string,
     fetchImpl?: Fetch,
-    private readonly baseUrl = 'https://generativelanguage.googleapis.com/v1beta',
+    private readonly baseUrl = GEMINI_BASE_URL,
+    private readonly extraHeaders: Record<string, string> = {},
   ) {
     this.doFetch = fetchImpl ?? ((...a) => fetch(...a));
   }
@@ -36,7 +39,11 @@ export class GeminiProvider implements Provider {
         `${this.baseUrl}/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.apiKey },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.apiKey,
+            ...this.extraHeaders,
+          },
           body: JSON.stringify({
             ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
             contents,

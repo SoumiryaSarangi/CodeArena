@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GeminiProvider } from './providers/gemini';
 import { groqProvider } from './providers/openai-compatible';
+import { loadConfig } from '../../config/config';
 import { providersFromConfig } from './router';
 import { ProviderError, parseRetryAfter } from './types';
 
@@ -92,5 +93,75 @@ describe('AI-01: providers', () => {
       Object.keys(providersFromConfig({ GROQ_API_KEY: 'not-configured', GEMINI_API_KEY: 'AIza1' })),
     ).toEqual(['gemini']);
     expect(Object.keys(providersFromConfig({ GROQ_API_KEY: 'gsk_1' }))).toEqual(['groq']);
+  });
+
+  it('AI-02 follow-up: with a relay configured, both providers call it (same paths, shared secret) instead of the providers', async () => {
+    const seen: { url: string; headers: Record<string, string> }[] = [];
+    const rec = async (url: URL | RequestInfo, init?: RequestInit) => {
+      seen.push({ url: String(url), headers: init!.headers as Record<string, string> });
+      return reply({
+        choices: [{ message: { content: 'x' } }],
+        candidates: [{ content: { parts: [{ text: 'x' }] } }],
+      });
+    };
+    const globalFetch = globalThis.fetch;
+    globalThis.fetch = rec as typeof fetch;
+    try {
+      const p = providersFromConfig({
+        GROQ_API_KEY: 'gsk_1',
+        GEMINI_API_KEY: 'AIza1',
+        AI_RELAY_URL: 'https://web.example/',
+        AI_RELAY_SECRET: 'r'.repeat(32),
+      });
+      await p.groq!.complete('llama-3.1-8b-instant', req);
+      await p.gemini!.complete('gemini-2.5-flash', req);
+    } finally {
+      globalThis.fetch = globalFetch;
+    }
+    expect(seen.map((s) => s.url)).toEqual([
+      'https://web.example/relay/ai/groq/openai/v1/chat/completions',
+      'https://web.example/relay/ai/gemini/v1beta/models/gemini-2.5-flash:generateContent',
+    ]);
+    for (const s of seen) expect(s.headers['x-relay-secret']).toBe('r'.repeat(32));
+    expect(seen[0]!.headers.Authorization).toBe('Bearer gsk_1');
+    expect(seen[1]!.headers['x-goog-api-key']).toBe('AIza1');
+  });
+
+  it('without both a relay URL and a secret, the providers are called directly (no secret header)', async () => {
+    let seen: { url: string; headers: Record<string, string> } | undefined;
+    const globalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: URL | RequestInfo, init?: RequestInit) => {
+      seen = { url: String(url), headers: init!.headers as Record<string, string> };
+      return reply({ choices: [{ message: { content: 'x' } }] });
+    }) as typeof fetch;
+    try {
+      const p = providersFromConfig({ GROQ_API_KEY: 'gsk_1', AI_RELAY_URL: 'https://web.example' });
+      await p.groq!.complete('llama-3.1-8b-instant', req);
+    } finally {
+      globalThis.fetch = globalFetch;
+    }
+    expect(seen!.url).toBe('https://api.groq.com/openai/v1/chat/completions');
+    expect(seen!.headers['x-relay-secret']).toBeUndefined();
+  });
+
+  it('the placeholder values are accepted by the config and count as "no relay"', async () => {
+    const c = loadConfig({
+      NODE_ENV: 'test',
+      AI_RELAY_URL: 'not-configured',
+      AI_RELAY_SECRET: 'not-configured',
+      GROQ_API_KEY: 'gsk_1',
+    });
+    let url = '';
+    const globalFetch = globalThis.fetch;
+    globalThis.fetch = (async (u: URL | RequestInfo) => {
+      url = String(u);
+      return reply({ choices: [{ message: { content: 'x' } }] });
+    }) as typeof fetch;
+    try {
+      await providersFromConfig(c).groq!.complete('m', req);
+    } finally {
+      globalThis.fetch = globalFetch;
+    }
+    expect(url).toBe('https://api.groq.com/openai/v1/chat/completions');
   });
 });

@@ -48,6 +48,9 @@ const schema = z.object({
   GROQ_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   /** JSON overrides of the task → model chains and the daily budgets (see modules/ai/ai.config.ts). */
+  /** Where the AI calls go when the providers refuse this server's region: the Vercel relay (apps/web/lib/ai-relay.ts). */
+  AI_RELAY_URL: z.union([z.string().url(), z.literal('not-configured')]).optional(),
+  AI_RELAY_SECRET: z.union([z.string().min(24), z.literal('not-configured')]).optional(),
   AI_ROUTES: z.string().optional(),
   AI_BUDGETS: z.string().optional(),
   AI_GLOBAL_PER_MIN: z.coerce.number().int().positive().default(25),

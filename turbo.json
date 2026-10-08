@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "dist/**"],
-      "env": ["API_PROXY_URL", "NEXT_PUBLIC_REALTIME_URL"]
+      "env": ["API_PROXY_URL", "NEXT_PUBLIC_REALTIME_URL", "AI_RELAY_SECRET"]
     },
     "typecheck": { "dependsOn": ["^build"] },
     "test": { "dependsOn": ["^build"] }

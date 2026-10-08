@@ -41,14 +41,39 @@ const estimateInput = (req: CompleteRequest) =>
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** Providers that have a key; the others' models are skipped. */
-export function providersFromConfig(c: Pick<Config, 'GROQ_API_KEY' | 'GEMINI_API_KEY'>) {
+export function providersFromConfig(
+  c: Pick<Config, 'GROQ_API_KEY' | 'GEMINI_API_KEY'> &
+    Partial<Pick<Config, 'AI_RELAY_URL' | 'AI_RELAY_SECRET'>>,
+) {
   const out: Partial<Record<ProviderName, Provider>> = {};
   // `not-configured` is the placeholder init-env.sh / set-ai.sh leave until a real key is stored.
   const real = (v?: string) => (v && v !== 'not-configured' ? v : undefined);
   const groq = real(c.GROQ_API_KEY);
   const gemini = real(c.GEMINI_API_KEY);
-  if (groq) out.groq = groqProvider(groq);
-  if (gemini) out.gemini = new GeminiProvider(gemini);
+  // The providers refuse the API VM's region, so calls go through the relay on Vercel when it is set
+  // (apps/web/lib/ai-relay.ts): same paths under `/relay/ai/<provider>`, plus the shared secret.
+  const relay = real(c.AI_RELAY_URL) && real(c.AI_RELAY_SECRET);
+  const via = (provider: string) =>
+    relay
+      ? {
+          base: `${c.AI_RELAY_URL!.replace(/\/$/, '')}/relay/ai/${provider}`,
+          headers: { 'x-relay-secret': c.AI_RELAY_SECRET! },
+        }
+      : undefined;
+  if (groq) {
+    const r = via('groq');
+    out.groq = groqProvider(
+      groq,
+      undefined,
+      r && { baseUrl: `${r.base}/openai/v1`, headers: r.headers },
+    );
+  }
+  if (gemini) {
+    const r = via('gemini');
+    out.gemini = r
+      ? new GeminiProvider(gemini, undefined, `${r.base}/v1beta`, r.headers)
+      : new GeminiProvider(gemini);
+  }
   return out;
 }
 

@@ -8,6 +8,8 @@ interface Options {
   apiKey: string;
   fetch?: Fetch;
   timeoutMs?: number;
+  /** Extra request headers (the relay's shared secret). */
+  headers?: Record<string, string>;
 }
 
 /** Chat-completions over HTTP, the shape Groq (and many others) speak. No SDK: one fetch. */
@@ -29,7 +31,11 @@ export class OpenAiCompatibleProvider implements Provider {
     try {
       res = await this.doFetch(`${this.o.baseUrl.replace(/\/$/, '')}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.o.apiKey}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.o.apiKey}`,
+          ...this.o.headers,
+        },
         body: JSON.stringify({
           model,
           messages: req.messages,
@@ -65,10 +71,17 @@ export class OpenAiCompatibleProvider implements Provider {
   }
 }
 
-export const groqProvider = (apiKey: string, fetchImpl?: Fetch) =>
+export const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
+
+export const groqProvider = (
+  apiKey: string,
+  fetchImpl?: Fetch,
+  opts: { baseUrl?: string; headers?: Record<string, string> } = {},
+) =>
   new OpenAiCompatibleProvider({
     name: 'groq',
-    baseUrl: 'https://api.groq.com/openai/v1',
+    baseUrl: opts.baseUrl ?? GROQ_BASE_URL,
     apiKey,
     fetch: fetchImpl,
+    headers: opts.headers,
   });
