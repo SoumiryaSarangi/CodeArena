@@ -29,6 +29,7 @@ import {
 import { BoardService } from '../board/board.service';
 import { contestMinute, contestState } from '../contests/state';
 import { practiceVisible } from '../problems/practice';
+import { sampleMatches, type CheckerSpec } from './sample-match';
 import { buildJob } from './job-builder';
 import { QueuePositionService } from './queue-position.service';
 import { QueueService } from './queue.service';
@@ -44,10 +45,6 @@ const runsCreated = metrics.getMeter('api').createCounter('ca_runs_created_total
 const MAX_SOURCE_BYTES = 64 * 1024;
 const MAX_INPUT_BYTES = 1024 * 1024;
 const bytes = (s: string) => Buffer.byteLength(s, 'utf8');
-
-/** Token-by-token comparison, the way the `tokens` checker would compare a sample. */
-const sameTokens = (a: string, b: string) =>
-  a.trim().split(/\s+/).join(' ') === b.trim().split(/\s+/).join(' ');
 
 const PHASES = ['claimed', 'compiling', 'running', 'done'] as const;
 
@@ -297,6 +294,7 @@ export class SubmissionsService {
         result: customRuns.result,
         input: customRuns.input,
         samples: problemVersions.samples,
+        checker: problemVersions.checker,
       })
       .from(customRuns)
       .leftJoin(problemVersions, eq(problemVersions.id, customRuns.problemVersionId))
@@ -321,7 +319,10 @@ export class SubmissionsService {
       stderr: str('stderr'),
       compileLog: str('compileLog'),
       expected: sample?.out ?? null,
-      matches: sample && output !== null ? sameTokens(output, sample.out) : null,
+      matches:
+        sample && output !== null
+          ? sampleMatches(run.checker as CheckerSpec | null, output, sample.out)
+          : null,
     };
   }
 
