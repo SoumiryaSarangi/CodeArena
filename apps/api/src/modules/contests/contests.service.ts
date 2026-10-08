@@ -2,6 +2,7 @@ import {
   ContestRules,
   type AdminContestDetail,
   type AdminContestList,
+  type BoardSnapshot,
   type ContestCreate,
   type ContestDetail,
   type ContestList,
@@ -24,6 +25,7 @@ import {
   problemVersions,
   problems,
 } from '../../db/schema';
+import { BoardService } from '../board/board.service';
 import { contestState } from './state';
 
 const tracer = trace.getTracer('api');
@@ -47,7 +49,10 @@ const invalid = (path: string, message: string) =>
 
 @Injectable()
 export class ContestsService {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    @Inject(BoardService) private readonly board: BoardService,
+  ) {}
 
   /** The server's clock, read once per request so every field of a response agrees. */
   private now() {
@@ -183,6 +188,7 @@ export class ContestsService {
           throw new ProblemError('already-registered', 'You are already registered');
         }
         registrations.add(1, { outcome: 'ok' });
+        await this.board.addParticipant(c.id, userId);
         const n = await this.counts([c.id]);
         return this.detailOf(c, now, n.get(c.id), true);
       } finally {
@@ -261,6 +267,19 @@ export class ContestsService {
       samples: r.samples as ContestProblemDetail['samples'],
       testsCount: r.testsCount,
     };
+  }
+
+  /** GET /contests/{slug}/board (C-02): public once published; frozen view per FR-BOARD-05. */
+  async boardOf(slug: string, viewer?: Viewer): Promise<BoardSnapshot> {
+    const c = await this.bySlug(slug, viewer);
+    return this.board.snapshot(c, viewer);
+  }
+
+  /** POST /admin/contests/{id}/rebuild-board (FR-BOARD-08). */
+  async rebuildBoard(id: string): Promise<{ version: number }> {
+    const c = await this.byId(id);
+    actions.add(1, { action: 'rebuild-board' });
+    return { version: await this.board.rebuild(c.id, 'admin') };
   }
 
   // ----- admin (FR-CONT-01) -----

@@ -59,7 +59,7 @@
         },
         "penaltyMinutes": {
           "default": 20,
-          "maximum": 120,
+          "maximum": 40,
           "minimum": 0,
           "type": "integer"
         },

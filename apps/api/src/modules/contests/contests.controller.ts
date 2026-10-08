@@ -42,6 +42,12 @@ export class ContestsController {
   }
 
   @Public()
+  @Get(':slug/board')
+  board(@Req() req: Request, @Param('slug') slug: string) {
+    return this.contests.boardOf(slug, req.user);
+  }
+
+  @Public()
   @Get(':slug/problems')
   problems(@Req() req: Request, @Param('slug') slug: string) {
     return this.contests.problems(slug, req.user);
@@ -79,6 +85,12 @@ export class ContestsAdminController {
   @Patch(':id')
   patch(@Param('id') id: string, @Body() body: unknown) {
     return this.contests.patch(id, ContestPatch.parse(body));
+  }
+
+  @Post(':id/rebuild-board')
+  @HttpCode(200)
+  rebuild(@Param('id') id: string) {
+    return this.contests.rebuildBoard(id);
   }
 
   @Put(':id/problems')

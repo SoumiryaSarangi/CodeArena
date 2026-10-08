@@ -652,3 +652,37 @@ Decisions: a contest has no `hidden` flag per problem yet (FR-CONT-06 arrives wi
 Next: C-02 (leaderboard engine, tag O: needs `/model opus` + `/effort high`), then C-03 scoreboard UI, C-04 arena.
 Ayush must: (1) validate the six contest problems and the three or more fixture problems on production (Admin → Problems → Validate) — a contest cannot be published with unvalidated versions; (2) Admin → Contests → New contest for Warm-up #1 (Sat 10 Oct 19:00–21:00 IST, freeze 30), add problems A–F in order chai-bill, lantern-lighting, ribbon-cuts, shadow-route, crate-convoy, ferry-pairs, publish, send `/c/warm-up-1` as the registration link; (3) for the dry-run contest (U6.2) pick three validated fixture problems. The six are `visibility contest`: set that in the problem's Overview (admin) if it is not already.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · C-02 · done
+Built: `apps/api/src/modules/board`:
+- `scoring.ts`: pack/unpack per SD-§9.2, ranks, `computeCell` (ICPC cell: CE per rule, SE/disqualified ignored, nothing after the first AC, pending, frozen view), `computeRow`.
+- `BoardService`: every update recomputes the (user, problem) cell from Postgres under a per-cell advisory lock, then one Lua script stores the live and frozen cell and rescores the user's two rows atomically. It is hooked into verdicts (`ResultsProcessor`, after the commit), contest submits (pending at once) and registration (zero row). Errors never fail a verdict; they are retried at 1/3/10 s.
+- Coalesced `board.diff` (≤ 2/s per contest across instances, NX lease) to `contest:{id}:board` (public view) and `admin:contest:{id}:board` (live).
+- Rebuild from Postgres swapped in with RENAME, lazy rebuild when the board is missing, `GET /api/contests/{slug}/board` (frozen view for non-admins with their own cells live), `POST /api/admin/contests/{id}/rebuild-board`.
+- Contracts `BoardSnapshot`/`BoardRow`/`BoardCell`/`BoardDiffData`, and the rule limits below.
+
+Tests:
+- `scoring.test.ts` 11: max < 2^53, and fast-check over 5000 pairs: score order equals the ICPC comparator; unpack inverts pack; the cell rules.
+- `board.test.ts` 7 on real Postgres + Redis, including **the Accept property test**: 40 random contests, with verdicts through the real `ResultsProcessor`, shuffled, four at a time, some twice, plus rejudges and disqualifications. The ZSET ranking (rank, solved, penalty, last AC) equals an independently written reference from Postgres for the live and the frozen view, and a rebuild changes nothing.
+- Also: the 20-verdict race on one cell (8 rounds), freeze visibility (guest/owner/other/admin), draft and before-start, rebuild endpoint and self-healing, diff coalescing, and the submit hook.
+- Mutation checks, all caught:
+  - CE always counted (the property test needed denser sequences to see it; fixed);
+  - Lua rescoring ignoring attempts;
+  - cells computed in arrival order instead of submission order (the SD-§5.5 incremental behaviour);
+  - the per-cell lock removed (the race test needed staggered commits and 8 rounds; now 4/4).
+- API suite 220 green.
+
+Covers FR-BOARD-01, 02, 03, 05, 08, 09 (data side; the disqualify endpoint arrives with the plagiarism cards).
+
+Decisions:
+- Recompute-the-cell instead of SD-§5.5's incremental Lua: order-independent, rejudge- and disqualification-safe, and equal to a rebuild by construction (SD as-built notes).
+- The frozen view is maintained continuously instead of a COPY at the freeze time, so no scheduler is needed.
+- First solves and solve counts are derived from the cells at read time.
+- **`penaltyMinutes` is now limited to 0–40 and contests to ≤ 1023 minutes**: needed for the packed score to stay exact. No contest existed yet, so nothing changed for data.
+- A frozen owner sees their own cells live, but their rank and totals stay frozen.
+
+Next: C-03 scoreboard UI (tag S, `/model sonnet`), then C-04 arena. Follow-ups: `board.freeze` push event (clients use the server clock instead); resolver (C-06); finalize unfreezes (C-08); the rejudge/disqualify buttons must call `BoardService.update` (C-07, plagiarism cards).
+
+Ayush must: nothing new. The U6.1/U6.2 steps in the C-01 entry still stand; keep penalty at 20 (now max 40).
+
+Model: O · Opus 5.5 (plan and build)

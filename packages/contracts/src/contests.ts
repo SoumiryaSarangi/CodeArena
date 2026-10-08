@@ -16,7 +16,8 @@ export type ContestState = z.infer<typeof ContestState>;
 
 export const ContestRules = z
   .object({
-    penaltyMinutes: z.number().int().min(0).max(120).default(20),
+    /** ≤ 40 keeps the packed board score exact (SD-§9.2: 26 · (1023 + 40 · 99) < 2^17). */
+    penaltyMinutes: z.number().int().min(0).max(40).default(20),
     ceCountsAsAttempt: z.boolean().default(false),
     /** Time-limit multiplier per language (PRD §9.3). */
     langMultipliers: z
@@ -36,16 +37,22 @@ const times = z.object({
   freezeAt: iso.datetime({ offset: true }).nullish(),
 });
 
+/** The packed board score holds the last-AC minute in 10 bits (SD-§9.2). */
+export const MAX_CONTEST_MINUTES = 1023;
+const MAX_CONTEST_MS = MAX_CONTEST_MINUTES * 60_000;
+
 const timesOk = (v: { startsAt?: string; endsAt?: string; freezeAt?: string | null }) => {
   const s = v.startsAt ? Date.parse(v.startsAt) : undefined;
   const e = v.endsAt ? Date.parse(v.endsAt) : undefined;
   const f = v.freezeAt ? Date.parse(v.freezeAt) : undefined;
   if (s !== undefined && e !== undefined && e <= s) return false;
+  if (s !== undefined && e !== undefined && e - s > MAX_CONTEST_MS) return false;
   if (f !== undefined && s !== undefined && f < s) return false;
   if (f !== undefined && e !== undefined && f >= e) return false;
   return true;
 };
-const TIMES_MSG = 'Need start < end, and the freeze between start and end';
+const TIMES_MSG =
+  'Need start < end, at most 1023 minutes long, and the freeze between start and end';
 
 export const ContestCreate = times
   .extend({
@@ -178,3 +185,72 @@ export const AdminContestList = z
   .strict()
   .meta({ id: 'AdminContestList' });
 export type AdminContestList = z.infer<typeof AdminContestList>;
+
+/** One cell of the board (FR-BOARD-07). Cells a user never touched are absent. */
+export const BoardCell = z
+  .object({
+    /** Rejected attempts before the first AC (all of them if unsolved); CE only when the rules say so. */
+    attempts: z.number().int().min(0),
+    /** Contest minute of the first AC, or null. */
+    acMinute: z.number().int().min(0).nullable(),
+    /** Submissions not judged yet; in the frozen view also every attempt after the freeze. */
+    pending: z.number().int().min(0),
+    /** The first AC on this problem in the contest. */
+    first: z.boolean(),
+  })
+  .strict()
+  .meta({ id: 'BoardCell' });
+export type BoardCell = z.infer<typeof BoardCell>;
+
+export const BoardRow = z
+  .object({
+    rank: z.number().int().min(1),
+    userId: z.string(),
+    handle: z.string(),
+    solved: z.number().int().min(0),
+    penalty: z.number().int().min(0),
+    lastAcMinute: z.number().int().min(0).nullable(),
+    /** The packed composite score (SD-§9.2); higher is better, equal scores share a rank. */
+    score: z.number().int(),
+    cells: z.record(z.string(), BoardCell),
+  })
+  .strict()
+  .meta({ id: 'BoardRow' });
+export type BoardRow = z.infer<typeof BoardRow>;
+
+export const BoardSnapshot = z
+  .object({
+    serverNow: iso,
+    /** Diffs with a lower or equal version are already included. */
+    version: z.number().int().min(0),
+    /** True when this view hides other people's results after the freeze. */
+    frozen: z.boolean(),
+    problems: z.array(
+      z
+        .object({
+          label: z.string(),
+          solvedCount: z.number().int().min(0),
+          firstSolverId: z.string().nullable(),
+        })
+        .strict(),
+    ),
+    rows: z.array(BoardRow),
+  })
+  .strict()
+  .meta({ id: 'BoardSnapshot' });
+export type BoardSnapshot = z.infer<typeof BoardSnapshot>;
+
+/**
+ * `board.diff` on `contest:{id}:board` (public view) and `admin:contest:{id}:board` (live view):
+ * the rows that changed. Ranks of other rows may shift too, so clients re-rank by `score`.
+ */
+export const BoardDiffData = z
+  .object({
+    contestId: z.string(),
+    version: z.number().int().min(0),
+    frozen: z.boolean(),
+    rows: z.array(BoardRow.omit({ rank: true })),
+  })
+  .strict()
+  .meta({ id: 'BoardDiffData' });
+export type BoardDiffData = z.infer<typeof BoardDiffData>;

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CONFIG, type Config } from '../../config/config';
+import { BoardModule } from '../board/board.module';
 import { Reconciler } from './reconciler';
 import { Idempotency } from './idempotency';
 import { QueuePositionService } from './queue-position.service';
@@ -12,6 +13,7 @@ import { ValidationService } from './validation.service';
 
 // S-01: submit/run/list/detail/position endpoints. // QueueService is the enqueue side (Q-01); ResultsConsumer/ResultsProcessor the verdict side (Q-03).
 @Module({
+  imports: [BoardModule],
   controllers: [SubmissionsController],
   providers: [
     Idempotency,

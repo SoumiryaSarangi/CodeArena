@@ -26,6 +26,7 @@ import {
   submissions,
   testResults,
 } from '../../db/schema';
+import { BoardService } from '../board/board.service';
 import { contestMinute, contestState } from '../contests/state';
 import { practiceVisible } from '../problems/practice';
 import { buildJob } from './job-builder';
@@ -72,6 +73,7 @@ export class SubmissionsService {
     @Inject(DB) private readonly db: Db,
     @Inject(QueueService) private readonly queue: QueueService,
     @Inject(QueuePositionService) private readonly positions: QueuePositionService,
+    @Inject(BoardService) private readonly board: BoardService,
   ) {}
 
   private checkLanguage(language: string) {
@@ -208,6 +210,10 @@ export class SubmissionsService {
             : new ProblemError('internal', 'Could not queue the submission; please submit again');
         }
         submitted.add(1, { lane });
+        // The new attempt shows on the board as pending at once (C-02).
+        if ('contestId' in target && target.contestId) {
+          await this.board.update(target.contestId, userId, version.id);
+        }
         const pos = await this.positions.of(id, lane);
         return { id, lane, position: pos.position, etaSeconds: pos.etaSeconds };
       } finally {

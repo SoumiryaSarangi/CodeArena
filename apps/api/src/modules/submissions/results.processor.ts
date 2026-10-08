@@ -10,6 +10,7 @@ import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
 import { publishEvent } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
+import { BoardService } from '../board/board.service';
 import { ValidationService } from './validation.service';
 
 const tracer = trace.getTracer('api');
@@ -23,7 +24,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type Outcome =
   /** First time this (submission, run version) was seen: stored, and the user was told. */
-  | { kind: 'applied'; event: SubmissionVerdictData }
+  | { kind: 'applied'; event: SubmissionVerdictData; contest?: ContestRef }
   /** Already stored (a replay, or another API instance won the race): nothing changed. */
   | { kind: 'duplicate' }
   /** An older run version than the submission's current one: kept as history only. */
@@ -32,6 +33,13 @@ export type Outcome =
   | { kind: 'validation' }
   /** Not trustworthy or not ours: the consumer moves it to `results:dlq`. */
   | { kind: 'parked'; reason: ParkReason; detail: string };
+
+/** A contest submission's board cell (C-02). */
+interface ContestRef {
+  contestId: string;
+  userId: string;
+  versionId: string;
+}
 
 export type ParkReason =
   'invalid-json' | 'invalid-result' | 'unknown-submission' | 'unknown-run-version';
@@ -52,6 +60,8 @@ export class ResultsProcessor {
     @Inject(LOGGER) private readonly log: Logger,
     /** Absent when the processor is built by hand (tests, the CLI): such results are parked as before. */
     @Optional() @Inject(ValidationService) private readonly validation?: ValidationService,
+    /** Absent in hand-built processors: contest verdicts then do not reach a board. */
+    @Optional() @Inject(BoardService) private readonly board?: BoardService,
   ) {}
 
   /**
@@ -102,7 +112,12 @@ export class ResultsProcessor {
 
     const outcome = await this.db.transaction(async (tx): Promise<Outcome> => {
       const [sub] = await tx
-        .select({ currentRunVersion: submissions.currentRunVersion })
+        .select({
+          currentRunVersion: submissions.currentRunVersion,
+          contestId: submissions.contestId,
+          userId: submissions.userId,
+          versionId: submissions.problemVersionId,
+        })
         .from(submissions)
         .where(eq(submissions.id, r.submissionId))
         .limit(1);
@@ -182,10 +197,20 @@ export class ResultsProcessor {
           memKb: r.memKb,
           failedTest,
         },
+        ...(sub.contestId
+          ? { contest: { contestId: sub.contestId, userId: sub.userId, versionId: sub.versionId } }
+          : {}),
       };
     });
 
-    if (outcome.kind === 'applied') await this.publish(outcome.event);
+    if (outcome.kind === 'applied') {
+      await this.publish(outcome.event);
+      // After the commit, so the board reads the stored verdict (C-02). Never throws.
+      if (outcome.contest) {
+        const { contestId, userId, versionId } = outcome.contest;
+        await this.board?.update(contestId, userId, versionId);
+      }
+    }
     return outcome;
   }
 

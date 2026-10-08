@@ -248,6 +248,7 @@ On a contest submission's final verdict:
 4. First AC on a problem → `HSETNX first:{cid} {label} {uid}`.
 5. Publish `board.diff` to `rt:contest:{cid}:board` (coalesced to ≤ 2/s).
 All steps run in one Lua script per update for atomicity.
+- *As built (C-02):* the incremental rules above give wrong answers when verdicts arrive out of order (an earlier WA judged after a later AC would be ignored) and cannot undo a rejudge or a disqualification. So every update **recomputes the whole (user, problem) cell from Postgres**: all of that user's submissions on that problem in the contest, in submission order, through one pure function (`apps/api/src/modules/board/scoring.ts`). A Lua script then stores the cell (live and frozen view) and recomputes the user's two row scores from all their cells atomically. Triggers: a contest submission is created (pending), a verdict is stored (`ResultsProcessor`, after the commit), a rejudge or disqualification (`BoardService.update`), a registration (zero row). The read-then-write of a cell runs in a short Postgres transaction holding `pg_advisory_xact_lock_shared(board:{cid})` and `pg_advisory_xact_lock(cell:{cid}:{uid}:{label})`, so the last write has always read the latest committed state; a rebuild takes the contest lock exclusively. Board failures never fail a verdict or a submit: they are logged, counted (`ca_board_update_failures_total`, as `ca_board_updates_total{outcome=error}`), and retried at 1, 3 and 10 s. First solves and solve counts are derived from the cells when read (the earliest AC by submission time), so `first:{cid}`/`solved:{cid}` are not stored and stay right after a rejudge. Diffs: after an update `SET board:{cid}:flush NX PX 500`; the winner publishes the changed rows 500 ms later as `board.diff` `{contestId, version, frozen, rows}` (rows carry the packed `score`; clients re-rank) to `contest:{cid}:board` (the public view, frozen during the freeze) and `admin:contest:{cid}:board` (live). No timer runs at the freeze: the frozen view is maintained all along from the `after_freeze` flag, and readers switch by the server clock.
 
 ### 5.6 Freeze and resolver
 
@@ -257,6 +258,7 @@ All steps run in one Lua script per update for atomicity.
   2. Repeat: pick the lowest-ranked row that still has pending cells; reveal its leftmost pending cell (apply the true result); if it becomes solved, re-sort (row may move up); emit `board.resolve.step`.
   3. When no pending cells remain, the board equals `board:{cid}` (assert in test C-06).
 - Steps are deterministic and replayable from the submissions table.
+- *As built (C-02):* there is no `COPY` at `freeze_at`. `board:{cid}:frozen` and `board:{cid}:frozen:cells` are kept up to date with every update, computed from the same submissions with every attempt made after the freeze shown as pending. Non-admins read them from `freeze_at` until the contest is finalized; a signed-in contestant sees their own cells live in place of the frozen ones (rank and totals stay frozen; FR-BOARD-05).
 
 ### 5.7 Realtime connection
 
@@ -463,9 +465,9 @@ Review:      pending ▶ ready | failed                     Plag run: queued ▶
 | `evt:{topic}` | stream `MAXLEN ~ 2000` | 5 min idle expiry | api → api | SSE replay buffer |
 | `rt:{topic}` | pub/sub | — | api → all api instances | SSE fan-out |
 | `tkt:{ticket}` | string | 60 s | api | Realtime ticket (single use via `GETDEL`) |
-| `board:{cid}` / `board:{cid}:frozen` | zset | 30 days | api | Leaderboard |
-| `board:{cid}:cells` | hash | 30 days | api | Cell state |
-| `first:{cid}` / `solved:{cid}` | hash | 30 days | api | First solves / solve counts |
+| `board:{cid}` / `board:{cid}:frozen` | zset | 30 days | api | Leaderboard (userId → packed score), live and frozen view |
+| `board:{cid}:cells` / `board:{cid}:frozen:cells` | hash | 30 days | api | Cell state `{uid}:{label}` → `{a, m, t, p}` (attempts, AC minute, AC submission time, pending) |
+| `board:{cid}:ver`, `board:{cid}:dirty`, `board:{cid}:flush` | string, set, string | 30 days, 30 days, 500 ms | api | Board version (diffs), users changed since the last diff, diff lease (C-02). First solves and solve counts are derived from the cells, not stored |
 | `resolver:{cid}` | hash | 7 days | api | Resolver progress |
 | `rl:{scope}:{id}` | hash | window | api | Token-bucket rate limits |
 | `ai:jobs` | stream | none | api | AI reviews / summaries |
@@ -591,10 +593,12 @@ score = S · 2^27 + (2^17 − 1 − P) · 2^10 + (1023 − T)
 Higher is better (`ZREVRANGE`). Max value = 26·2^27 + 2^27 − 1 ≈ 3.6 × 10^9 ≪ 2^53. Rejected attempts counted per problem are capped at 99 so `P ≤ 26 × (1023 + 20 × 99) = 78,078 < 131,071`. Unit test asserts the bounds and ordering (C-02).
 
 Equal scores share a rank: rank = 1 + number of rows with a strictly greater score (`ZCOUNT key (score +inf`).
+- *As built (C-02):* the 17-bit penalty holds only if `penaltyMinutes ≤ 40` (26 · (1023 + 40 · 99) = 129,558 < 131,071), so `ContestRules.penaltyMinutes` is limited to 0–40, and a contest may last at most 1023 minutes (`MAX_CONTEST_MINUTES`) so T fits its 10 bits. `scoring.test.ts` proves the maximum is below 2^53 and, with fast-check, that score order equals the ICPC comparator for any two results.
 
 ### 9.3 Board rebuild
 
 `rebuildBoard(cid)`: delete keys → replay all contest submissions ordered by `created_at` through the same pure function used live → write ZSET/hash → if frozen, rebuild `:frozen` from submissions before `freeze_at`. Property test: live board == rebuilt board for random sequences.
+- *As built (C-02):* `BoardService.rebuild` computes every cell and row with the same functions, writes them under temporary names and swaps them in with `RENAME` in one `MULTI`, so a reader never sees an empty board; a board that has gone missing (expired, Redis flushed) is rebuilt on the next read or update. `POST /api/admin/contests/{id}/rebuild-board` (admin). The property test (`board.test.ts`) drives random contests through the real `ResultsProcessor` with shuffled and repeated verdicts, rejudges and disqualifications and checks the ZSET ranking against an independently written reference from Postgres, for the live and the frozen view, then checks a rebuild changes nothing.
 
 ### 9.4 Freeze and resolver — see §5.6.
 

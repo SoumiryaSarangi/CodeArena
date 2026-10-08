@@ -1,0 +1,60 @@
+{
+  "$id": "BoardSnapshot.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "frozen": {
+      "type": "boolean"
+    },
+    "problems": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "firstSolverId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "solvedCount": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "label",
+          "solvedCount",
+          "firstSolverId"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "rows": {
+      "items": {
+        "$ref": "BoardRow.json"
+      },
+      "type": "array"
+    },
+    "serverNow": {
+      "type": "string"
+    },
+    "version": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "serverNow",
+    "version",
+    "frozen",
+    "problems",
+    "rows"
+  ],
+  "type": "object"
+}
