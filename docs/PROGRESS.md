@@ -756,3 +756,11 @@ Decisions: the attack-suite result is the GitHub Actions badge (the repo is publ
 Next: UI-05 (home, contests list, profile first version; tag S). Then Day 8: O-03 k6 burst tests (and the load numbers for this page).
 Ayush must: add `https://code-arena-eta-mauve.vercel.app/status` as a fourth UptimeRobot monitor once this is deployed.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · UI-05 · done
+Built: **API** `GET /api/users/{handle}/profile` (public: rating, join date, solved total/by difficulty/top-10 tags, 365 days of activity; contest problems count only after their contest ended; no e-mail or name) and `GET /api/me/home` (next contest + my registration, last three practised problems, warm-ups for a newcomer). **Web**: `/home` (S03), the profile's header, heatmap and solved lists (S12), `/profile` → my profile, so the rail's Home and Profile work; contests list (S07) was built in C-01.
+Tests: API profile suite (3: public data and counts incl. dedupe and 365-day window, contest problems hidden until the contest ends, home cards and newcomer rules and next-contest choice; mutation check on the contest guard was caught) with the whole API suite at 267 before a last lint-only edit; web unit 96 (heatmap grid and levels, tier words); Playwright 200 (11 new: home cards and states, guest, rail → profile, profile sections, empty profile, 404, axe dark/light at 1280 and 390, no horizontal scroll). Docker went away again at the end of the session, so the last small edit to `profile.test.ts` (removing an unused constant) was only checked by lint and typecheck: re-run `pnpm --filter @codearena/api test` once Docker is up. Covers FR-RATE-03, US-7.2, UI_UX S03/S12.
+Decisions: "solved" is by problem, not by submission; heatmap counts all submissions of any lane (timing only, no content); hints card waits for the AI cards; no settings link until a settings screen exists (follow-up); the landing page S01 and its live stats (data now available from `/api/status` totals) belong to a later card.
+Next: Day 8 per PLAN: O-03 k6 burst tests, then the AI Coach cards. Check `grep -n "Day 8" docs/PLAN.md` for tags and model before starting.
+Ayush must: nothing new. (Pending from before: GitHub Support request about the stale Contributors entry; `/status` UptimeRobot monitor; dry-run contest.)
+Model: S · Sonnet 5.5

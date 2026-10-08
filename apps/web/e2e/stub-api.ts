@@ -64,6 +64,56 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
     runResults: {} as Record<string, object>,
     /** What `GET /api/submissions/:id` answers, by id. */
     details: {} as Record<string, object>,
+    /** What `GET /api/me/home` and `GET /api/users/:handle/profile` answer (UI-05). */
+    home: {
+      nextContest: {
+        slug: 'warm-up-1',
+        title: 'CodeArena Warm-up #1',
+        startsAt: new Date(Date.now() + 2 * 86_400_000).toISOString(),
+        endsAt: new Date(Date.now() + 2 * 86_400_000 + 7_200_000).toISOString(),
+        state: 'scheduled',
+        registered: false,
+      },
+      continuePracticing: [
+        {
+          slug: 'sum-two-numbers',
+          title: 'Two Numbers, One Total',
+          solved: true,
+          lastVerdict: 'AC',
+        },
+        { slug: 'fractional-loot', title: 'Fractional Loot', solved: false, lastVerdict: 'WA' },
+      ],
+      warmUps: [],
+    } as Record<string, unknown>,
+    profile: {
+      handle: 'riya_k',
+      avatarUrl: null,
+      rating: 1493,
+      joinedAt: '2026-09-01T10:00:00.000Z',
+      solved: {
+        total: 7,
+        byDifficulty: [
+          { label: 'Under 1000', count: 4 },
+          { label: '1000–1399', count: 2 },
+          { label: '1400–1799', count: 1 },
+          { label: '1800 and up', count: 0 },
+        ],
+        byTag: [
+          { tag: 'math', count: 5 },
+          { tag: 'greedy', count: 3 },
+        ],
+      },
+      activity: {
+        from: new Date(Date.now() - 364 * 86_400_000).toISOString().slice(0, 10),
+        to: new Date().toISOString().slice(0, 10),
+        total: 15,
+        days: [
+          { date: new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10), count: 9 },
+          { date: new Date(Date.now() - 40 * 86_400_000).toISOString().slice(0, 10), count: 4 },
+          { date: new Date(Date.now() - 100 * 86_400_000).toISOString().slice(0, 10), count: 2 },
+        ],
+      },
+    } as Record<string, unknown>,
     /** What `GET /api/status` answers (O-02). */
     status: {
       serverNow: new Date().toISOString(),
@@ -153,6 +203,13 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
   await page.route('**/api/problems?**', (r) => json(r, { items: [], nextCursor: null }));
   await page.route('**/api/problems/tags', (r) => json(r, { items: [] }));
   await page.route('**/api/status', (r) => json(r, state.status));
+  await page.route('**/api/me/home', (r) => json(r, state.home));
+  await page.route('**/api/users/*/profile', (r) => {
+    const handle = decodeURIComponent(r.request().url().split('/').at(-2)!);
+    return handle === 'ghost'
+      ? json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404)
+      : json(r, { ...state.profile, handle });
+  });
   await page.route('**/api/health/live', (r) => json(r, { status: 'ok' }));
   await page.route('**/api/auth/refresh', (r) => {
     calls.refreshes++;

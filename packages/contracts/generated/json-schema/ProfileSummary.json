@@ -1,0 +1,135 @@
+{
+  "$id": "ProfileSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activity": {
+      "additionalProperties": false,
+      "properties": {
+        "days": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "date": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "count"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "total": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "total",
+        "days"
+      ],
+      "type": "object"
+    },
+    "avatarUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "handle": {
+      "type": "string"
+    },
+    "joinedAt": {
+      "type": "string"
+    },
+    "rating": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "solved": {
+      "additionalProperties": false,
+      "properties": {
+        "byDifficulty": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label",
+              "count"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "byTag": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "tag": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "count"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "total": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total",
+        "byDifficulty",
+        "byTag"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "handle",
+    "avatarUrl",
+    "rating",
+    "joinedAt",
+    "solved",
+    "activity"
+  ],
+  "type": "object"
+}

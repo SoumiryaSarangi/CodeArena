@@ -1,0 +1,111 @@
+{
+  "$id": "HomeSummary.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "continuePracticing": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "lastVerdict": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "solved": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "solved",
+          "lastVerdict"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "nextContest": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "endsAt": {
+              "type": "string"
+            },
+            "registered": {
+              "type": "boolean"
+            },
+            "slug": {
+              "type": "string"
+            },
+            "startsAt": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "scheduled",
+                "running"
+              ],
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "slug",
+            "title",
+            "startsAt",
+            "endsAt",
+            "state",
+            "registered"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "warmUps": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "difficulty": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "difficulty"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "nextContest",
+    "continuePracticing",
+    "warmUps"
+  ],
+  "type": "object"
+}

@@ -11,6 +11,7 @@ import { ContestsModule } from './modules/contests/contests.module';
 import { OpsModule } from './modules/ops/ops.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
 import { StatusModule } from './modules/status/status.module';
+import { ProfileModule } from './modules/profile/profile.module';
 import { ProblemsModule } from './modules/problems/problems.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
@@ -56,6 +57,7 @@ export class AppModule {
         OpsModule,
         RatingsModule,
         StatusModule,
+        ProfileModule,
         RealtimeModule,
         AdminModule,
         AiModule,

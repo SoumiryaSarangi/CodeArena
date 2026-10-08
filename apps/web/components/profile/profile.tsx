@@ -1,24 +1,28 @@
 'use client';
-import type { RatingHistory } from '@codearena/contracts';
+import type { ProfileSummary, RatingHistory } from '@codearena/contracts';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
 import { ratingHistory } from '@/lib/contests';
+import { profileSummary, tierWord } from '@/lib/profile';
+import { ActivityHeatmap } from './activity-heatmap';
 import { RatingGraph } from './rating-graph';
 
 /** S12, first cut (C-08): handle, rating, rating graph and contest history. UI-05 adds the rest. */
 export function Profile({ handle }: { handle: string }) {
   const [data, setData] = useState<RatingHistory | null>(null);
+  const [prof, setProf] = useState<ProfileSummary | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [attempt, setAttempt] = useState(0);
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
   useEffect(() => {
     const ctl = new AbortController();
-    ratingHistory(handle, ctl.signal)
-      .then((d) => {
+    Promise.all([ratingHistory(handle, ctl.signal), profileSummary(handle, ctl.signal)])
+      .then(([d, p]) => {
         setData(d);
+        setProf(p);
         setError(null);
       })
       .catch((e: unknown) => {
@@ -34,21 +38,33 @@ export function Profile({ handle }: { handle: string }) {
       <ErrorState message={error.message} requestId={error.requestId} onRetry={retry} />
     );
   }
-  if (!data) return <Skeleton className="h-64 w-full" />;
+  if (!data || !prof) return <Skeleton className="h-64 w-full" />;
   const latest = [...data.history].reverse();
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-mono text-24 font-semibold">{data.handle}</h1>
-        <p className="text-16">
-          Rating <span className="font-mono font-semibold tabular-nums">{data.rating}</span>
-          <span className="ml-2 text-13 text-text-2">
-            {data.history.length === 0
-              ? 'unrated so far'
-              : `after ${data.history.length} rated contest${data.history.length === 1 ? '' : 's'}`}
-          </span>
-        </p>
+      <div className="flex items-center gap-4">
+        <Avatar handle={prof.handle} url={prof.avatarUrl} />
+        <div className="flex flex-col gap-1">
+          <h1 className="font-mono text-24 font-semibold">{data.handle}</h1>
+          <p className="text-16">
+            Rating <span className="font-mono font-semibold tabular-nums">{data.rating}</span>
+            <span className="ml-2 font-medium">{tierWord(data.rating)}</span>
+            <span className="ml-2 text-13 text-text-2">
+              {data.history.length === 0
+                ? 'unrated so far'
+                : `after ${data.history.length} rated contest${data.history.length === 1 ? '' : 's'}`}
+            </span>
+          </p>
+          <p className="text-13 text-text-2">
+            Joined{' '}
+            {new Date(prof.joinedAt).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </p>
+        </div>
       </div>
       <section aria-labelledby="graph" className="flex flex-col gap-2">
         <h2 id="graph" className="text-16 font-medium">
@@ -58,6 +74,31 @@ export function Profile({ handle }: { handle: string }) {
           <p className="text-14 text-text-2">Rated contests will show up here.</p>
         ) : (
           <RatingGraph history={data.history} />
+        )}
+      </section>
+      <section aria-labelledby="activity" className="flex flex-col gap-2">
+        <h2 id="activity" className="text-16 font-medium">
+          Activity
+        </h2>
+        <ActivityHeatmap activity={prof.activity} />
+      </section>
+      <section aria-labelledby="solved" className="flex flex-col gap-3">
+        <h2 id="solved" className="text-16 font-medium">
+          Solved <span className="font-normal text-text-2">({prof.solved.total})</span>
+        </h2>
+        {prof.solved.total === 0 ? (
+          <p className="text-14 text-text-2">No problems solved yet.</p>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            <BarList
+              label="By difficulty"
+              rows={prof.solved.byDifficulty.map((d) => ({ name: d.label, count: d.count }))}
+            />
+            <BarList
+              label="By tag (top 10)"
+              rows={prof.solved.byTag.map((t) => ({ name: t.tag, count: t.count }))}
+            />
+          </div>
         )}
       </section>
       {latest.length > 0 ? (
@@ -105,6 +146,54 @@ export function Profile({ handle }: { handle: string }) {
           </div>
         </section>
       ) : null}
+    </div>
+  );
+}
+
+function Avatar({ handle, url }: { handle: string; url: string | null }) {
+  const cls = 'size-14 shrink-0 rounded-full border border-border-strong';
+  if (!url) {
+    return (
+      <span
+        aria-hidden
+        className={`${cls} flex items-center justify-center bg-surface-2 font-mono text-20 text-text-2`}
+      >
+        {handle.slice(0, 1).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={`${handle}'s avatar`}
+      referrerPolicy="no-referrer"
+      className={`${cls} object-cover`}
+    />
+  );
+}
+
+/** A list with a bar behind each count; the number is always written, the bar only repeats it. */
+function BarList({ label, rows }: { label: string; rows: { name: string; count: number }[] }) {
+  const max = Math.max(1, ...rows.map((r) => r.count));
+  return (
+    <div className="flex flex-col gap-1.5">
+      <h3 className="text-13 font-medium text-text-2">{label}</h3>
+      <ul aria-label={label} className="flex flex-col gap-1">
+        {rows.map((r) => (
+          <li key={r.name} className="flex items-center gap-3 text-14">
+            <span className="w-28 shrink-0 truncate" title={r.name}>
+              {r.name}
+            </span>
+            <span className="h-2 flex-1 rounded-sm bg-surface-3" aria-hidden>
+              <span
+                className="block h-2 rounded-sm bg-accent"
+                style={{ width: `${(r.count / max) * 100}%` }}
+              />
+            </span>
+            <span className="w-8 text-right font-mono tabular-nums">{r.count}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
