@@ -97,6 +97,7 @@ async function listen(u, topic, stats, stop) {
       );
       if (!res.ok || !res.body) throw new Error(`sse HTTP ${res.status}`);
       stats.connected++;
+      stats.peak = Math.max(stats.peak, stats.connected);
       stats.connectMs.push(now() - t0);
       let buf = '';
       const decoder = new TextDecoder();
@@ -135,7 +136,15 @@ async function run() {
   log('logged in');
 
   const stop = { done: false };
-  const sse = { connected: 0, events: 0, drops: 0, errors: 0, connectMs: [], lastError: '' };
+  const sse = {
+    connected: 0,
+    peak: 0,
+    events: 0,
+    drops: 0,
+    errors: 0,
+    connectMs: [],
+    lastError: '',
+  };
   const topic = `contest:${seed.contest.id}:board`;
   const listenerTasks = Array.from({ length: listeners }, (_, i) =>
     sleep(i * 40).then(() => listen(seed.users[i % seed.users.length], topic, sse, stop)),
@@ -252,7 +261,7 @@ async function run() {
     maxDlq: Math.max(0, ...depth.map((d) => d.dlq ?? 0)),
     sse: {
       wanted: listeners,
-      peakConnected: Math.max(sse.connected, 0),
+      peakConnected: sse.peak,
       events: sse.events,
       drops: sse.drops,
       errors: sse.errors,
