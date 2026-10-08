@@ -84,6 +84,14 @@ export interface ContestStub {
   /** What `/board?view=frozen` answers (the resolver's starting point); the live rows when unset. */
   frozenRows?: BRow[];
   boardRequests: number;
+  /** AI reviews (AI-03): what `GET /reviews` lists, which submissions were opened, and the ratings sent. */
+  reviews: {
+    items: Record<string, unknown>[];
+    opened: string[];
+    ratings: { id: string; helpful: boolean }[];
+    /** Opening a queued review answers `queued` (AI is busy) instead of writing it. */
+    busy: boolean;
+  };
   /** Operations console (C-07). */
   ops: {
     summary: Record<string, unknown>;
@@ -148,10 +156,49 @@ export async function stubContests(
     noLateRegistration?: boolean;
     /** The contest has exam mode (C-10). */
     exam?: boolean;
+    /** AI reviews for the viewer (AI-03): `mixed` = A ready, B queued; `none` = nothing submitted. */
+    reviews?: 'mixed' | 'none';
+    /** Opening a queued review answers `queued`. */
+    reviewsBusy?: boolean;
   } = {},
 ): Promise<ContestStub> {
   const o = { startsInSec: 3600, durationMin: 120, clockSkewMs: 0, ...opts };
   const st: ContestStub = {
+    reviews: {
+      items:
+        o.reviews === 'mixed'
+          ? [
+              {
+                reviewId: '00000000-0000-4000-8000-0000000000a1',
+                submissionId: '00000000-0000-4000-8000-0000000000b1',
+                label: 'A',
+                problemSlug: 'sum-two-numbers',
+                problemTitle: 'Two Numbers, One Total',
+                verdict: 'AC',
+                failedTest: null,
+                status: 'ready',
+                contentMd:
+                  '### Complexity\nLinear in the input size.\n### Edge cases you missed\nNone found.\n### Compared with the intended approach\nSame idea.\n### Readability\nName the **loop** variable.',
+                helpful: null,
+              },
+              {
+                reviewId: '00000000-0000-4000-8000-0000000000a2',
+                submissionId: '00000000-0000-4000-8000-0000000000b2',
+                label: 'B',
+                problemSlug: 'fractional-loot',
+                problemTitle: 'Fractional Loot',
+                verdict: 'WA',
+                failedTest: 4,
+                status: 'queued',
+                contentMd: null,
+                helpful: null,
+              },
+            ]
+          : [],
+      opened: [],
+      ratings: [],
+      busy: Boolean(o.reviewsBusy),
+    },
     board: {
       version: 1,
       frozen: false,
@@ -735,6 +782,33 @@ export async function stubContests(
   await page.route('**/api/admin/rejudge', (r) => {
     st.ops.rejudged.push(r.request().postDataJSON() as Record<string, unknown>);
     return json(r, { queued: 3, skipped: 1, truncated: false });
+  });
+
+  // ---- AI reviews (AI-03) ----
+  await page.route('**/api/reviews?**', (r) => json(r, { items: st.reviews.items }));
+  await page.route('**/api/reviews/by-submission/*', (r) => {
+    const sid = r.request().url().split('/').at(-1)!;
+    st.reviews.opened.push(sid);
+    const item = st.reviews.items.find((i) => i.submissionId === sid)!;
+    if (item.status !== 'ready' && !st.reviews.busy) {
+      item.status = 'ready';
+      item.contentMd =
+        '### Complexity\nQuadratic.\n### Edge cases you missed\nTest 4.\n### Compared with the intended approach\nUse sorting.\n### Readability\nFine.';
+    }
+    return json(r, {
+      status: item.status,
+      reviewId: item.reviewId,
+      contentMd: item.contentMd,
+      helpful: item.helpful,
+    });
+  });
+  await page.route('**/api/reviews/*/rating', (r) => {
+    const id = r.request().url().split('/').at(-2)!;
+    const body = r.request().postDataJSON() as { helpful: boolean };
+    st.reviews.ratings.push({ id, helpful: body.helpful });
+    const item = st.reviews.items.find((i) => i.reviewId === id);
+    if (item) item.helpful = body.helpful;
+    return r.fulfill({ status: 204 });
   });
 
   // ---- finalising and ratings (C-08) ----

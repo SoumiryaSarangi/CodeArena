@@ -57,6 +57,9 @@ const schema = z.object({
   AI_USER_PER_HOUR: z.coerce.number().int().positive().default(30),
   AI_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
   AI_RETRY_MAX_WAIT_MS: z.coerce.number().int().min(0).default(8_000),
+  /** AI-03: the background review writer: how often it wakes, and how many reviews it writes each time. */
+  AI_REVIEW_EVERY_MS: z.coerce.number().int().min(50).default(60_000),
+  AI_REVIEW_PER_TICK: z.coerce.number().int().min(1).default(3),
   // Whether this instance reads the `ai:jobs` stream. Default on, except under NODE_ENV=test.
   AI_WORKER: z.enum(['on', 'off']).optional(),
 

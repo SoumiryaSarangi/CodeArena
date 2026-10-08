@@ -28,6 +28,8 @@ import type {
   OpsSummary,
   Rejudge,
   RejudgeResult,
+  ReviewList,
+  ReviewResult,
 } from '@codearena/contracts';
 import { apiFetch } from './api';
 
@@ -214,3 +216,20 @@ export const reopenParticipant = (id: string, userId: string) =>
     undefined,
     { auth: 'required' },
   );
+
+/** AI reviews of my final submissions in a finalised contest (AI-03). */
+export const myReviews = (slug: string, signal?: AbortSignal) =>
+  apiFetch<ReviewList>('GET', `/reviews?contest=${enc(slug)}`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+/** Opening a review writes it if it is not there yet. */
+export const openReview = (submissionId: string, signal?: AbortSignal) =>
+  apiFetch<ReviewResult>('GET', `/reviews/by-submission/${enc(submissionId)}`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const rateReview = (reviewId: string, helpful: boolean) =>
+  apiFetch<void>('POST', `/reviews/${enc(reviewId)}/rating`, { helpful }, { auth: 'required' });

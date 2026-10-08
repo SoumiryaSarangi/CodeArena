@@ -120,6 +120,11 @@ export class AiLedger {
     return (await this.redis.set(this.k('lock', key), '1', 'EX', ttlS, 'NX')) === 'OK';
   }
 
+  async isLocked(key: string): Promise<boolean> {
+    await whenReady(this.redis);
+    return (await this.redis.exists(this.k('lock', key))) === 1;
+  }
+
   async unlock(key: string) {
     await this.redis.del(this.k('lock', key));
   }

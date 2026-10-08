@@ -47,6 +47,8 @@ export const reviews = pgTable('reviews', {
   promptVersion: text('prompt_version'),
   model: text('model'),
   tokens: integer('tokens'),
+  /** "Was this useful?" (FR-AI-05 style rating, AI-03). */
+  helpful: boolean('helpful'),
   createdAt: createdAt(),
   readyAt: ts('ready_at'),
 });

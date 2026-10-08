@@ -191,6 +191,11 @@ export function ContestLobby({ slug }: { slug: string }) {
             <Link href={`/c/${slug}/board`}>Scoreboard</Link>
           </Button>
         ) : null}
+        {state === 'finalized' ? (
+          <Button asChild variant="secondary">
+            <Link href={`/c/${slug}/results`}>Results and AI reviews</Link>
+          </Button>
+        ) : null}
         <ContestMessagesButton
           labels={(problems?.items ?? []).map((p) => p.label)}
           canAsk={state === 'running'}

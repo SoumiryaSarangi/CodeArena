@@ -1,0 +1,82 @@
+{
+  "$id": "ReviewItem.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contentMd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failedTest": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "helpful": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "label": {
+      "type": "string"
+    },
+    "problemSlug": {
+      "type": "string"
+    },
+    "problemTitle": {
+      "type": "string"
+    },
+    "reviewId": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "generating",
+        "ready",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "submissionId": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "reviewId",
+    "submissionId",
+    "label",
+    "problemSlug",
+    "problemTitle",
+    "verdict",
+    "failedTest",
+    "status",
+    "contentMd",
+    "helpful"
+  ],
+  "type": "object"
+}

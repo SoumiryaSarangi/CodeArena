@@ -15,6 +15,7 @@ export * from './ratings';
 export * from './status';
 export * from './profile';
 export * from './hints';
+export * from './reviews';
 
 export const HealthSchema = z.object({ status: z.literal('ok'), service: z.string() });
 export type Health = z.infer<typeof HealthSchema>;
