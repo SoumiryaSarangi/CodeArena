@@ -796,3 +796,16 @@ Decisions: "submit the test" = finish participation (earlier verdicts still coun
 Next: the load test (U8.1) with `scripts/scale-judges.sh`, O-06 failure drills (P), then AI-01..04. Follow-up: show the exam state on `/home`; consider a per-contest leave limit instead of the fixed 3.
 Ayush must: after this deploys, create a contest with **Exam mode** ticked (contest editor, rules), register a second account, press Start the test, switch tabs three times (two warnings, then your test is submitted), reload to see the finished screen, then use **Reopen** in the ops console. Do not tick it for Warm-up #1 unless you want exam rules there.
 Model: P · Opus plan (opusplan) + Sonnet 5.5 build
+
+## 2026-10-08 · note · follow-up cards from C-10, exam mode (no code)
+Collected after the first use; none is built. Ordered by how likely they are to matter on a real exam day.
+- **X-1 Fewer false positives.** Count a leave only if the window stays hidden or unfocused for N seconds (a notification flash, a password-manager pop-up or a browser dialog then costs nothing); N and the leave limit become contest settings (`rules.examLeaveSeconds`, `rules.examLeaveLimit`), with a "warnings only, never auto-finish" choice for the first uses.
+- **X-2 A leave log for disputes.** Today only a counter is stored. Add an `exam_events` table (participant, kind: blur / hidden / fullscreen-exit / reopened, time) shown as a timeline in the ops console, so an organiser can tell a real Alt-Tab from a flash and has evidence when a contestant objects. Same retention as editor signals (30 days).
+- **X-3 More admin control.** Finish a participant's test by hand, reopen with extra minutes, reopen several at once, and a live-updating Exam section (new SSE event on `admin:contest:{id}:board` or a poll of 3 s during a contest).
+- **X-4 Other tabs and devices lock at once.** An `exam.finished` event on `contest:{id}:u:{userId}` (new SSE type) so a second tab does not wait for its next call; one active test tab only (BroadcastChannel), so a second window cannot keep the problems open.
+- **X-5 A heartbeat while armed.** `POST /contests/{slug}/exam/ping` every 15 s; silence from an armed contestant for longer than N s (JavaScript blocked, network cut on purpose) is shown to organisers as "no signal", never as an automatic finish.
+- **X-6 Visible state during the test.** Show "Leaves: 1 of 3" in the contest bar, and the contest clock on the warning dialog.
+- **X-7 Devices.** Decide what exam mode means on phones (no reliable full screen, notifications are common): either warn-only, or an explicit "use a laptop" notice at the gate.
+- **X-8 Real-browser test.** The Playwright tests dispatch the browser events themselves (headless Chromium cannot Alt-Tab). Add one headed run in a real browser for full screen and tab switching before an exam that matters.
+- **X-9 Reporting.** The exam list in the post-contest export (who left how often, who finished early), and the exam state on `/home` for a registered contest.
+Ayush must: when exam mode misbehaves in a real contest, note what the contestant did (which key, which app, which browser) so it can be reproduced; Reopen is the stop-gap.
