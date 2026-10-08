@@ -24,6 +24,9 @@
     "enabled": {
       "type": "boolean"
     },
+    "hasAttempt": {
+      "type": "boolean"
+    },
     "levels": {
       "items": {
         "$ref": "HintItem.json"
@@ -62,6 +65,7 @@
     "practicePoints",
     "effectivePoints",
     "penaltyPercent",
+    "hasAttempt",
     "remainingThisHour"
   ],
   "type": "object"

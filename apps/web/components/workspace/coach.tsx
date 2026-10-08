@@ -14,10 +14,19 @@ const messageOf = (err: unknown) =>
   err instanceof ApiError ? err.message : 'Something went wrong. Try again.';
 
 /** The hint ladder (UI_UX HintLadder, S05 Coach tab; FR-AI-01, FR-AI-04, FR-AI-05). */
-export function CoachTab({ slug, signedIn }: { slug: string; signedIn: boolean }) {
+export function CoachTab({
+  slug,
+  signedIn,
+  refreshKey = 0,
+}: {
+  slug: string;
+  signedIn: boolean;
+  /** Changes after each verdict, so "you have an attempt now" is picked up without reopening the tab. */
+  refreshKey?: number;
+}) {
   const [state, setState] = useState<HintState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [nudge, setNudge] = useState<string | null>(null);
+  const [nudge, setNudge] = useState<{ level: number; text: string } | null>(null);
   const [asking, setAsking] = useState<1 | 2 | 3 | null>(null);
   const [confirm, setConfirm] = useState<HintItem | null>(null);
   const [notice, setNotice] = useState('');
@@ -42,7 +51,7 @@ export function CoachTab({ slug, signedIn }: { slug: string; signedIn: boolean }
 
   useEffect(() => {
     if (signedIn) void load();
-  }, [signedIn, load]);
+  }, [signedIn, load, refreshKey]);
 
   const unlock = async (item: HintItem) => {
     setConfirm(null);
@@ -56,7 +65,7 @@ export function CoachTab({ slug, signedIn }: { slug: string; signedIn: boolean }
         { problemSlug: slug, level: item.level },
         { auth: 'required' },
       );
-      if (res.nudge) setNudge(res.nudge);
+      if (res.nudge) setNudge({ level: item.level, text: res.nudge });
       else setNotice(`Level ${item.level} hint ready`);
       await load();
     } catch (err) {
@@ -127,14 +136,6 @@ export function CoachTab({ slug, signedIn }: { slug: string; signedIn: boolean }
           {error}
         </p>
       ) : null}
-      {nudge ? (
-        <p
-          role="status"
-          className="rounded-md border border-border-strong bg-surface-2 p-3 text-14"
-        >
-          {nudge}
-        </p>
-      ) : null}
       <span role="status" aria-live="polite" className="sr-only">
         {notice}
       </span>
@@ -177,11 +178,23 @@ export function CoachTab({ slug, signedIn }: { slug: string; signedIn: boolean }
                   </div>
                 </div>
               ) : item.status === 'available' ? (
-                <div className="mt-2">
+                <div className="mt-2 flex flex-col gap-2">
+                  {item.level > 1 && !state.hasAttempt ? (
+                    <p className="text-13 text-text-2">
+                      This level looks at your code. Submit an attempt for this problem first, then
+                      come back.
+                    </p>
+                  ) : null}
+                  {nudge?.level === item.level ? (
+                    <p role="status" className="text-13 text-text">
+                      {nudge.text}
+                    </p>
+                  ) : null}
                   <Button
                     size="sm"
                     variant="secondary"
-                    disabled={off || asking !== null}
+                    className="self-start"
+                    disabled={off || asking !== null || (item.level > 1 && !state.hasAttempt)}
                     onClick={() => setConfirm(item)}
                   >
                     {asking === item.level ? 'Writing the hint…' : `Unlock level ${item.level}`}

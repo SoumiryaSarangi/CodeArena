@@ -204,6 +204,7 @@ export class HintsService {
       effectivePoints:
         t.practicePoints === null ? null : Math.round((t.practicePoints * (100 - pct)) / 100),
       penaltyPercent: pct,
+      hasAttempt: (await this.attempt(userId, t)) !== null,
       remainingThisHour: Math.max(0, HINTS_PER_HOUR - used),
     };
   }

@@ -82,6 +82,28 @@ test('UI-06: when AI is busy the error says so; a nudge is shown and nothing is 
   await expect(level(nudge, 1)).not.toContainText('Hint text');
 });
 
+test('UI-06: levels 2 and 3 say they need an attempt, and stay disabled until there is one', async ({
+  page,
+}) => {
+  await stubApi(page, { hints: { noAttempt: true } });
+  await openCoach(page);
+  await level(page, 1).getByRole('button', { name: 'Unlock level 1' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Unlock level 1' }).click();
+  await expect(level(page, 1)).toContainText('Hint text for level 1'); // level 1 needs no attempt
+  await expect(level(page, 2)).toContainText('Submit an attempt for this problem first');
+  await expect(level(page, 2).getByRole('button', { name: 'Unlock level 2' })).toBeDisabled();
+});
+
+test('UI-06: a nudge from the server appears inside the level that asked', async ({ page }) => {
+  await stubApi(page, { hints: { reply: 'nudge' } });
+  await openCoach(page);
+  await level(page, 1).getByRole('button', { name: 'Unlock level 1' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Unlock level 1' }).click();
+  await expect(level(page, 1).getByRole('status')).toHaveText(
+    'Write and run an attempt first, then ask again.',
+  );
+});
+
 test('UI-06: guests are asked to sign in; hints switched off show the reason and no unlock buttons', async ({
   page,
 }) => {

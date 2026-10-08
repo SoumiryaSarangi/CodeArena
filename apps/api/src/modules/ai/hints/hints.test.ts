@@ -371,6 +371,10 @@ describe.skipIf(!ready)('AI-02: the hint ladder (needs the Compose Postgres and 
       ['locked', 50],
     ]);
     expect(before.body.penaltyPercent).toBe(0);
+    expect(before.body.hasAttempt).toBe(true);
+    expect(
+      (await call('get', `/hints?problemSlug=${P1}`, (await makeUser()).token)).body.hasAttempt,
+    ).toBe(false);
     await ask(u, 1);
     await ask(u, 2);
     const after = await call('get', `/hints?problemSlug=${P1}`, u.token);

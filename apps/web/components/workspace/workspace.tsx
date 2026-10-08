@@ -317,7 +317,13 @@ export function WorkspaceView({
           />
         ),
         submissions: <SubmissionsTab items={judging.history} signedIn={signedIn} />,
-        coach: contest ? null : <CoachTab slug={problem.slug} signedIn={signedIn} />,
+        coach: contest ? null : (
+          <CoachTab
+            slug={problem.slug}
+            signedIn={signedIn}
+            refreshKey={judging.history?.length ?? -1}
+          />
+        ),
       }}
     </Drawer>
   );

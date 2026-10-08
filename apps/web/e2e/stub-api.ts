@@ -43,7 +43,13 @@ export interface StubOptions {
   /** Answer this many submits with 503 (the API is restarting) before accepting one. */
   unavailable?: number;
   /** The Coach tab (UI-06). `off` switches hints off with that message; `reply` makes the next unlock fail busy or answer a nudge. */
-  hints?: { off?: string; reply?: 'busy' | 'nudge'; practicePoints?: number | null };
+  hints?: {
+    off?: string;
+    reply?: 'busy' | 'nudge';
+    practicePoints?: number | null;
+    /** No submission for this problem yet: levels 2 and 3 are not offered. */
+    noAttempt?: boolean;
+  };
   /** The signed-in user's role (default user). */
   role?: 'user' | 'setter' | 'admin';
   /** Taken handles for the availability check. */
@@ -298,6 +304,7 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
       practicePoints: hintPoints,
       effectivePoints: hintPoints === null ? null : Math.round((hintPoints * (100 - pct)) / 100),
       penaltyPercent: pct,
+      hasAttempt: !o.hints?.noAttempt,
       remainingThisHour: 10 - calls.hints.length,
     };
   };

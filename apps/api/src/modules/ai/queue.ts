@@ -109,6 +109,7 @@ export class AiQueue implements OnApplicationBootstrap, OnApplicationShutdown {
   }
 
   private async ensureGroup() {
+    await whenReady(this.redis); // the shared client connects lazily and has no offline queue
     try {
       await this.redis.xgroup('CREATE', this.key, AI_GROUP, '0', 'MKSTREAM');
     } catch (err) {

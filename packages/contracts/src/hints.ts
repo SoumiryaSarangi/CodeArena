@@ -45,6 +45,8 @@ export const HintState = z
     /** Practice points after the penalty of the highest real hint delivered. */
     effectivePoints: z.number().int().nullable(),
     penaltyPercent: z.number().int(),
+    /** I have submitted something for this problem: levels 2 and 3 work on it (level 1 does not need it). */
+    hasAttempt: z.boolean(),
     remainingThisHour: z.number().int(),
   })
   .strict()

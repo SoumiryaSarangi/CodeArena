@@ -911,3 +911,8 @@ Decisions: the unlock call is not auto-retried (hint generation is not idempoten
 Next: AI-03 (post-contest reviews, S) or AI-04 (leak eval, P, needs Ayush's labels). Prompt tuning is part of AI-04 (the level-2 hint was generous).
 Ayush must: try it on production after the deploy: sign in, open a practice problem, submit something, Coach tab → Unlock level 1. Delete `~/.codearena-relay-secret` if not done.
 Model: S · Sonnet 5.5 (via opusplan)
+
+## 2026-10-08 · UI-06 fix · "unlock level 2 does nothing"
+Reported by Ayush on production. Cause (from the API log and `hint_requests`): levels 2 and 3 are grounded in the user's own code, and Ayush had no submission for that problem, so every unlock answered with the nudge "Write and run an attempt first" (200, no model call, nothing stored). The nudge was a small box above the cards and the button gave no warning, so it looked broken. Fixed: `GET /api/hints` returns `hasAttempt`; for levels 2 and 3 without an attempt the card says "This level looks at your code. Submit an attempt for this problem first, then come back." and the button is disabled; the Coach refreshes after each submission list change; a server nudge now appears inside the level that asked. Also fixed a startup warning in the AI job queue (it used the shared Redis client before it was connected).
+Tests: API 344 (hasAttempt asserted), Playwright coach 12 (2 new: levels 2/3 disabled with the reason, nudge inside the card), workspace + arena green. Level 1 never needs an attempt (it is grounded in the statement and editorial).
+Model: S · Sonnet 5.5
