@@ -25,6 +25,11 @@ export const ContestRules = z
       .default({ c: 1, cpp17: 1, cpp20: 1, java21: 2, node: 2, python3: 3 }),
     rated: z.boolean().default(true),
     lateRegistration: z.boolean().default(true),
+    /**
+     * Exam mode (C-10): contestants can finish their test (one entry only), and leaving the test
+     * window three times finishes it for them. Off unless the organiser ticks it.
+     */
+    examMode: z.boolean().default(false),
   })
   .strict()
   .meta({ id: 'ContestRules' });
@@ -123,6 +128,24 @@ export const ContestList = z
   .meta({ id: 'ContestList' });
 export type ContestList = z.infer<typeof ContestList>;
 
+/** How many times leaving the window is tolerated: warnings 1 and 2, then the 3rd finishes the test. */
+export const EXAM_MAX_STRIKES = 3;
+
+export const ExamFinishReason = z.enum(['self', 'left-window']).meta({ id: 'ExamFinishReason' });
+export type ExamFinishReason = z.infer<typeof ExamFinishReason>;
+
+/** The viewer's own exam state in a contest with exam mode (C-10). */
+export const ContestExamState = z
+  .object({
+    finishedAt: iso.nullable(),
+    finishReason: ExamFinishReason.nullable(),
+    strikes: z.number().int().min(0),
+    maxStrikes: z.number().int(),
+  })
+  .strict()
+  .meta({ id: 'ContestExamState' });
+export type ContestExamState = z.infer<typeof ContestExamState>;
+
 export const ContestDetail = ContestSummary.extend({
   /** For realtime topics (`contest:{id}:clar`). */
   id: z.string(),
@@ -132,6 +155,8 @@ export const ContestDetail = ContestSummary.extend({
   serverNow: iso,
   /** Can this viewer register right now? Reason when not. */
   canRegister: z.boolean(),
+  /** Null unless the contest has exam mode and the viewer is registered. */
+  exam: ContestExamState.nullable(),
 })
   .strict()
   .meta({ id: 'ContestDetail' });
@@ -378,3 +403,36 @@ export const AnnouncementEvent = z
   .strict()
   .meta({ id: 'AnnouncementEvent' });
 export type AnnouncementEvent = z.infer<typeof AnnouncementEvent>;
+
+/** POST /contests/{slug}/leave: the client saw the test window being left (C-10). */
+export const LeaveResult = z
+  .object({
+    strikes: z.number().int().min(0),
+    /** Leaves still allowed before the test finishes. */
+    remaining: z.number().int().min(0),
+    finished: z.boolean(),
+    /** False when the call was a repeat inside the debounce window, or the viewer is staff. */
+    counted: z.boolean(),
+  })
+  .strict()
+  .meta({ id: 'LeaveResult' });
+export type LeaveResult = z.infer<typeof LeaveResult>;
+
+/** GET /admin/contests/{id}/exam: who left the window or finished, for the ops console. */
+export const ExamAdminList = z
+  .object({
+    items: z.array(
+      z
+        .object({
+          userId: z.string(),
+          handle: z.string().nullable(),
+          leaveCount: z.number().int().min(0),
+          finishedAt: iso.nullable(),
+          finishReason: ExamFinishReason.nullable(),
+        })
+        .strict(),
+    ),
+  })
+  .strict()
+  .meta({ id: 'ExamAdminList' });
+export type ExamAdminList = z.infer<typeof ExamAdminList>;

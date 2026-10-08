@@ -278,6 +278,10 @@ export function ContestEditor({ id }: { id: string }) {
               ['ceCountsAsAttempt', 'Compile errors count as rejected attempts'],
               ['rated', 'Rated'],
               ['lateRegistration', 'Allow registration while the contest runs'],
+              [
+                'examMode',
+                'Exam mode: one entry, a Finish test button, and leaving the window 3 times submits the test',
+              ],
             ] as const
           ).map(([k, text]) => (
             <label key={k} className="flex items-center gap-2 text-14">

@@ -61,6 +61,12 @@ export const participants = pgTable(
       .references(() => users.id),
     registeredAt: ts('registered_at').notNull().defaultNow(),
     finalRank: integer('final_rank'),
+    /** Exam mode (C-10): the participant ended their test (`self`) or it ended for them (`left-window`). */
+    finishedAt: ts('finished_at'),
+    finishReason: text('finish_reason'),
+    /** Times the window was left while the test ran; the third finishes it. */
+    leaveCount: integer('leave_count').notNull().default(0),
+    lastLeaveAt: ts('last_leave_at'),
   },
   (t) => [primaryKey({ columns: [t.contestId, t.userId] })],
 );

@@ -12,6 +12,16 @@
     "endsAt": {
       "type": "string"
     },
+    "exam": {
+      "anyOf": [
+        {
+          "$ref": "ContestExamState.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "freezeAt": {
       "type": [
         "string",
@@ -122,6 +132,7 @@
     "rules",
     "serverNow",
     "canRegister",
+    "exam",
     "problems"
   ],
   "type": "object"

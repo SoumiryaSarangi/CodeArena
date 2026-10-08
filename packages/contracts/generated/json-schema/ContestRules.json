@@ -7,6 +7,10 @@
       "default": false,
       "type": "boolean"
     },
+    "examMode": {
+      "default": false,
+      "type": "boolean"
+    },
     "langMultipliers": {
       "additionalProperties": {
         "maximum": 10,
@@ -46,7 +50,8 @@
     "ceCountsAsAttempt",
     "langMultipliers",
     "rated",
-    "lateRegistration"
+    "lateRegistration",
+    "examMode"
   ],
   "type": "object"
 }

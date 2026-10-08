@@ -26,6 +26,7 @@ import {
   problems,
 } from '../../db/schema';
 import { BoardService } from '../board/board.service';
+import { examOn, examStateOf, refuseFinished } from './exam';
 import { contestState } from './state';
 
 const tracer = trace.getTracer('api');
@@ -125,9 +126,11 @@ export class ContestsService {
     now: Date,
     n: { problems: number; reg: number } | undefined,
     registered: boolean,
+    exam: ContestDetail['exam'] = null,
   ): ContestDetail {
     return {
       ...this.summary(c, now, n, registered),
+      exam,
       id: c.id,
       description: c.description,
       rules: ContestRules.parse(c.rules),
@@ -160,7 +163,8 @@ export class ContestsService {
       this.counts([c.id]),
       this.registeredSet([c.id], viewer?.id),
     ]);
-    return this.detailOf(c, now, n.get(c.id), mine.has(c.id));
+    const exam = await examStateOf(this.db, c, viewer?.id);
+    return this.detailOf(c, now, n.get(c.id), mine.has(c.id), exam);
   }
 
   /** US-4.1 / FR-CONT-02. 409 `already-registered` on a repeat. */
@@ -191,7 +195,7 @@ export class ContestsService {
         registrations.add(1, { outcome: 'ok' });
         await this.board.addParticipant(c.id, userId);
         const n = await this.counts([c.id]);
-        return this.detailOf(c, now, n.get(c.id), true);
+        return this.detailOf(c, now, n.get(c.id), true, await examStateOf(this.db, c, userId));
       } finally {
         span.end();
       }
@@ -213,6 +217,11 @@ export class ContestsService {
     const mine = await this.registeredSet([c.id], viewer?.id);
     if (!mine.has(c.id)) {
       throw new ProblemError('forbidden', 'Register for the contest to see its problems');
+    }
+    // Exam mode (C-10): one entry only: a finished participant cannot read the problems again.
+    if (viewer && examOn(c.rules)) {
+      const exam = await examStateOf(this.db, c, viewer.id);
+      refuseFinished(state, c.rules, exam?.finishedAt ? new Date(exam.finishedAt) : null);
     }
   }
 

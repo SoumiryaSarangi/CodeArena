@@ -218,6 +218,19 @@ test.describe('C-01: admin contests (FR-CONT-01, FR-AUTH-09)', () => {
     expect(st.patches.map((p) => p.published)).toEqual([true, false]);
   });
 
+  test('FR-EXAM-01: ticking Exam mode sends it in the rules; it is off by default', async ({
+    page,
+  }) => {
+    const st = await adminSetup(page);
+    await page.goto(`/admin/contests/${ID}`);
+    const box = page.getByLabel(/^Exam mode:/);
+    await expect(box).not.toBeChecked();
+    await box.check();
+    await page.getByRole('button', { name: 'Save details' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Details saved.' })).toBeVisible();
+    expect((st.patches.at(-1) as { rules: { examMode: boolean } }).rules.examMode).toBe(true);
+  });
+
   test('FR-PROB-05: a refused publish lists the problem that is not validated', async ({
     page,
   }) => {

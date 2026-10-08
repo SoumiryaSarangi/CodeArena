@@ -7,6 +7,7 @@ import {
   ContestsController,
 } from './contests.controller';
 import { ContestsService } from './contests.service';
+import { ExamService } from './exam.service';
 import { MessagesService } from './messages.service';
 
 // C-01: contest model, registration, contest-scoped problem access and the admin CRUD. The lane
@@ -14,7 +15,7 @@ import { MessagesService } from './messages.service';
 @Module({
   imports: [BoardModule, RealtimeModule],
   controllers: [ContestsController, ContestsAdminController, ClarificationsAdminController],
-  providers: [ContestsService, MessagesService],
-  exports: [ContestsService, MessagesService],
+  providers: [ContestsService, MessagesService, ExamService],
+  exports: [ContestsService, MessagesService, ExamService],
 })
 export class ContestsModule {}

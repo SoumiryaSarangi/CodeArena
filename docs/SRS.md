@@ -158,6 +158,8 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 
 *As built (C-05, clarifications):* `GET/POST /api/contests/{slug}/clarifications` (registered contestants and admins; `GET` returns my questions plus every public answer; `POST {problemLabel?, question ≤ 2000}` only while the contest runs, 6 per minute, `contest-not-started` / `contest-ended` otherwise), `GET /api/contests/{slug}/announcements`, and for admins `GET /api/admin/contests/{id}/clarifications` (the inbox, with askers), `POST /api/admin/clarifications/{id}/answer {answer, isPublic}` (also edits an answer), `POST /api/admin/contests/{id}/announcements {body}`; answers and announcements are written to the audit log. Realtime topics: `admin:contest:{id}:clar` (`clar.new`, with the asker), `contest:{id}:clar` (`clar.answer` for public answers, `announce.new`; registered contestants), `contest:{id}:u:{userId}` (`clar.answer` for a private answer; only that user, or an admin, can open it). Public events never name the asker.
 
+*As built (C-10, exam mode):* `participants` gains `finished_at`, `finish_reason` (`self` | `left-window`), `leave_count` and `last_leave_at` (migration `0006`, additive). `POST /api/contests/{slug}/finish` replies with the contest detail; `POST /api/contests/{slug}/leave` replies `{strikes, remaining, finished, counted}` (`counted` is false for a repeat inside 2 s, for staff, and once the test is finished). The count is one `UPDATE … WHERE finished_at IS NULL AND (last_leave_at IS NULL OR last_leave_at < now() - 2 s)`, which also sets `finished_at` on the 3rd, so parallel calls cannot skip or double a strike. The single gates are `ContestsService.gate()` (problems) and `SubmissionsService.target()` (submit and run). Rate limits: finish 10/min, leave 30/min. Telemetry: spans `contests.finish` / `contests.leave`, counter `ca_exam_events_total{kind}`.
+
 **Profiles and ratings**: GET `/api/users/{handle}` · `/rating-history` · `/activity?from&to` · `/solved-stats` (Guest).
 
 **AI Coach**
@@ -244,6 +246,7 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | `payload-too-large` | 413 | Source > 64 KB, input > 1 MB, package > 100 MB |
 | `unsupported-language` | 422 | Language not enabled |
 | `contest-not-started`, `contest-ended`, `problem-hidden` | 422 | Contest timing rules |
+| `contest-finished` | 403 | Exam mode: the participant has finished their test (C-10) |
 | `hints-disabled-in-contest`, `hint-level-locked` | 422 | AI rules |
 | `invalid-package` | 422 | Package import failures (`errors[]`) |
 | `room-closed` | 410 | Room no longer open |
@@ -352,6 +355,11 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-CONT-06 | Admins shall hide/unhide a contest problem during the contest. | P0 | US-6.3 | T |
 | FR-CONT-07 | Finalising a contest shall freeze results, compute ratings (if rated and ≥ 5 participants), move problems to practice, and queue AI reviews. | P1 | US-4.7 · C-08 | T |
 | FR-CONT-08 | Hints and all AI features shall be disabled for a contest's problems while it runs. | P0 | US-8.3 | T |
+| FR-EXAM-01 | A contest may have exam mode (`rules.examMode`, default off). In it a registered contestant can finish their test (`POST /contests/{slug}/finish`, idempotent, only while running); the contest detail carries their `exam` state (`finishedAt`, `finishReason`, `strikes`, `maxStrikes`). | P1 | PRD §9.2a · C-10 | T |
+| FR-EXAM-02 | The client reports leaving the test window (`POST /contests/{slug}/leave`); the server counts it atomically, ignores a repeat within 2 s, and finishes the test (`left-window`) on the 3rd. Staff are never counted. | P1 | PRD §9.2a · C-10 | T |
+| FR-EXAM-03 | While the contest runs, a finished participant gets 403 `contest-finished` on the contest problem list and statements, `POST /submissions` and `POST /runs`; the board, announcements and clarifications stay readable; after the end nothing is refused. | P1 | PRD §9.2a · C-10 | T |
+| FR-EXAM-04 | The exam endpoints refuse a contest without exam mode (403), a contest that has not started (422 `contest-not-started`) or has ended (422 `contest-ended`), and a user who is not registered (403). | P1 | C-10 | T |
+| FR-EXAM-05 | An admin can list who left the window or finished (`GET /admin/contests/{id}/exam`) and reopen a participant's test (`POST /admin/contests/{id}/participants/{userId}/reopen`, 204, audit action `contest.reopen`). | P1 | C-10 | T |
 
 #### 3.2.8 Leaderboard (BOARD)
 

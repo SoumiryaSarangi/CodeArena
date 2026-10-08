@@ -43,6 +43,13 @@
       "when": 1791423612978,
       "tag": "0005_silly_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791461974300,
+      "tag": "0006_friendly_gauntlet",
+      "breakpoints": true
     }
   ]
 }

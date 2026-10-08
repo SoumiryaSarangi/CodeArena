@@ -17,6 +17,7 @@ const RULES = {
   langMultipliers: { c: 1, cpp17: 1, cpp20: 1, java21: 2, node: 2, python3: 3 },
   rated: true,
   lateRegistration: true,
+  examMode: false,
 };
 
 import { rankRows } from '../lib/board';
@@ -113,6 +114,23 @@ export interface ContestStub {
   problemPuts: Record<string, unknown>[];
   registered: boolean;
   published: boolean;
+  /** Exam mode (C-10): what the server would have stored for the viewer, and what was called. */
+  exam: {
+    strikes: number;
+    finishedAt: string | null;
+    finishReason: 'self' | 'left-window' | null;
+    leaves: number;
+    finishes: number;
+    reopened: string[];
+    /** Others in the ops console list. */
+    others: {
+      userId: string;
+      handle: string;
+      leaveCount: number;
+      finishedAt: string | null;
+      finishReason: string | null;
+    }[];
+  };
 }
 
 export async function stubContests(
@@ -128,6 +146,8 @@ export async function stubContests(
     finalized?: boolean;
     publishError?: boolean;
     noLateRegistration?: boolean;
+    /** The contest has exam mode (C-10). */
+    exam?: boolean;
   } = {},
 ): Promise<ContestStub> {
   const o = { startsInSec: 3600, durationMin: 120, clockSkewMs: 0, ...opts };
@@ -222,6 +242,15 @@ export async function stubContests(
     problemPuts: [],
     registered: opts.registered ?? false,
     published: false,
+    exam: {
+      strikes: 0,
+      finishedAt: null,
+      finishReason: null,
+      leaves: 0,
+      finishes: 0,
+      reopened: [],
+      others: [],
+    },
   };
   // Fixed at the first request so the contest keeps its schedule while the test runs.
   const t0 = Date.now();
@@ -267,7 +296,20 @@ export async function stubContests(
     registeredCount: st.registered ? 13 : 12,
     registered: st.registered,
     description: 'Six problems, two hours. Good luck!',
-    rules: opts.noLateRegistration ? { ...RULES, lateRegistration: false } : RULES,
+    rules: {
+      ...RULES,
+      lateRegistration: !opts.noLateRegistration,
+      examMode: !!opts.exam,
+    },
+    exam:
+      opts.exam && st.registered
+        ? {
+            finishedAt: st.exam.finishedAt,
+            finishReason: st.exam.finishReason,
+            strikes: st.exam.strikes,
+            maxStrikes: 3,
+          }
+        : null,
     serverNow: serverNow().toISOString(),
     canRegister:
       !st.registered &&
@@ -302,6 +344,18 @@ export async function stubContests(
     return json(r, detail(), 201);
   });
   await page.route(/\/api\/contests\/warm-up-1\/problems\/[A-Z]$/, (r) => {
+    if (opts.exam && st.exam.finishedAt && stateNow() === 'running') {
+      return json(
+        r,
+        {
+          type: 'https://codearena.dev/errors/contest-finished',
+          title: 'You have finished this test',
+          status: 403,
+          code: 'contest-finished',
+        },
+        403,
+      );
+    }
     const label = r.request().url().split('/').at(-1)!;
     if (stateNow() === 'scheduled') {
       return json(
@@ -342,6 +396,18 @@ export async function stubContests(
     });
   });
   await page.route('**/api/contests/warm-up-1/problems', (r) => {
+    if (opts.exam && st.exam.finishedAt && stateNow() === 'running') {
+      return json(
+        r,
+        {
+          type: 'https://codearena.dev/errors/contest-finished',
+          title: 'You have finished this test',
+          status: 403,
+          code: 'contest-finished',
+        },
+        403,
+      );
+    }
     if (stateNow() === 'scheduled') {
       return json(
         r,
@@ -475,6 +541,70 @@ export async function stubContests(
         },
         201,
       );
+    },
+  );
+
+  // ---- exam mode (C-10): mirrors the server's counting, including the 2 s debounce ----
+  let lastLeave = 0;
+  await page.route('**/api/contests/warm-up-1/leave', (r) => {
+    st.exam.leaves++;
+    const now = Date.now();
+    if (st.exam.finishedAt || now - lastLeave < 2000) {
+      return json(r, {
+        strikes: st.exam.strikes,
+        remaining: Math.max(0, 3 - st.exam.strikes),
+        finished: !!st.exam.finishedAt,
+        counted: false,
+      });
+    }
+    lastLeave = now;
+    st.exam.strikes++;
+    if (st.exam.strikes >= 3) {
+      st.exam.finishedAt = new Date().toISOString();
+      st.exam.finishReason = 'left-window';
+    }
+    return json(r, {
+      strikes: st.exam.strikes,
+      remaining: Math.max(0, 3 - st.exam.strikes),
+      finished: !!st.exam.finishedAt,
+      counted: true,
+    });
+  });
+  await page.route('**/api/contests/warm-up-1/finish', (r) => {
+    st.exam.finishes++;
+    if (!st.exam.finishedAt) {
+      st.exam.finishedAt = new Date().toISOString();
+      st.exam.finishReason = 'self';
+    }
+    return json(r, detail());
+  });
+  await page.route('**/api/admin/contests/11111111-1111-4111-8111-111111111111/exam', (r) =>
+    json(r, {
+      items: [
+        ...st.exam.others,
+        ...(st.exam.strikes > 0 || st.exam.finishedAt
+          ? [
+              {
+                userId: 'u-me',
+                handle: 'me',
+                leaveCount: st.exam.strikes,
+                finishedAt: st.exam.finishedAt,
+                finishReason: st.exam.finishReason,
+              },
+            ]
+          : []),
+      ],
+    }),
+  );
+  await page.route(
+    '**/api/admin/contests/11111111-1111-4111-8111-111111111111/participants/*/reopen',
+    (r) => {
+      const userId = r.request().url().split('/').at(-2)!;
+      st.exam.reopened.push(userId);
+      st.exam.others = st.exam.others.map((o) =>
+        o.userId === userId ? { ...o, leaveCount: 0, finishedAt: null, finishReason: null } : o,
+      );
+      return r.fulfill({ status: 204 });
     },
   );
 

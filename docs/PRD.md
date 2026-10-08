@@ -346,7 +346,7 @@ As Ayush, I want to run a similarity analysis after a contest, so that I find co
 - AC3: No automatic penalty; a confirmed decision can mark submissions as disqualified, which the admin applies explicitly, recomputing the board.
 
 **US-9.3 · Consent and transparency** (P0)
-- AC1: Contest rules state what is collected (paste events, timing), why, and that nothing is decided automatically.
+- AC1: Contest rules state what is collected (paste events, timing), why, and that nothing is decided automatically. *Exception, only when the organiser turns on exam mode (§9.2a):* the third time a contestant leaves the test window, the test is finished automatically; the rules page and the start screen say so first, and an admin can reopen it.
 
 ### E10 — Interview pad
 
@@ -407,6 +407,16 @@ As a mentor, I want to create a room with a problem and invite a candidate, so t
 
 - Default: the last 30 minutes of a 2-hour contest (configurable; 0 disables).
 - During freeze, contestants see their own verdicts; the public board shows other people's post-freeze attempts as pending.
+
+### 9.2a Exam mode (optional, per contest)
+
+Off by default; the organiser ticks **Exam mode** when setting up a contest (`rules.examMode`). Warm-up contests stay ICPC-style. When it is on:
+
+- A contestant has **one entry**: they can press **Finish test** at any time, and after that they cannot open the problems, submit or run code while the contest is still running. Verdicts of submissions already sent are still produced and stay on the scoreboard. After the contest ends it is a normal contest again.
+- Leaving the test window (switching tab or app, or leaving full screen) is **counted by the server**. The first two leaves show a warning; the **third finishes the test** for the contestant. A leave closer than 2 seconds to the previous one counts once.
+- The contest rules page says so before the test starts. What is recorded: the number of leaves and the time the test finished (and whether the contestant or the third leave ended it). Nothing else about the screen, the device or other tabs.
+- It is a deterrent with an audit trail, **not proctoring**: a website cannot stop a second device or Alt-Tab, and a notification or pop-up can also count as leaving. Organisers can **Reopen** a test (audit-logged) after a false positive.
+- Staff (setters, admins) are never counted and never locked out.
 
 ### 9.3 Language time multipliers
 

@@ -23,6 +23,7 @@ import type { Request } from 'express';
 import { RateLimit } from '../../rate-limit/rate-limit';
 import { Public, RequireHandle, Roles } from '../auth/guards';
 import { ContestsService } from './contests.service';
+import { ExamService } from './exam.service';
 import { MessagesService } from './messages.service';
 
 /** Contests for contestants and guests (SRS §3.2.7). A bearer token, when sent, adds `registered`. */
@@ -31,6 +32,7 @@ export class ContestsController {
   constructor(
     @Inject(ContestsService) private readonly contests: ContestsService,
     @Inject(MessagesService) private readonly messages: MessagesService,
+    @Inject(ExamService) private readonly exam: ExamService,
   ) {}
 
   @Public()
@@ -51,6 +53,24 @@ export class ContestsController {
   @HttpCode(201)
   register(@Req() req: Request, @Param('slug') slug: string) {
     return this.contests.register(slug, req.user!.id);
+  }
+
+  /** FR-EXAM-01: end my test (exam-mode contests only). */
+  @RequireHandle()
+  @RateLimit({ scope: 'exam-finish', perMinute: 10 })
+  @Post(':slug/finish')
+  @HttpCode(200)
+  async finish(@Req() req: Request, @Param('slug') slug: string) {
+    await this.exam.finish(slug, req.user!);
+    return this.contests.detail(slug, req.user);
+  }
+
+  /** FR-EXAM-02: the client saw me leave the test window; the third time finishes the test. */
+  @RateLimit({ scope: 'exam-leave', perMinute: 30 })
+  @Post(':slug/leave')
+  @HttpCode(200)
+  leave(@Req() req: Request, @Param('slug') slug: string) {
+    return this.exam.leave(slug, req.user!);
   }
 
   @Public()
@@ -98,7 +118,21 @@ export class ContestsAdminController {
   constructor(
     @Inject(ContestsService) private readonly contests: ContestsService,
     @Inject(MessagesService) private readonly messages: MessagesService,
+    @Inject(ExamService) private readonly exam: ExamService,
   ) {}
+
+  /** Who left the test window or finished (exam mode). */
+  @Get(':id/exam')
+  examList(@Param('id') id: string) {
+    return this.exam.adminList(id);
+  }
+
+  /** Give a participant their test back. */
+  @Post(':id/participants/:userId/reopen')
+  @HttpCode(204)
+  async reopen(@Req() req: Request, @Param('id') id: string, @Param('userId') userId: string) {
+    await this.exam.reopen(id, userId, req.user!);
+  }
 
   @Get(':id/clarifications')
   inbox(@Param('id') id: string) {

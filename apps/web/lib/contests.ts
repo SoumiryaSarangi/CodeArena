@@ -6,6 +6,8 @@ import type {
   ClarificationAnswer,
   ClarificationCreate,
   ClarificationItem,
+  ExamAdminList,
+  LeaveResult,
   ClarificationList,
   AdminContestDetail,
   AdminContestList,
@@ -190,3 +192,25 @@ export const ratingHistory = (handle: string, signal?: AbortSignal) =>
     auth: 'optional',
     signal,
   });
+
+/** Exam mode (C-10): end my test. Replies with the contest as I now see it. */
+export const finishExam = (slug: string) =>
+  apiFetch<ContestDetail>('POST', `/contests/${enc(slug)}/finish`, undefined, { auth: 'required' });
+
+/** Exam mode (C-10): report that the test window was left; the server counts the strike. */
+export const reportLeave = (slug: string) =>
+  apiFetch<LeaveResult>('POST', `/contests/${enc(slug)}/leave`, undefined, { auth: 'required' });
+
+export const examList = (id: string, signal?: AbortSignal) =>
+  apiFetch<ExamAdminList>('GET', `/admin/contests/${enc(id)}/exam`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const reopenParticipant = (id: string, userId: string) =>
+  apiFetch<void>(
+    'POST',
+    `/admin/contests/${enc(id)}/participants/${enc(userId)}/reopen`,
+    undefined,
+    { auth: 'required' },
+  );

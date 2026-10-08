@@ -14,6 +14,8 @@ interface PanelProps {
   /** `drawer` slides in from the right at 420 px (clarifications, shortcut sheet). */
   variant?: 'dialog' | 'drawer';
   className?: string;
+  /** False: no close button, and Esc or a click outside does nothing (the buttons inside decide). */
+  dismissible?: boolean;
 }
 
 /** Focus is trapped, Esc closes, focus returns to the trigger (Radix). */
@@ -23,11 +25,14 @@ export function DialogContent({
   children,
   variant = 'dialog',
   className,
+  dismissible = true,
 }: PanelProps) {
   return (
     <D.Portal>
       <D.Overlay className="fixed inset-0 z-40 bg-bg/70" />
       <D.Content
+        onEscapeKeyDown={dismissible ? undefined : (e) => e.preventDefault()}
+        onInteractOutside={dismissible ? undefined : (e) => e.preventDefault()}
         className={cn(
           'fixed z-50 border border-border-strong bg-surface-1 shadow-[var(--shadow-overlay)]',
           variant === 'drawer'
@@ -43,12 +48,14 @@ export function DialogContent({
               <D.Description className="mt-1 text-14 text-text-2">{description}</D.Description>
             ) : null}
           </div>
-          <D.Close
-            aria-label="Close"
-            className="inline-flex size-7 items-center justify-center rounded-md text-text-2 hover:bg-surface-2 hover:text-text"
-          >
-            <X className="size-4" aria-hidden />
-          </D.Close>
+          {dismissible ? (
+            <D.Close
+              aria-label="Close"
+              className="inline-flex size-7 items-center justify-center rounded-md text-text-2 hover:bg-surface-2 hover:text-text"
+            >
+              <X className="size-4" aria-hidden />
+            </D.Close>
+          ) : null}
         </div>
         {children}
       </D.Content>

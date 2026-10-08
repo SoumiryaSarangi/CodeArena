@@ -34,6 +34,10 @@
           "default": false,
           "type": "boolean"
         },
+        "examMode": {
+          "default": false,
+          "type": "boolean"
+        },
         "langMultipliers": {
           "additionalProperties": {
             "maximum": 10,

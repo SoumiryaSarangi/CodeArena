@@ -14,6 +14,7 @@ import { adminContest, adminInbox, announce, answerClarification } from '@/lib/c
 import { subscribe } from '@/lib/realtime';
 import { cn } from '@/lib/cn';
 import { ActionError } from './problem-errors';
+import { ExamPanel } from './exam-panel';
 import { OpsConsole } from './ops-console';
 
 /** Open questions first (oldest first: they have waited longest), then answered ones. */
@@ -194,6 +195,8 @@ export function ContestOps({ id }: { id: string }) {
       </p>
 
       <OpsConsole contest={contest} onChanged={() => setAttempt((n) => n + 1)} />
+
+      {contest.rules.examMode ? <ExamPanel id={id} /> : null}
 
       <form onSubmit={post} className="flex flex-col gap-2" aria-label="Announcement">
         <h2 className="text-16 font-medium">Announce to everyone</h2>

@@ -15,6 +15,7 @@ export const ErrorCode = z
     'unsupported-language',
     'contest-not-started',
     'contest-ended',
+    'contest-finished',
     'problem-hidden',
     'hints-disabled-in-contest',
     'hint-level-locked',

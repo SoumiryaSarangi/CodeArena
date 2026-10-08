@@ -29,6 +29,7 @@
       "$ref": "ContestRules.json",
       "default": {
         "ceCountsAsAttempt": false,
+        "examMode": false,
         "langMultipliers": {
           "c": 1,
           "cpp17": 1,

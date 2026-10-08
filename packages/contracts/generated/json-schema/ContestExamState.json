@@ -1,0 +1,40 @@
+{
+  "$id": "ContestExamState.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "finishedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finishReason": {
+      "anyOf": [
+        {
+          "$ref": "ExamFinishReason.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "maxStrikes": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "strikes": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "finishedAt",
+    "finishReason",
+    "strikes",
+    "maxStrikes"
+  ],
+  "type": "object"
+}

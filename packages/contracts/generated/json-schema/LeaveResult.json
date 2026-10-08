@@ -1,0 +1,30 @@
+{
+  "$id": "LeaveResult.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "counted": {
+      "type": "boolean"
+    },
+    "finished": {
+      "type": "boolean"
+    },
+    "remaining": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "strikes": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "strikes",
+    "remaining",
+    "finished",
+    "counted"
+  ],
+  "type": "object"
+}

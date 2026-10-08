@@ -27,6 +27,7 @@ import {
   testResults,
 } from '../../db/schema';
 import { BoardService } from '../board/board.service';
+import { refuseFinished } from '../contests/exam';
 import { contestMinute, contestState } from '../contests/state';
 import { practiceVisible } from '../problems/practice';
 import { sampleMatches, type CheckerSpec } from './sample-match';
@@ -133,6 +134,7 @@ export class SubmissionsService {
         startsAt: contests.startsAt,
         endsAt: contests.endsAt,
         freezeAt: contests.freezeAt,
+        rules: contests.rules,
       })
       .from(contests)
       .where(eq(contests.slug, body.contestSlug))
@@ -162,11 +164,13 @@ export class SubmissionsService {
       return { version: row, lane: 'practice' as const };
     }
     const [reg] = await this.db
-      .select({ userId: participants.userId })
+      .select({ userId: participants.userId, finishedAt: participants.finishedAt })
       .from(participants)
       .where(and(eq(participants.contestId, c.id), eq(participants.userId, userId)))
       .limit(1);
     if (!reg) throw new ProblemError('forbidden', 'Register for the contest to submit');
+    // Exam mode (C-10, FR-EXAM-03): a finished test accepts nothing more, submits and runs alike.
+    refuseFinished(state, c.rules, reg.finishedAt);
     return {
       version: row,
       lane: 'contest' as const,

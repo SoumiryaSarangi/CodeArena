@@ -21,6 +21,8 @@ import { cn } from '@/lib/cn';
 import { contestDetail, contestProblem, contestProblems } from '@/lib/contests';
 import { signInHref, useSession } from '@/lib/session';
 import { useLiveBoard } from '@/lib/use-live-board';
+import { useExam } from '@/lib/exam';
+import { ExamFinished, ExamGate, ExamWarning, FinishTestButton } from './exam-guard';
 import { ContestMessagesButton } from './messages-button';
 
 type Load<T> = { s: 'loading' } | { s: 'ready'; v: T } | { s: 'error'; err: ApiError };
@@ -89,6 +91,10 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
   const endsAt = contest ? Date.parse(contest.endsAt) : Infinity;
   const running = contest?.state === 'running' && now < endsAt;
   useImmersive(running && full);
+  // Exam mode (C-10): contestants only, while the contest runs.
+  const examActive =
+    !!contest?.exam && running && !!me && me.role !== 'admin' && me.role !== 'setter';
+  const exam = useExam(slug, contest?.exam, examActive);
   // "Contest over": once, when the clock passes the end while this page is open.
   const wasRunning = useRef(false);
   useEffect(() => {
@@ -113,6 +119,9 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         />
       );
     }
+    if (e.status === 403 && e.code === 'contest-finished') {
+      return <ExamFinished reason={contest?.exam?.finishReason ?? exam.state.reason} slug={slug} />;
+    }
     if (e.status === 403 || e.status === 404) {
       return (
         <EmptyState
@@ -134,6 +143,20 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         message={e.message}
         requestId={e.requestId}
         onRetry={() => setAttempt((n) => n + 1)}
+      />
+    );
+  }
+
+  if (examActive && exam.state.phase === 'finished') {
+    return <ExamFinished reason={exam.state.reason} slug={slug} />;
+  }
+  if (examActive && exam.state.phase === 'gate') {
+    return (
+      <ExamGate
+        title={contest?.title ?? 'Test'}
+        strikes={exam.state.strikes}
+        onStart={exam.start}
+        contestHref={`/c/${slug}`}
       />
     );
   }
@@ -220,6 +243,9 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
             canAsk={running}
             defaultLabel={label}
           />
+          {examActive ? (
+            <FinishTestButton onFinish={exam.finish} busy={exam.busy} error={exam.error} />
+          ) : null}
           {running ? (
             <Button variant="ghost" size="sm" onClick={() => setFull((f) => !f)}>
               {full ? 'Show menu' : 'Full view'}
@@ -261,6 +287,12 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         wide={wide}
         contest={{ slug, label }}
         onVerdict={() => refresh(600)}
+      />
+
+      <ExamWarning
+        open={examActive && exam.state.phase === 'warning'}
+        strikes={exam.state.strikes}
+        onContinue={exam.resume}
       />
 
       <Dialog open={over} onOpenChange={setOver}>

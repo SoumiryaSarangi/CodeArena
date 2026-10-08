@@ -161,7 +161,13 @@ export function ContestLobby({ slug }: { slug: string }) {
       </span>
 
       <div className="flex flex-wrap items-center gap-3">
-        {registered ? (
+        {registered && c.exam?.finishedAt ? (
+          <span className="text-14 font-medium text-v-ac">
+            {c.exam.finishReason === 'left-window'
+              ? 'Your test was submitted after you left the window 3 times'
+              : 'You finished the test'}
+          </span>
+        ) : registered ? (
           <span className="text-14 font-medium text-v-ac">You are registered</span>
         ) : session.status === 'guest' ? (
           <Button asChild variant="primary">
@@ -251,6 +257,14 @@ export function ContestLobby({ slug }: { slug: string }) {
               : 'Registration closes when the contest starts.'}{' '}
             {c.rules.rated ? 'The contest is rated.' : 'The contest is unrated.'}
           </li>
+          {c.rules.examMode ? (
+            <li>
+              Exam mode: you enter once and can finish your test early; after that you cannot open
+              the problems or submit again. Leaving the test window is counted: two warnings, and
+              the third time your test is submitted. The number of leaves and the time you finish
+              are recorded, nothing else.
+            </li>
+          ) : null}
         </ul>
       </section>
 

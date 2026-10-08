@@ -234,6 +234,7 @@ describe.skipIf(!ready)(
         langMultipliers: { c: 1, cpp17: 1, cpp20: 1, java21: 2, node: 2, python3: 3 },
         rated: true,
         lateRegistration: true,
+        examMode: false,
       });
       const dup = await call('post', '/admin/contests', admin.token, {
         slug: 'val-ok',
