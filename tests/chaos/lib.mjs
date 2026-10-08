@@ -61,11 +61,19 @@ export function evaluate({
 }) {
   const checks = [];
   const add = (name, ok, detail = '') => checks.push({ name, ok: Boolean(ok), detail });
+  // A submission the API could not queue is stored as `failed` and the contestant got an error: that is
+  // a refusal, not a loss. There can be at most one such row per refused call.
+  const failed = verification.failedSubmissions ?? 0;
+  const stored = verification.submissions - failed;
   add(
     'every accepted submission was judged, once',
-    verification.submissions === accepted + extraSubmissions &&
-      verification.withVerdict === verification.submissions,
-    `${accepted + extraSubmissions} accepted, ${verification.submissions} stored, ${verification.withVerdict} with a verdict`,
+    stored === accepted + extraSubmissions && verification.withVerdict === stored,
+    `${accepted + extraSubmissions} accepted, ${stored} stored and queued, ${verification.withVerdict} with a verdict`,
+  );
+  add(
+    'a refused submission left at most one failed row, and no accepted one failed',
+    failed <= (observed.refused ?? 0),
+    `${failed} failed row(s) for ${observed.refused ?? 0} refused call(s)`,
   );
   add(
     'no lost or duplicated verdict, nothing stuck (verify)',

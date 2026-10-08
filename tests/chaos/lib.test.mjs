@@ -44,12 +44,12 @@ test('O-06: a changed score, a moved row, a missing row and different cells are 
   );
 });
 
-const good = { ok: true, problems: [], submissions: 5, withVerdict: 5 };
+const good = { ok: true, problems: [], submissions: 5, failedSubmissions: 0, withVerdict: 5 };
 
 test('O-06: a clean drill passes every shared check', () => {
   const r = evaluate({ accepted: 5, verification: good, board: { equal: true, differences: [] } });
   assert.equal(r.pass, true);
-  assert.equal(r.checks.length, 3);
+  assert.equal(r.checks.length, 4);
 });
 
 test('O-06: a lost submission, a failed invariant and a different board each fail the drill', () => {
@@ -95,6 +95,20 @@ test('O-06: scenario expectations: a visible fault needs a signal, an SSE drill 
     }).pass,
     false,
   );
+});
+
+test('O-06: rows the API marked failed (it told the contestant) are a refusal, not a loss, but cannot exceed the refusals', () => {
+  const board = { equal: true, differences: [] };
+  const withFailed = { ...good, submissions: 8, failedSubmissions: 3 };
+  assert.equal(
+    evaluate({ accepted: 5, verification: withFailed, board, observed: { refused: 3 } }).pass,
+    true,
+  );
+  assert.equal(
+    evaluate({ accepted: 5, verification: withFailed, board, observed: { refused: 2 } }).pass,
+    false,
+  ); // one failed row with no error to the client
+  assert.equal(evaluate({ accepted: 5, verification: withFailed, board }).pass, false);
 });
 
 test('O-06: extra submissions (the poison one) are expected to be stored too', () => {

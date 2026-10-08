@@ -49,7 +49,8 @@ const ready = async () => {
 };
 const containerId = (service) => ssh(compose(`ps -q ${service}`)).stdout.trim();
 
-export async function prodEnv() {
+export async function prodEnv({ minJudges = 2 } = {}) {
+  let judgeCount = minJudges;
   const env = {
     name: 'production',
     apiUrl: API,
@@ -95,7 +96,7 @@ export async function prodEnv() {
         ssh(compose('up -d redis api'));
         await waitUntil(ready, { timeoutMs: 90_000, everyMs: 1000 });
       }
-      for (let i = 0; i < JUDGES.length; i++) {
+      for (let i = 0; i < judgeCount; i++) {
         const state = run('az', [
           'vm',
           'get-instance-view',
@@ -114,7 +115,7 @@ export async function prodEnv() {
           'systemctl is-active codearena-worker || sudo systemctl start codearena-worker',
         );
       }
-      await waitUntil(async () => (await judgesReporting()) >= JUDGES.length, {
+      await waitUntil(async () => (await judgesReporting()) >= judgeCount, {
         timeoutMs: 180_000,
         everyMs: 3000,
       });
@@ -150,7 +151,7 @@ export async function prodEnv() {
       );
       const t0 = performance.now();
       must(run('az', ['vm', 'start', '-g', RG, '-n', id, '-o', 'none']), 'start the VM');
-      const up = await waitUntil(async () => (await judgesReporting()) >= JUDGES.length, {
+      const up = await waitUntil(async () => (await judgesReporting()) >= judgeCount, {
         timeoutMs: 300_000,
         everyMs: 3000,
       });

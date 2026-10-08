@@ -59,6 +59,7 @@ case "$*" in
 esac
 exit 0
 FAKE
+  printf '#!/usr/bin/env bash\necho "ssh-keygen $*" >> "$LOG"\n' > "$T/bin/ssh-keygen"
   printf '#!/usr/bin/env bash\necho "scp $*" >> "$LOG"\n' > "$T/bin/scp"
   cat > "$T/bin/gh" <<'FAKE'
 #!/usr/bin/env bash
@@ -125,6 +126,7 @@ check "creates with the firewall open, count 3, the default size B2s_v2, tempora
 check "locks the judges down (non-interactively) after creating them" "$([ -n "$lock" ] && [ "$apply" -lt "$lock" ] && grep -q 'lock -auto-approve' "$LOG" && echo 0 || echo 1)"
 check "installs the worker only after the lockdown" "$([ -n "$deploy" ] && [ "$lock" -lt "$deploy" ] && echo 0 || echo 1)"
 check "the worker goes to the new judges only" "$(grep -q 'ssh -F .* 10\.20\.2\.6 ' "$LOG" && ! grep -qE 'ssh -F .* 10\.20\.2\.4 ' "$LOG" && echo 0 || echo 1)"
+check "a stale host key of a reused address is forgotten before the first connection" "$(l1="$(line 'ssh-keygen -R 10.20.2.5')"; l2="$(line 'ssh .*10\.20\.2\.5 .*cloud-init')"; [ -n "$l1" ] && [ -n "$l2" ] && [ "$l1" -lt "$l2" ] && echo 0 || echo 1)"
 check "the deploy key is authorised on each new judge" "$([ "$(grep -c 'AAAAdeploy' "$LOG")" -ge 2 ] && echo 0 || echo 1)"
 check "JUDGE_HOSTS lists all three judges" "$(grep -q 'gh variable set JUDGE_HOSTS --body 10.20.2.4 10.20.2.5 10.20.2.6' "$LOG" && echo 0 || echo 1)"
 check "JUDGE_HOST_KEYS has a line per judge" "$([ "$(grep -c 'stdin: .*' "$LOG")" -ge 1 ] && grep -q '10.20.2.6 ssh-ed25519 AAAAfakehostkey' "$LOG" && echo 0 || echo 1)"
@@ -181,6 +183,7 @@ check "the judges to remove are drained before Terraform destroys them" "$([ -n 
 check "the judge that stays is not stopped" "$(grep -qE 'ssh .*10\.20\.2\.4 .*systemctl' "$LOG" && echo 1 || echo 0)"
 check "down never opens the firewall" "$(grep -q 'judge_bootstrap=true' "$LOG" && echo 1 || echo 0)"
 check "applies count 1 and returns to the default size" "$(grep -q 'judge_count=1' "$LOG" && ! grep -q 'judge_vm_size' "$LOG" && ! grep -q 'judge_vm_size' "$TF_DIR/judges.auto.tfvars" && grep -qx 'judge_count     = 1' "$TF_DIR/judges.auto.tfvars" && echo 0 || echo 1)"
+check "the host keys of the removed judges are forgotten" "$(grep -q 'ssh-keygen -R 10.20.2.5' "$LOG" && grep -q 'ssh-keygen -R 10.20.2.6' "$LOG" && echo 0 || echo 1)"
 check "JUDGE_HOSTS shrinks to the remaining judge" "$(grep -q 'gh variable set JUDGE_HOSTS --body 10.20.2.4$' "$LOG" && echo 0 || echo 1)"
 
 setup 4

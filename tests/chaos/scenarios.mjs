@@ -236,6 +236,7 @@ export async function runScenario(env, name, overrides = {}) {
 
     const observed = {
       detectMs: detection?.ok ? detection.ms : null,
+      refused: results.filter((r) => r.status !== 201).length,
       sseReconnects: sse?.reconnects ?? 0,
       sseEventsAfter: sse ? sse.eventTimes.filter((t) => t > tHealthy).length : 0,
       extraChecks: [

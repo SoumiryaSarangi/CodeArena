@@ -25,7 +25,9 @@ if (!['local', 'prod'].includes(where ?? '') || order.some((n) => !SCENARIOS[n])
 const env =
   where === 'local'
     ? await (await import('./env-local.mjs')).localEnv()
-    : await (await import('./env-prod.mjs')).prodEnv();
+    : await (
+        await import('./env-prod.mjs')
+      ).prodEnv({ minJudges: order.includes('freeze-judge') ? 2 : 1 });
 const results = [];
 let failed = 0;
 const stop = async () => {

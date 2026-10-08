@@ -15,7 +15,13 @@ export interface Verification {
   /** Things that could not be checked (a Redis command the user is not allowed to run). */
   notChecked: string[];
   contest: string;
+  /** Every stored submission, including the failed ones below. */
   submissions: number;
+  /**
+   * Submissions the API could not queue (Redis was down): stored as `failed` and refused to the
+   * contestant with an error, by design (they resubmit). Not a lost verdict, so not a problem.
+   */
+  failedSubmissions: number;
   withVerdict: number;
   byVerdict: Record<string, number>;
   /** Entries per job in the retained part of the `results` stream, more than 1 = a duplicate publish. */
@@ -68,7 +74,11 @@ export async function verifyContest(
   const byVerdict: Record<string, number> = {};
   for (const s of subs) if (s.verdict) byVerdict[s.verdict] = (byVerdict[s.verdict] ?? 0) + 1;
 
-  const unjudged = subs.filter((s) => s.verdict === null || s.status !== 'done');
+  const failed = subs.filter((s) => s.status === 'failed' && s.verdict === null);
+  const unjudged = subs.filter(
+    (s) =>
+      !(s.status === 'failed' && s.verdict === null) && (s.verdict === null || s.status !== 'done'),
+  );
   if (unjudged.length > 0) {
     problems.push(
       `${unjudged.length} submission(s) have no final verdict (e.g. ${unjudged
@@ -155,6 +165,7 @@ export async function verifyContest(
     notChecked,
     contest: slug,
     submissions: subs.length,
+    failedSubmissions: failed.length,
     withVerdict: subs.filter((s) => s.verdict !== null).length,
     byVerdict,
     resultEntries,

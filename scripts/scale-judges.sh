@@ -35,6 +35,7 @@ SSH="${SSH:-ssh}"
 GH="${GH:-gh}"
 CURL="${CURL:-curl}"
 AZ="${AZ:-az}"
+SSH_KEYGEN="${SSH_KEYGEN:-ssh-keygen}"
 USER_NAME="${ADMIN_USER:-codearena}"
 DEPLOY_KEY="${DEPLOY_KEY_FILE:-$HOME/.ssh/codearena_deploy}"
 READY_TIMEOUT="${READY_TIMEOUT:-900}"
@@ -172,6 +173,11 @@ sshj() { # host cmd...  (through the API VM; first contact trusts the new host k
   "$SSH" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -J "$USER_NAME@$api_ip" "$USER_NAME@$host" "$@"
 }
 
+# A new VM can get the address of a judge that was destroyed earlier; ssh then refuses it ("host
+# identification has changed") and the script would wait for nothing. Forget the old key of an address
+# whose VM is brand new (or gone).
+forget_host() { "$SSH_KEYGEN" -R "$1" >/dev/null 2>&1 || true; }
+
 set_vars() { # all judge IPs (args) -> JUDGE_HOSTS and JUDGE_HOST_KEYS
   local keys="" ip k
   for ip in "$@"; do
@@ -254,6 +260,7 @@ if [ "$direction" = down ]; then
   done
   write_state "$target" "$size"
   tf apply -auto-approve -var "judge_count=$target" -var judge_bootstrap=false "${size_arg[@]}"
+  for ip in "${remove[@]}"; do forget_host "$ip"; done
   keep=("${ips[@]:0:$target}")
   set_vars "${keep[@]}"
   say "done: $target judge(s). Reporting now: $(judges_reporting)"
@@ -278,6 +285,7 @@ fresh=("${all[@]:$cur}")
 
 say "waiting for cloud-init on: ${fresh[*]}"
 for ip in "${fresh[@]}"; do
+  forget_host "$ip"
   t0="$(now)"
   until sshj "$ip" 'cloud-init status --wait' >/dev/null 2>&1; do
     [ $(($(now) - t0)) -lt "$READY_TIMEOUT" ] || die "$ip did not finish cloud-init within ${READY_TIMEOUT}s"
@@ -321,4 +329,4 @@ until [ "$(judges_reporting)" -ge "$target" ]; do
 done
 finished=1
 say "done: $target judge(s) report. Whole scale-out took $(($(now) - started)) s."
-say "Remember: scale back with 'scripts/scale-judges.sh to 1' when you no longer need them (about \$0.13/h per extra D2s_v5)."
+say "Remember: scale back with 'scripts/scale-judges.sh to 1' when you no longer need them (about \$0.12/h per extra judge)."

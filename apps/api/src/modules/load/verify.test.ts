@@ -152,6 +152,15 @@ describe.skipIf(!ready)(
       await db.delete(submissions).where(eq(submissions.id, id));
     });
 
+    it('NFR-REL-01: a submission the API could not queue (stored as failed) is counted, not a problem', async () => {
+      const id = await sub({ judged: false });
+      await db.update(submissions).set({ status: 'failed' }).where(eq(submissions.id, id));
+      const v = await check();
+      expect(v.problems).toEqual([]);
+      expect(v.failedSubmissions).toBe(1);
+      await db.delete(submissions).where(eq(submissions.id, id));
+    });
+
     it('NFR-REL-01: a verdict with no stored run fails the check', async () => {
       const id = await sub({ run: false });
       const v = await check();

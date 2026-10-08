@@ -476,7 +476,7 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 
 | ID | Requirement |
 |---|---|
-| NFR-REL-01 | Zero lost or duplicated verdicts under worker crash, API restart, and Redis restart drills (T). |
+| NFR-REL-01 | Zero lost or duplicated verdicts under worker crash, API restart, and Redis restart drills (T). *As built (O-06):* `tests/chaos/drill.mjs` runs six drills (worker kill, API kill, Redis restart clean and hard, judge VM stop, poison job) against a contest of fake users, locally and on production, and checks with `load-cli verify` that every accepted submission has a verdict stored once, no job published two results, nothing is parked or still claimed, and that the board equals the rebuild; times in `docs/METRICS.md`, how-to in `docs/runbooks/failure-drills.md`. |
 | NFR-REL-02 | API availability ≥ 99.5% during scheduled contests (A). |
 | NFR-REL-03 | Leaderboard fully rebuildable from Postgres within 30 s for 1,000 submissions (T). |
 | NFR-REL-04 | Backups nightly; restore test weekly; RPO 24 h (minutes on contest days via manual backup); RTO 1 h (D). |
