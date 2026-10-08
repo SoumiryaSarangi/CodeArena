@@ -35,12 +35,12 @@ node scripts/metrics-report.mjs --run /tmp/run-1.json --report /tmp/report-1.jso
 tests/load/prod.sh cleanup && rm /tmp/load-seed.json
 ```
 
-One run per judge count: scale the judges (`terraform apply -var judge_count=3 …`), wait until
-`/api/admin/ops/summary` shows them, then repeat with a fresh seed and `--judges 3`. A drained 1-judge run takes
+One run per judge count: scale the judges (`scripts/scale-judges.sh up 2` for 3 judges, `up 3` more for 6; it waits until they
+report), then repeat with a fresh seed and `--judges 3`. A drained 1-judge run takes
 about 15 minutes (`--drain-timeout` is 40 minutes). To time a scale-out, start
 `node tests/load/burst.mjs watch --api $API --seed /tmp/load-seed.json --out /tmp/scale.json` just before the
-`terraform apply`, press Ctrl-C when the new worker has appeared, and pass `--scale /tmp/scale.json` to
-`metrics-report`. **Afterwards scale back to 1 judge** (`terraform apply -var judge_count=1 …`): a forgotten extra
+`scripts/scale-judges.sh up …` (the script also prints its own timings), press Ctrl-C when the new worker has appeared, and pass `--scale /tmp/scale.json` to
+`metrics-report`. **Afterwards scale back to 1 judge** (`scripts/scale-judges.sh to 1`): a forgotten extra
 D2s_v5 costs about $95 a month.
 
 ## What is measured where

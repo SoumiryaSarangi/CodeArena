@@ -787,7 +787,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 ### Day 8 — Thu 8 Oct · Load test + AI Coach
 
 🧑 **Ayush**
-- **U8.1** Before the load test: `terraform apply -var judge_count=3`. After: back to 1. ⏱ 20 min
+- **U8.1** Before the load test: `scripts/scale-judges.sh up 2` (3 judges; wraps `terraform apply`, Claude can run it with you). After: `scripts/scale-judges.sh to 1`. ⏱ 20 min
 - **U8.2** Review hint samples: rate 20 hints as good/bad/leaky. Your labels become part of the eval set. ⏱ 60 min
 - **U8.3** Contest reminder message; aim for 30 registered. ⏱ 10 min
 - **U8.4** Explain-back: CodeHelp guardrails; what "leak rate" means and how it's measured. ⏱ 30 min
@@ -983,7 +983,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 - [ ] Hints confirmed disabled for contest problems (try one)
 
 **During (7:00–9:00 PM)**
-- Watch: lane depth, p95, DLQ, worker heartbeats. If p95 > 10 s for 2 min → `scale-judges.sh up 2` more.
+- Watch: lane depth, p95, DLQ, worker heartbeats. If p95 > 10 s for 2 min → `scale-judges.sh up 2 --allow-running-contest` more (opens the judge firewall for a few minutes; see the runbook).
 - DLQ entry → inspect, re-enqueue once; if it repeats, rejudge the submission after the contest.
 - Wrong test data discovered → fix package → rejudge that problem → announce.
 - A judge VM dies → the reaper re-delivers its jobs; confirm in the console.
@@ -992,7 +992,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 **After**
 - [ ] 9:00 Freeze remains; 9:15 resolver ceremony
 - [ ] 9:45 Finalise contest → ratings (C-08) → AI reviews queued
-- [ ] 10:00 `scale-judges.sh down 1`; export metrics; feedback form
+- [ ] 10:00 `scale-judges.sh to 1`; export metrics; feedback form
 - [ ] 11:00 Start plagiarism run (review tomorrow, U11.1)
 
 ---

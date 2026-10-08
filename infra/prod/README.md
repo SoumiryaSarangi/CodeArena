@@ -105,7 +105,7 @@ back to; do the drill after a second deploy.)
 
 - **Logs:** `ssh codearena@<api> 'cd /opt/codearena && docker compose --env-file prod.env logs --tail 100 api'`; judges: `ssh -J codearena@<api> codearena@<judge> 'sudo journalctl -u codearena-worker -n 100'`.
 - **Roll back by hand:** `ssh codearena@<api> "/opt/codearena/deploy.sh $(cat /opt/codearena/state/previous)"`.
-- **Add a judge:** `terraform apply -var judge_count=2` (see `infra/terraform/README.md`), run `bootstrap.sh` again with `--judges "10.20.2.4 10.20.2.5"`, update the `JUDGE_HOSTS` variable (bootstrap does it with `--set-github`), run the deploy workflow.
+- **Add or remove judges:** `scripts/scale-judges.sh up 3` / `down 1` / `to 1` (runbook: `docs/runbooks/contest-day.md`). It runs Terraform, waits for the new VMs, locks them down, authorises the deploy key, updates `JUDGE_HOSTS` / `JUDGE_HOST_KEYS` and installs the worker. Do it hours before a contest: while it runs the judge firewall is open.
 - **During a contest:** freeze deploys (`gh variable set DEPLOY_ENABLED --body false`) and switch the nightly attack run off the same way.
 
 ## Rules that keep this safe

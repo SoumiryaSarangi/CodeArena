@@ -78,13 +78,13 @@ Internet ──80/443/22──▶ API VM (Caddy, API, Postgres, Redis, object st
 
 ## Day-to-day
 
-| Task                                     | Command                                                                                       |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Load test / contest day: 3 bigger judges | `terraform apply -var judge_count=3 -var judge_vm_size=Standard_D2s_v5`                       |
-| Back to steady state                     | `terraform apply -var judge_count=1 -var judge_vm_size=Standard_B2s`                          |
-| Patch a locked-down judge                | `terraform apply -var judge_bootstrap=true`, do the update, then `-var judge_bootstrap=false` |
-| Tear everything down                     | `terraform destroy` (the backups go with it: download them first)                             |
-| Offline tests of the firewall rules      | `terraform test` (no Azure account needed)                                                    |
+| Task                                 | Command                                                                                                  |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Load test / contest day: more judges | `scripts/scale-judges.sh up 3` (wraps the steps below: apply, wait, lock, register, install the worker)  |
+| Back to steady state                 | `scripts/scale-judges.sh to 1` (writes `judges.auto.tfvars`, which a plain `terraform apply` then keeps) |
+| Patch a locked-down judge            | `terraform apply -var judge_bootstrap=true`, do the update, then `-var judge_bootstrap=false`            |
+| Tear everything down                 | `terraform destroy` (the backups go with it: download them first)                                        |
+| Offline tests of the firewall rules  | `terraform test` (no Azure account needed)                                                               |
 
 **Why D2s_v5 for contests.** `Standard_B2s` is _burstable_: it earns CPU credits while idle and is
 throttled to a baseline once they run out. Sustained judging drains them, which makes timings

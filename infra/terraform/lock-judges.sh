@@ -7,6 +7,7 @@
 # NIC does not help, because the IP is pulled in as its dependency). So the detach is done with the
 # Azure CLI first, then Terraform finishes: it sees the NIC already detached, deletes the IP and
 # applies the egress lockdown. Found in the first real run.
+# Extra arguments go to `terraform apply` (scripts/scale-judges.sh passes -auto-approve).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -26,7 +27,7 @@ done
 
 echo
 echo "Step 2/2: delete the public IPs and apply the egress lockdown"
-terraform apply -var judge_bootstrap=false
+terraform apply -var judge_bootstrap=false "$@"
 
 echo
 terraform output next_steps

@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# Tests for scripts/scale-judges.sh (O-04) with fake terraform, ssh, scp, gh and curl on PATH:
+# the order of steps (firewall closed again before the worker is installed, nodes drained before
+# they are destroyed), what is saved, which GitHub variables are written, and the refusals.
+set -uo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/../../.." && pwd)"
+SCALE="$ROOT/scripts/scale-judges.sh"
+pass=0 fail=0
+check() { if [ "$2" = 0 ]; then pass=$((pass + 1)); echo "  ok   $1"; else fail=$((fail + 1)); echo "  FAIL $1"; fi; }
+has() { grep -qE -- "$1" "$LOG"; echo $?; }
+line() { grep -nE -- "$1" "$LOG" | head -1 | cut -d: -f1; }
+
+setup() { # initial judge count
+  T="$(mktemp -d)"; LOG="$T/log"; : > "$LOG"
+  export T LOG PATH="$T/bin:$PATH" TF_DIR="$T/tf" DEPLOY_KEY_FILE="$T/key" READY_TIMEOUT=5 POLL=0
+  mkdir -p "$T/bin" "$TF_DIR"
+  echo "$1" > "$T/count"
+  echo '{"items":[]}' > "$T/contests.json"
+  echo "fake-private-key" > "$T/key"; echo "ssh-ed25519 AAAAdeploy deploy" > "$T/key.pub"
+  printf '#!/usr/bin/env bash\necho "lock $*" >> "$LOG"\n' > "$TF_DIR/lock-judges.sh"; chmod +x "$TF_DIR/lock-judges.sh"
+  cat > "$T/bin/terraform" <<'FAKE'
+#!/usr/bin/env bash
+if [ "$1" = output ]; then
+  case "$3" in
+    judge_private_ips) python3 -c "import json,sys; print(json.dumps(['10.20.2.%d' % (4+i) for i in range(int(open('$T/count').read()))]))" ;;
+    api_public_ip) echo '"40.83.75.34"' ;;
+    api_host_sslip) echo '"api.40-83-75-34.sslip.io"' ;;
+  esac
+  exit 0
+fi
+echo "terraform $*" >> "$LOG"
+for a in "$@"; do case "$a" in judge_count=*) echo "${a#judge_count=}" > "$T/count" ;; esac; done
+FAKE
+  cat > "$T/bin/ssh" <<'FAKE'
+#!/usr/bin/env bash
+echo "ssh $*" >> "$LOG"
+case "$*" in
+  *ssh_host_ed25519_key.pub*) echo "ssh-ed25519 AAAAfakehostkey root@judge" ;;
+  *"curl -m 5"*) exit "${INTERNET_EXIT:-1}" ;;
+  *"cat /opt/codearena/judge-worker.env"*) echo "REDIS_URL=redis://judge" ;;
+esac
+exit 0
+FAKE
+  printf '#!/usr/bin/env bash\necho "scp $*" >> "$LOG"\n' > "$T/bin/scp"
+  cat > "$T/bin/gh" <<'FAKE'
+#!/usr/bin/env bash
+echo "gh $*" >> "$LOG"
+case "$1 $2" in
+  "variable set") [ -t 0 ] || echo "stdin: $(cat)" >> "$LOG" ;;
+  "variable get") echo "40.83.75.34 ssh-ed25519 AAAAapi" ;;
+  "run list") echo 4242 ;;
+  "run download") d="$(echo "$*" | sed 's/.*-D //')"; echo bin > "$d/worker"; echo bin > "$d/node_exporter" ;;
+esac
+exit 0
+FAKE
+  cat > "$T/bin/curl" <<'FAKE'
+#!/usr/bin/env bash
+case "$*" in
+  */api/contests*) cat "$T/contests.json" ;;
+  */api/status*) echo "{\"components\":[{\"id\":\"judges\",\"detail\":\"$(cat "$T/count") judges reporting\"}]}" ;;
+esac
+FAKE
+  chmod +x "$T"/bin/*
+}
+run() { "$SCALE" "$@" >"$T/out" 2>&1 </dev/null; echo $? > "$T/rc"; rc="$(cat "$T/rc")"; }
+
+echo "O-04: scale-judges.sh"
+
+echo "- status and refusals"
+setup 1
+run status
+check "status shows the count and what reports" "$(grep -q 'judge VMs in Terraform state: 1' "$T/out" && grep -q 'reporting to the queue now: 1' "$T/out" && echo 0 || echo 1)"
+run up 2 --dry-run
+check "dry run changes nothing" "$([ $rc = 0 ] && ! grep -q '^terraform' "$LOG" && grep -q '1 -> 3' "$T/out" && echo 0 || echo 1)"
+run to 1 --yes
+check "asking for the current count does nothing" "$([ $rc = 0 ] && grep -q 'nothing to do' "$T/out" && echo 0 || echo 1)"
+run to 0 --yes
+check "never fewer than one judge" "$([ $rc != 0 ] && grep -q 'at least 1' "$T/out" && echo 0 || echo 1)"
+run up 10 --yes
+check "never more than ten judges" "$([ $rc != 0 ] && grep -q 'at most 10' "$T/out" && ! grep -q '^terraform' "$LOG" && echo 0 || echo 1)"
+run up 1 --size 'D2 v5; rm -rf'
+check "a size is validated" "$([ $rc != 0 ] && grep -q 'must look like' "$T/out" && echo 0 || echo 1)"
+echo no | "$SCALE" up 1 >"$T/out" 2>&1; rc=$?
+check "without --yes it asks, and 'no' creates nothing" "$([ $rc != 0 ] && grep -q cancelled "$T/out" && ! grep -q '^terraform' "$LOG" && echo 0 || echo 1)"
+
+echo "- a running contest blocks scaling up"
+setup 1
+echo '{"items":[{"slug":"warmup-1","state":"running"}]}' > "$T/contests.json"
+run up 2 --yes
+check "refused while a contest runs; nothing created" "$([ $rc != 0 ] && grep -q 'a contest is running' "$T/out" && ! grep -q '^terraform' "$LOG" && echo 0 || echo 1)"
+run up 1 --yes --allow-running-contest
+check "the override is explicit" "$([ $rc = 0 ] && grep -q '^terraform apply' "$LOG" && echo 0 || echo 1)"
+setup 1
+echo '{"items":[{"slug":"lt-abc123","state":"running"}]}' > "$T/contests.json"
+run up 1 --yes
+check "a load-test contest does not block it" "$([ $rc = 0 ] && echo 0 || echo 1)"
+
+echo "- up"
+setup 1
+run up 2 --yes
+check "succeeds" "$([ $rc = 0 ] && echo 0 || (cat "$T/out"; echo 1))"
+apply="$(line 'terraform apply.*judge_bootstrap=true')"
+lock="$(line '^lock ')"
+deploy="$(line 'ssh -F .* 10\.20\.2\.5 ')"
+vars="$(line 'gh variable set JUDGE_HOSTS')"
+check "creates with the firewall open, count 3, size D2s_v5" "$([ -n "$apply" ] && grep -q 'judge_count=3' "$LOG" && grep -q 'judge_vm_size=Standard_D2s_v5' "$LOG" && echo 0 || echo 1)"
+check "locks the judges down (non-interactively) after creating them" "$([ -n "$lock" ] && [ "$apply" -lt "$lock" ] && grep -q 'lock -auto-approve' "$LOG" && echo 0 || echo 1)"
+check "installs the worker only after the lockdown" "$([ -n "$deploy" ] && [ "$lock" -lt "$deploy" ] && echo 0 || echo 1)"
+check "the worker goes to the new judges only" "$(grep -q 'ssh -F .* 10\.20\.2\.6 ' "$LOG" && ! grep -qE 'ssh -F .* 10\.20\.2\.4 ' "$LOG" && echo 0 || echo 1)"
+check "the deploy key is authorised on each new judge" "$([ "$(grep -c 'AAAAdeploy' "$LOG")" -ge 2 ] && echo 0 || echo 1)"
+check "JUDGE_HOSTS lists all three judges" "$(grep -q 'gh variable set JUDGE_HOSTS --body 10.20.2.4 10.20.2.5 10.20.2.6' "$LOG" && echo 0 || echo 1)"
+check "JUDGE_HOST_KEYS has a line per judge" "$([ "$(grep -c 'stdin: .*' "$LOG")" -ge 1 ] && grep -q '10.20.2.6 ssh-ed25519 AAAAfakehostkey' "$LOG" && echo 0 || echo 1)"
+check "variables are written after the lockdown" "$([ "$lock" -lt "$vars" ] && echo 0 || echo 1)"
+check "the wanted state is saved, locked down, with the size" "$(grep -qx 'judge_count     = 3' "$TF_DIR/judges.auto.tfvars" && grep -qx 'judge_vm_size   = "Standard_D2s_v5"' "$TF_DIR/judges.auto.tfvars" && grep -qx 'judge_bootstrap = false' "$TF_DIR/judges.auto.tfvars" && echo 0 || echo 1)"
+check "it ends by waiting for the heartbeats and reminds about scaling back" "$(grep -q '3 judge(s) report' "$T/out" && grep -q 'to 1' "$T/out" && echo 0 || echo 1)"
+
+setup 1
+INTERNET_EXIT=0 run up 1 --yes
+check "a new judge that still reaches the internet stops the run" "$([ $rc != 0 ] && grep -q 'still reaches the internet' "$T/out" && ! grep -q 'gh variable set' "$LOG" && echo 0 || echo 1)"
+
+echo "- down"
+setup 3
+printf 'judge_count     = 3\njudge_vm_size   = "Standard_D2s_v5"\njudge_bootstrap = false\n' > "$TF_DIR/judges.auto.tfvars"
+run to 1 --yes
+check "succeeds" "$([ $rc = 0 ] && echo 0 || (cat "$T/out"; echo 1))"
+stop5="$(line 'ssh .*10\.20\.2\.5 .*systemctl stop codearena-worker')"
+stop6="$(line 'ssh .*10\.20\.2\.6 .*systemctl stop codearena-worker')"
+apply="$(line '^terraform apply')"
+check "the judges to remove are drained before Terraform destroys them" "$([ -n "$stop5" ] && [ -n "$stop6" ] && [ "$stop6" -lt "$apply" ] && echo 0 || echo 1)"
+check "the judge that stays is not stopped" "$(grep -qE 'ssh .*10\.20\.2\.4 .*systemctl' "$LOG" && echo 1 || echo 0)"
+check "down never opens the firewall" "$(grep -q 'judge_bootstrap=true' "$LOG" && echo 1 || echo 0)"
+check "applies count 1 and returns to the default size" "$(grep -q 'judge_count=1' "$LOG" && ! grep -q 'judge_vm_size' "$LOG" && ! grep -q 'judge_vm_size' "$TF_DIR/judges.auto.tfvars" && grep -qx 'judge_count     = 1' "$TF_DIR/judges.auto.tfvars" && echo 0 || echo 1)"
+check "JUDGE_HOSTS shrinks to the remaining judge" "$(grep -q 'gh variable set JUDGE_HOSTS --body 10.20.2.4$' "$LOG" && echo 0 || echo 1)"
+
+setup 4
+printf 'judge_count     = 4\njudge_vm_size   = "Standard_D2s_v5"\njudge_bootstrap = false\n' > "$TF_DIR/judges.auto.tfvars"
+run down 1 --yes
+check "down 1 removes one judge and keeps the contest size" "$(grep -q 'judge_count=3' "$LOG" && grep -q 'judge_vm_size=Standard_D2s_v5' "$LOG" && grep -qE 'ssh .*10\.20\.2\.7 .*systemctl stop' "$LOG" && echo 0 || echo 1)"
+
+echo
+echo "$pass passed, $fail failed"
+[ "$fail" = 0 ]
