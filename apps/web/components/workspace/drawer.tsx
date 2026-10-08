@@ -242,10 +242,6 @@ export function SubmissionsTab({
   );
 }
 
-export function CoachTab() {
-  return <EmptyState message="The AI Coach arrives soon. Hints will show up here." />;
-}
-
 /** The four-tab drawer (UI_UX S05). `value` is controlled so Alt+1..4 can switch it. */
 export function Drawer({
   value,

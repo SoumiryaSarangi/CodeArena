@@ -31,6 +31,8 @@ export interface Calls {
   tickets: string[][];
   refreshes: number;
   patchMe: Record<string, unknown>[];
+  hints: { level: number }[];
+  ratings: { id: string; helpful: boolean }[];
 }
 
 export interface StubOptions {
@@ -40,6 +42,8 @@ export interface StubOptions {
   rateLimit?: { retryAfter: number };
   /** Answer this many submits with 503 (the API is restarting) before accepting one. */
   unavailable?: number;
+  /** The Coach tab (UI-06). `off` switches hints off with that message; `reply` makes the next unlock fail busy or answer a nudge. */
+  hints?: { off?: string; reply?: 'busy' | 'nudge'; practicePoints?: number | null };
   /** The signed-in user's role (default user). */
   role?: 'user' | 'setter' | 'admin';
   /** Taken handles for the availability check. */
@@ -58,10 +62,20 @@ const json = (route: Route, body: unknown, status = 200, headers: Record<string,
 
 export async function stubApi(page: Page, opts: StubOptions = {}) {
   const o = { signedIn: true, handle: 'riya_k' as string | null, ...opts };
-  const calls: Calls = { submissions: [], runs: [], tickets: [], refreshes: 0, patchMe: [] };
+  const calls: Calls = {
+    submissions: [],
+    runs: [],
+    tickets: [],
+    refreshes: 0,
+    patchMe: [],
+    hints: [],
+    ratings: [],
+  };
   const state = {
     rateLimit: o.rateLimit,
     unavailable: o.unavailable ?? 0,
+    hintReply: o.hints?.reply,
+    delivered: {} as Record<number, { id: string; text: string; helpful: boolean | null }>,
     handle: o.handle,
     /** What `GET /api/runs/:id` answers, by run id; anything else is a plain successful run. */
     runResults: {} as Record<string, object>,
@@ -259,6 +273,81 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
   await page.route('**/api/realtime/ticket', (r) => {
     calls.tickets.push((r.request().postDataJSON() as { topics: string[] }).topics);
     return json(r, { ticket: `ticket-${calls.tickets.length}`, expiresAt: Date.now() + 60_000 });
+  });
+  const hintPoints = o.hints?.practicePoints === undefined ? 100 : o.hints.practicePoints;
+  const hintState = () => {
+    const pct = state.delivered[3] ? 50 : state.delivered[2] ? 25 : state.delivered[1] ? 10 : 0;
+    return {
+      enabled: !o.hints?.off,
+      disabledReason: o.hints?.off ?? null,
+      levels: ([1, 2, 3] as const).map((level) => {
+        const d = state.delivered[level];
+        return {
+          level,
+          status: d
+            ? 'delivered'
+            : level === 1 || state.delivered[level - 1]
+              ? 'available'
+              : 'locked',
+          costPercent: [10, 25, 50][level - 1],
+          hintId: d?.id ?? null,
+          text: d?.text ?? null,
+          helpful: d?.helpful ?? null,
+        };
+      }),
+      practicePoints: hintPoints,
+      effectivePoints: hintPoints === null ? null : Math.round((hintPoints * (100 - pct)) / 100),
+      penaltyPercent: pct,
+      remainingThisHour: 10 - calls.hints.length,
+    };
+  };
+  await page.route('**/api/hints?**', (r) => json(r, hintState()));
+  await page.route('**/api/hints', (r) => {
+    if (r.request().method() !== 'POST') return r.fallback();
+    const { level } = r.request().postDataJSON() as { level: 1 | 2 | 3 };
+    calls.hints.push({ level });
+    if (state.hintReply === 'busy') {
+      state.hintReply = undefined;
+      return json(
+        r,
+        {
+          code: 'ai-busy',
+          title: 'AI is busy',
+          detail: 'Hints are busy, try again in a minute.',
+          status: 503,
+          type: 'x',
+        },
+        503,
+      );
+    }
+    if (state.hintReply === 'nudge') {
+      state.hintReply = undefined;
+      return json(r, { hint: null, nudge: 'Write and run an attempt first, then ask again.' });
+    }
+    const id = `00000000-0000-4000-8000-00000000000${level}`;
+    state.delivered[level] = {
+      id,
+      text: `Hint text for level ${level}: think about **sorting**.`,
+      helpful: null,
+    };
+    return json(r, {
+      hint: {
+        id,
+        level,
+        text: state.delivered[level].text,
+        penaltyPercent: [10, 25, 50][level - 1],
+        cached: false,
+        generic: false,
+      },
+      nudge: null,
+    });
+  });
+  await page.route('**/api/hints/*/rating', (r) => {
+    const body = r.request().postDataJSON() as { helpful: boolean };
+    const id = r.request().url().split('/').at(-2)!;
+    calls.ratings.push({ id, helpful: body.helpful });
+    for (const d of Object.values(state.delivered)) if (d.id === id) d.helpful = body.helpful;
+    return r.fulfill({ status: 204 });
   });
   await page.route('**/api/submissions?**', (r) =>
     json(r, {

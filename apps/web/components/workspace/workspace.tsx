@@ -21,7 +21,6 @@ import {
 import { isLanguage, languageInfo } from '@/lib/languages';
 import { signInHref, useSession } from '@/lib/session';
 import {
-  CoachTab,
   ConsoleTab,
   Drawer,
   DRAWER_TABS,
@@ -29,6 +28,7 @@ import {
   TestsTab,
   type DrawerTab,
 } from './drawer';
+import { CoachTab } from './coach';
 import { EditorPane } from './editor-pane';
 import { StatementPane } from './statement-pane';
 import { useJudging } from './use-judging';
@@ -317,7 +317,7 @@ export function WorkspaceView({
           />
         ),
         submissions: <SubmissionsTab items={judging.history} signedIn={signedIn} />,
-        coach: contest ? null : <CoachTab />,
+        coach: contest ? null : <CoachTab slug={problem.slug} signedIn={signedIn} />,
       }}
     </Drawer>
   );

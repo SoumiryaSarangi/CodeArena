@@ -46,6 +46,14 @@ export default function PrivacyPage() {
           fair (including comparing contest submissions for similarity), and preventing abuse.
           Nothing is sold, and nothing is used for advertising.
         </p>
+        <p>
+          <strong>AI hints:</strong> only when you press &quot;Unlock&quot; in a problem&apos;s
+          Coach tab, the problem text, your latest attempt on that problem (code and verdict) and
+          the setter&apos;s notes are sent to an AI service (Groq or Google, through our relay on
+          Vercel) to write the hint. No name, e-mail or other person&apos;s data is sent. The hint,
+          which model wrote it and your helpful or not helpful rating are stored with your account.
+          Hints are not available during contests.
+        </p>
       </LegalSection>
 
       <LegalSection title="Who can see it">
@@ -54,7 +62,8 @@ export default function PrivacyPage() {
           <li>Your submitted code is visible to you and to the site&apos;s administrators.</li>
           <li>
             Our service providers handle data on our behalf: Vercel (the website), Microsoft Azure
-            (the servers, in Hong Kong) and Google or GitHub (sign-in).
+            (the servers, in Hong Kong), Google or GitHub (sign-in) and, for AI hints only, Groq and
+            Google AI Studio.
           </li>
         </ul>
       </LegalSection>
