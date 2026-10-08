@@ -115,6 +115,8 @@ jobs:
         run: |
           set -e
           for t in infra/prod/tests/*.test.sh; do echo "== $t"; bash "$t" < /dev/null; done
+      - name: Load-test helpers and metrics report
+        run: pnpm load:test
       - name: Compose, Caddy and storage-key structure tests
         run: |
           python3 -m pip install -q pyyaml

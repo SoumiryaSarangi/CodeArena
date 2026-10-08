@@ -47,6 +47,8 @@
 
 Measure the real value in O-03 and replace this estimate in `METRICS.md`.
 
+*As built (O-03):* the harness is `tests/load/` (driver, rehearsal and production runbook) plus `apps/api/src/modules/load/` (seed, report, cleanup of tagged fake data); `scripts/metrics-report.mjs` writes `docs/METRICS.md`. Service time per language is read from the journey stored with each verdict (`claimed` → verdict). Queue wait = worker claim − submit. Java is not measured: no package has a Java solution yet.
+
 ### 2.3 Throughput and queueing (Little's law: L = λW)
 
 One judge VM has 2 vCPUs → 2 sandboxes → μ ≈ 2 / 4 s = **0.5 submissions/s**.

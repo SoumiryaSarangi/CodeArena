@@ -20,4 +20,15 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    // Plain Node scripts (load driver, metrics report): the runtime globals they use.
+    files: ['tests/load/**/*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: {
+      globals: Object.fromEntries(
+        ['process', 'console', 'fetch', 'URL', 'TextDecoder', 'setTimeout', 'performance'].map(
+          (n) => [n, 'readonly'],
+        ),
+      ),
+    },
+  },
 );

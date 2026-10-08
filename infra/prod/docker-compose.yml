@@ -74,6 +74,19 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
+  # One-off (O-03): load-test users, contest, report and cleanup, run from tests/load/prod.sh.
+  # `docker compose --profile tools run --rm -T loadtest seed --users 150 --out -`
+  loadtest:
+    image: ${API_IMAGE:?API_IMAGE is set by prod.sh}
+    env_file: prod.env
+    environment:
+      LOAD_TEST: 'on'
+    entrypoint: ['node', '--import', 'tsx', 'src/modules/load/load-cli.ts']
+    profiles: ['tools']
+    restart: 'no'
+    depends_on:
+      postgres: { condition: service_healthy }
+
   postgres:
     <<: *restart
     image: postgres:16

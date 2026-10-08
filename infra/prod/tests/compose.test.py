@@ -122,6 +122,22 @@ class Telemetry(unittest.TestCase):
         self.assertEqual(sorted(cfg["service"]["pipelines"]), ["metrics", "traces"])
 
 
+class LoadTest(unittest.TestCase):
+    """O-03: the load-test data tool exists on the server but never starts by itself."""
+
+    def test_the_tool_is_a_one_off_in_the_tools_profile(self):
+        svc = services["loadtest"]
+        self.assertEqual(svc["profiles"], ["tools"])
+        self.assertEqual(svc["restart"], "no")
+        self.assertEqual(svc["environment"]["LOAD_TEST"], "on")
+        self.assertNotIn("ports", svc)
+
+    def test_it_runs_the_load_cli_from_the_api_image(self):
+        svc = services["loadtest"]
+        self.assertEqual(svc["image"], services["api"]["image"].replace("is set by deploy.sh", "is set by prod.sh"))
+        self.assertIn("src/modules/load/load-cli.ts", svc["entrypoint"])
+
+
 class S3Identities(unittest.TestCase):
     def test_the_judge_key_can_only_read_and_list(self):
         ids = json.loads(s3_tmpl)["identities"]

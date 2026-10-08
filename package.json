@@ -22,7 +22,9 @@
     "problems:build": "python3 scripts/problem-build.py problems/",
     "problems:validate": "scripts/validate-problem problems/",
     "problems:stress": "python3 scripts/stress-test.py",
-    "attack": "scripts/attack"
+    "attack": "scripts/attack",
+    "load:test": "node --test tests/load/lib.test.mjs scripts/metrics-report.test.mjs",
+    "load:local": "tests/load/local.sh"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
