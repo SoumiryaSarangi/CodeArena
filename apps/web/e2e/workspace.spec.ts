@@ -269,6 +269,19 @@ test('UI-02: a 429 shows a countdown on the button and Submit comes back', async
   expect(calls.submissions).toHaveLength(1);
 });
 
+test('X-14: a submit that meets a restarting API is retried with the same Idempotency-Key and lands once', async ({
+  page,
+}) => {
+  const { calls } = await stubApi(page, { unavailable: 2 });
+  await page.goto(URL);
+  await editorReady(page);
+  await page.getByRole('button', { name: /^Submit/ }).click();
+  await expect.poll(() => calls.submissions.length, { timeout: 20_000 }).toBe(3);
+  const keys = calls.submissions.map((c) => c.headers['idempotency-key']);
+  expect(new Set(keys).size).toBe(1);
+  expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+});
+
 test('UI-02: a guest is asked to sign in and cannot run samples', async ({ page }) => {
   const { calls } = await stubApi(page, { signedIn: false });
   await page.goto(URL);

@@ -854,3 +854,11 @@ Decisions: X-13 closed without build changes; a faster boot is not needed.
 Next: X-14 (retry refused submits) or AI-01..04.
 Ayush must: nothing. Optionally run `tests/chaos/prod.sh --yes kill-api` yourself to refresh the table row.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · X-14 · done (a submit that meets a brief outage is retried by the browser)
+Built: `apiFetch` (`apps/web/lib/api.ts`) retries a request that carries an `Idempotency-Key` when the server is briefly away: no connection, 500, 502, 503 or 504, after 1, 2, 4 and 8 s (15 s in all, covering the measured 4 s API restart and the 5-16 s Redis blips from O-06), with the **same key every time**, so the API does the work once (FR-SUB-09: a failed first try releases the key, a repeat returns the stored answer). Submit and Run use it already; nothing else changes (GETs, 4xx, 429 with its countdown, and calls without a key are never retried). `retryDelaysMs` overrides or turns it off; an aborted request stops waiting.
+Tests: web unit 113 (2 new in `session.test.ts`: retries with one key through a dropped connection, 503 and 500 then succeeds; gives up after the last delay, never retries a 422 or an unkeyed call), Playwright `workspace.spec.ts` 21 (new: two 503s then accepted, 3 calls, one key). Lint and typecheck clean apart from the existing `next-env.d.ts` warning.
+Decisions: 500 is retried too (the API answers 500 "could not queue" when Redis is down); a bug that always answers 500 makes the user wait 15 s before the error, accepted. A refused attempt still leaves one `failed` row per try on the API side (existing behaviour, harmless for scoring).
+Next: AI-01..04 (AI-02 and AI-04 need `/model opusplan`), or X-15.
+Ayush must: nothing.
+Model: S · Sonnet 5.5

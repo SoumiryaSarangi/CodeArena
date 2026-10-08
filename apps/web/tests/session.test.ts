@@ -171,6 +171,71 @@ describe('UI-02: apiFetch', () => {
     expect(f.calls).toHaveLength(0);
   });
 
+  it('X-14: a keyed request is retried with the same key while the server is away, and the work is done once', async () => {
+    let n = 0;
+    const f = scripted(() => {
+      n++;
+      if (n === 1) throw new TypeError('Failed to fetch');
+      if (n === 2) return json({ title: 'down' }, { status: 503 });
+      if (n === 3) return json({ code: 'internal' }, { status: 500 });
+      return json({ id: 'S1' }, { status: 201 });
+    });
+    const r = await apiFetch(
+      'POST',
+      '/submissions',
+      { a: 1 },
+      { idempotencyKey: 'key-1', retryDelaysMs: [1, 1, 1] },
+      signedIn(),
+      f.fn,
+    );
+    expect(r).toEqual({ id: 'S1' });
+    expect(f.calls).toHaveLength(4);
+    const keys = f.calls.map((c) => (c.init!.headers as Record<string, string>)['Idempotency-Key']);
+    expect(keys).toEqual(['key-1', 'key-1', 'key-1', 'key-1']);
+  });
+
+  it('X-14: it gives up after the last delay, and never retries a refusal or an unkeyed call', async () => {
+    const down = scripted(() => json({ code: 'internal' }, { status: 503 }));
+    await expect(
+      apiFetch(
+        'POST',
+        '/x',
+        {},
+        { idempotencyKey: 'k', retryDelaysMs: [1, 1] },
+        signedIn(),
+        down.fn,
+      ),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(down.calls).toHaveLength(3);
+
+    const refused = scripted(() => json({ code: 'validation' }, { status: 422 }));
+    await expect(
+      apiFetch(
+        'POST',
+        '/x',
+        {},
+        { idempotencyKey: 'k', retryDelaysMs: [1, 1] },
+        signedIn(),
+        refused.fn,
+      ),
+    ).rejects.toMatchObject({ status: 422 });
+    expect(refused.calls).toHaveLength(1);
+
+    const unkeyed = scripted(() => json({ code: 'internal' }, { status: 503 }));
+    await expect(apiFetch('POST', '/x', {}, {}, signedIn(), unkeyed.fn)).rejects.toMatchObject({
+      status: 503,
+    });
+    expect(unkeyed.calls).toHaveLength(1);
+
+    const gone = scripted(() => {
+      throw new TypeError('Failed to fetch');
+    });
+    await expect(
+      apiFetch('POST', '/x', {}, { idempotencyKey: 'k', retryDelaysMs: [1] }, signedIn(), gone.fn),
+    ).rejects.toMatchObject({ code: 'network' });
+    expect(gone.calls).toHaveLength(2);
+  });
+
   it('a dropped connection is a friendly network error', async () => {
     const f = scripted(() => {
       throw new TypeError('Failed to fetch');

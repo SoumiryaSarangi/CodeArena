@@ -38,6 +38,8 @@ export interface StubOptions {
   handle?: string | null;
   /** Answer the next submit with 429. */
   rateLimit?: { retryAfter: number };
+  /** Answer this many submits with 503 (the API is restarting) before accepting one. */
+  unavailable?: number;
   /** The signed-in user's role (default user). */
   role?: 'user' | 'setter' | 'admin';
   /** Taken handles for the availability check. */
@@ -59,6 +61,7 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
   const calls: Calls = { submissions: [], runs: [], tickets: [], refreshes: 0, patchMe: [] };
   const state = {
     rateLimit: o.rateLimit,
+    unavailable: o.unavailable ?? 0,
     handle: o.handle,
     /** What `GET /api/runs/:id` answers, by run id; anything else is a plain successful run. */
     runResults: {} as Record<string, object>,
@@ -280,6 +283,10 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
   await page.route('**/api/submissions', (r) => {
     if (r.request().method() !== 'POST') return r.fallback();
     calls.submissions.push({ body: r.request().postDataJSON(), headers: r.request().headers() });
+    if (state.unavailable) {
+      state.unavailable--;
+      return json(r, { code: 'internal', title: 'Unavailable', status: 503, type: 'x' }, 503);
+    }
     if (state.rateLimit) {
       const { retryAfter } = state.rateLimit;
       state.rateLimit = undefined;

@@ -109,7 +109,16 @@ export interface RequestOptions {
    * no CSRF header either. Without that variable (dev) it falls back to the rewrite.
    */
   direct?: boolean;
+  /**
+   * Waits (ms) before each automatic retry of a keyed request that failed because the server was
+   * briefly away (no connection, 500, 502, 503, 504). The same `Idempotency-Key` goes with every try, so
+   * the work happens once. Only used with `idempotencyKey`; default 1+2+4+8 s (X-14), `[]` turns it off.
+   */
+  retryDelaysMs?: number[];
 }
+
+const DEFAULT_RETRY_DELAYS_MS = [1000, 2000, 4000, 8000];
+const RETRYABLE = new Set([0, 500, 502, 503, 504]);
 
 const apiBase = (direct?: boolean) =>
   direct ? (process.env.NEXT_PUBLIC_REALTIME_URL ?? '').replace(/\/$/, '') : '';
@@ -156,17 +165,47 @@ async function apiRequest(
   if (!token && opts.auth === 'required') {
     throw new ApiError(401, 'unauthorized', 'Sign in to continue.');
   }
-  let res = await send(token);
-  if (res.status === 401 && token) {
-    token = await client.refresh();
-    if (token) res = await send(token);
+  const attempt = async () => {
+    let r = await send(token);
+    if (r.status === 401 && token) {
+      token = await client.refresh();
+      if (token) r = await send(token);
+    }
+    return r;
+  };
+  const delays = opts.idempotencyKey ? (opts.retryDelaysMs ?? DEFAULT_RETRY_DELAYS_MS) : [];
+  let res: Response | undefined;
+  for (let i = 0; ; i++) {
+    let networkError: ApiError | undefined;
+    try {
+      res = await attempt();
+    } catch (err) {
+      if (!(err instanceof ApiError) || err.status !== 0) throw err;
+      networkError = err;
+    }
+    const failed = networkError ? 0 : res!.ok ? null : res!.status;
+    if (failed === null || !RETRYABLE.has(failed) || i >= delays.length) {
+      if (networkError) throw networkError;
+      break;
+    }
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(resolve, delays[i]);
+      opts.signal?.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(t);
+          reject(new DOMException('Aborted', 'AbortError'));
+        },
+        { once: true },
+      );
+    });
   }
-  if (res.ok) return res;
+  if (res!.ok) return res!;
 
-  const problem = (await res.json().catch(() => null)) as Partial<ProblemDetails> | null;
-  const retry = Number(res.headers.get('Retry-After'));
+  const problem = (await res!.json().catch(() => null)) as Partial<ProblemDetails> | null;
+  const retry = Number(res!.headers.get('Retry-After'));
   throw new ApiError(
-    res.status,
+    res!.status,
     problem?.code ?? 'internal',
     problem?.detail ?? problem?.title ?? 'Something went wrong on our side.',
     problem?.instance,
