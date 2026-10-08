@@ -33,7 +33,8 @@ describe('O-01: error tracking', () => {
       expect(e.request).toBeUndefined();
       expect(e.user).toBeUndefined();
     }
-    expect(sent.at(-1)?.tags).toMatchObject({ requestId: 'req-2' });
+    // Events may be processed in any order: look for ours by its tag.
+    expect(sent.some((e) => e.tags?.requestId === 'req-2')).toBe(true);
     await Sentry.close(0);
   });
 });
