@@ -68,32 +68,32 @@ describe.skipIf(!up)('AI-01: provider layer (needs the Compose Redis)', () => {
   it('FR-AI-06: the primary model answers; usage is accounted per feature and model', async () => {
     const groq = new FakeProvider([{ text: 'one', usage: { inputTokens: 90, outputTokens: 10 } }]);
     const r = await router({ groq, gemini: new FakeProvider() }).complete(ask());
-    expect(r).toMatchObject({ text: 'one', model: 'groq:llama-3.3-70b-versatile', fallbacks: 0 });
-    expect(groq.calls[0]!.model).toBe('llama-3.3-70b-versatile');
+    expect(r).toMatchObject({ text: 'one', model: 'groq:openai/gpt-oss-120b', fallbacks: 0 });
+    expect(groq.calls[0]!.model).toBe('openai/gpt-oss-120b');
     const day = await ledger.usageToday();
-    expect(day.test!['groq:llama-3.3-70b-versatile']).toEqual({ in: 90, out: 10, calls: 1 });
+    expect(day.test!['groq:openai/gpt-oss-120b']).toEqual({ in: 90, out: 10, calls: 1 });
     // the reservation was replaced by the real usage
-    expect((await ledger.used('groq:llama-3.3-70b-versatile')).tokens).toBe(100);
+    expect((await ledger.used('groq:openai/gpt-oss-120b')).tokens).toBe(100);
   });
 
   it('SD-§12.1: falls back down the chain on a hard error, then on an exhausted daily budget', async () => {
-    // llama-3.3 fails with 400 → gpt-oss answers
+    // the 120b fails with 400 → the 20b answers
     const groq = new FakeProvider([{ error: 400 }, 'from-oss']);
     const r = await router({ groq, gemini: new FakeProvider() }).complete(ask());
-    expect(r).toMatchObject({ text: 'from-oss', model: 'groq:openai/gpt-oss-120b', fallbacks: 1 });
+    expect(r).toMatchObject({ text: 'from-oss', model: 'groq:openai/gpt-oss-20b', fallbacks: 1 });
     // a budget too small for the 70b skips it without calling it
     const groq2 = new FakeProvider(['g']);
     const t2 = router(
       { groq: groq2, gemini: new FakeProvider(['gem']) },
       {
         AI_BUDGETS: JSON.stringify({
-          'groq:llama-3.3-70b-versatile': { tokensPerDay: 50, requestsPerDay: 5 },
+          'groq:openai/gpt-oss-120b': { tokensPerDay: 50, requestsPerDay: 5 },
         }),
       },
     );
     const r2 = await t2.complete(ask());
-    expect(r2.model).toBe('groq:openai/gpt-oss-120b');
-    expect(groq2.calls.map((c) => c.model)).toEqual(['openai/gpt-oss-120b']);
+    expect(r2.model).toBe('groq:openai/gpt-oss-20b');
+    expect(groq2.calls.map((c) => c.model)).toEqual(['openai/gpt-oss-20b']);
   });
 
   it('FR-AI-06: the daily request budget is enforced across calls, then every model exhausted is "busy"', async () => {
@@ -122,7 +122,7 @@ describe.skipIf(!up)('AI-01: provider layer (needs the Compose Redis)', () => {
     const r = await router({ groq }).complete(ask('sufficiency', 50));
     expect(r).toMatchObject({
       text: 'after-wait',
-      model: 'groq:llama-3.1-8b-instant',
+      model: 'groq:openai/gpt-oss-20b',
       fallbacks: 0,
     });
     expect(sleeps).toEqual([1500]);
@@ -131,28 +131,29 @@ describe.skipIf(!up)('AI-01: provider layer (needs the Compose Redis)', () => {
 
   it('a retry-after longer than the cap moves to the next model and cools the first one down', async () => {
     sleeps.length = 0;
+    const before = (await ledger.used('groq:openai/gpt-oss-20b')).requests;
     const groq = new FakeProvider([{ error: 429, retryAfterMs: 60_000 }]);
     const gemini = new FakeProvider(['gemini-answer']);
     const r = await router({ groq, gemini }).complete(ask('sufficiency', 50));
     expect(r).toMatchObject({
       text: 'gemini-answer',
-      model: 'gemini:gemini-2.5-flash',
+      model: 'gemini:gemini-flash-lite-latest',
       fallbacks: 1,
     });
     expect(sleeps).toEqual([]);
-    expect(await ledger.isCooling('groq:llama-3.1-8b-instant')).toBe(true);
+    expect(await ledger.isCooling('groq:openai/gpt-oss-20b')).toBe(true);
     // the cool-down is shared: the next call does not even try the cooled model
     const groq2 = new FakeProvider(['unused']);
     await router({ groq: groq2, gemini }).complete(ask('sufficiency', 50));
     expect(groq2.calls).toHaveLength(0);
     // a failed call gave its reservation back
-    expect((await ledger.used('groq:llama-3.1-8b-instant')).requests).toBeLessThanOrEqual(2);
+    expect((await ledger.used('groq:openai/gpt-oss-20b')).requests).toBe(before);
   });
 
   it('SD-§12.1: a provider without a key is skipped; no provider at all is "busy", not a crash', async () => {
     const gemini = new FakeProvider(['only-gemini']);
     const r = await router({ gemini }).complete(ask('sufficiency', 50));
-    expect(r.model).toBe('gemini:gemini-2.5-flash');
+    expect(r.model).toBe('gemini:gemini-flash-lite-latest');
     const none = router({});
     expect(none.available).toBe(false);
     await expect(none.complete(ask())).rejects.toMatchObject({ code: 'ai-busy' });

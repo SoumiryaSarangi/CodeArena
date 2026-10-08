@@ -2,6 +2,8 @@ import { type Provider, ProviderError, parseRetryAfter } from '../types';
 
 type Fetch = typeof fetch;
 
+const THINKING_HEADROOM = 600;
+
 export const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 
 /** Google AI Studio `generateContent` over HTTP (free tier). The key goes in a header, never the URL. */
@@ -48,7 +50,8 @@ export class GeminiProvider implements Provider {
             ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
             contents,
             generationConfig: {
-              maxOutputTokens: req.maxTokens,
+              // Gemini 3 models think before answering and the thinking counts against this limit.
+              maxOutputTokens: req.maxTokens + THINKING_HEADROOM,
               temperature: req.temperature ?? 0.2,
               ...(req.json ? { responseMimeType: 'application/json' } : {}),
             },

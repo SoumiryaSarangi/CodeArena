@@ -2,6 +2,9 @@ import { type Provider, ProviderError, type ProviderName, parseRetryAfter } from
 
 type Fetch = typeof fetch;
 
+const REASONING_HEADROOM = 600;
+const reasons = (model: string) => /gpt-oss/.test(model);
+
 interface Options {
   name: ProviderName;
   baseUrl: string;
@@ -39,7 +42,10 @@ export class OpenAiCompatibleProvider implements Provider {
         body: JSON.stringify({
           model,
           messages: req.messages,
-          max_tokens: req.maxTokens,
+          // gpt-oss and other reasoning models spend completion tokens on thinking first: keep the effort low and
+          // leave room, or the visible answer comes back empty.
+          max_tokens: req.maxTokens + (reasons(model) ? REASONING_HEADROOM : 0),
+          ...(reasons(model) ? { reasoning_effort: 'low' } : {}),
           temperature: req.temperature ?? 0.2,
           ...(req.json ? { response_format: { type: 'json_object' } } : {}),
         }),
@@ -60,7 +66,8 @@ export class OpenAiCompatibleProvider implements Provider {
       usage?: { prompt_tokens?: number; completion_tokens?: number };
     } | null;
     const text = body?.choices?.[0]?.message?.content;
-    if (typeof text !== 'string') throw new ProviderError(`${this.name} sent no text`, 502);
+    if (typeof text !== 'string' || text.trim() === '')
+      throw new ProviderError(`${this.name} sent no text`, 502);
     return {
       text,
       usage: {

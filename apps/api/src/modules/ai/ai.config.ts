@@ -8,30 +8,30 @@ import { AI_TASKS, type AiTask, type ModelRef, modelKey } from './types';
  */
 export const DEFAULT_ROUTES: Record<AiTask, ModelRef[]> = {
   sufficiency: [
-    { provider: 'groq', model: 'llama-3.1-8b-instant' },
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
+    { provider: 'groq', model: 'openai/gpt-oss-20b' },
+    { provider: 'gemini', model: 'gemini-flash-lite-latest' },
   ],
   hint_main: [
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'groq', model: 'openai/gpt-oss-120b' },
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
+    { provider: 'groq', model: 'openai/gpt-oss-20b' },
+    { provider: 'gemini', model: 'gemini-3.5-flash' },
   ],
   code_removal: [
-    { provider: 'groq', model: 'llama-3.1-8b-instant' },
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
+    { provider: 'groq', model: 'openai/gpt-oss-20b' },
+    { provider: 'gemini', model: 'gemini-flash-lite-latest' },
   ],
   review: [
     { provider: 'groq', model: 'openai/gpt-oss-120b' },
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
+    { provider: 'gemini', model: 'gemini-3.5-flash' },
+    { provider: 'groq', model: 'openai/gpt-oss-20b' },
   ],
   room_summary: [
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
+    { provider: 'gemini', model: 'gemini-3.5-flash' },
     { provider: 'groq', model: 'openai/gpt-oss-120b' },
   ],
   leak_judge: [
-    { provider: 'gemini', model: 'gemini-2.5-flash' },
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'gemini', model: 'gemini-3.5-flash' },
+    { provider: 'groq', model: 'openai/gpt-oss-120b' },
   ],
 };
 
@@ -41,15 +41,15 @@ export interface Budget {
 }
 
 /**
- * Daily budgets per `provider:model`, kept below the free-tier limits (SD-§12.3: Groq limits are per
- * organisation and change, verify them live). A model with no entry here is not called at all.
+ * Daily budgets per `provider:model`, kept below the free-tier limits (SD-§12.3: the limits are per
+ * organisation and change, and so do the models: verify both live). A model with no entry here is not called at all.
  * Override with `AI_BUDGETS` (JSON).
  */
 export const DEFAULT_BUDGETS: Record<string, Budget> = {
-  'groq:llama-3.3-70b-versatile': { tokensPerDay: 90_000, requestsPerDay: 900 },
-  'groq:llama-3.1-8b-instant': { tokensPerDay: 450_000, requestsPerDay: 13_000 },
-  'groq:openai/gpt-oss-120b': { tokensPerDay: 180_000, requestsPerDay: 900 },
-  'gemini:gemini-2.5-flash': { tokensPerDay: 900_000, requestsPerDay: 200 },
+  'groq:openai/gpt-oss-120b': { tokensPerDay: 150_000, requestsPerDay: 900 },
+  'groq:openai/gpt-oss-20b': { tokensPerDay: 150_000, requestsPerDay: 900 },
+  'gemini:gemini-3.5-flash': { tokensPerDay: 400_000, requestsPerDay: 180 },
+  'gemini:gemini-flash-lite-latest': { tokensPerDay: 400_000, requestsPerDay: 400 },
 };
 
 const modelRef = z.object({

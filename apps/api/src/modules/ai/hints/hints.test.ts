@@ -278,9 +278,9 @@ describe.skipIf(!ready)('AI-02: the hint ladder (needs the Compose Postgres and 
     expect(r.status).toBe(200);
     expect(fake.steps()).toEqual(['sufficiency', 'main', 'removal']);
     expect(fake.calls.map((c) => c.model)).toEqual([
-      'llama-3.1-8b-instant',
-      'llama-3.3-70b-versatile',
-      'llama-3.1-8b-instant',
+      'openai/gpt-oss-20b',
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
     ]);
     const [row] = await rows(u.id);
     expect(row).toMatchObject({
@@ -293,9 +293,9 @@ describe.skipIf(!ready)('AI-02: the hint ladder (needs the Compose Postgres and 
       helpful: null,
     });
     expect(row!.models).toEqual([
-      'sufficiency=groq:llama-3.1-8b-instant',
-      'hint_main=groq:llama-3.3-70b-versatile',
-      'code_removal=groq:llama-3.1-8b-instant',
+      'sufficiency=groq:openai/gpt-oss-20b',
+      'hint_main=groq:openai/gpt-oss-120b',
+      'code_removal=groq:openai/gpt-oss-20b',
     ]);
   });
 

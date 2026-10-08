@@ -38,6 +38,19 @@ describe('AI-01: providers', () => {
     expect(body.messages).toHaveLength(2);
   });
 
+  it('Groq reasoning models: low effort and room for thinking; an empty answer is an error, not a hint', async () => {
+    let body: Record<string, unknown> = {};
+    const p = groqProvider('K', async (_url, init) => {
+      body = JSON.parse(String(init!.body));
+      return reply({ choices: [{ message: { content: '' } }] });
+    });
+    await expect(p.complete('openai/gpt-oss-120b', req)).rejects.toMatchObject({ status: 502 });
+    expect(body).toMatchObject({ reasoning_effort: 'low', max_tokens: 650 });
+    await p.complete('llama-x', req).catch(() => {});
+    expect(body.reasoning_effort).toBeUndefined();
+    expect(body.max_tokens).toBe(50);
+  });
+
   it('Gemini: system prompt goes to systemInstruction, the key to a header (never the URL)', async () => {
     let seen: { url: string; init: RequestInit } | undefined;
     const p = new GeminiProvider('GKEY', async (url, init) => {
