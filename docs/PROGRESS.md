@@ -870,3 +870,7 @@ Decisions: only restarts seen while the API runs are counted (a restart during a
 Next: AI-01..04 (AI-02 and AI-04 need `/model opusplan`).
 Ayush must: nothing; the new column appears on the judge after the next deploy.
 Model: S · Sonnet 5.5
+
+## 2026-10-08 · X-16 · parked (come back later)
+Nothing was built or changed for X-16 (only read-only looks at the API VM). Parked at Ayush's request. Notes for when it is picked up: the nightly backup covers Postgres only, so losing the API VM also loses the object store (testsets, hidden tests: re-import from `problems/` and `problems-private/`), Redis and `prod.env`; Docker container logs on the API VM have no size limit (`json-file`, 143 MB on 2026-10-08, 21% of the 61 GB disk used) and nothing alerts on disk use. Options discussed: a rebuild runbook with a local restore rehearsal, a rebuild on a spare VM, a local full-disk drill on a size-limited throwaway Postgres/Redis, compose log rotation, a disk-free warning on `/status`.
+Model: S · Sonnet 5.5
