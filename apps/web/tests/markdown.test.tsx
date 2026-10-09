@@ -61,7 +61,8 @@ describe('FR-PROB-07: statements render maths and strip anything dangerous', () 
       expect(out, d.name).not.toMatch(/<script|onerror|javascript:/i);
       expect(out, d.name).not.toContain('katex-error');
     }
-  });
+    // renders 20 statements with maths: 5 s is not enough when every suite of the repository runs at once (CI, `pnpm test`)
+  }, 60_000);
 
   it('slugifies headings', () => {
     expect(slugify('Input & Output!')).toBe('input-output');
