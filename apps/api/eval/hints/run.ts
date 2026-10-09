@@ -1,13 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Redis } from 'ioredis';
+import pino from 'pino';
 import { loadConfig } from '../../src/config/config';
 import { ProblemError } from '../../src/common/problem';
 import { runHintPipeline } from '../../src/modules/ai/hints/hint-pipeline';
 import { HINT_PROMPT_VERSION } from '../../src/modules/ai/hints/hint-prompts';
 import { AiLedger } from '../../src/modules/ai/ledger';
 import { AiRouter } from '../../src/modules/ai/router';
-import { createLogger } from '../../src/telemetry/logger';
 import { buildDataset, type EvalDataset, type EvalItem } from './dataset';
 import { assess, boilerplateGrams, type Verdicts } from './detectors';
 import {
@@ -227,13 +227,26 @@ const arg = (name: string, d?: string) => {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? process.argv[i + 1] : d;
 };
+/** Result rows from a JSONL file; any other line (a stray log line) is ignored. */
+export const parseRows = (text: string): Row[] =>
+  text
+    .split('\n')
+    .filter(Boolean)
+    .flatMap((l) => {
+      try {
+        const o = JSON.parse(l) as Partial<Row>;
+        return o &&
+          typeof o.id === 'string' &&
+          typeof o.outcome === 'string' &&
+          typeof o.promptVersion === 'string'
+          ? [o as Row]
+          : [];
+      } catch {
+        return [];
+      }
+    });
 const readRows = (file: string): Row[] =>
-  !existsSync(file)
-    ? []
-    : readFileSync(file, 'utf8')
-        .split('\n')
-        .filter(Boolean)
-        .map((l) => JSON.parse(l) as Row);
+  existsSync(file) ? parseRows(readFileSync(file, 'utf8')) : [];
 
 async function main() {
   const cmd = process.argv[2];
@@ -257,7 +270,8 @@ async function main() {
     const router = new AiRouter(
       config,
       new AiLedger(redis, config.QUEUE_KEY_PREFIX),
-      createLogger({ LOG_LEVEL: 'warn' }),
+      // logs go to stderr: stdout is the results file
+      pino({ level: 'warn', base: { service: 'eval' } }, pino.destination(2)),
     );
     if (!router.available) throw new Error('no AI provider is configured (keys missing)');
     const skip = new Set(

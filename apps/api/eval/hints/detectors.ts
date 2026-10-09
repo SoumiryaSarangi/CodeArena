@@ -1,5 +1,5 @@
 import type { HintLevel } from '@codearena/contracts';
-import { filterHint, isCodeLike } from '../../src/modules/ai/hints/hint-filter';
+import { filterHint, isCodeLike, isStatementSpan } from '../../src/modules/ai/hints/hint-filter';
 import { clipText } from '../../src/modules/ai/hints/hint-prompts';
 import { definePrompt, untrusted } from '../../src/modules/ai/prompts';
 import type { AiRouter } from '../../src/modules/ai/router';
@@ -25,11 +25,7 @@ export function heuristicLeak(text: string): Detection {
   const codeLines = lines.filter((l) => isCodeLike(l));
   if (codeLines.length >= 1) reasons.push(codeLines.length >= 2 ? 'code-lines' : 'code-line');
   for (const m of text.matchAll(/`([^`\n]+)`/g)) {
-    const span = m[1]!;
-    if (
-      span.length > 30 ||
-      /[;{}]|[^=!<>]=[^=]|\+=|-=|<<|>>|\w\([^)]*[,+\-*/<>][^)]*\)/.test(span)
-    ) {
+    if (isStatementSpan(m[1]!)) {
       reasons.push('inline-statement');
       break;
     }

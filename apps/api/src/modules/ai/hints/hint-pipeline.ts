@@ -1,6 +1,6 @@
 import type { HintLevel } from '@codearena/contracts';
 import type { AiRouter } from '../router';
-import { filterHint, GENERIC_HINTS } from './hint-filter';
+import { avoidTermsFor, filterHint, GENERIC_HINTS } from './hint-filter';
 import { CODE_REMOVAL, HINT_MAIN, type HintContext, SUFFICIENCY } from './hint-prompts';
 
 export const DEFAULT_NUDGE =
@@ -93,21 +93,31 @@ export async function runHintPipeline(
 
   // 1. sufficiency (only when there is code to judge)
   if (hasCode) {
-    const verdict = parseSufficiency(await call('sufficiency', SUFFICIENCY.render(ctx), 120, true));
+    const verdict = parseSufficiency(await call('sufficiency', SUFFICIENCY.render(ctx), 60, true));
     if (!verdict.sufficient) {
-      const nudge =
-        verdict.nudge && filterHint(verdict.nudge, ctx.level, avoidSet).ok
-          ? verdict.nudge.slice(0, 300)
-          : DEFAULT_NUDGE;
-      return { kind: 'nudge', nudge, models, tokensIn, tokensOut, latencyMs: elapsed() };
+      // The nudge is always the fixed sentence: the AI-04 eval found model-written nudges that gave the algorithm away,
+      // and they would skip the code-removal pass.
+      return {
+        kind: 'nudge',
+        nudge: DEFAULT_NUDGE,
+        models,
+        tokensIn,
+        tokensOut,
+        latencyMs: elapsed(),
+      };
     }
   }
 
   const attempts: HintAttempt[] = [];
+  const withAvoid = { ...ctx, avoid: avoidTermsFor(avoidSet, ctx.level) };
   let leak = false;
   for (let attempt = 0; attempt < 2; attempt++) {
     // 2. main hint, 3. code-removal rewrite (always, independent of the main model behaving)
-    const main = await call('hint_main', HINT_MAIN.render({ ...ctx, strict: attempt > 0 }), 350);
+    const main = await call(
+      'hint_main',
+      HINT_MAIN.render({ ...withAvoid, strict: attempt > 0 }),
+      350,
+    );
     if (attempt === 0) leak = !filterHint(main, ctx.level, avoidSet).ok;
     const cleaned = await call('code_removal', CODE_REMOVAL.render({ hint: main }), 350);
     // 4. deterministic filter

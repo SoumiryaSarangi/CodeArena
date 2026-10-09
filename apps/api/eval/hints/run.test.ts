@@ -127,7 +127,7 @@ describe.skipIf(!redisUp)('FR-AI-09: running the hint eval (needs the Compose Re
       generic: false,
       filterLeakFlag: true,
       expect: 'hint',
-      promptVersion: 'hint-main@1',
+      promptVersion: 'hint-main@2',
     });
     expect(r.A!.verdicts).toMatchObject({ leak: true });
     expect(

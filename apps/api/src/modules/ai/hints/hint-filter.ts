@@ -22,6 +22,22 @@ export function isCodeLike(line: string): boolean {
   return INDENTED_SYMBOLS.test(line);
 }
 
+/**
+ * An inline code span that is more than a name: a statement or a formula (`pref[i]=pref[i-1]+a[i]`, `best = max(a, b)`,
+ * `for (...)`), found by the AI-04 eval to be how solutions slip through inside backticks. Names, indexing and
+ * hyphenated words (`dp`, `dp[i][j]`, `64-bit`, `O(n)`) are fine.
+ */
+export function isStatementSpan(span: string): boolean {
+  if (span.length > 30) return true;
+  if (/[;{}]/.test(span)) return true;
+  if (/[=+*/%<>|&^]/.test(span) || /[−‑–·×÷]/.test(span)) return true; // operators, assignment, comparison
+  if (/\w\s[-]\s\w/.test(span)) return true; // `a - b`
+  if (span.includes('-') && /[[\]()]/.test(span)) return true; // `dp[i-1]`, `pref[r]-pref[l-1]`
+  if (/^[A-Za-z]\w?-\w+$/.test(span)) return true; // `a-b`, `n-1` (but `64-bit` and `non-empty` are words)
+  if (/\w\([^)]*[,\s][^)]*\)/.test(span)) return true; // a call with several arguments
+  return false;
+}
+
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Terms a hint of `level` must not use: every avoid-set entry for this level or a higher one (`avoidSet[n]` binds levels ≤ n). */
@@ -35,8 +51,8 @@ export function avoidTermsFor(avoidSet: Record<string, string[]>, level: HintLev
 
 /**
  * SD-§12.2 step 6, FR-AI-03: the deterministic last line of defence, independent of any model. Rejects
- * fenced code, two or more consecutive code-like lines, an inline code span that is more than a name
- * (over 40 characters, or with `;` / `{`), and avoid-set terms for the level.
+ * fenced code, two or more consecutive code-like lines, an inline code span that is a statement or formula
+ * rather than a name (`isStatementSpan`), and avoid-set terms for the level.
  */
 export function filterHint(
   text: string,
@@ -55,8 +71,7 @@ export function filterHint(
   }
 
   for (const m of text.matchAll(/`([^`\n]+)`/g)) {
-    const span = m[1]!;
-    if (span.length > 40 || /[;{]/.test(span)) {
+    if (isStatementSpan(m[1]!)) {
       reasons.push('inline-code');
       break;
     }

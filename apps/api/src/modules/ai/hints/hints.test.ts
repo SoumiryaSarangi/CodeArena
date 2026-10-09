@@ -24,6 +24,7 @@ import { ACCESS_TOKENS, type AccessTokens } from '../../auth/keys';
 import { parsePackage, readPackageDirectory } from '../../problems/package';
 import { ProblemImporter } from '../../problems/problems.import';
 import { AiRouter } from '../router';
+import { DEFAULT_NUDGE } from './hint-pipeline';
 import type { Provider } from '../types';
 
 const config = loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' });
@@ -285,7 +286,7 @@ describe.skipIf(!ready)('AI-02: the hint ladder (needs the Compose Postgres and 
     const [row] = await rows(u.id);
     expect(row).toMatchObject({
       level: 1,
-      promptVersion: 'hint-main@1',
+      promptVersion: 'hint-main@2',
       tokensIn: 300,
       tokensOut: 60,
       leakFlag: false,
@@ -399,13 +400,13 @@ describe.skipIf(!ready)('AI-02: the hint ladder (needs the Compose Postgres and 
     expect(none.body.nudge).toMatch(/attempt/i);
     expect(fake.calls).toHaveLength(0);
     await addSub(u.id, 'int main(){}');
+    // even if the model tries to write the nudge itself (AI-04: those gave the algorithm away), the student only
+    // ever sees the fixed sentence
     fake.sufficiency =
-      '{"sufficient": false, "nudge": "Your program prints nothing yet; read the input first."}';
+      '{"sufficient": false, "nudge": "Sort the sacks by value per weight and take them greedily."}';
     const thin = await ask(u, 2);
-    expect(thin.body).toEqual({
-      hint: null,
-      nudge: 'Your program prints nothing yet; read the input first.',
-    });
+    expect(thin.body).toEqual({ hint: null, nudge: DEFAULT_NUDGE });
+    expect(JSON.stringify(thin.body)).not.toMatch(/greedily|sort/i);
     expect(fake.steps()).toEqual(['sufficiency']);
     expect((await rows(u.id)).filter((r) => r.level === 2)).toHaveLength(0);
   });
