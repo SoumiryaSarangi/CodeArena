@@ -94,10 +94,13 @@ services:
   # It has no database, Redis or storage access: the API is its only contact, with the service token.
   plag:
     <<: *restart
-    image: ${PLAG_IMAGE:?PLAG_IMAGE is the plag job image (see apps/plag/Dockerfile)}
+    # Optional variables on purpose: Compose evaluates `${X:?}` for EVERY service, even in an inactive profile, so a
+    # required one here would make every deploy and every `docker compose` command fail. The job itself refuses to run
+    # without the token (`python -m plag serve` exits 2).
+    image: ${PLAG_IMAGE:-codearena-plag:not-deployed}
     profiles: ['plag']
     environment:
-      PLAG_SERVICE_TOKEN: ${PLAG_SERVICE_TOKEN:?PLAG_SERVICE_TOKEN is in prod.env}
+      PLAG_SERVICE_TOKEN: ${PLAG_SERVICE_TOKEN:-}
     command: ['serve', '--api', 'http://api:4000']
     read_only: true
     tmpfs: ['/tmp']

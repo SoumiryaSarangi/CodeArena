@@ -132,7 +132,8 @@ class PlagJob(unittest.TestCase):
         svc = services["plag"]
         self.assertNotIn("env_file", svc)
         self.assertEqual(sorted(svc["environment"]), ["PLAG_SERVICE_TOKEN"])
-        self.assertIn(":?", svc["environment"]["PLAG_SERVICE_TOKEN"])  # refuses to start without it
+        # NOT required here (see the compose file): the job exits 2 by itself without the token
+        self.assertEqual(svc["environment"]["PLAG_SERVICE_TOKEN"], "${PLAG_SERVICE_TOKEN:-}")
 
     def test_it_reaches_the_api_only_and_publishes_nothing(self):
         svc = services["plag"]
@@ -149,7 +150,63 @@ class PlagJob(unittest.TestCase):
         self.assertNotIn("volumes", svc)  # no host or data volumes
 
     def test_the_image_is_chosen_by_the_operator_not_a_mutable_tag(self):
-        self.assertTrue(services["plag"]["image"].startswith("${PLAG_IMAGE:?"))
+        self.assertTrue(services["plag"]["image"].startswith("${PLAG_IMAGE:-"))
+
+
+class RendersLikeADeploy(unittest.TestCase):
+    """The deploy runs Compose with API_IMAGE (and prod.env) and nothing else. Compose evaluates `${X:?}` for every
+    service, even those in an inactive profile, so one service that needs another variable breaks every deploy: this renders
+    the real file the way deploy.sh does. (It once would have: the plag job asked for PLAG_IMAGE.)"""
+
+    ENV = (
+        "API_HOST=api.example.test\nWEB_ORIGIN=https://web.example.test\nAPI_PRIVATE_IP=10.20.1.4\n"
+        "POSTGRES_PASSWORD=x\nREDIS_ADMIN_PASSWORD=x\nREDIS_API_PASSWORD=x\nREDIS_JUDGE_PASSWORD=x\n"
+        "S3_API_ACCESS_KEY=x\nS3_API_SECRET_KEY=x\nS3_JUDGE_ACCESS_KEY=x\nS3_JUDGE_SECRET_KEY=x\n"
+    )
+
+    def render(self, *args, extra_env=None):
+        import os
+        import subprocess
+        import tempfile
+
+        if subprocess.run(["docker", "compose", "version"], capture_output=True).returncode != 0:
+            self.skipTest("docker compose is not installed")
+        with tempfile.TemporaryDirectory() as tmp:
+            # laid out like /opt/codearena: the compose file and prod.env side by side (services read `env_file: prod.env`)
+            env_file = Path(tmp) / "prod.env"
+            env_file.write_text(self.ENV)
+            (Path(tmp) / "docker-compose.yml").write_text((PROD / "docker-compose.yml").read_text())
+            env = {**os.environ, "API_IMAGE": "ghcr.io/x/y@sha256:" + "0" * 64, **(extra_env or {})}
+            for k in ("PLAG_IMAGE", "PLAG_SERVICE_TOKEN"):
+                if not (extra_env and k in extra_env):
+                    env.pop(k, None)
+            return subprocess.run(
+                ["docker", "compose", "--env-file", str(env_file), "-f", str(Path(tmp) / "docker-compose.yml"), *args],
+                capture_output=True, text=True, env=env, cwd=tmp,
+            )  # fmt: skip
+
+    def test_a_normal_deploy_renders_without_any_plag_variable(self):
+        r = self.render("config", "--services")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        names = r.stdout.split()
+        self.assertIn("api", names)
+        self.assertNotIn("plag", names)  # and the job is not part of it
+
+    def test_the_plag_profile_renders_with_its_defaults_and_with_real_values(self):
+        r = self.render("--profile", "plag", "config", "--services")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("plag", r.stdout.split())
+        r = self.render(
+            "--profile", "plag", "config",
+            extra_env={"PLAG_IMAGE": "ghcr.io/x/codearena-plag@sha256:" + "1" * 64, "PLAG_SERVICE_TOKEN": "t" * 48},
+        )  # fmt: skip
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("ghcr.io/x/codearena-plag@sha256:", r.stdout)
+
+    def test_every_service_with_a_profile_renders_when_only_the_deploy_variables_are_set(self):
+        for profile in ("tools", "observability", "plag"):
+            r = self.render("--profile", profile, "config", "--services")
+            self.assertEqual(r.returncode, 0, f"{profile}: {r.stderr}")
 
 
 class LoadTest(unittest.TestCase):
