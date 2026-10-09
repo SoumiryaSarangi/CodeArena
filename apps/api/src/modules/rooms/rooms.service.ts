@@ -272,25 +272,36 @@ export class RoomsService {
     });
   }
 
-  /** Best effort: the room is closed in the database whatever the collab server says; its sessions also end by themselves. */
+  /**
+   * Best effort: the room is closed in the database whatever the collab servers answer; its sessions also end by
+   * themselves. Every instance is told, because the room may live on any of them (Redis shares edits, not closures).
+   */
   private async tellCollab(id: string): Promise<void> {
-    const url = this.config.COLLAB_URL;
+    const urls = (this.config.COLLAB_URL ?? '').split(/[\s,]+/).filter(Boolean);
     const token = this.config.COLLAB_SERVICE_TOKEN;
-    if (!url || !token || token === 'not-configured') return;
-    try {
-      const res = await fetch(`${url.replace(/\/$/, '')}/internal/rooms/${id}/close`, {
-        method: 'POST',
-        headers: { 'x-service-token': token },
-        signal: AbortSignal.timeout(2000),
-      });
-      if (res.status !== 204)
-        this.log.warn({ roomId: id, status: res.status }, 'collab did not confirm the room close');
-    } catch (err) {
-      this.log.warn(
-        { roomId: id, err: { message: (err as Error).message } },
-        'could not tell collab the room closed',
-      );
-    }
+    if (urls.length === 0 || !token || token === 'not-configured') return;
+    await Promise.all(
+      urls.map(async (url) => {
+        try {
+          const res = await fetch(`${url.replace(/\/$/, '')}/internal/rooms/${id}/close`, {
+            method: 'POST',
+            headers: { 'x-service-token': token },
+            signal: AbortSignal.timeout(2000),
+          });
+          if (res.status !== 204) {
+            this.log.warn(
+              { roomId: id, url, status: res.status },
+              'collab did not confirm the room close',
+            );
+          }
+        } catch (err) {
+          this.log.warn(
+            { roomId: id, url, err: { message: (err as Error).message } },
+            'could not tell collab the room closed',
+          );
+        }
+      }),
+    );
   }
 
   private async asInterviewer(user: Actor, id: string): Promise<RoomRow> {

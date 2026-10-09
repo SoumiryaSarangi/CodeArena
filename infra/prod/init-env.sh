@@ -47,7 +47,7 @@ init)
   mkdir -p "$APP_DIR/state"
 
   api_host="api.${api_ip//./-}.sslip.io"
-  pg="$(rand)" r_admin="$(rand)" r_api="$(rand)" r_judge="$(rand)" plag_token="$(rand)"
+  pg="$(rand)" r_admin="$(rand)" r_api="$(rand)" r_judge="$(rand)" plag_token="$(rand)" collab_token="$(rand)"
   s3_api_ak="api$(openssl rand -hex 8)" s3_api_sk="$(rand)"
   s3_judge_ak="judge$(openssl rand -hex 8)" s3_judge_sk="$(rand)"
 
@@ -95,6 +95,12 @@ OAUTH_GITHUB_CLIENT_SECRET=not-configured
 # Plagiarism job (PL-05): the shared secret between the API and the plag job (header X-Service-Token). The job itself
 # stays off until it is started with `--profile plag`; an older install adds this with `init-env.sh ensure prod`.
 PLAG_SERVICE_TOKEN=$plag_token
+
+# Interview pad (CP-DEPLOY): the secret between the API and the collab servers (header X-Service-Token), and where the API
+# reaches both instances to end a room's sessions. The servers stay off until started with `--profile collab`; an older
+# install adds these with `init-env.sh ensure prod`.
+COLLAB_SERVICE_TOKEN=$collab_token
+COLLAB_URL=http://collab1:1234,http://collab2:1234
 
 # Containers (Compose reads these for the services themselves)
 POSTGRES_PASSWORD=$pg

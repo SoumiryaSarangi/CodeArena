@@ -59,6 +59,8 @@ test.beforeAll(async () => {
       PORT: String(PORT),
       API_URL: `http://127.0.0.1:${apiPort}`,
       COLLAB_SERVICE_TOKEN: SERVICE_TOKEN,
+      // the browser tests need no database: documents live in memory (never allowed in production)
+      COLLAB_MEMORY: '1',
     },
     stdio: 'ignore',
   });

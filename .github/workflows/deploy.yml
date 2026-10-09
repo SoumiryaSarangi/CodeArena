@@ -213,3 +213,68 @@ jobs:
           export SSH_CONFIG
           SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
           bash infra/prod/ci/deploy-plag.sh
+
+  # CP-DEPLOY: the interview pad's collab servers. Off until the repository variable COLLAB_ENABLED is "true"; like the
+  # plag job it never blocks or fails the API/judge deploy (continue-on-error) and runs only after the API deploy succeeded.
+  collab-image:
+    needs: deploy-api
+    if: vars.COLLAB_ENABLED == 'true'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image name (lowercase, as registries require)
+        id: name
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-collab" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: apps/collab/Dockerfile
+          push: true
+          tags: ${{ steps.name.outputs.name }}:${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha,scope=collab
+          cache-to: type=gha,mode=max,scope=collab
+      - name: The reference to deploy is the digest, not the tag
+        id: ref
+        run: echo "ref=${{ steps.name.outputs.name }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  deploy-collab:
+    needs: collab-image
+    if: needs.collab-image.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Start the collab servers, one at a time (puts the previous image back if one does not become healthy)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          API_HOST: ${{ vars.API_HOST }}
+          API_HOST_KEY: ${{ vars.API_HOST_KEY }}
+          JUDGE_HOST_KEYS: ${{ vars.JUDGE_HOST_KEYS }}
+          COLLAB_IMAGE_REF: ${{ needs.collab-image.outputs.ref }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          export SSH_CONFIG
+          SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
+          bash infra/prod/ci/deploy-collab.sh

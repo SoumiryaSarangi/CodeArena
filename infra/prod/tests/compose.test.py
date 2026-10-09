@@ -341,6 +341,12 @@ class Caddy(unittest.TestCase):
         self.assertIn("lb_try_duration", pad)
         self.assertRegex(caddyfile, r"handle_errors\s*\{[^}]*/collab/\*[^}]*503")
 
+    def test_internal_routes_are_answered_404_at_the_edge_before_the_api_handle(self):
+        internal = self.block("/api/internal/*")
+        self.assertIn("404", internal)
+        self.assertNotIn("reverse_proxy", internal)
+        self.assertLess(caddyfile.index("handle /api/internal/*"), caddyfile.index("handle /api/*"))
+
     def test_no_directive_can_render_empty(self):
         # An optional environment value in a directive that needs an argument (`email {$X:}` with X
         # unset) is a syntax error and Caddy then refuses to start: found by running Caddy in CI.

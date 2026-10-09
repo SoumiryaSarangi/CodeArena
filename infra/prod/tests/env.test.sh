@@ -36,6 +36,8 @@ check "JWT private key is a PEM written on one line" "$(grep -q "^JWT_PRIVATE_KE
 
 check "the plagiarism job's service token is a secret of its own, and the judge never gets it (PL-05)" "$([ "$(pw PLAG_SERVICE_TOKEN | tr -d '\n' | wc -c)" = 48 ] && [ "$(pw PLAG_SERVICE_TOKEN)" != "$(pw POSTGRES_PASSWORD)" ] && ! grep -q PLAG "$APP_DIR/judge-worker.env" && echo 0 || echo 1)"
 
+check "the collab servers' service token is a secret of its own, the API knows where both instances are, and the judge gets neither (CP-DEPLOY)" "$([ "$(pw COLLAB_SERVICE_TOKEN | tr -d '\n' | wc -c)" = 48 ] && [ "$(pw COLLAB_SERVICE_TOKEN)" != "$(pw PLAG_SERVICE_TOKEN)" ] && [ "$(pw COLLAB_SERVICE_TOKEN)" != "$(pw POSTGRES_PASSWORD)" ] && [ "$(pw COLLAB_URL)" = "http://collab1:1234,http://collab2:1234" ] && ! grep -q COLLAB "$APP_DIR/judge-worker.env" && echo 0 || echo 1)"
+
 echo "- the judge only gets what it may have (ADR-009)"
 keys="$(grep -v '^#' "$APP_DIR/judge-worker.env" | cut -d= -f1 | sort | tr '\n' ' ')"
 check "exact set of judge variables" "$([ "$keys" = "REDIS_URL S3_ACCESS_KEY S3_BUCKET S3_ENDPOINT S3_SECRET_KEY WORKER_CACHE_DIR WORKER_CONCURRENCY WORKER_CORES WORKER_LANES " ] && echo 0 || echo 1)"

@@ -38,6 +38,12 @@
 		reverse_proxy api:4000
 	}
 
+	# Calls between our own services (the collab servers asking who a ticket is, CP-01) go to the API over the private
+	# network, never through here: the edge answers as if the route did not exist.
+	handle /api/internal/* {
+		respond "Not found" 404
+	}
+
 	handle /api/* {
 		encode zstd gzip
 		reverse_proxy api:4000

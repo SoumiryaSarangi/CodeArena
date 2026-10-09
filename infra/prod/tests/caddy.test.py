@@ -207,6 +207,20 @@ class Edge(unittest.TestCase):
         self.assertLess(time.time() - start, 8, "it should give up after the retry window, not hang")
         c.close()
 
+    def test_internal_service_routes_are_not_reachable_from_outside(self):
+        # The collab servers call /api/internal/* on the API over the private network; the edge answers as if it did not exist.
+        for method in ("GET", "POST"):
+            c = http.client.HTTPConnection("127.0.0.1", EDGE, timeout=10)
+            c.request(method, "/api/internal/rooms/3f2a0000-0000-4000-8000-000000000000/authorize", body="{}" if method == "POST" else None,
+                      headers={"X-Service-Token": "x" * 40})
+            r = c.getresponse()
+            self.assertEqual((r.status, r.read()), (404, b"Not found"), method)
+            c.close()
+        c, r = get("/api/internals-are-not-a-thing")  # only the internal prefix is blocked, other API paths still pass
+        self.assertEqual(r.status, 200)
+        r.read()
+        c.close()
+
     def test_the_root_and_unknown_paths_do_not_reach_the_api(self):
         c, r = get("/")
         self.assertEqual((r.status, r.read()), (200, b"CodeArena API"))

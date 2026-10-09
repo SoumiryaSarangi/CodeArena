@@ -41,7 +41,8 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
   let app: INestApplication;
   let tokens: AccessTokens;
   let collab: Server;
-  const collabCalls: { path: string; token: string | undefined }[] = [];
+  let collab2: Server;
+  const collabCalls: { port: number; path: string; token: string | undefined }[] = [];
 
   const makeUser = async (role: 'user' | 'admin' = 'user', handle: string | null = 'auto') => {
     const id = randomUUID();
@@ -68,14 +69,22 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
   };
 
   beforeAll(async () => {
-    collab = createServer((req, res) => {
-      collabCalls.push({
-        path: req.url ?? '',
-        token: req.headers['x-service-token'] as string | undefined,
+    // two collab instances: a room may live on either, so closing it must reach both
+    const instance = () =>
+      createServer((req, res) => {
+        collabCalls.push({
+          port: (req.socket.localPort ?? 0) as number,
+          path: req.url ?? '',
+          token: req.headers['x-service-token'] as string | undefined,
+        });
+        res.writeHead(204).end();
       });
-      res.writeHead(204).end();
-    });
-    await new Promise<void>((r) => collab.listen(0, '127.0.0.1', r));
+    collab = instance();
+    collab2 = instance();
+    await Promise.all(
+      [collab, collab2].map((c) => new Promise<void>((r) => c.listen(0, '127.0.0.1', r))),
+    );
+    const portOf = (c: Server) => (c.address() as { port: number }).port;
     const t = await createTestDatabase();
     db = t.db;
     drop = t.drop;
@@ -86,7 +95,7 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
         RATE_LIMIT_DEFAULT_PER_MIN: '100000',
         RATE_LIMIT_ANON_PER_MIN: '100000',
         COLLAB_SERVICE_TOKEN: COLLAB_TOKEN,
-        COLLAB_URL: `http://127.0.0.1:${(collab.address() as { port: number }).port}`,
+        COLLAB_URL: `http://127.0.0.1:${portOf(collab)} http://127.0.0.1:${portOf(collab2)}`,
         WEB_URL: 'https://codearena.example',
         DATABASE_URL: t.url,
       }),
@@ -101,7 +110,8 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
   afterAll(async () => {
     await app?.close();
     await drop?.();
-    await new Promise((r) => (collab?.listening ? collab.close(r) : r(undefined)));
+    for (const c of [collab, collab2])
+      await new Promise((r) => (c?.listening ? c.close(r) : r(undefined)));
   });
 
   it('FR-PAD-01: anyone signed in with a handle creates a room and becomes its interviewer', async () => {
@@ -288,9 +298,11 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
     expect((await call('post', `/rooms/${room.id}/close`, owner)).body).toEqual({
       status: 'closed',
     });
-    expect(collabCalls).toEqual([
+    expect(collabCalls.map((c) => ({ path: c.path, token: c.token }))).toEqual([
+      { path: `/internal/rooms/${room.id}/close`, token: COLLAB_TOKEN },
       { path: `/internal/rooms/${room.id}/close`, token: COLLAB_TOKEN },
     ]);
+    expect(new Set(collabCalls.map((c) => c.port)).size).toBe(2); // each instance was told
     const view = await call('get', `/rooms/${room.id}`, owner);
     expect(view.body.status).toBe('closed');
     const [row] = await db.select().from(rooms).where(eq(rooms.id, room.id));
@@ -313,7 +325,7 @@ describe.skipIf(!ready)('CP-02: interview rooms (needs Compose Postgres + Redis)
     const owner = await makeUser();
     const room = (await newRoom(owner)).body;
     // the main app's collab double is up; take it down to simulate an outage
-    await new Promise((r) => collab.close(r));
+    await Promise.all([collab, collab2].map((c) => new Promise((r) => c.close(r))));
     expect((await call('post', `/rooms/${room.id}/close`, owner)).status).toBe(200);
     expect((await call('get', `/rooms/${room.id}`, owner)).body.status).toBe('closed');
   });

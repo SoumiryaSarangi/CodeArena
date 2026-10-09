@@ -67,8 +67,14 @@ const schema = z.object({
   PLAG_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
   // Collab server (CP-01): its own shared secret for the internal authorize call. Unset: that endpoint answers 403.
   COLLAB_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
-  /** CP-02: where the API reaches the collab server to end a room's sessions (`http://collab:1234`). Unset: nothing to tell. */
-  COLLAB_URL: z.string().url().optional(),
+  /**
+   * CP-02/CP-DEPLOY: where the API reaches the collab servers to end a room's sessions, one address per instance separated
+   * by spaces or commas (`http://collab1:1234 http://collab2:1234`). A room may live on either, so all are told. Unset: nobody to tell.
+   */
+  COLLAB_URL: z
+    .string()
+    .regex(/^https?:\/\/[^\s,]+([\s,]+https?:\/\/[^\s,]+)*$/, 'one or more http(s) addresses')
+    .optional(),
   /** A run that has been `running` this long without a result is taken over by the next claim (the job died). */
   PLAG_STALE_MINUTES: z.coerce.number().int().min(1).default(30),
 
