@@ -59,6 +59,16 @@ export const HomeSummary = z
         })
         .strict(),
     ),
+    /** My AI reviews of the latest finalised contest I took part in (AI-03): how many are written so far. */
+    reviews: z
+      .object({
+        contestSlug: z.string(),
+        contestTitle: z.string(),
+        ready: z.number().int().min(0),
+        total: z.number().int().min(1),
+      })
+      .strict()
+      .nullable(),
     /** Only for someone who has not submitted anything yet: the easiest problems to start with. */
     warmUps: z.array(
       z.object({ slug: z.string(), title: z.string(), difficulty: z.number().int() }).strict(),

@@ -138,6 +138,19 @@ export function HomeView() {
         </Card>
       ) : null}
 
+      {home.reviews ? (
+        <Card id="reviews" title="Your contest reviews">
+          <p className="text-14" role="status">
+            {home.reviews.ready === home.reviews.total
+              ? `All ${home.reviews.total} AI review${home.reviews.total === 1 ? ' is' : 's are'} ready for ${home.reviews.contestTitle}.`
+              : `${home.reviews.ready} of ${home.reviews.total} AI reviews are ready for ${home.reviews.contestTitle}. The rest are being written.`}{' '}
+            <Link href={`/c/${home.reviews.contestSlug}/results`} className="underline">
+              Open your results
+            </Link>
+          </p>
+        </Card>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-2">
         <Card id="next" title="Next contest">
           {home.nextContest ? (

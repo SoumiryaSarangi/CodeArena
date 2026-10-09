@@ -23,7 +23,14 @@ export class ProblemsController {
 
   @Public()
   @Get(':slug')
-  detail(@Param('slug') slug: string) {
-    return this.problems.detail(slug);
+  detail(@Req() req: Request, @Param('slug') slug: string) {
+    return this.problems.detail(slug, req.user?.role);
+  }
+
+  /** Public once a contest that used the problem is finalised; setters and admins always. */
+  @Public()
+  @Get(':slug/editorial')
+  editorial(@Req() req: Request, @Param('slug') slug: string) {
+    return this.problems.editorial(slug, req.user?.role);
   }
 }

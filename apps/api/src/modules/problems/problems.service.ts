@@ -4,6 +4,7 @@ import type {
   ProblemList,
   ProblemListQuery,
   ProblemTags,
+  ProblemEditorial,
 } from '@codearena/contracts';
 import { and, asc, eq, gt, ilike, inArray, isNotNull, or, sql, type SQL } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
@@ -163,7 +164,7 @@ export class ProblemsService {
   }
 
   /** 404 for anything not public: hidden problems must not reveal that they exist (FR-PROB-09). */
-  async detail(slug: string): Promise<ProblemDetail> {
+  async detail(slug: string, role?: string): Promise<ProblemDetail> {
     const [row] = await this.db
       .select({
         id: problems.id,
@@ -177,6 +178,7 @@ export class ProblemsService {
         samples: problemVersions.samples,
         limits: problemVersions.limits,
         checker: problemVersions.checker,
+        hasEditorial: sql<boolean>`(coalesce(${problemVersions.editorialMd}, '') <> '' and (${isStaff(role)} or ${editorialPublished}))`,
       })
       .from(problems)
       .innerJoin(problemVersions, eq(problemVersions.id, problems.currentVersionId))
@@ -196,6 +198,7 @@ export class ProblemsService {
       practicePoints: row.practicePoints,
       version: row.version,
       testsCount: row.testsCount,
+      hasEditorial: Boolean(row.hasEditorial),
       statementMd: row.statementMd,
       tags: tags.map((t) => t.tag),
       samples: row.samples as ProblemDetail['samples'],
@@ -207,4 +210,38 @@ export class ProblemsService {
           : { kind: checker.kind, eps: checker.eps },
     };
   }
+
+  /**
+   * The editorial: public once a contest that used the problem is finalised, always for setters and admins. 404 for
+   * everyone else, whether the problem has none or it is not published yet (nothing to tell them apart).
+   */
+  async editorial(slug: string, role?: string): Promise<ProblemEditorial> {
+    const [row] = await this.db
+      .select({
+        slug: problems.slug,
+        title: problems.title,
+        version: problemVersions.version,
+        editorialMd: problemVersions.editorialMd,
+      })
+      .from(problems)
+      .innerJoin(problemVersions, eq(problemVersions.id, problems.currentVersionId))
+      .where(
+        and(
+          eq(problems.slug, slug),
+          sql`coalesce(${problemVersions.editorialMd}, '') <> ''`,
+          sql`(${isStaff(role)} or (${problems.visibility} in ('public', 'contest') and ${editorialPublished}))`,
+        ),
+      )
+      .limit(1);
+    if (!row?.editorialMd) throw new ProblemError('not-found', 'No editorial for this problem');
+    return { slug: row.slug, title: row.title, version: row.version, editorialMd: row.editorialMd };
+  }
 }
+
+/** Setters and admins read every editorial (SQL boolean). */
+const isStaff = (role?: string) => sql`${role === 'setter' || role === 'admin'}::boolean`;
+
+/** A finalised contest used this problem: its editorial is public from then on. */
+const editorialPublished = sql`exists (
+  select 1 from contest_problems cp join contests c on c.id = cp.contest_id
+  where cp.problem_id = ${problems.id} and c.status = 'finalized')`;

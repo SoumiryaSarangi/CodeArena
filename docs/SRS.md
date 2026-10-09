@@ -168,6 +168,7 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 |---|---|---|---|
 | POST `/api/hints` | User | `{problemSlug, level, submissionId?}` → `{hintId, level, text, pointsPenalty}` | hints-disabled-in-contest, hint-level-locked, rate-limited, ai-busy |
 | POST `/api/hints/{id}/feedback` | owner | `{helpful: boolean}` | — |
+| GET `/api/problems/{slug}/editorial` | Public | The editorial of the current version: public once a contest that used the problem is finalised (problem visibility public or contest), setters and admins always; otherwise 404. `ProblemDetail.hasEditorial` tells a viewer whether to show the link. Never tests, checker or solutions (FR-PROB-06). | not-found |
 | GET `/api/reviews?contest={slug}` | User | My reviews with status | — |
 | GET `/api/reviews/by-submission/{id}` | owner | Review; triggers on-demand generation if missing → `{status, content?}` | ai-busy |
 

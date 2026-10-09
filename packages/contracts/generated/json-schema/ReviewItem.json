@@ -21,6 +21,9 @@
         }
       ]
     },
+    "hasEditorial": {
+      "type": "boolean"
+    },
     "helpful": {
       "type": [
         "boolean",
@@ -76,7 +79,8 @@
     "failedTest",
     "status",
     "contentMd",
-    "helpful"
+    "helpful",
+    "hasEditorial"
   ],
   "type": "object"
 }

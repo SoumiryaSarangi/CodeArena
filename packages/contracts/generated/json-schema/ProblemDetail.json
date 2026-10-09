@@ -29,6 +29,9 @@
       "minimum": -9007199254740991,
       "type": "integer"
     },
+    "hasEditorial": {
+      "type": "boolean"
+    },
     "limits": {
       "additionalProperties": false,
       "properties": {
@@ -119,7 +122,8 @@
     "statementMd",
     "samples",
     "limits",
-    "checker"
+    "checker",
+    "hasEditorial"
   ],
   "type": "object"
 }

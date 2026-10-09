@@ -249,6 +249,7 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
     expect(Object.keys(mp.body).sort()).toEqual([
       'checker',
       'difficulty',
+      'hasEditorial',
       'limits',
       'practicePoints',
       'samples',
@@ -260,7 +261,9 @@ describe.skipIf(!ready)('P-01: problems API and import (needs the Compose Postgr
       'version',
     ]);
     expect(mp.body.checker).toEqual({ kind: 'testlib' });
-    expect(body).not.toMatch(/s3:\/\/|testset|sourceUri|editorial/i);
+    // the editorial text itself is never in the detail: only whether this viewer may read one
+    expect(body).not.toMatch(/s3:\/\/|testset|sourceUri|editorialMd/i);
+    expect(mp.body.hasEditorial).toBe(false); // a guest, and no contest has been finalised
     const pkg = load('matching-pair');
     // Only the samples are shown; a later test's input is not in the response.
     const hidden = pkg.tests[pkg.samples.length]!.in.toString('utf8');

@@ -40,6 +40,7 @@ const asProblem = (p: ContestProblemDetail): ProblemDetail => ({
   samples: p.samples,
   limits: p.limits,
   checker: p.checker,
+  hasEditorial: false, // no editorial while the contest can still be running
 });
 
 /** S09: the workspace in contest mode, inside a contest bar. */

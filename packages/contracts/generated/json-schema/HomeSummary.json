@@ -76,6 +76,41 @@
         }
       ]
     },
+    "reviews": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "contestSlug": {
+              "type": "string"
+            },
+            "contestTitle": {
+              "type": "string"
+            },
+            "ready": {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "total": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "contestSlug",
+            "contestTitle",
+            "ready",
+            "total"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "warmUps": {
       "items": {
         "additionalProperties": false,
@@ -105,6 +140,7 @@
   "required": [
     "nextContest",
     "continuePracticing",
+    "reviews",
     "warmUps"
   ],
   "type": "object"

@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import type { ProblemDetail } from '@codearena/contracts';
 import { Copy, Play } from 'lucide-react';
 import { useState } from 'react';
@@ -57,6 +58,11 @@ export function StatementPane({
             Rating <span className="font-mono">{problem.difficulty}</span>
           </span>
           <span>{checkerText(problem.checker)}</span>
+          {problem.hasEditorial ? (
+            <Link href={`/p/${problem.slug}/editorial`} className="text-accent underline">
+              Editorial
+            </Link>
+          ) : null}
         </div>
         <ul className="flex flex-wrap gap-1" aria-label="Tags">
           {problem.tags.map((t) => (

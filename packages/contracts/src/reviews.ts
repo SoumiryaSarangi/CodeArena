@@ -20,6 +20,8 @@ export const ReviewItem = z
     /** Markdown with four sections; present when ready. */
     contentMd: z.string().nullable(),
     helpful: z.boolean().nullable(),
+    /** The problem has a published editorial (`/p/{slug}/editorial`). */
+    hasEditorial: z.boolean(),
   })
   .strict()
   .meta({ id: 'ReviewItem' });

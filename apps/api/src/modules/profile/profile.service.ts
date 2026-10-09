@@ -100,7 +100,7 @@ export class ProfileService {
   async home(userId: string): Promise<HomeSummary> {
     return tracer.startActiveSpan('profile.home', async (span) => {
       try {
-        const [next, recent, any] = await Promise.all([
+        const [next, recent, any, rv] = await Promise.all([
           this.db.execute<{
             slug: string;
             title: string;
@@ -144,6 +144,13 @@ export class ProfileService {
           this.db.execute<{ n: number }>(
             sql`select count(*)::int as n from submissions where user_id = ${userId} and lane = 'practice'`,
           ),
+          // AI-03: my reviews of the latest finalised contest I took part in, and how many are written
+          this.db.execute<{ slug: string; title: string; total: number; ready: number }>(sql`
+            select c.slug, c.title, count(*)::int as total,
+                   (count(*) filter (where r.status = 'ready'))::int as ready
+            from reviews r join contests c on c.id = r.contest_id
+            where r.user_id = ${userId} and c.status = 'finalized'
+            group by c.id order by c.ends_at desc limit 1`),
         ]);
 
         const n = next.rows[0];
@@ -157,7 +164,16 @@ export class ProfileService {
               order by p.difficulty asc, p.title asc limit 5`)
           : { rows: [] as { slug: string; title: string; difficulty: number }[] };
 
+        const review = rv.rows[0];
         return {
+          reviews: review
+            ? {
+                contestSlug: review.slug,
+                contestTitle: review.title,
+                ready: Number(review.ready),
+                total: Number(review.total),
+              }
+            : null,
           nextContest: n
             ? {
                 slug: n.slug,

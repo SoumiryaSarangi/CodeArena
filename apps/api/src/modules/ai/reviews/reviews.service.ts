@@ -152,6 +152,7 @@ export class ReviewsService implements OnApplicationBootstrap, OnApplicationShut
         title: problems.title,
         verdict: submissions.verdict,
         failedTest: submissions.failedTest,
+        hasEditorial: sql<boolean>`exists (select 1 from problem_versions pv where pv.id = ${problems.currentVersionId} and coalesce(pv.editorial_md, '') <> '')`,
       })
       .from(reviews)
       .innerJoin(submissions, eq(submissions.id, reviews.submissionId))
@@ -180,6 +181,7 @@ export class ReviewsService implements OnApplicationBootstrap, OnApplicationShut
         status: this.statusOf(r.review, generating),
         contentMd: r.review.status === 'ready' ? r.review.contentMd : null,
         helpful: r.review.helpful,
+        hasEditorial: Boolean(r.hasEditorial),
       });
     }
     return { items };

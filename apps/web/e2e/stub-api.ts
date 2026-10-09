@@ -23,6 +23,7 @@ export const SAMPLE_PROBLEM = {
   ],
   limits: { timeMs: 1000, memMb: 256, outputKb: 1024 },
   checker: { kind: 'tokens' },
+  hasEditorial: false,
 };
 
 export interface Calls {
@@ -42,6 +43,10 @@ export interface StubOptions {
   rateLimit?: { retryAfter: number };
   /** Answer this many submits with 503 (the API is restarting) before accepting one. */
   unavailable?: number;
+  /** The problem has a published editorial (`/p/sum-two-numbers/editorial`). */
+  editorial?: boolean;
+  /** Home shows my AI reviews card (AI-03). */
+  homeReviews?: { ready: number; total: number };
   /** The Coach tab (UI-06). `off` switches hints off with that message; `reply` makes the next unlock fail busy or answer a nudge. */
   hints?: {
     off?: string;
@@ -106,6 +111,9 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
         },
         { slug: 'fractional-loot', title: 'Fractional Loot', solved: false, lastVerdict: 'WA' },
       ],
+      reviews: o.homeReviews
+        ? { contestSlug: 'warm-up-1', contestTitle: 'CodeArena Warm-up #1', ...o.homeReviews }
+        : null,
       warmUps: [],
     } as Record<string, unknown>,
     profile: {
@@ -272,7 +280,19 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
       o.takenHandles?.includes(h) ? { available: false, reason: 'taken' } : { available: true },
     );
   });
-  await page.route('**/api/problems/sum-two-numbers', (r) => json(r, SAMPLE_PROBLEM));
+  await page.route('**/api/problems/sum-two-numbers', (r) =>
+    json(r, { ...SAMPLE_PROBLEM, hasEditorial: Boolean(o.editorial) }),
+  );
+  await page.route('**/api/problems/sum-two-numbers/editorial', (r) =>
+    o.editorial
+      ? json(r, {
+          slug: 'sum-two-numbers',
+          title: 'Two Numbers, One Total',
+          version: 1,
+          editorialMd: '## Idea\n\nAdd the two numbers with a **64-bit** integer.\n',
+        })
+      : json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404),
+  );
   await page.route('**/api/problems/nope', (r) =>
     json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404),
   );

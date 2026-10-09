@@ -253,6 +253,7 @@ describe.skipIf(!ready)(
         failedTest: 2,
         contentMd: null,
         helpful: null,
+        hasEditorial: true,
       });
       expect((await call('get', `/reviews?contest=${c.slug}`, b.token)).body.items).toHaveLength(1);
       expect(fake.calls).toHaveLength(0); // listing never calls a model

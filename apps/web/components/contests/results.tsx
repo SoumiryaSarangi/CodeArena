@@ -17,6 +17,9 @@ import {
 } from '@/lib/contests';
 import { signInHref, useSession } from '@/lib/session';
 
+/** While a review is queued or being written, the list is read again this often (no notifications exist yet). */
+const POLL_MS = 20_000;
+
 interface Mine {
   row: BoardRow | null;
   change: ContestResults['changes'][number] | null;
@@ -86,6 +89,29 @@ export function ContestResultsView({ slug }: { slug: string }) {
         ),
       );
   }, [items]);
+
+  // A queued review is written by the background writer: pick it up when it is ready, without a reload.
+  const waiting = items?.some((i) => i.status === 'queued' || i.status === 'generating') ?? false;
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setInterval(() => {
+      myReviews(slug)
+        .then((r) =>
+          setItems(
+            (all) =>
+              all &&
+              all.map((i) => {
+                const fresh = r.items.find((x) => x.reviewId === i.reviewId);
+                return fresh && fresh.status === 'ready' && i.status !== 'ready'
+                  ? { ...i, ...fresh }
+                  : i;
+              }),
+          ),
+        )
+        .catch(() => {});
+    }, POLL_MS);
+    return () => clearInterval(t);
+  }, [waiting, slug]);
 
   const rate = (item: ReviewItem, helpful: boolean) => {
     setItems(
@@ -188,9 +214,16 @@ function ReviewCard({ item, onRate }: { item: ReviewItem; onRate: (helpful: bool
         {item.verdict ? (
           <VerdictBadge verdict={item.verdict} test={item.failedTest ?? undefined} />
         ) : null}
-        <Button asChild variant="ghost" size="sm" className="ml-auto">
-          <Link href={`/p/${item.problemSlug}`}>Upsolve</Link>
-        </Button>
+        <span className="ml-auto flex gap-1">
+          {item.hasEditorial ? (
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/p/${item.problemSlug}/editorial`}>Editorial</Link>
+            </Button>
+          ) : null}
+          <Button asChild variant="ghost" size="sm">
+            <Link href={`/p/${item.problemSlug}`}>Upsolve</Link>
+          </Button>
+        </span>
       </h3>
       <div className="mt-3" aria-live="polite">
         {item.status === 'ready' && item.contentMd ? (
@@ -227,7 +260,8 @@ function ReviewCard({ item, onRate }: { item: ReviewItem; onRate: (helpful: bool
           </p>
         ) : (
           <p role="status" className="text-14 text-text-2">
-            Your review is queued. It is written in the background; check back here later.
+            Your review is queued. It is written in the background and appears here by itself when
+            it is ready.
           </p>
         )}
       </div>

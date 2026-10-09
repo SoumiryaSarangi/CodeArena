@@ -180,6 +180,7 @@ export async function stubContests(
                 contentMd:
                   '### Complexity\nLinear in the input size.\n### Edge cases you missed\nNone found.\n### Compared with the intended approach\nSame idea.\n### Readability\nName the **loop** variable.',
                 helpful: null,
+                hasEditorial: true,
               },
               {
                 reviewId: '00000000-0000-4000-8000-0000000000a2',
@@ -192,6 +193,7 @@ export async function stubContests(
                 status: 'queued',
                 contentMd: null,
                 helpful: null,
+                hasEditorial: true,
               },
             ]
           : [],

@@ -63,6 +63,8 @@ export const ProblemDetail = ProblemSummary.omit({ acceptance: true, status: tru
     checker: z
       .object({ kind: z.enum(['exact', 'tokens', 'float', 'testlib']), eps: z.number().optional() })
       .strict(),
+    /** An editorial exists and this viewer may read it (`GET /problems/{slug}/editorial`). */
+    hasEditorial: z.boolean(),
   })
   .strict()
   .meta({ id: 'ProblemDetail' });
@@ -74,3 +76,18 @@ export const ProblemTags = z
   .strict()
   .meta({ id: 'ProblemTags' });
 export type ProblemTags = z.infer<typeof ProblemTags>;
+
+/**
+ * `GET /api/problems/{slug}/editorial` (AI-03 follow-up): the setter's editorial, public once a contest that used
+ * the problem is finalised; setters and admins can always read it. Never hidden tests or solutions (FR-PROB-06).
+ */
+export const ProblemEditorial = z
+  .object({
+    slug: z.string(),
+    title: z.string(),
+    version: z.number().int().min(1),
+    editorialMd: z.string(),
+  })
+  .strict()
+  .meta({ id: 'ProblemEditorial' });
+export type ProblemEditorial = z.infer<typeof ProblemEditorial>;
