@@ -3,6 +3,7 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
 import { DOC_TOO_LARGE_REASON } from '@codearena/contracts';
+import { openLocalPad } from '@/lib/pad-local';
 import { collabUrl, padTicket } from '@/lib/rooms';
 
 export type PadStatus = 'connecting' | 'connected' | 'reconnecting' | 'denied' | 'too-large';
@@ -29,10 +30,19 @@ export function usePad(roomId: string, me?: Omit<Peer, 'clientId' | 'self'>) {
   const [pad, setPad] = useState<Pad | null>(null);
   const [status, setStatus] = useState<PadStatus>('connecting');
   const [synced, setSynced] = useState(false);
+  // true when this browser kept code of this room (CP-09): the editor can show it before the server has answered
+  const [localReady, setLocalReady] = useState(false);
+  const [localSaved, setLocalSaved] = useState(false);
   const [peers, setPeers] = useState<Peer[]>([]);
 
   useEffect(() => {
     const doc = new Y.Doc();
+    const local = openLocalPad(doc, roomId);
+    let alive = true;
+    void local.saved.then((ok) => alive && setLocalSaved(ok));
+    void local.ready.then(() => {
+      if (alive && doc.getText('code').length > 0) setLocalReady(true);
+    });
     let everConnected = false;
     const provider = new HocuspocusProvider({
       url: collabUrl(roomId),
@@ -81,8 +91,12 @@ export function usePad(roomId: string, me?: Omit<Peer, 'clientId' | 'self'>) {
     });
     setPad({ doc, provider });
     return () => {
+      alive = false;
       provider.destroy();
+      local.destroy();
       doc.destroy();
+      setLocalReady(false);
+      setLocalSaved(false);
       setPad(null);
       setSynced(false);
       setPeers([]);
@@ -94,5 +108,5 @@ export function usePad(roomId: string, me?: Omit<Peer, 'clientId' | 'self'>) {
     me && pad && !peers.some((p) => p.self)
       ? [{ ...me, clientId: pad.doc.clientID, self: true }, ...peers]
       : peers;
-  return { pad, status, synced, peers: everyone };
+  return { pad, status, synced, localReady, localSaved, peers: everyone };
 }

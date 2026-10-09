@@ -49,6 +49,7 @@
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
+    "y-indexeddb": "^9.0.12",
     "y-monaco": "^0.1.6",
     "yjs": "^13.6.33"
   }

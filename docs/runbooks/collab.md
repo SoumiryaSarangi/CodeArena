@@ -54,3 +54,14 @@ the Compose Postgres and Redis and never touches production. See `tests/load/REA
 The convergence guarantee itself is tested without a network by `apps/collab/src/convergence.test.ts` (random concurrent edits,
 restores and reordered, repeated delivery on 3 to 5 replicas), and the loss of an instance by `chaos.test.ts`.
 
+## Demo: offline editing (CP-09)
+
+1. Two browsers in one room (the interviewer and a candidate), both typing a line so everyone sees it.
+2. Stop the pad servers: `docker compose stop collab1 collab2` (locally), or block the room's WebSocket in the browser's network panel. Within a few seconds the candidate's page shows "The connection to the room was lost. Keep typing: your changes are saved on this device…" and the pill says Reconnecting.
+3. The candidate keeps typing, then **reloads the page**. The code they typed is still there (it was kept in the browser); the banner stays.
+4. The interviewer types something else meanwhile (if the servers were only blocked for the candidate).
+5. Start the servers again (`docker compose start collab1 collab2`): both pages end with both people's text, identical, with nothing lost, and the banner disappears.
+6. Press End room: the copy kept in the browser is removed (DevTools → Application → IndexedDB no longer lists `codearena-pad:…`).
+
+What it cannot do: open a room with no network at all (the page needs the API). That would need a service worker, which is not planned.
+

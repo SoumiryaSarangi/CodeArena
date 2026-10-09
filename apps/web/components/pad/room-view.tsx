@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { ApiError, apiGet } from '@/lib/api';
 import { LANGUAGES, isLanguage, languageInfo } from '@/lib/languages';
+import { clearLocalPad } from '@/lib/pad-local';
 import { subscribe } from '@/lib/realtime';
 import { clock, closeRoom, createInvite, roomGet, setRoomSuggestions } from '@/lib/rooms';
 import { signInHref, useSession } from '@/lib/session';
@@ -44,6 +45,11 @@ export function RoomPage({ roomId }: { roomId: string }) {
       });
     return () => ctl.abort();
   }, [roomId, authed]);
+
+  // an ended room: the copy of its code kept in this browser (CP-09) is no longer wanted
+  useEffect(() => {
+    if (room && room.status !== 'open') void clearLocalPad(room.id);
+  }, [room]);
 
   if (session.status === 'loading') return <Skeleton className="h-96 w-full" />;
   if (session.status === 'guest') {
@@ -94,11 +100,13 @@ function LiveRoom({ room }: { room: RoomView }) {
   const handle = session.status === 'authed' ? session.me.handle : null;
   // The colour is the person's place in the member list, as the server assigns it (CP-01).
   const at = room.members.findIndex((m) => m.handle === handle);
-  const { pad, status, synced, peers } = usePad(
+  const { pad, status, synced, localReady, localSaved, peers } = usePad(
     room.id,
     handle ? { name: handle, role: room.role, colorIndex: Math.max(0, at) % 8 } : undefined,
   );
   const observer = room.role === 'observer';
+  // Down now: dropped after being connected, or reopened (with code kept here) while the server cannot be reached.
+  const offline = status === 'reconnecting' || (status === 'connecting' && localReady && !synced);
   const interviewer = room.role === 'interviewer';
 
   // The language is shared through the document, so a change reaches everyone (US-10.2 AC2).
@@ -151,6 +159,9 @@ function LiveRoom({ room }: { room: RoomView }) {
   const elapsed = (now - Date.parse(room.createdAt)) / 1000;
   const over = room.durationMin !== null && elapsed > room.durationMin * 60;
   const ended = now >= Date.parse(room.expiresAt);
+  useEffect(() => {
+    if (ended) void clearLocalPad(room.id);
+  }, [ended, room.id]);
 
   const [problem, setProblem] = useState<ProblemDetail | null>(null);
   const [showProblem, setShowProblem] = useState(true);
@@ -195,6 +206,7 @@ function LiveRoom({ room }: { room: RoomView }) {
     setBusy(true);
     try {
       await closeRoom(room.id);
+      void clearLocalPad(room.id);
       router.push(`/r/${room.id}/replay`);
     } catch (e) {
       setFailure((e as Error).message);
@@ -231,7 +243,7 @@ function LiveRoom({ room }: { room: RoomView }) {
           {room.durationMin ? ` / ${clock(room.durationMin * 60)}` : ''}
         </span>
         {over ? <span className="text-13 text-warning">Planned time is up</span> : null}
-        <ConnectionPill state={status === 'reconnecting' ? 'reconnecting' : 'connected'} />
+        <ConnectionPill state={offline ? 'reconnecting' : 'connected'} />
         <PresenceList peers={peers} />
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Select
@@ -283,6 +295,15 @@ function LiveRoom({ room }: { room: RoomView }) {
           You&apos;re observing: read-only.
         </p>
       ) : null}
+      {offline ? (
+        <p role="status" className="rounded-md border border-warning px-3 py-2 text-14">
+          {observer
+            ? 'The connection to the room was lost. Reconnecting…'
+            : localSaved
+              ? 'The connection to the room was lost. Keep typing: your changes are saved on this device and merge into the room when you are back.'
+              : 'The connection to the room was lost. Keep typing and stay on this page: your changes merge into the room when you are back, but they are not saved if you close this tab.'}
+        </p>
+      ) : null}
       <p role="status" aria-live="polite" className="text-13 text-text-2">
         {note}
       </p>
@@ -331,7 +352,7 @@ function LiveRoom({ room }: { room: RoomView }) {
               aria-label="Shared code"
               className="min-h-96 overflow-hidden rounded-md border border-border-strong"
             >
-              {pad && synced ? (
+              {pad && (synced || localReady) ? (
                 <PadEditor
                   key={pad.doc.guid}
                   pad={pad}

@@ -100,6 +100,17 @@ function roomJson(role: Role, status = 'open', withProblem = false, suggestions 
   };
 }
 
+/** A door the test can shut on the pad's WebSocket and open again, to cut the connection to the room (CP-09). */
+interface WsGate {
+  blocked: boolean;
+  open: { close: () => unknown }[];
+}
+const newGate = (): WsGate => ({ blocked: false, open: [] });
+const cutOff = (g: WsGate) => {
+  g.blocked = true;
+  for (const ws of g.open.splice(0)) void ws.close();
+};
+
 /** A signed-in person in a room: their own browser context, the stubbed REST API, a ticket per connection. */
 async function enter(
   context: BrowserContext,
@@ -108,6 +119,10 @@ async function enter(
   status = 'open',
   opts: {
     problem?: boolean;
+    /** Lets the test cut and restore this page's connection to the room (CP-09). */
+    gate?: WsGate;
+    /** This browser keeps no local data (a private window): IndexedDB is not there (CP-09). */
+    noStorage?: boolean;
     /** The room was created with code suggestions off (ED-01). */
     suggestionsOff?: boolean;
     /** What the stubbed API answers to a settings change; records it. */
@@ -220,6 +235,19 @@ async function enter(
       body: JSON.stringify({ ticket, expiresAt: Date.now() + 60_000 }),
     });
   });
+  if (opts.noStorage)
+    await page.addInitScript(() =>
+      Object.defineProperty(window, 'indexedDB', { value: undefined }),
+    );
+  if (opts.gate) {
+    const gate = opts.gate;
+    // only the pad's connection (the room id is at the end of its URL)
+    await page.routeWebSocket(/:\d+\/[0-9a-f-]{36}$/, (ws) => {
+      if (gate.blocked) return void ws.close();
+      ws.connectToServer(); // everything else passes through unchanged
+      gate.open.push(ws);
+    });
+  }
   await page.goto(`/r/${ROOM}`);
   return page;
 }
@@ -1107,5 +1135,163 @@ test.describe('CP-08: real browsers converge under concurrent typing', () => {
     await ca.close();
     await cb.close();
     await cc.close();
+  });
+});
+
+test.describe('CP-09: offline editing', () => {
+  const lost = /The connection to the room was lost/;
+  const idbNames = (p: Page) =>
+    p.evaluate(async () => (await indexedDB.databases()).map((d) => d.name));
+
+  test('FR-PAD-14: edits made while the connection is down are kept, shown with a banner, and merge with what others typed when it returns', async ({
+    browser,
+  }) => {
+    const gate = newGate();
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate', 'open', { gate });
+    await ready(meera);
+    await ready(asha);
+    await type(meera, 'shared ');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('shared');
+
+    cutOff(gate);
+    await expect(asha.getByText(lost)).toBeVisible({ timeout: 15_000 });
+    await expect(asha.getByText(/saved on this device/)).toBeVisible();
+    await expect(asha.getByText('Reconnecting').first()).toBeVisible();
+    await type(asha, 'OFFLINE-ASHA ');
+    await type(meera, 'ONLINE-MEERA ');
+    // while apart, neither sees the other's new text
+    await expect.poll(() => editorText(meera)).toContain('ONLINE-MEERA');
+    expect(await editorText(meera)).not.toContain('OFFLINE-ASHA');
+    expect(await editorText(asha)).not.toContain('ONLINE-MEERA');
+
+    gate.blocked = false;
+    for (const p of [meera, asha])
+      await expect
+        .poll(
+          async () => {
+            const t = await editorText(p);
+            return t.includes('OFFLINE-ASHA') && t.includes('ONLINE-MEERA');
+          },
+          { timeout: 45_000 },
+        )
+        .toBe(true);
+    expect(await editorText(asha)).toBe(await editorText(meera));
+    await expect(asha.getByText(lost)).toHaveCount(0);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-14: a reload while the room cannot be reached still shows the code kept on this device, and it merges later', async ({
+    browser,
+  }) => {
+    const gate = newGate();
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate', 'open', { gate });
+    await ready(meera);
+    await ready(asha);
+    await type(meera, 'start ');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('start');
+
+    cutOff(gate);
+    await expect(asha.getByText(lost)).toBeVisible({ timeout: 15_000 });
+    await type(asha, 'KEPT-ACROSS-RELOAD ');
+    await asha.waitForTimeout(800); // written to the browser's database a moment after typing
+    await asha.reload();
+    // still cut off: the page opens from the copy on this device
+    await expect.poll(() => editorText(asha), { timeout: 30_000 }).toContain('KEPT-ACROSS-RELOAD');
+    await expect(asha.getByText(lost)).toBeVisible();
+    await type(meera, 'MEERA-MEANWHILE ');
+
+    gate.blocked = false;
+    for (const p of [meera, asha])
+      await expect
+        .poll(
+          async () => {
+            const t = await editorText(p);
+            return (
+              t.includes('KEPT-ACROSS-RELOAD') &&
+              t.includes('MEERA-MEANWHILE') &&
+              t.includes('start')
+            );
+          },
+          { timeout: 45_000 },
+        )
+        .toBe(true);
+    expect(await editorText(asha)).toBe(await editorText(meera));
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-14: a first visit does not show an empty editor before the room answers', async ({
+    browser,
+  }) => {
+    const gate = newGate();
+    gate.blocked = true; // the room cannot be reached from the start, and nothing was kept
+    const ctx = await browser.newContext();
+    const asha = await enter(ctx, 'asha', 'candidate', 'open', { gate });
+    await expect(asha.getByText('Joining the room')).toBeVisible();
+    await asha.waitForTimeout(2000);
+    await expect(asha.getByText('Joining the room')).toBeVisible();
+    await expect(asha.locator('.monaco-editor')).toHaveCount(0);
+    await ctx.close();
+  });
+
+  test('FR-PAD-14: the copy kept on this device is removed when the room has ended', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const asha = await enter(ctx, 'asha', 'candidate');
+    await ready(asha);
+    await type(asha, 'something worth keeping');
+    await expect.poll(() => idbNames(asha)).toContain(`codearena-pad:${ROOM}`);
+    // the same person opens the room's link again after it ended (same browser, same stored data)
+    const again = await enter(ctx, 'asha', 'candidate', 'closed');
+    await expect(again.getByText('This room has ended.')).toBeVisible();
+    await expect
+      .poll(() => idbNames(again), { timeout: 10_000 })
+      .not.toContain(`codearena-pad:${ROOM}`);
+    await ctx.close();
+  });
+
+  test('FR-PAD-14: without browser storage the pad works, and the banner does not promise what is not kept; an observer is only told it reconnects', async ({
+    browser,
+  }) => {
+    const gate = newGate();
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const asha = await enter(ca, 'asha', 'candidate', 'open', { gate, noStorage: true });
+    const ravi = await enter(cb, 'ravi', 'observer', 'open', { gate: gate });
+    await ready(asha);
+    await ready(ravi);
+    await type(asha, 'works without storage');
+    await expect.poll(() => editorText(ravi), { timeout: 10_000 }).toContain('works without');
+    cutOff(gate);
+    await expect(asha.getByText(/not saved if you close this tab/)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(asha.getByText(/saved on this device/)).toHaveCount(0);
+    await expect(
+      ravi.getByText('The connection to the room was lost. Reconnecting…'),
+    ).toBeVisible();
+    await expect(ravi.getByText(/saved on this device/)).toHaveCount(0);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('the offline banner is accessible and fits a phone', async ({ browser }) => {
+    const gate = newGate();
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const asha = await enter(ctx, 'asha', 'candidate', 'open', { gate });
+    await ready(asha);
+    cutOff(gate);
+    await expect(asha.getByText(lost)).toBeVisible({ timeout: 15_000 });
+    expect(
+      await asha.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false);
+    const results = await new AxeBuilder({ page: asha }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await ctx.close();
   });
 });
