@@ -212,12 +212,15 @@ describe.skipIf(!ready)(
     });
 
     it('FR-CONT-01: times and slug are validated, defaults fill the rules', async () => {
-      const base = { title: 'Validation', startsAt: at(MIN), endsAt: at(61 * MIN) };
+      // One clock reading: two `Date.now()` calls a millisecond apart made "end == start" and "freeze == end" flaky.
+      const startsAt = at(MIN);
+      const endsAt = at(61 * MIN);
+      const base = { title: 'Validation', startsAt, endsAt };
       const bad = async (extra: object) =>
         (await call('post', '/admin/contests', admin.token, { slug: 'val-x', ...base, ...extra }))
           .status;
-      expect(await bad({ endsAt: at(MIN) })).toBe(400); // end == start
-      expect(await bad({ freezeAt: at(61 * MIN) })).toBe(400); // freeze at the end
+      expect(await bad({ endsAt: startsAt })).toBe(400); // end == start
+      expect(await bad({ freezeAt: endsAt })).toBe(400); // freeze at the end
       expect(await bad({ freezeAt: at(-MIN) })).toBe(400); // freeze before the start
       expect(await bad({ slug: 'Bad Slug' })).toBe(400);
       expect(await bad({ rules: { penaltyMinutes: 500 } })).toBe(400);
