@@ -7,6 +7,7 @@
     "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
     "typecheck": "tsc -p .",
     "test": "vitest run",
+    "eval:hints": "tsx eval/hints/run.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/cli.ts migrate",
     "db:seed": "tsx src/db/cli.ts seed",

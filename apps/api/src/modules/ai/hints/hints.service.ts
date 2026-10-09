@@ -26,14 +26,8 @@ import { practiceVisible } from '../../problems/practice';
 import { aiCacheKey, AiCache, normaliseCode } from '../cache';
 import { AiLedger } from '../ledger';
 import { AiRouter } from '../router';
-import { filterHint, GENERIC_HINTS } from './hint-filter';
-import {
-  CODE_REMOVAL,
-  HINT_MAIN,
-  HINT_PROMPT_VERSION,
-  type HintContext,
-  SUFFICIENCY,
-} from './hint-prompts';
+import { DEFAULT_NUDGE, runHintPipeline } from './hint-pipeline';
+import { HINT_PROMPT_VERSION, type HintContext } from './hint-prompts';
 
 const tracer = trace.getTracer('api');
 const hintsTotal = metrics
@@ -43,8 +37,6 @@ const hintsTotal = metrics
 /** FR-AI-06: hints per user per hour. */
 export const HINTS_PER_HOUR = 10;
 const BUSY = 'Hints are busy, try again in a minute.';
-const DEFAULT_NUDGE =
-  'Write and run an attempt first, then ask again: a hint works best on your own code.';
 
 interface Target {
   problemId: string;
@@ -303,7 +295,12 @@ export class HintsService {
         verdict: attempt?.verdict ?? null,
         failedTest: attempt?.failedTest ?? null,
       };
-      const made = await this.pipeline(userId, ctx, t.avoidSet, Boolean(attempt));
+      const made = await runHintPipeline(this.router, ctx, t.avoidSet, Boolean(attempt), (b) =>
+        this.log.warn(
+          { userId, level: b.level, reasons: b.reasons, attempt: b.attempt },
+          'hint blocked by the filter',
+        ),
+      );
       if (made.kind === 'nudge') return { hint: null, nudge: made.nudge };
       const row = await this.store(userId, t, level, attempt, made);
       if (!made.generic) await this.cache.set(cacheKey, { text: made.text }, 7 * 24 * 3600);
@@ -312,88 +309,6 @@ export class HintsService {
     } finally {
       await this.ledger.unlock(lockKey);
     }
-  }
-
-  // ---- the pipeline (SD-§12.2) -----------------------------------------------------------------
-
-  private async pipeline(
-    userId: string,
-    ctx: HintContext,
-    avoidSet: Record<string, string[]>,
-    hasCode: boolean,
-  ) {
-    const models: string[] = [];
-    let tokensIn = 0;
-    let tokensOut = 0;
-    const call = async (
-      task: 'sufficiency' | 'hint_main' | 'code_removal',
-      messages: HintMessages,
-      maxTokens: number,
-      json = false,
-    ) => {
-      const r = await this.router.complete({
-        task,
-        feature: 'hint',
-        messages,
-        maxTokens,
-        temperature: task === 'hint_main' ? 0.3 : 0,
-        json,
-      });
-      models.push(`${task}=${r.model}`);
-      tokensIn += r.usage.inputTokens;
-      tokensOut += r.usage.outputTokens;
-      return r.text.trim();
-    };
-
-    // 1. sufficiency (only when there is code to judge)
-    if (hasCode) {
-      const verdict = parseSufficiency(
-        await call('sufficiency', SUFFICIENCY.render(ctx), 120, true),
-      );
-      if (!verdict.sufficient) {
-        const nudge =
-          verdict.nudge && filterHint(verdict.nudge, ctx.level, avoidSet).ok
-            ? verdict.nudge.slice(0, 300)
-            : DEFAULT_NUDGE;
-        return { kind: 'nudge' as const, nudge };
-      }
-    }
-
-    let leak = false;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      // 2. main hint, 3. code-removal rewrite (always, independent of the main model behaving)
-      const main = await call('hint_main', HINT_MAIN.render({ ...ctx, strict: attempt > 0 }), 350);
-      if (attempt === 0) leak = !filterHint(main, ctx.level, avoidSet).ok;
-      const cleaned = await call('code_removal', CODE_REMOVAL.render({ hint: main }), 350);
-      // 4. deterministic filter
-      const f = filterHint(cleaned, ctx.level, avoidSet);
-      if (f.ok && cleaned.length > 0) {
-        return {
-          kind: 'hint' as const,
-          text: cleaned,
-          generic: false,
-          leak,
-          blocked: null as string | null,
-          models,
-          tokensIn,
-          tokensOut,
-        };
-      }
-      this.log.warn(
-        { userId, level: ctx.level, reasons: f.reasons, attempt },
-        'hint blocked by the filter',
-      );
-    }
-    return {
-      kind: 'hint' as const,
-      text: GENERIC_HINTS[ctx.level],
-      generic: true,
-      leak,
-      blocked: 'filter' as string | null,
-      models,
-      tokensIn,
-      tokensOut,
-    };
   }
 
   // ---- storage ---------------------------------------------------------------------------------
@@ -470,18 +385,4 @@ export class HintsService {
   }
 }
 
-type HintMessages = ReturnType<typeof SUFFICIENCY.render>;
-
-/** The sufficiency model answers JSON; anything unreadable counts as "sufficient" (the later steps and the filter still guard). */
-export function parseSufficiency(raw: string): { sufficient: boolean; nudge: string } {
-  const body = raw.replace(/^```(?:json)?|```$/gm, '').trim();
-  try {
-    const v = JSON.parse(body) as { sufficient?: unknown; nudge?: unknown };
-    return {
-      sufficient: v.sufficient !== false,
-      nudge: typeof v.nudge === 'string' ? v.nudge.trim() : '',
-    };
-  } catch {
-    return { sufficient: true, nudge: '' };
-  }
-}
+export { parseSufficiency } from './hint-pipeline';
