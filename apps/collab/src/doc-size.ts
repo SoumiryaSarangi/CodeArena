@@ -29,6 +29,15 @@ export function syncUpdateOf(raw: Uint8Array): Uint8Array | null {
   return at + len <= raw.length ? raw.subarray(at, at + len) : null;
 }
 
+/** True if the update only deletes: it carries no new structs (inserted content). Anything unreadable counts as adding. */
+export function addsNoContent(update: Uint8Array): boolean {
+  try {
+    return Y.decodeUpdate(update).structs.length === 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * CP-07 (FR-PAD-13): the shared document may not grow past `max` bytes of Yjs state. A running estimate (state size when
  * first seen plus every update since) keeps ordinary typing free; only near the cap is the real size worked out, by
@@ -44,6 +53,9 @@ export class DocSizeGuard {
   allows(doc: Y.Doc, raw: Uint8Array): boolean {
     const update = syncUpdateOf(raw);
     if (!update) return true;
+    // An update with nothing to insert (only deletions) adds no content, only a few bytes of delete-set bookkeeping.
+    // Clearing a full pad must always work, so it is never refused, even when those bytes would tip the state over the cap.
+    if (addsNoContent(update)) return true;
     const known = this.estimate.get(doc);
     if (known !== undefined && known + update.length <= this.max) {
       this.estimate.set(doc, known + update.length);

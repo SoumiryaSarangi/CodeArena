@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as Y from 'yjs';
-import { DocSizeGuard, syncUpdateOf } from './doc-size';
+import { addsNoContent, DocSizeGuard, syncUpdateOf } from './doc-size';
 import { createHarness, infrastructureUp } from './harness';
 import { pause, until } from './test-support';
 
@@ -37,6 +37,29 @@ describe('FR-PAD-13: the size cap, without a server', () => {
     expect(syncUpdateOf(frame('room:x', 0, 0, u))).toBeNull(); // sync step 1
     expect(syncUpdateOf(frame('room:x', 1, 2, u))).toBeNull(); // awareness
     expect(syncUpdateOf(Uint8Array.from([5, 1]))).toBeNull(); // truncated
+  });
+
+  it('FR-PAD-13: a pad exactly at the cap can always be cleared: a delete adds only bookkeeping and is never refused, an insert is', () => {
+    const client = new Y.Doc({ gc: false });
+    const server = new Y.Doc({ gc: false });
+    const fill = insertUpdate(client, 0, 'a'.repeat(200));
+    Y.applyUpdate(server, fill);
+    const guard = new DocSizeGuard(Y.encodeStateAsUpdate(server).length); // full: the cap is exactly the state
+    let del: Uint8Array = new Uint8Array();
+    client.once('update', (u: Uint8Array) => (del = u));
+    client.getText('code').delete(0, 150);
+    // the delete grows the state by a few bytes: over the cap, yet allowed (and it really would pass the cap)
+    const after = new Y.Doc({ gc: false });
+    Y.applyUpdate(after, Y.encodeStateAsUpdate(server));
+    Y.applyUpdate(after, del);
+    expect(Y.encodeStateAsUpdate(after).length).toBeGreaterThan(guard.max);
+    expect(addsNoContent(del)).toBe(true);
+    expect(guard.allows(server, frame('r', 0, 2, del))).toBe(true);
+    // one more character is refused
+    const more = insertUpdate(client, 0, 'b');
+    expect(addsNoContent(more)).toBe(false);
+    expect(guard.allows(server, frame('r', 0, 2, more))).toBe(false);
+    expect(addsNoContent(Uint8Array.from([255, 255, 255]))).toBe(false); // unreadable: treated as adding
   });
 
   it('FR-PAD-13: refuses a change that would pass the cap and lets one that shrinks the document through', () => {

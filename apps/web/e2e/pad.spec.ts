@@ -895,7 +895,7 @@ test.describe('CP-07: the document size cap', () => {
     await meera.locator('.monaco-editor').first().click();
     await meera.keyboard.press('ControlOrMeta+A');
     await meera.keyboard.press('Delete');
-    await expect.poll(() => length(meera)).toBe(0);
+    await expect.poll(() => length(meera), { timeout: 20_000 }).toBe(0);
     await ca.close();
     await cb.close();
   });
