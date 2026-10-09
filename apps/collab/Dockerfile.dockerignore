@@ -18,3 +18,5 @@ tests
 !**/.env.example
 **/*.log
 **/*.test.ts
+**/harness.ts
+**/test-support.ts

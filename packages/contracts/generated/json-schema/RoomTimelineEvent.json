@@ -1,0 +1,63 @@
+{
+  "$id": "RoomTimelineEvent.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "join",
+        "leave",
+        "run",
+        "snapshot",
+        "restore",
+        "timer",
+        "language"
+      ],
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "run",
+        "submit"
+      ],
+      "type": "string"
+    },
+    "runId": {
+      "type": "string"
+    },
+    "seq": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "ts": {
+      "type": "string"
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "seq",
+    "ts",
+    "kind",
+    "by"
+  ],
+  "type": "object"
+}

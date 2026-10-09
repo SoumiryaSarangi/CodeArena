@@ -172,7 +172,7 @@ function LiveRoom({ room }: { room: RoomView }) {
     setBusy(true);
     try {
       await closeRoom(room.id);
-      router.push('/interview');
+      router.push(`/r/${room.id}/replay`);
     } catch (e) {
       setFailure((e as Error).message);
       setBusy(false);

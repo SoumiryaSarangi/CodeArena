@@ -142,6 +142,11 @@ export function InterviewList() {
                 )}
                 <span className="text-text-2">{ROOM_ROLE_TEXT[r.role]}</span>
                 <span className="text-text-2">{r.status === 'open' ? 'Open' : 'Ended'}</span>
+                {r.role === 'interviewer' && r.status !== 'open' ? (
+                  <Link href={`/r/${r.id}/replay`} className="text-accent hover:underline">
+                    Replay
+                  </Link>
+                ) : null}
                 <span className="ml-auto text-13 text-text-3">{formatWhen(r.createdAt)}</span>
               </li>
             ))}

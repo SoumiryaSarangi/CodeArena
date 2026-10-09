@@ -8,7 +8,10 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   RoomCreate,
@@ -17,15 +20,23 @@ import {
   RoomNotesPut,
   RoomRunCreate,
 } from '@codearena/contracts';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { RateLimit } from '../../rate-limit/rate-limit';
 import { RequireHandle } from '../auth/guards';
 import { RoomNotesService } from './room-notes.service';
+import { RoomPlaybackService } from './room-playback.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
 
 const Id = z.uuid();
+const PlaybackQuery = z
+  .object({
+    toTs: z.string().min(1).max(40).optional(),
+    toSeq: z.coerce.number().int().min(0).optional(),
+    fromSeq: z.coerce.number().int().min(0).optional(),
+  })
+  .strict();
 
 /** CP-02 (SRS §3.1.2): interview rooms. Signed-in users with a handle; what each may do is decided per room. */
 @RequireHandle()
@@ -35,6 +46,7 @@ export class RoomsController {
     @Inject(RoomsService) private readonly rooms: RoomsService,
     @Inject(RoomRunsService) private readonly runs: RoomRunsService,
     @Inject(RoomNotesService) private readonly notes: RoomNotesService,
+    @Inject(RoomPlaybackService) private readonly playback: RoomPlaybackService,
   ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
@@ -99,5 +111,30 @@ export class RoomsController {
   @Header('Cache-Control', 'no-store')
   notesSave(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
     return this.notes.save(req.user!, Id.parse(id), RoomNotesPut.parse(body));
+  }
+
+  /** FR-PAD-10: the markers of a session for the replay. Interviewer only. */
+  @RateLimit({ scope: 'room-timeline', perMinute: 60 })
+  @Get(':id/timeline')
+  @Header('Cache-Control', 'no-store')
+  timeline(@Req() req: Request, @Param('id') id: string) {
+    return this.playback.timeline(req.user!, Id.parse(id));
+  }
+
+  /** FR-PAD-10: binary slice of the update log (see `RoomPlaybackService.frame`). Interviewer only. */
+  @RateLimit({ scope: 'room-playback', perMinute: 240 })
+  @Get(':id/playback')
+  async play(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Query() query: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const q = PlaybackQuery.parse(query);
+    const out = await this.playback.playback(req.user!, Id.parse(id), q);
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Playback-From-Seq', String(out.fromSeq));
+    res.setHeader('X-Playback-To-Seq', String(out.toSeq));
+    return new StreamableFile(out.body, { type: 'application/octet-stream' });
   }
 }

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."room_event_kind" ADD VALUE 'language';

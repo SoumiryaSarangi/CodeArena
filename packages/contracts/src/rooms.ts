@@ -181,3 +181,57 @@ export const RoomNotesPut = z
   .strict()
   .meta({ id: 'RoomNotesPut' });
 export type RoomNotesPut = z.infer<typeof RoomNotesPut>;
+
+// ---- update log and playback (CP-06, FR-PAD-10/11) ------------------------------------------------------------------
+
+/** A checkpoint of the room's document is written every this many logged updates (SD-§11.4). */
+export const PLAYBACK_CHECKPOINT_EVERY = 200;
+
+export const RoomEventKind = z.enum([
+  'join',
+  'leave',
+  'run',
+  'snapshot',
+  'restore',
+  'timer',
+  'language',
+]);
+export type RoomEventKind = z.infer<typeof RoomEventKind>;
+
+/** One marker on the replay scrubber. */
+export const RoomTimelineEvent = z
+  .object({
+    seq: z.number().int(),
+    ts: z.string(),
+    kind: RoomEventKind,
+    /** Who it concerns (handle); null for the server or someone since removed. */
+    by: z.string().nullable(),
+    /** run: `run` or `submit`. */
+    mode: RoomRunMode.optional(),
+    /** run: the verdict once judged. */
+    verdict: Verdict.nullable().optional(),
+    runId: z.string().optional(),
+    /** language: the language switched to. */
+    language: z.string().optional(),
+  })
+  .strict()
+  .meta({ id: 'RoomTimelineEvent' });
+export type RoomTimelineEvent = z.infer<typeof RoomTimelineEvent>;
+
+/** GET /api/rooms/{id}/timeline: interviewer only. */
+export const RoomTimeline = z
+  .object({
+    startedAt: z.string(),
+    endedAt: z.string(),
+    durationMs: z.number().int().nonnegative(),
+    /** How many updates the log holds, and the last sequence number (0 when the log is empty). */
+    updates: z.number().int().nonnegative(),
+    lastSeq: z.number().int().nonnegative(),
+    checkpointEvery: z.number().int(),
+    events: z.array(RoomTimelineEvent),
+    /** More events than the list holds (the first 2000 are sent). */
+    eventsCut: z.boolean(),
+  })
+  .strict()
+  .meta({ id: 'RoomTimeline' });
+export type RoomTimeline = z.infer<typeof RoomTimeline>;

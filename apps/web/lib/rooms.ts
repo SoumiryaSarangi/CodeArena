@@ -9,10 +9,11 @@ import type {
   RoomRunAccepted,
   RoomRunCreate,
   RoomRunList,
+  RoomTimeline,
   RoomView,
   TicketResponse,
 } from '@codearena/contracts';
-import { apiFetch } from './api';
+import { apiBinary, apiFetch } from './api';
 
 /** Interview rooms (S13). Members only; the API decides what each role may do. */
 const enc = encodeURIComponent;
@@ -50,6 +51,32 @@ export const roomNotes = (id: string, signal?: AbortSignal) =>
 
 export const saveRoomNotes = (id: string, body: RoomNotesPut) =>
   apiFetch<RoomNotes>('PUT', `/rooms/${enc(id)}/notes`, body, { auth: 'required' });
+
+/** CP-06: the markers of a session, for the interviewer's replay. */
+export const roomTimeline = (id: string, signal?: AbortSignal) =>
+  apiFetch<RoomTimeline>('GET', `/rooms/${enc(id)}/timeline`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+/** CP-06: a slice of the update log: `toTs` / `toSeq` seek, `fromSeq` (+ `toSeq`) continues. Returns the raw frame and its range. */
+export async function roomPlayback(
+  id: string,
+  q: { toTs?: string; toSeq?: number; fromSeq?: number },
+  signal?: AbortSignal,
+) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(q)) if (v !== undefined) qs.set(k, String(v));
+  const { bytes, headers } = await apiBinary(`/rooms/${enc(id)}/playback?${qs}`, {
+    auth: 'required',
+    signal,
+  });
+  return {
+    bytes,
+    fromSeq: Number(headers.get('X-Playback-From-Seq') ?? 0),
+    toSeq: Number(headers.get('X-Playback-To-Seq') ?? 0),
+  };
+}
 
 /** A single-use ticket for the pad connection; the provider asks for a fresh one on every (re)connect. */
 export const padTicket = async (roomId: string) =>

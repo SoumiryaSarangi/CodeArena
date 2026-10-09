@@ -1,6 +1,7 @@
 import { Redis } from 'ioredis';
 import { PgDocStore } from './pg-store';
 import { createServer, type CollabOptions } from './server';
+import { PgUpdateLog } from './update-log';
 
 const need = (name: string) => {
   const v = process.env[name];
@@ -31,8 +32,14 @@ const store = memoryOnly
     );
 const redis = memoryOnly ? undefined : new Redis(need('REDIS_URL'), { maxRetriesPerRequest: null });
 redis?.on('error', (err) => console.error('collab: redis', err.message));
-const storage: Pick<CollabOptions, 'store' | 'redis'> = {
+const log = memoryOnly
+  ? undefined
+  : PgUpdateLog.connect(need('DATABASE_URL'), {
+      warn: (msg, extra) => console.warn(`collab: ${msg}`, extra ?? ''),
+    });
+const storage: Pick<CollabOptions, 'store' | 'redis' | 'log'> = {
   ...(store ? { store } : {}),
+  ...(log ? { log } : {}),
   ...(redis ? { redis: { client: redis, instance: process.env.COLLAB_INSTANCE } } : {}),
 };
 const collab = createServer({
@@ -46,7 +53,9 @@ await collab.listen();
 const stop = () =>
   void collab
     .destroy()
+    .then(() => log?.flush())
     .then(() => store?.close())
+    .then(() => log?.close())
     .finally(() => process.exit(0));
 process.on('SIGTERM', stop);
 process.on('SIGINT', stop);

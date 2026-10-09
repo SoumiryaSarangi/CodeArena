@@ -2,7 +2,8 @@ import { timingSafeEqual } from 'node:crypto';
 import type { CollabIdentity } from '@codearena/contracts';
 import { Database } from '@hocuspocus/extension-database';
 import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
-import { Server, type Extension } from '@hocuspocus/server';
+import { isTransactionOrigin, Server, type Extension } from '@hocuspocus/server';
+import * as Y from 'yjs';
 import type { Redis } from 'ioredis';
 import { metrics, trace } from '@opentelemetry/api';
 import { authorizeTicket, type ApiLink } from './auth';
@@ -10,6 +11,7 @@ import { RedisClaims } from './claims';
 import { AwarenessOwners, rewriteAwareness, roomIdOf } from './identity';
 import { CLOSE_SESSION_ENDED, Sessions } from './session';
 import type { DocStore } from './store';
+import type { UpdateLog } from './update-log';
 
 const tracer = trace.getTracer('collab');
 const meter = metrics.getMeter('collab');
@@ -37,6 +39,8 @@ export interface CollabOptions {
   sweepMs?: number;
   /** Where documents live between sessions (FR-PAD-06). Without one they exist only while someone is connected. */
   store?: DocStore;
+  /** The room's history: every update, checkpoints and join/leave/language events, for the replay (CP-06). */
+  log?: UpdateLog;
   /** Shares updates, awareness and awareness-id claims with the other collab instances through Redis (FR-PAD-07). */
   redis?: {
     client: Redis;
@@ -136,6 +140,8 @@ export function createServer(opts: CollabOptions) {
     async connected(data) {
       sessions.add(data.socketId, data.connection, data.context.identity.expiresAt);
       open.add(1);
+      const roomId = roomIdOf(data.documentName);
+      if (opts.log && roomId) void opts.log.event(roomId, 'join', data.context.identity.userId);
     },
 
     async beforeHandleMessage(data) {
@@ -161,9 +167,57 @@ export function createServer(opts: CollabOptions) {
       if (r.dropped) awareness.add(r.dropped, { result: 'dropped' });
     },
 
+    // CP-06: what the replay is made of. All of it is off the editing path and never throws at the editor.
+    async onChange(data) {
+      const log = opts.log;
+      const roomId = roomIdOf(data.documentName);
+      if (!log || !roomId) return;
+      // an update relayed from another instance is logged by the instance that received it
+      if (isTransactionOrigin(data.transactionOrigin) && data.transactionOrigin.source === 'redis')
+        return;
+      log.record(roomId, {
+        update: data.update,
+        ts: new Date(),
+        userId: data.context?.identity?.userId ?? null,
+      });
+    },
+
+    async afterLoadDocument(data) {
+      const log = opts.log;
+      const roomId = roomIdOf(data.documentName);
+      if (!log || !roomId) return;
+      // after a crash or a restart the log may be behind the stored document: close the gap before anyone edits
+      await log.reconcile(roomId, Y.encodeStateAsUpdate(data.document));
+      data.document.getMap('meta').observe((event, txn) => {
+        if (!event.keysChanged.has('language')) return;
+        const origin = txn.origin;
+        if (isTransactionOrigin(origin) && origin.source === 'redis') return;
+        const who =
+          (isTransactionOrigin(origin) && 'connection' in origin
+            ? (origin.connection?.context as CollabContext | undefined)
+            : undefined
+          )?.identity.userId ?? null;
+        void log.event(roomId, 'language', who, {
+          language: data.document.getMap('meta').get('language') ?? null,
+        });
+      });
+    },
+
+    async beforeUnloadDocument(data) {
+      const log = opts.log;
+      const roomId = roomIdOf(data.documentName);
+      if (!log || !roomId) return;
+      await log.reconcile(roomId, Y.encodeStateAsUpdate(data.document));
+    },
+
     async onDisconnect(data) {
       await owners.release(data.documentName, data.socketId);
-      if (sessions.remove(data.socketId)) open.add(-1);
+      if (sessions.remove(data.socketId)) {
+        open.add(-1);
+        const roomId = roomIdOf(data.documentName);
+        const who = (data.context as CollabContext | undefined)?.identity.userId ?? null;
+        if (opts.log && roomId) void opts.log.event(roomId, 'leave', who);
+      }
     },
 
     // Internal HTTP, for the API: `POST /internal/rooms/{roomId}/close` ends every session in that room (CP-02).

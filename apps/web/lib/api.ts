@@ -242,6 +242,17 @@ export async function apiBlob(
   };
 }
 
+/** The bytes of a GET and its headers (the replay's slices carry their sequence range in headers), same token handling. */
+export async function apiBinary(
+  path: string,
+  opts: RequestOptions = {},
+  client: AuthClient = auth,
+  doFetch: Fetch = (...a) => fetch(...a),
+): Promise<{ bytes: ArrayBuffer; headers: Headers }> {
+  const res = await apiRequest('GET', path, undefined, opts, client, doFetch);
+  return { bytes: await res.arrayBuffer(), headers: res.headers };
+}
+
 /** GET with the signed-in user's token when there is one (public data still works for guests). */
 export const apiGet = <T>(path: string, signal?: AbortSignal) =>
   apiFetch<T>('GET', path, undefined, { signal });

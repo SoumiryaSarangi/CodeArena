@@ -1,0 +1,53 @@
+{
+  "$id": "RoomTimeline.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checkpointEvery": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "durationMs": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "endedAt": {
+      "type": "string"
+    },
+    "events": {
+      "items": {
+        "$ref": "RoomTimelineEvent.json"
+      },
+      "type": "array"
+    },
+    "eventsCut": {
+      "type": "boolean"
+    },
+    "lastSeq": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "startedAt": {
+      "type": "string"
+    },
+    "updates": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "startedAt",
+    "endedAt",
+    "durationMs",
+    "updates",
+    "lastSeq",
+    "checkpointEvery",
+    "events",
+    "eventsCut"
+  ],
+  "type": "object"
+}

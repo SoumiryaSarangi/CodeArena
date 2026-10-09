@@ -47,4 +47,5 @@ export const roomEventKind = pgEnum('room_event_kind', [
   'snapshot',
   'restore',
   'timer',
+  'language',
 ]);
