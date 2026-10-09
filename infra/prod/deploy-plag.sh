@@ -18,16 +18,18 @@ mkdir -p "$STATE"
 log() { echo "[plag $(date -u +%H:%M:%S)] $*"; }
 compose() { (cd "$APP_DIR" && docker compose --env-file prod.env -f docker-compose.yml "$@"); }
 previous="$(cat "$STATE/plag-current" 2>/dev/null || true)"
+# Compose renders the whole file for every command and the file requires API_IMAGE, so it is always set to the live release.
+API_IMAGE="$(cat "$STATE/current" 2>/dev/null || true)"
+[ -n "$API_IMAGE" ] || { echo "no API release recorded in $STATE/current" >&2; exit 1; }
+export API_IMAGE
 
 if ! grep -q '^PLAG_SERVICE_TOKEN=.' "$APP_DIR/prod.env"; then
   (cd "$APP_DIR" && ./init-env.sh ensure prod PLAG_SERVICE_TOKEN "$(openssl rand -hex 24)")
-  api="$(cat "$STATE/current" 2>/dev/null || true)"
-  [ -n "$api" ] || { echo "no API release recorded in $STATE/current; cannot recreate the API" >&2; exit 1; }
   log "token added; recreating the API so it reads it"
-  API_IMAGE="$api" compose up -d --no-deps api
+  compose up -d --no-deps api
 fi
 
-up() { PLAG_IMAGE="$1" API_IMAGE="$(cat "$STATE/current" 2>/dev/null || true)" compose --profile plag up -d --no-deps plag; }
+up() { PLAG_IMAGE="$1" compose --profile plag up -d --no-deps plag; }
 running() { compose --profile plag ps --status running --services 2>/dev/null | grep -qx plag; }
 
 log "pulling $ref"

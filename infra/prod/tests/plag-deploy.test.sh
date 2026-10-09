@@ -20,6 +20,8 @@ setup() {
   printf '#!/usr/bin/env bash\necho "init-env $*" >> "$FAKE_LOG"\n' > "$APP_DIR/init-env.sh"; chmod +x "$APP_DIR/init-env.sh"
   cat > "$T/bin/docker" <<'F'
 #!/usr/bin/env bash
+# like the real Compose file: every command fails to render without API_IMAGE
+[ "$1" = compose ] && [ -z "${API_IMAGE:-}" ] && { echo "required variable API_IMAGE is missing a value" >&2; exit 1; }
 echo "docker $* [PLAG_IMAGE=${PLAG_IMAGE:-} API_IMAGE=${API_IMAGE:-}]" >> "$FAKE_LOG"
 case "$*" in
   *" pull plag"*) [ "${FAKE_PULL_FAIL:-}" = 1 ] && exit 1 ;;
