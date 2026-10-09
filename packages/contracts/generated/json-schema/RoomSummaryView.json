@@ -1,0 +1,46 @@
+{
+  "$id": "RoomSummaryView.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bodyMd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "none",
+        "ready"
+      ],
+      "type": "string"
+    },
+    "usedNotes": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "status",
+    "bodyMd",
+    "usedNotes",
+    "generatedAt",
+    "model"
+  ],
+  "type": "object"
+}

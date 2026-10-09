@@ -22,6 +22,7 @@ import {
   RoomRestore,
   RoomRunCreate,
   RoomSettingsPatch,
+  RoomSummaryRequest,
 } from '@codearena/contracts';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
@@ -30,6 +31,7 @@ import { RequireHandle } from '../auth/guards';
 import { RoomNotesService } from './room-notes.service';
 import { RoomPlaybackService } from './room-playback.service';
 import { RoomRestoreService } from './room-restore.service';
+import { RoomSummaryService } from './room-summary.service';
 import { RoomSettingsService } from './room-settings.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
@@ -54,6 +56,7 @@ export class RoomsController {
     @Inject(RoomPlaybackService) private readonly playback: RoomPlaybackService,
     @Inject(RoomRestoreService) private readonly restorer: RoomRestoreService,
     @Inject(RoomSettingsService) private readonly settings: RoomSettingsService,
+    @Inject(RoomSummaryService) private readonly summary: RoomSummaryService,
   ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
@@ -112,6 +115,20 @@ export class RoomsController {
   @HttpCode(200)
   setSettings(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
     return this.settings.patch(req.user!, Id.parse(id), RoomSettingsPatch.parse(body));
+  }
+
+  /** FR-PAD-16: the AI summary of a finished session. Interviewer only; never cached by anything. */
+  @Get(':id/summary')
+  @Header('Cache-Control', 'no-store')
+  summaryGet(@Req() req: Request, @Param('id') id: string) {
+    return this.summary.get(req.user!, Id.parse(id));
+  }
+
+  @Post(':id/summary')
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  summaryWrite(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.summary.write(req.user!, Id.parse(id), RoomSummaryRequest.parse(body ?? {}));
   }
 
   /** FR-PAD-12: put the code of one of the room's runs back, as an edit everyone converges on. Interviewer only. */

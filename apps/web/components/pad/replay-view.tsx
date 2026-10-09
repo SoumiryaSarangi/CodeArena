@@ -8,6 +8,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { ApiError } from '@/lib/api';
 import { isLanguage, languageInfo } from '@/lib/languages';
 import { BoardCanvas } from './board-canvas';
+import { SummaryPanel } from './summary-panel';
 import { Player, parseFrame, type Frame, type SliceSource } from '@/lib/playback';
 import { eventLabel, sessionClock } from '@/lib/replay-labels';
 import { roomGet, roomNotes, roomPlayback, roomTimeline } from '@/lib/rooms';
@@ -239,19 +240,22 @@ function Replay({ room }: { room: RoomView }) {
         >
           <ReplayEditor value={frame?.text ?? ''} language={language.monaco} />
         </section>
-        <aside
-          aria-label="Your private notes"
-          className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
-        >
-          <h2 className="text-14 font-medium">Your notes</h2>
-          {notes === null ? (
-            <Skeleton className="h-24 w-full" />
-          ) : notes.trim() === '' ? (
-            <p className="text-13 text-text-3">You wrote no notes in this room.</p>
-          ) : (
-            <pre className="max-h-80 overflow-auto whitespace-pre-wrap text-14">{notes}</pre>
-          )}
-        </aside>
+        <div className="flex flex-col gap-3">
+          <aside
+            aria-label="Your private notes"
+            className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
+          >
+            <h2 className="text-14 font-medium">Your notes</h2>
+            {notes === null ? (
+              <Skeleton className="h-24 w-full" />
+            ) : notes.trim() === '' ? (
+              <p className="text-13 text-text-3">You wrote no notes in this room.</p>
+            ) : (
+              <pre className="max-h-80 overflow-auto whitespace-pre-wrap text-14">{notes}</pre>
+            )}
+          </aside>
+          <SummaryPanel roomId={room.id} hasNotes={(notes ?? '').trim() !== ''} />
+        </div>
       </div>
 
       {boardSeen ? (

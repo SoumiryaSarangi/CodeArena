@@ -9,6 +9,7 @@ import type {
   RoomRunAccepted,
   RoomRunCreate,
   RoomRunList,
+  RoomSummaryView,
   RoomTimeline,
   RoomView,
   TicketResponse,
@@ -57,6 +58,21 @@ export const setRoomSuggestions = (id: string, suggestions: boolean) =>
 /** CP-07: put the code of one of the room's runs back, for everyone in the room. Interviewer only. */
 export const restoreRoom = (id: string, runId: string) =>
   apiFetch<{ runId: string }>('POST', `/rooms/${enc(id)}/restore`, { runId }, { auth: 'required' });
+
+/** CP-11: the interviewer's AI summary of a finished session. Interviewer only. */
+export const roomSummary = (id: string, signal?: AbortSignal) =>
+  apiFetch<RoomSummaryView>('GET', `/rooms/${enc(id)}/summary`, undefined, {
+    auth: 'required',
+    signal,
+  });
+
+export const writeRoomSummary = (id: string, useNotes: boolean) =>
+  apiFetch<RoomSummaryView>(
+    'POST',
+    `/rooms/${enc(id)}/summary`,
+    { useNotes },
+    { auth: 'required' },
+  );
 
 /** CP-05: the interviewer's private notes. Only an interviewer ever gets an answer. */
 export const roomNotes = (id: string, signal?: AbortSignal) =>

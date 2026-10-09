@@ -201,6 +201,36 @@ export const RoomSettingsEvent = z
   .meta({ id: 'RoomSettingsEvent' });
 export type RoomSettingsEvent = z.infer<typeof RoomSettingsEvent>;
 
+// ---- AI interview summary (CP-11, FR-PAD-16, US-10.10) -----------------------------------------------------------------
+
+/** The sections of the summary, in order (each is a `###` heading in the text). */
+export const ROOM_SUMMARY_SECTIONS = [
+  'Approach',
+  'Complexity',
+  'Bugs fixed',
+  'Communication',
+] as const;
+
+/** POST /api/rooms/{id}/summary: write (or refresh) the summary. `useNotes` lets the model read the interviewer's own notes. */
+export const RoomSummaryRequest = z
+  .object({ useNotes: z.boolean().default(true) })
+  .strict()
+  .meta({ id: 'RoomSummaryRequest' });
+export type RoomSummaryRequest = z.infer<typeof RoomSummaryRequest>;
+
+/** GET and POST /api/rooms/{id}/summary. Interviewer only; `none` until one has been written. */
+export const RoomSummaryView = z
+  .object({
+    status: z.enum(['none', 'ready']),
+    bodyMd: z.string().nullable(),
+    usedNotes: z.boolean().nullable(),
+    generatedAt: z.string().nullable(),
+    model: z.string().nullable(),
+  })
+  .strict()
+  .meta({ id: 'RoomSummaryView' });
+export type RoomSummaryView = z.infer<typeof RoomSummaryView>;
+
 // ---- snapshots and restore (CP-07, FR-PAD-12) -----------------------------------------------------------------------
 
 export const ROOM_RESTORE_INTERVAL_MS = 2000;

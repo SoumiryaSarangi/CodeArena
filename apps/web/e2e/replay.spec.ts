@@ -135,7 +135,11 @@ const json = (body: unknown, status = 200) => ({
   body: JSON.stringify(body),
 });
 
-async function open(page: Page, role: 'interviewer' | 'candidate' = 'interviewer') {
+async function open(
+  page: Page,
+  role: 'interviewer' | 'candidate' = 'interviewer',
+  before?: (page: Page) => Promise<void>,
+) {
   await stubApi(page, { handle: role === 'interviewer' ? 'meera' : 'asha' });
   const calls: string[] = [];
   await page.route(`**/api/rooms/${ROOM}`, (r) =>
@@ -177,6 +181,7 @@ async function open(page: Page, role: 'interviewer' | 'candidate' = 'interviewer
       }),
     ),
   );
+  await before?.(page);
   await page.goto(`/r/${ROOM}/replay`);
   return calls;
 }
@@ -398,5 +403,175 @@ test.describe('CP-10: the whiteboard in the replay', () => {
     expect(await board(page).locator('svg[data-board]').getAttribute('tabindex')).toBeNull();
     const results = await new AxeBuilder({ page }).include('#main').analyze();
     expect(results.violations).toEqual([]);
+  });
+});
+
+test.describe('CP-11: the AI summary on the replay page', () => {
+  const GOOD = `### Approach
+Brute force first, then a prefix sum.
+### Complexity
+O(n) time and memory.
+### Bugs fixed
+A wrong answer on test 3 became accepted: an off-by-one.
+### Communication
+The candidate typed most of it; one two-minute pause.`;
+  const view = (over: object = {}) => ({
+    status: 'ready',
+    bodyMd: GOOD,
+    usedNotes: true,
+    generatedAt: '2026-10-10T15:00:00.000Z',
+    model: 'gemini:gemini-3.5-flash',
+    ...over,
+  });
+  const NONE = { status: 'none', bodyMd: null, usedNotes: null, generatedAt: null, model: null };
+  const problem = (status: number, detail: string) => ({
+    status,
+    contentType: 'application/problem+json',
+    body: JSON.stringify({
+      title: 'x',
+      status,
+      detail,
+      code: status === 503 ? 'ai-busy' : 'validation',
+    }),
+  });
+
+  /** The summary endpoints, recording what the page asked. */
+  function stub(
+    first: object,
+    answer: (body: Record<string, unknown>) => object | { status: number; detail: string },
+  ) {
+    const posts: Record<string, unknown>[] = [];
+    let gets = 0;
+    return {
+      posts,
+      gets: () => gets,
+      before: async (page: Page) => {
+        await page.route(`**/api/rooms/${ROOM}/summary`, (r) => {
+          if (r.request().method() === 'GET') {
+            gets++;
+            return r.fulfill(json(first));
+          }
+          const body = r.request().postDataJSON() as Record<string, unknown>;
+          posts.push(body);
+          const a = answer(body) as { status?: number; detail?: string };
+          return typeof a.status === 'number' && typeof a.detail === 'string' && !('bodyMd' in a)
+            ? r.fulfill(problem(a.status, a.detail))
+            : r.fulfill(json(a));
+        });
+      },
+    };
+  }
+  const panel = (page: Page) => page.getByRole('complementary', { name: 'AI summary' });
+
+  test('FR-PAD-16: with none written it says so; writing it asks with the notes ticked and shows the four sections', async ({
+    page,
+  }) => {
+    const s = stub(NONE, () => view());
+    await open(page, 'interviewer', s.before);
+    await expect(
+      panel(page).getByText('No summary has been written for this session yet.'),
+    ).toBeVisible();
+    await expect(panel(page).getByLabel('Let it read my notes')).toBeChecked();
+    await panel(page).getByRole('button', { name: 'Write the summary' }).click();
+    await expect(panel(page).getByRole('heading', { name: 'Approach' })).toBeVisible();
+    for (const h of ['Approach', 'Complexity', 'Bugs fixed', 'Communication'])
+      await expect(panel(page).getByRole('heading', { name: h })).toBeVisible();
+    expect(s.posts).toEqual([{ useNotes: true }]);
+    await expect(
+      panel(page).getByText(/Written by an AI \(gemini:gemini-3.5-flash\)/),
+    ).toBeVisible();
+    await expect(panel(page).getByText(/it read your notes/)).toBeVisible();
+    await expect(panel(page).getByRole('button', { name: 'Write it again' })).toBeVisible();
+    await expect(
+      panel(page).getByText(/does not score the candidate or recommend a decision/),
+    ).toBeVisible();
+  });
+
+  test('FR-PAD-16: unticking the notes box asks without them, and an existing summary shows its choice', async ({
+    page,
+  }) => {
+    const s = stub(view({ usedNotes: false }), (b) => view({ usedNotes: b.useNotes }));
+    await open(page, 'interviewer', s.before);
+    await expect(panel(page).getByRole('heading', { name: 'Approach' })).toBeVisible();
+    await expect(panel(page).getByText(/did not read your notes/)).toBeVisible();
+    await expect(panel(page).getByLabel('Let it read my notes')).not.toBeChecked(); // as it was written
+    await panel(page).getByLabel('Let it read my notes').check();
+    await panel(page).getByRole('button', { name: 'Write it again' }).click();
+    await expect.poll(() => s.posts).toEqual([{ useNotes: true }]);
+    await expect(panel(page).getByText(/it read your notes/)).toBeVisible();
+  });
+
+  test("FR-PAD-16: a busy AI, a limit and the server's own refusals are said in words and nothing is replaced", async ({
+    page,
+  }) => {
+    let n = 0;
+    const answers = [
+      { status: 503, detail: 'AI is busy' },
+      { status: 429, detail: 'limit' },
+      {
+        status: 400,
+        detail: 'Nothing was written or run in this room, so there is nothing to summarise',
+      },
+    ];
+    const s = stub(view(), () => answers[n++]!);
+    await open(page, 'interviewer', s.before);
+    await expect(panel(page).getByRole('heading', { name: 'Approach' })).toBeVisible();
+    const again = panel(page).getByRole('button', { name: 'Write it again' });
+    await again.click();
+    await expect(
+      panel(page).getByText('The AI service is busy. Try again in a minute.'),
+    ).toBeVisible();
+    await again.click();
+    await expect(
+      panel(page).getByText(/written the most summaries allowed this hour/),
+    ).toBeVisible();
+    await again.click();
+    await expect(panel(page).getByText(/nothing to summarise/)).toBeVisible();
+    await expect(panel(page).getByRole('heading', { name: 'Approach' })).toBeVisible(); // the old summary stays
+  });
+
+  test('FR-PAD-16: with no notes the box is off and disabled, and the request says so; the summary can be copied', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const s = stub(NONE, () => view({ usedNotes: false }));
+    await open(page, 'interviewer', async (p) => {
+      await s.before(p);
+      await p.route(`**/api/rooms/${ROOM}/notes`, (r) =>
+        r.fulfill(json({ body: '', updatedAt: null })),
+      );
+    });
+    await expect(panel(page).getByLabel('It has no notes to read (you wrote none)')).toBeDisabled();
+    await panel(page).getByRole('button', { name: 'Write the summary' }).click();
+    await expect(panel(page).getByRole('heading', { name: 'Approach' })).toBeVisible();
+    expect(s.posts).toEqual([{ useNotes: false }]);
+    await panel(page).getByRole('button', { name: 'Copy' }).click();
+    await expect(panel(page).getByRole('button', { name: 'Copied' })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(GOOD);
+  });
+
+  test('FR-PAD-16: a candidate is refused the replay page and makes no summary request; the panel is accessible and fits a phone', async ({
+    page,
+    browser,
+  }) => {
+    const s = stub(view(), () => view());
+    await open(page, 'candidate', s.before);
+    await expect(page.getByText(/interviewer/i).first()).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(s.gets()).toBe(0);
+    expect(s.posts).toEqual([]);
+
+    const phone = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await phone.newPage();
+    const s2 = stub(view(), () => view());
+    await open(p, 'interviewer', s2.before);
+    await expect(panel(p).getByRole('heading', { name: 'Approach' })).toBeVisible();
+    expect(await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(
+      false,
+    );
+    const results = await new AxeBuilder({ page: p }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await phone.close();
   });
 });

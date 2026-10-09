@@ -54,6 +54,17 @@ export default function PrivacyPage() {
           which model wrote it and your helpful or not helpful rating are stored with your account.
           Hints are not available during contests.
         </p>
+        <p>
+          <strong>AI interview summaries:</strong> after an interview room has ended, its
+          interviewer can press &quot;Write the summary&quot; on the replay page. To write it, the
+          problem text, the code of the room&apos;s runs, their results, a timeline of the session
+          (who typed how much by handle and role, pauses, language changes and restores) and, only
+          if the interviewer ticks it, their own private notes are sent to an AI service (Groq or
+          Google, through our relay on Vercel). No e-mail address is sent. If you took part as a
+          candidate or an observer, your handle and what you did in the room are part of that. The
+          summary is stored with the room and shown only to its interviewer; it describes what
+          happened and does not score anyone.
+        </p>
       </LegalSection>
 
       <LegalSection title="What is recorded during a contest">
@@ -83,8 +94,8 @@ export default function PrivacyPage() {
           <li>Your submitted code is visible to you and to the site&apos;s administrators.</li>
           <li>
             Our service providers handle data on our behalf: Vercel (the website), Microsoft Azure
-            (the servers, in Hong Kong), Google or GitHub (sign-in) and, for AI hints only, Groq and
-            Google AI Studio.
+            (the servers, in Hong Kong), Google or GitHub (sign-in) and, for AI hints and interview
+            summaries only, Groq and Google AI Studio.
           </li>
         </ul>
       </LegalSection>

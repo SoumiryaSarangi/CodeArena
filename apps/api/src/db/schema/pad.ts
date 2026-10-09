@@ -123,6 +123,7 @@ export const interviewerNotes = pgTable('interviewer_notes', {
   updatedAt: ts('updated_at').notNull().defaultNow(),
 });
 
+/** CP-11: the AI summary of a session. One row per room, replaced when it is written again; interviewer-only. */
 export const roomSummaries = pgTable('room_summaries', {
   roomId: uuid('room_id')
     .primaryKey()
@@ -130,4 +131,10 @@ export const roomSummaries = pgTable('room_summaries', {
   contentMd: text('content_md').notNull(),
   model: text('model'),
   createdAt: createdAt(),
+  promptVersion: text('prompt_version').notNull().default(''),
+  tokens: integer('tokens').notNull().default(0),
+  usedNotes: boolean('used_notes').notNull().default(true),
+  /** What the summary was made from (a hash): the same facts again do not call a model again. */
+  inputHash: text('input_hash').notNull().default(''),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
 });

@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
+import { AiModule } from '../ai/ai.module';
 import { SubmissionsModule } from '../submissions/submissions.module';
 import { RoomNotesService } from './room-notes.service';
 import { RoomRestoreService } from './room-restore.service';
+import { RoomSummaryService } from './room-summary.service';
 import { RoomSettingsService } from './room-settings.service';
 import { RoomPlaybackService } from './room-playback.service';
 import { RoomRunsService } from './room-runs.service';
@@ -11,7 +13,7 @@ import { RoomsService } from './rooms.service';
 
 // CP-02: interview rooms, invites and membership. CP-04: running code from a room.
 @Module({
-  imports: [SubmissionsModule],
+  imports: [SubmissionsModule, AiModule],
   controllers: [RoomsController],
   providers: [
     RoomsService,
@@ -19,6 +21,7 @@ import { RoomsService } from './rooms.service';
     RoomNotesService,
     RoomRestoreService,
     RoomSettingsService,
+    RoomSummaryService,
     RoomPlaybackService,
     RoomsRetention,
   ],

@@ -197,7 +197,8 @@ Defined in `UI_UX.md` (screens S01–S18, components, tokens, accessibility). Al
 | GET `/api/rooms/{id}/timeline` | interviewer | Events + duration + checkpoints index |
 | GET `/api/rooms/{id}/playback?toSeq=` | interviewer | Binary: checkpoint + updates up to seq |
 | POST `/api/rooms/{id}/restore` | interviewer | `{seq}` |
-| POST `/api/rooms/{id}/summary` | interviewer | AI summary (P2) |
+| GET `/api/rooms/{id}/summary` | interviewer | The stored AI summary of an ended room, or `none` (P2; *as built (CP-11):* `{status: none|ready, bodyMd, usedNotes, generatedAt, model}`, `no-store`) |
+| POST `/api/rooms/{id}/summary` | interviewer | Write the AI summary `{useNotes}` after the room has ended (P2; 400 while open or when nothing happened, 429 ten an hour, 503 `ai-busy`) |
 | POST `/internal/rooms/{id}/authorize` | collab | `{ticket}` → `{userId, name, color, role, readOnly, expiresAt}` |
 | POST `/internal/rooms/{id}/updates` (optional) | collab | Batched update log writes if not written directly |
 
@@ -448,6 +449,7 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-PAD-13 | Documents shall use `gc: false`, capped at 2 MB and 90-minute sessions. | P1 | CP-07 | T |
 | FR-PAD-14 | Offline edits shall persist locally (y-indexeddb) and merge on reconnect. | P2 | CP-09 | T |
 | FR-PAD-15 | A whiteboard (pen, rect, arrow, text, eraser) shall sync and appear in playback; every action has a non-drag alternative. | P2 | CP-10 | T |
+| FR-PAD-16 | After a room has ended its interviewer shall be able to have an AI summary written (approach, complexity, bugs fixed, communication) from the session's code, runs and timeline and, if they choose, their own notes; the summary shall be readable only by that interviewer, shall describe the data without scoring or recommending, and the same input shall not call a model twice. | P2 | US-10.10 · CP-11 | T |
 | FR-EDIT-01 | Every code editor shall suggest language keywords, common library names and snippets (C, C++, Java, Python, JavaScript), not only words already typed; nothing inside a line comment; after a `.` only member names. | P1 | ED-01 | T |
 | FR-EDIT-02 | An organiser shall be able to switch code suggestions off for a contest before it begins (rule `suggestions`, default on); with it off the contest editor opens no list, by typing or by Ctrl/⌘+Space; practice is unaffected. | P1 | ED-01 | T |
 | FR-EDIT-03 | A room shall be created with suggestions on or off and its interviewer shall be able to change it while the room is open; everyone connected follows without reloading (`room.settings`). | P1 | ED-01 | T |
