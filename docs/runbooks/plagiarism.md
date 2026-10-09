@@ -38,11 +38,18 @@ To turn it off: set `PLAG_ENABLED` to `false`; to stop the running job:
 
 ## Running a check
 
-Start the run (until the review screen exists, with the API): `POST /api/admin/plag/runs` as an admin with the contest id.
-The job picks it up within 15 s. `GET /api/admin/plag/runs/{id}` shows `queued` → `running` → `done` (with clusters, strongest
-first) or `failed` (with the reason). A failed run can be started again. Scores: pairs with a combined score of at least
-0.30 are listed, pairs at or above 0.54 form clusters (the fitted threshold, `docs/METRICS.md` has its precision: about one
+Admin → Integrity (`/admin/integrity`): pick a contest that has ended and press **Start check**. (API: `POST /api/admin/plag/runs`.)
+The job picks it up within 15 s; the review page shows "Waiting for the job" → "Checking" → the groups of similar submissions
+(strongest first), or "Failed" with the reason (start it again from the list). Scores: pairs with a combined score of at least
+0.30 are listed, pairs at or above 0.54 form groups (the fitted threshold, `docs/METRICS.md` has its precision: about one
 flag in nine is a false alarm).
+
+## Reviewing
+
+Open a group: its people and pairs are listed, the two chosen submissions are shown side by side, and the editor signals are
+shown separately as advisory. Write a note (required) and press **Clear**, **Confirm similar** or **Needs discussion**.
+A decision is only a record (with who and when, also in the audit log): it changes no score, no ranking and no account. Later
+decisions on the same group are added to the trail; the latest one is the status.
 
 ## When something is wrong
 

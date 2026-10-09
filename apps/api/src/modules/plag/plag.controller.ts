@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { PlagFail, PlagResults, PlagRunCreate } from '@codearena/contracts';
+import { PlagDecisionCreate, PlagFail, PlagResults, PlagRunCreate } from '@codearena/contracts';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { Public, Roles, SkipCsrf } from '../auth/guards';
@@ -40,6 +40,24 @@ export class PlagAdminController {
   @Get(':id')
   get(@Param('id') id: string) {
     return this.plag.get(Id.parse(id));
+  }
+}
+
+/** Admins: one cluster for the review screen, and a decision about it (always with a note, always audited). */
+@Roles('admin')
+@Controller('admin/plag/clusters')
+export class PlagClusterController {
+  constructor(@Inject(PlagService) private readonly plag: PlagService) {}
+
+  @Get(':id')
+  get(@Param('id') id: string) {
+    return this.plag.cluster(Id.parse(id));
+  }
+
+  @Post(':id/decisions')
+  @HttpCode(201)
+  decide(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.plag.decide(req.user!.id, Id.parse(id), PlagDecisionCreate.parse(body));
   }
 }
 

@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type {
   PlagClaim,
+  PlagClusterDetail,
+  PlagClusterStatus,
+  PlagDecision,
+  PlagDecisionCreate,
   PlagFail,
   PlagResults,
   PlagRun,
@@ -16,10 +20,14 @@ import {
   auditLog,
   contestProblems,
   contests,
+  editorSignals,
   plagClusters,
   plagPairs,
   plagRuns,
   problems,
+  reviewDecisions,
+  submissions,
+  users,
 } from '../../db/schema';
 import { contestState } from '../contests/state';
 
@@ -28,7 +36,19 @@ const runsTotal = metrics
   .getMeter('api')
   .createCounter('ca_plag_runs_total', { description: 'Plagiarism runs by outcome' });
 
+const decisionsTotal = metrics
+  .getMeter('api')
+  .createCounter('ca_plag_decisions_total', { description: 'Review decisions by kind' });
+
 type RunRow = typeof plagRuns.$inferSelect;
+
+/** The reviewer's words (clear / confirm / discuss) and the stored enum. */
+const TO_DB = { clear: 'dismissed', confirm: 'confirmed', discuss: 'needs_more' } as const;
+const FROM_DB: Record<(typeof TO_DB)[PlagDecision], PlagDecision> = {
+  dismissed: 'clear',
+  confirmed: 'confirm',
+  needs_more: 'discuss',
+};
 
 const iso = (d: Date | null) => (d ? d.toISOString() : null);
 const record = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : null);
@@ -136,6 +156,7 @@ export class PlagService {
       .innerJoin(problems, eq(problems.id, plagClusters.problemId))
       .where(eq(plagClusters.runId, id))
       .orderBy(desc(plagClusters.maxScore), asc(plagClusters.id));
+    const latest = await this.latestDecisions(clusters.map((c) => c.id));
     return this.view(
       run,
       clusters.map((c) => ({
@@ -144,8 +165,178 @@ export class PlagService {
         problemSlug: c.problemSlug,
         size: c.ids.length,
         maxScore: c.maxScore,
+        status: latest.get(c.id) ?? 'open',
       })),
     );
+  }
+
+  /** The latest decision per cluster, as the reviewer's word. */
+  private async latestDecisions(ids: string[]): Promise<Map<string, PlagClusterStatus>> {
+    const out = new Map<string, PlagClusterStatus>();
+    if (ids.length === 0) return out;
+    const rows = await this.db
+      .select({ clusterId: reviewDecisions.clusterId, decision: reviewDecisions.decision })
+      .from(reviewDecisions)
+      .where(inArray(reviewDecisions.clusterId, ids))
+      .orderBy(asc(reviewDecisions.createdAt), asc(reviewDecisions.id));
+    for (const r of rows) out.set(r.clusterId, FROM_DB[r.decision]);
+    return out;
+  }
+
+  /** S17: one cluster with its members' code, the pairs, advisory signals and the decisions so far. */
+  async cluster(id: string): Promise<PlagClusterDetail> {
+    return tracer.startActiveSpan('plag.cluster', async (span) => {
+      try {
+        const [c] = await this.db
+          .select({
+            id: plagClusters.id,
+            runId: plagClusters.runId,
+            problemId: plagClusters.problemId,
+            ids: plagClusters.submissionIds,
+            maxScore: plagClusters.maxScore,
+            slug: problems.slug,
+            contestId: plagRuns.contestId,
+          })
+          .from(plagClusters)
+          .innerJoin(problems, eq(problems.id, plagClusters.problemId))
+          .innerJoin(plagRuns, eq(plagRuns.id, plagClusters.runId))
+          .where(eq(plagClusters.id, id))
+          .limit(1);
+        if (!c) throw new ProblemError('not-found', 'No such cluster');
+        const members = await this.db
+          .select({
+            submissionId: submissions.id,
+            userId: submissions.userId,
+            handle: users.handle,
+            language: submissions.language,
+            verdict: submissions.verdict,
+            submittedAt: submissions.createdAt,
+            source: submissions.source,
+          })
+          .from(submissions)
+          .innerJoin(users, eq(users.id, submissions.userId))
+          .where(inArray(submissions.id, c.ids))
+          .orderBy(asc(submissions.createdAt), asc(submissions.id));
+        const pairs = await this.db
+          .select({
+            subA: plagPairs.subA,
+            subB: plagPairs.subB,
+            fpScore: plagPairs.fpScore,
+            embScore: plagPairs.embScore,
+            combined: plagPairs.combined,
+          })
+          .from(plagPairs)
+          .where(
+            and(
+              eq(plagPairs.runId, c.runId),
+              inArray(plagPairs.subA, c.ids),
+              inArray(plagPairs.subB, c.ids),
+            ),
+          )
+          .orderBy(desc(plagPairs.combined), asc(plagPairs.subA), asc(plagPairs.subB));
+        const signals = await this.db
+          .select({
+            handle: users.handle,
+            kind: editorSignals.kind,
+            size: editorSignals.size,
+            at: editorSignals.at,
+          })
+          .from(editorSignals)
+          .innerJoin(users, eq(users.id, editorSignals.userId))
+          .where(
+            and(
+              eq(editorSignals.contestId, c.contestId),
+              eq(editorSignals.problemId, c.problemId),
+              inArray(
+                editorSignals.userId,
+                members.map((m) => m.userId),
+              ),
+            ),
+          )
+          .orderBy(asc(editorSignals.at))
+          .limit(500);
+        const decisions = await this.db
+          .select({
+            id: reviewDecisions.id,
+            decision: reviewDecisions.decision,
+            note: reviewDecisions.note,
+            reviewer: users.handle,
+            createdAt: reviewDecisions.createdAt,
+          })
+          .from(reviewDecisions)
+          .innerJoin(users, eq(users.id, reviewDecisions.reviewerId))
+          .where(eq(reviewDecisions.clusterId, id))
+          .orderBy(asc(reviewDecisions.createdAt), asc(reviewDecisions.id));
+        const last = decisions[decisions.length - 1];
+        const status: PlagClusterStatus = last ? FROM_DB[last.decision] : 'open';
+        return {
+          id: c.id,
+          runId: c.runId,
+          contestId: c.contestId,
+          problemId: c.problemId,
+          problemSlug: c.slug,
+          maxScore: c.maxScore,
+          status,
+          members: members.map((m) => ({
+            submissionId: m.submissionId,
+            handle: m.handle ?? 'unknown',
+            language: m.language,
+            verdict: m.verdict,
+            submittedAt: m.submittedAt.toISOString(),
+            source: m.source,
+          })),
+          pairs,
+          signals: signals.map((x) => ({
+            handle: x.handle ?? 'unknown',
+            kind: x.kind,
+            size: x.size,
+            at: x.at.toISOString(),
+          })),
+          decisions: decisions.map((d) => ({
+            id: d.id,
+            decision: FROM_DB[d.decision],
+            note: d.note,
+            reviewer: d.reviewer ?? 'unknown',
+            createdAt: d.createdAt.toISOString(),
+          })),
+        };
+      } finally {
+        span.end();
+      }
+    });
+  }
+
+  /** FR-PLAG-05: a decision with a note, in the audit log; it changes nothing else (no automatic penalty). */
+  async decide(actorId: string, id: string, body: PlagDecisionCreate): Promise<PlagClusterDetail> {
+    return tracer.startActiveSpan('plag.decide', async (span) => {
+      try {
+        const [c] = await this.db
+          .select({ id: plagClusters.id })
+          .from(plagClusters)
+          .where(eq(plagClusters.id, id))
+          .limit(1);
+        if (!c) throw new ProblemError('not-found', 'No such cluster');
+        await this.db.transaction(async (tx) => {
+          await tx.insert(reviewDecisions).values({
+            clusterId: id,
+            decision: TO_DB[body.decision],
+            note: body.note,
+            reviewerId: actorId,
+          });
+          await tx.insert(auditLog).values({
+            actorId,
+            action: 'plag.decision',
+            targetType: 'plag_cluster',
+            targetId: id,
+            meta: { decision: body.decision },
+          });
+        });
+        decisionsTotal.add(1, { decision: body.decision });
+        return this.cluster(id);
+      } finally {
+        span.end();
+      }
+    });
   }
 
   private view(r: RunRow, clusters: PlagRun['clusters']): PlagRun {

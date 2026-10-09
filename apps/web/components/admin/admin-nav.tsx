@@ -11,7 +11,10 @@ export function AdminNav() {
   const items = [
     { href: '/admin/problems', label: 'Problems' },
     ...(session.status === 'authed' && session.me.role === 'admin'
-      ? [{ href: '/admin/contests', label: 'Contests' }]
+      ? [
+          { href: '/admin/contests', label: 'Contests' },
+          { href: '/admin/integrity', label: 'Integrity' },
+        ]
       : []),
   ];
   if (items.length < 2) return null;

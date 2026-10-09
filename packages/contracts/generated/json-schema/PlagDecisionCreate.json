@@ -1,0 +1,25 @@
+{
+  "$id": "PlagDecisionCreate.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "decision": {
+      "enum": [
+        "clear",
+        "confirm",
+        "discuss"
+      ],
+      "type": "string"
+    },
+    "note": {
+      "maxLength": 2000,
+      "minLength": 3,
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision",
+    "note"
+  ],
+  "type": "object"
+}

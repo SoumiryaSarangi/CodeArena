@@ -16,6 +16,12 @@ export const PlagRunCreate = z
   .meta({ id: 'PlagRunCreate' });
 export type PlagRunCreate = z.infer<typeof PlagRunCreate>;
 
+/** What a reviewer decided about a cluster (PL-04): never an automatic penalty. `open` = no decision yet. */
+export const PlagDecision = z.enum(['clear', 'confirm', 'discuss']);
+export type PlagDecision = z.infer<typeof PlagDecision>;
+export const PlagClusterStatus = z.enum(['open', 'clear', 'confirm', 'discuss']);
+export type PlagClusterStatus = z.infer<typeof PlagClusterStatus>;
+
 export const PlagClusterSummary = z
   .object({
     id: z.uuid(),
@@ -23,6 +29,8 @@ export const PlagClusterSummary = z
     problemSlug: z.string(),
     size: z.number().int().min(2),
     maxScore: z.number(),
+    /** The latest decision, `open` while there is none. */
+    status: PlagClusterStatus,
   })
   .strict()
   .meta({ id: 'PlagClusterSummary' });
@@ -124,3 +132,70 @@ export const PlagFail = z
   .strict()
   .meta({ id: 'PlagFail' });
 export type PlagFail = z.infer<typeof PlagFail>;
+
+/** POST /api/admin/plag/clusters/{id}/decisions: a note is required (FR-PLAG-05). */
+export const PlagDecisionCreate = z
+  .object({ decision: PlagDecision, note: z.string().trim().min(3).max(2000) })
+  .strict()
+  .meta({ id: 'PlagDecisionCreate' });
+export type PlagDecisionCreate = z.infer<typeof PlagDecisionCreate>;
+
+/** GET /api/admin/plag/clusters/{id}: everything the review screen (S17) shows. Admin only: handles are visible here. */
+export const PlagClusterDetail = z
+  .object({
+    id: z.uuid(),
+    runId: z.uuid(),
+    contestId: z.uuid(),
+    problemId: z.uuid(),
+    problemSlug: z.string(),
+    maxScore: z.number(),
+    status: PlagClusterStatus,
+    members: z.array(
+      z
+        .object({
+          submissionId: z.uuid(),
+          handle: z.string(),
+          language: z.string(),
+          verdict: z.string().nullable(),
+          submittedAt: z.string(),
+          source: z.string(),
+        })
+        .strict(),
+    ),
+    pairs: z.array(
+      z
+        .object({
+          subA: z.uuid(),
+          subB: z.uuid(),
+          fpScore: z.number().nullable(),
+          embScore: z.number().nullable(),
+          combined: z.number(),
+        })
+        .strict(),
+    ),
+    /** Advisory only (SD-§13, IN-01): never evidence on its own. Empty until IN-01 records them. */
+    signals: z.array(
+      z
+        .object({
+          handle: z.string(),
+          kind: z.string(),
+          size: z.number().nullable(),
+          at: z.string(),
+        })
+        .strict(),
+    ),
+    decisions: z.array(
+      z
+        .object({
+          id: z.uuid(),
+          decision: PlagDecision,
+          note: z.string(),
+          reviewer: z.string(),
+          createdAt: z.string(),
+        })
+        .strict(),
+    ),
+  })
+  .strict()
+  .meta({ id: 'PlagClusterDetail' });
+export type PlagClusterDetail = z.infer<typeof PlagClusterDetail>;

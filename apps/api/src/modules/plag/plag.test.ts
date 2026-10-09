@@ -15,8 +15,10 @@ import {
   contests,
   plagClusters,
   plagPairs,
+  editorSignals,
   plagRuns,
   problemVersions,
+  reviewDecisions,
   problems,
   submissions,
   users,
@@ -44,6 +46,7 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
   let app: INestApplication;
   let tokens: AccessTokens;
   let admin: { id: string; token: string };
+  let clusterUnderReview: { id: string; runId: string; subs: string[] } | null = null;
 
   const makeUser = async (role: 'user' | 'admin' = 'user') => {
     const id = randomUUID();
@@ -338,7 +341,14 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
     expect(run.body).toMatchObject({ status: 'done', metrics: { pairs: 2, clusters: 1 } });
     expect(run.body.finishedAt).toBeTruthy();
     expect(run.body.clusters).toEqual([
-      { id: expect.any(String), problemId: p1, problemSlug: P1, size: 2, maxScore: 0.95 },
+      {
+        id: expect.any(String),
+        problemId: p1,
+        problemSlug: P1,
+        size: 2,
+        maxScore: 0.95,
+        status: 'open',
+      },
     ]);
     const stored = await db.select().from(plagClusters).where(eq(plagClusters.runId, made.body.id));
     expect(stored[0]!.submissionIds).toEqual([s1, s2].sort());
@@ -461,6 +471,143 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
       400,
     );
     expect((await adminCall('post', '/admin/plag/runs', { contestId: c.id })).status).toBe(201); // retry
+  });
+
+  it('FR-PLAG-04: a cluster shows its members (handles, code, order), only its own pairs and signals, and no decision yet', async () => {
+    const c = await makeContest('ended');
+    const [a, b, d, other] = [
+      await makeUser(),
+      await makeUser(),
+      await makeUser(),
+      await makeUser(),
+    ];
+    const sa = await sub(c.id, a.id, P1, 'int main(){return 1;}');
+    const sb = await sub(c.id, b.id, P1, 'int main(){return 1;} // b');
+    const sd = await sub(c.id, d.id, P1, 'int main(){return 1;} // d');
+    const so = await sub(c.id, other.id, P1, 'int main(){return 2;}');
+    const [run] = await db
+      .insert(plagRuns)
+      .values({ contestId: c.id, status: 'done', params: {}, metrics: {} })
+      .returning({ id: plagRuns.id });
+    const v = await versionOf(P1);
+    const [cl] = await db
+      .insert(plagClusters)
+      .values({
+        runId: run!.id,
+        problemId: v.problemId,
+        submissionIds: [sb, sa, sd],
+        maxScore: 0.9,
+      })
+      .returning({ id: plagClusters.id });
+    const ord = (x: string, y: string) => (x < y ? [x, y] : [y, x]) as [string, string];
+    for (const [x, y, score] of [
+      [sa, sb, 0.9],
+      [sa, sd, 0.7],
+      [sa, so, 0.4], // a pair with someone outside the cluster is not shown
+    ] as const) {
+      const [lo, hi] = ord(x, y);
+      await db.insert(plagPairs).values({
+        runId: run!.id,
+        problemId: v.problemId,
+        subA: lo,
+        subB: hi,
+        fpScore: score,
+        embScore: score,
+        combined: score,
+      });
+    }
+    await db.insert(editorSignals).values([
+      { userId: a.id, contestId: c.id, problemId: v.problemId, kind: 'paste', size: 800 },
+      { userId: other.id, contestId: c.id, problemId: v.problemId, kind: 'paste', size: 5 },
+    ]);
+
+    expect((await call('get', `/admin/plag/clusters/${cl!.id}`, { service: null })).status).toBe(
+      401,
+    );
+    const user = await makeUser();
+    expect(
+      (await call('get', `/admin/plag/clusters/${cl!.id}`, { bearer: user.token, service: null }))
+        .status,
+    ).toBe(403);
+    expect((await adminCall('get', `/admin/plag/clusters/${uuid()}`)).status).toBe(404);
+    expect((await adminCall('get', '/admin/plag/clusters/nope')).status).toBe(400);
+
+    const r = await adminCall('get', `/admin/plag/clusters/${cl!.id}`);
+    expect(r.status).toBe(200);
+    expect(r.body.status).toBe('open');
+    expect(r.body.members.map((m: { handle: string }) => m.handle).sort()).toEqual(
+      [a.handle, b.handle, d.handle].sort(),
+    );
+    expect(r.body.members.find((m: { handle: string }) => m.handle === a.handle)).toMatchObject({
+      source: 'int main(){return 1;}',
+      language: 'cpp17',
+      verdict: 'WA',
+    });
+    expect(r.body.pairs.map((p: { combined: number }) => p.combined)).toEqual([0.9, 0.7]);
+    expect(r.body.signals).toEqual([
+      expect.objectContaining({ handle: a.handle, kind: 'paste', size: 800 }),
+    ]);
+    expect(r.body.decisions).toEqual([]);
+    expect(JSON.stringify(r.body)).not.toContain('example.test'); // no e-mail address anywhere
+    clusterUnderReview = { id: cl!.id, runId: run!.id, subs: [sa, sb, sd] };
+  });
+
+  it('FR-PLAG-05: a decision needs a note, is stored with the reviewer and audited, the latest wins, and nothing else changes', async () => {
+    const { id, runId, subs } = clusterUnderReview!;
+    const before = await db.select().from(submissions).where(eq(submissions.id, subs[0]!));
+    const post = (body: unknown, bearer = admin.token) =>
+      call('post', `/admin/plag/clusters/${id}/decisions`, { bearer, service: null, body });
+    const user = await makeUser();
+    expect((await post({ decision: 'clear', note: 'fine' }, user.token)).status).toBe(403);
+    for (const bad of [
+      { decision: 'clear' },
+      { decision: 'clear', note: '' },
+      { decision: 'clear', note: '  ' },
+      { decision: 'clear', note: 'x'.repeat(2001) },
+      { decision: 'ban', note: 'a note' },
+      { decision: 'clear', note: 'a note', extra: 1 },
+    ]) {
+      expect((await post(bad)).status, JSON.stringify(bad).slice(0, 40)).toBe(400);
+    }
+    expect(
+      await db.select().from(reviewDecisions).where(eq(reviewDecisions.clusterId, id)),
+    ).toEqual([]);
+    expect(
+      (
+        await call('post', `/admin/plag/clusters/${uuid()}/decisions`, {
+          bearer: admin.token,
+          service: null,
+          body: { decision: 'clear', note: 'a note' },
+        })
+      ).status,
+    ).toBe(404);
+
+    const first = await post({ decision: 'discuss', note: 'Looks alike, ask the setter' });
+    expect(first.status).toBe(201);
+    expect(first.body.status).toBe('discuss');
+    const second = await post({ decision: 'confirm', note: 'Same unusual variable names' });
+    expect(second.body.status).toBe('confirm');
+    expect(second.body.decisions.map((d: { decision: string }) => d.decision)).toEqual([
+      'discuss',
+      'confirm',
+    ]);
+    expect(second.body.decisions[1]).toMatchObject({ note: 'Same unusual variable names' });
+    const stored = await db.select().from(reviewDecisions).where(eq(reviewDecisions.clusterId, id));
+    expect(stored.map((d) => [d.decision, d.reviewerId])).toEqual([
+      ['needs_more', admin.id],
+      ['confirmed', admin.id],
+    ]);
+    const logged = await db.select().from(auditLog).where(eq(auditLog.targetId, id));
+    expect(logged.map((l) => [l.action, l.actorId])).toEqual([
+      ['plag.decision', admin.id],
+      ['plag.decision', admin.id],
+    ]);
+
+    // the run lists the cluster with its latest decision; "confirm" penalises no one
+    const run = await adminCall('get', `/admin/plag/runs/${runId}`);
+    expect(run.body.clusters[0]).toMatchObject({ id, status: 'confirm' });
+    const after = await db.select().from(submissions).where(eq(submissions.id, subs[0]!));
+    expect(after).toEqual(before);
   });
 });
 

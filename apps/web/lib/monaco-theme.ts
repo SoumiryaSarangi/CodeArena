@@ -17,6 +17,8 @@ const PALETTE = {
     comment: '#858C97',
     func: '#93C5FD',
     type: '#67E8F9',
+    added: '#22C55E',
+    removed: '#F87171',
   },
   light: {
     bg: '#FFFFFF',
@@ -30,6 +32,8 @@ const PALETTE = {
     comment: '#636A75',
     func: '#1D4ED8',
     type: '#0E7490',
+    added: '#15803D',
+    removed: '#DC2626',
   },
 } as const;
 
@@ -60,6 +64,11 @@ export function defineThemes(monaco: typeof Monaco) {
         // accent at 28% (dark) / 18% (light)
         'editor.selectionBackground': p.accent + (t === 'dark' ? '47' : '2E'),
         'editorCursor.foreground': p.accent,
+        // The diff view (S17): --v-ac / --v-wa at low strength, so comments and numbers keep their contrast.
+        'diffEditor.insertedLineBackground': p.added + '0A',
+        'diffEditor.removedLineBackground': p.removed + '0A',
+        'diffEditor.insertedTextBackground': p.added + '14',
+        'diffEditor.removedTextBackground': p.removed + '14',
       },
     });
   }

@@ -23,6 +23,15 @@
       "maximum": 9007199254740991,
       "minimum": 2,
       "type": "integer"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "clear",
+        "confirm",
+        "discuss"
+      ],
+      "type": "string"
     }
   },
   "required": [
@@ -30,7 +39,8 @@
     "problemId",
     "problemSlug",
     "size",
-    "maxScore"
+    "maxScore",
+    "status"
   ],
   "type": "object"
 }
