@@ -1251,3 +1251,5 @@ Decisions and warnings found: both installers warn that skills run with full age
 Next: UI-08. Restart Claude Code (`/exit`, `claude`) so the skills and the Playwright MCP tools load in a clean session.
 Ayush must: restart Claude Code; read `hairline-create` and Impeccable's scripts if you want to be sure; merge the PR.
 Model: S · Sonnet 5.5 (via opusplan)
+
+UI-07 fix (same day): after the skills were installed `pnpm lint` failed on hundreds of errors because ESLint and Prettier were scanning the third-party files under `.claude/skills`, `.claude/agents` and `.impeccable` (neither tool reads `.gitignore`); that would have failed CI on the PR. Those three paths are now in `eslint.config.mjs` and `.prettierignore`, as `apps/plag` and `docs` already are. Lesson: a gate has to be run again after the install step, not only before it.

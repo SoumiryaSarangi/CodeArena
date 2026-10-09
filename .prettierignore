@@ -10,3 +10,6 @@ packages/contracts/generated
 problems
 tests/attack-suite
 apps/web/public/monaco
+.claude/skills
+.claude/agents
+.impeccable
