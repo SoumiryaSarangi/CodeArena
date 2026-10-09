@@ -4,10 +4,12 @@ import {
   keyOf,
   renderDrills,
   renderContest,
+  renderPad,
   renderRun,
   summaryTable,
   update,
   updateContest,
+  updatePad,
   updateDrills,
   upsertBlock,
 } from './metrics-report.mjs';
@@ -274,4 +276,97 @@ test('W-00: one heading, one block per contest, a rerun replaces only its own bl
   assert.match(again, /32 registered/); // the other contest's block is untouched
   assert.match(again, /Warm-up #2/);
   assert.match(again, /notes/);
+});
+
+const padRun = (over = {}) => ({
+  label: '10 rooms × 3',
+  startedAt: '2026-10-09T20:10:00.000Z',
+  config: {
+    rooms: 10,
+    typistsMin: 3,
+    typistsMax: 3,
+    rate: 4,
+    seconds: 60,
+    instances: 2,
+    seed: 1,
+    awareness: true,
+  },
+  clients: 30,
+  host: { cpus: 28, memGb: 8, node: 'v24.21.0' },
+  keystrokes: { sent: 7200, received: 14400, expectedDeliveries: 14400 },
+  latencyMs: { n: 14400, mean: 3, p50: 2.5, p95: 8.25, p99: 14, max: 40 },
+  joinMs: { n: 30, mean: 100, p50: 95, p95: 140, p99: 150, max: 151 },
+  instances: [
+    { rooms: 6, rssBaselineMb: 110, rssPeakMb: 150, rssEndMb: 150, cpuMeanPct: 12, cpuPeakPct: 20 },
+    { rooms: 4, rssBaselineMb: 110, rssPeakMb: 140, rssEndMb: 140, cpuMeanPct: 8, cpuPeakPct: 15 },
+  ],
+  memoryPerRoomMb: 7,
+  driver: { cpuMeanPct: 30, eventLoopDelayP95Ms: 11, eventLoopDelayMaxMs: 30 },
+  consistency: { rooms: 10, diverged: 0 },
+  stored: { updateRows: 7200, docRows: 10 },
+  unexpectedCloses: 0,
+  ...over,
+});
+
+test('CP-08: a pad block has the numbers the card asks for, and the SRS target is judged only at its own point', () => {
+  const b = renderPad(padRun());
+  assert.match(b, /<!-- pad:10-rooms-3 -->/);
+  assert.match(b, /NFR-PERF-06: p95 propagation ≤ 200 ms \| 8\.3 ms: ✓ met/);
+  assert.match(
+    b,
+    /Edit propagation p50 \/ p95 \/ p99 \/ max \| 2\.5 \/ 8\.3 \/ 14\.0 \/ 40\.0 ms over 14400 deliveries/,
+  );
+  assert.match(b, /delivered to the others \| 7200 · 14400 of 14400 \(100 %\)/);
+  assert.match(b, /Memory per room .* \| 7\.00 MB/);
+  assert.match(b, /#1: 110 → 150 MB, 12 \/ 20 % of a core, 6 rooms/);
+  assert.match(b, /Rooms whose clients ended with different text \| 0 of 10/);
+  assert.match(b, /7200 log rows \(7200 keystrokes\), 10 documents/);
+  // another size is a headroom measurement: no pass or fail is claimed
+  const big = renderPad(
+    padRun({ label: '50 rooms × 3', config: { ...padRun().config, rooms: 50 } }),
+  );
+  assert.doesNotMatch(big, /NFR-PERF-06/);
+});
+
+test('CP-08: a miss says so, a slow driver is flagged, and nothing missing is shown as a pass', () => {
+  const miss = renderPad(
+    padRun({ latencyMs: { n: 5, mean: 300, p50: 250, p95: 450, p99: 500, max: 600 } }),
+  );
+  assert.match(miss, /450\.0 ms: ✗ NOT met/);
+  const busy = renderPad(
+    padRun({ driver: { cpuMeanPct: 98, eventLoopDelayP95Ms: 120, eventLoopDelayMaxMs: 400 } }),
+  );
+  assert.match(busy, /busy: latencies are an upper bound/);
+  assert.doesNotMatch(renderPad(padRun()), /busy/);
+  const none = renderPad(
+    padRun({ latencyMs: { n: 0, mean: null, p50: null, p95: null, p99: null, max: null } }),
+  );
+  assert.match(none, /\| – ms: – \|/);
+  assert.doesNotMatch(none, /✓ met/);
+  const lost = renderPad(
+    padRun({ keystrokes: { sent: 100, received: 150, expectedDeliveries: 200 } }),
+  );
+  assert.match(lost, /150 of 200 \(75 %\)/);
+});
+
+test('CP-08: one heading, one block per label, a rerun replaces only its own block and the rest of the file stays', () => {
+  const text = '# Metrics\n\nhand-written text\n';
+  const one = updatePad(text, padRun());
+  assert.match(one, /hand-written text/);
+  assert.equal((one.match(/## Interview pad load test \(CP-08\)/g) ?? []).length, 1);
+  const two = updatePad(
+    one,
+    padRun({ label: '50 rooms × 3', config: { ...padRun().config, rooms: 50 } }),
+  );
+  assert.equal((two.match(/<!-- pad:/g) ?? []).length, 2);
+  assert.equal((two.match(/## Interview pad load test/g) ?? []).length, 1);
+  const again = updatePad(
+    two,
+    padRun({ latencyMs: { n: 1, mean: 1, p50: 1, p95: 1.5, p99: 1.5, max: 1.5 } }),
+  );
+  assert.equal((again.match(/<!-- pad:/g) ?? []).length, 2);
+  assert.match(again, /1\.5 ms: ✓ met/);
+  assert.doesNotMatch(again, /8\.3 ms: ✓ met/);
+  assert.match(again, /50 rooms × 3/);
+  assert.equal(updatePad('', padRun()).startsWith('# Metrics'), true);
 });

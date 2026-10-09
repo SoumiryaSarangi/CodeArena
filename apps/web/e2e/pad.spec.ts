@@ -1070,3 +1070,42 @@ test.describe('ED-01: code suggestions in the pad', () => {
     await ctx.close();
   });
 });
+
+test.describe('CP-08: real browsers converge under concurrent typing', () => {
+  test('FR-PAD-07: two people typing at the same moment and an observer end with the same text, and no keystroke is lost', async ({
+    browser,
+  }) => {
+    const [ca, cb, cc] = [
+      await browser.newContext(),
+      await browser.newContext(),
+      await browser.newContext(),
+    ];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    const ravi = await enter(cc, 'ravi', 'observer');
+    for (const p of [meera, asha, ravi]) await ready(p);
+    await Promise.all([meera, asha].map((p) => p.locator('.monaco-editor').first().click()));
+    // both type 40 characters at once, 25 ms apart, into the same empty document
+    await Promise.all([
+      meera.keyboard.type('A'.repeat(40), { delay: 25 }),
+      asha.keyboard.type('b'.repeat(40), { delay: 25 }),
+    ]);
+    const count = (t: string, ch: string) => t.split(ch).length - 1;
+    for (const p of [meera, asha, ravi])
+      await expect
+        .poll(
+          async () => {
+            const t = await editorText(p);
+            return `${count(t, 'A')} ${count(t, 'b')}`;
+          },
+          { timeout: 15_000 },
+        )
+        .toBe('40 40');
+    const texts = await Promise.all([meera, asha, ravi].map(editorText));
+    expect(texts[1]).toBe(texts[0]);
+    expect(texts[2]).toBe(texts[0]);
+    await ca.close();
+    await cb.close();
+    await cc.close();
+  });
+});

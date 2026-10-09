@@ -7,10 +7,12 @@
 //        [--out docs/METRICS.md]
 //   node scripts/metrics-report.mjs --drills drills.json [--out docs/METRICS.md]       (O-06 failure drills)
 //   node scripts/metrics-report.mjs --contest contest.json [--out docs/METRICS.md]     (W-00: a real contest's numbers)
+//   node scripts/metrics-report.mjs --pad pad.json [--out docs/METRICS.md]             (CP-08: interview pad load test)
 //
 // run.json    from tests/load/burst.mjs run     (what a client saw)
 // report.json from load-cli report              (what the database recorded)
 // scale.json  from tests/load/burst.mjs watch   (when each new worker appeared)
+// pad.json    from `pnpm --filter @codearena/collab pad-load -- … --out pad.json` (apps/collab/src/load/pad-load.ts)
 // contest.json from `load-cli contest-report SLUG` (tests/load/prod.sh contest-report SLUG FILE): read-only, any contest
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -295,12 +297,88 @@ export function updateContest(doc, report) {
   return `${withHeading.trimEnd()}\n\n${block}\n`;
 }
 
+const PAD_HEADING = '## Interview pad load test (CP-08)';
+const PAD_INTRO = `N rooms with 2 to 4 simulated typists, real Hocuspocus clients against real collab processes on Postgres and Redis
+(\`pnpm --filter @codearena/collab pad-load\`, then \`node scripts/metrics-report.mjs --pad FILE\`). The target is SRS
+NFR-PERF-06: a keystroke reaches the other typists in at most 200 ms at the 95th percentile with 10 rooms of 3. Every run
+is one block; the same label replaces its block. The client and the servers share one machine, so there is no network time,
+and the clients share one process: when the driver's own load is high (its event-loop delay is shown) the latencies are an
+upper bound for the server, not a measurement of it.`;
+
+/** The 200 ms target is only claimed for the point the SRS names: 10 rooms of 3 typists. */
+const isSrsPoint = (r) =>
+  r.config.rooms === 10 && r.config.typistsMin === 3 && r.config.typistsMax === 3;
+
+/** The block for one pad load run. */
+export function renderPad(r) {
+  const k = keyOf(r.label);
+  const c = r.config;
+  const typists =
+    c.typistsMin === c.typistsMax ? `${c.typistsMin}` : `${c.typistsMin}-${c.typistsMax}`;
+  const lat = r.latencyMs;
+  const delivered = r.keystrokes.expectedDeliveries
+    ? `${r.keystrokes.received} of ${r.keystrokes.expectedDeliveries} (${pctOf(r.keystrokes.received, r.keystrokes.expectedDeliveries)})`
+    : `${r.keystrokes.received}`;
+  const busy = r.driver.eventLoopDelayP95Ms > 50;
+  const lines = [
+    `<!-- pad:${k} -->`,
+    `### Pad — ${r.label}`,
+    '',
+    `${r.startedAt.slice(0, 16).replace('T', ' ')} UTC · ${c.rooms} rooms × ${typists} typists (${r.clients} clients) · ${c.rate} keystrokes/s each for ${c.seconds} s · ${c.instances} collab instance(s) · ${c.awareness ? 'with' : 'without'} cursor awareness · ${r.host.cpus} CPUs, ${r.host.memGb} GB, Node ${r.host.node}`,
+    '',
+    '| What | Value |',
+    '|---|---|',
+  ];
+  if (isSrsPoint(r))
+    lines.push(
+      `| NFR-PERF-06: p95 propagation ≤ 200 ms | ${s1(lat.p95)} ms: ${mark(lat.p95 === null ? null : lat.p95 <= 200)} |`,
+    );
+  lines.push(
+    `| Edit propagation p50 / p95 / p99 / max | ${s1(lat.p50)} / ${s1(lat.p95)} / ${s1(lat.p99)} / ${s1(lat.max)} ms over ${lat.n} deliveries |`,
+    `| Keystrokes sent · delivered to the others | ${r.keystrokes.sent} · ${delivered} |`,
+    `| Joining (connect to synced) p50 / p95 | ${s1(r.joinMs.p50, 0)} / ${s1(r.joinMs.p95, 0)} ms |`,
+    `| Memory per room (growth of the collab processes ÷ rooms) | ${s1(r.memoryPerRoomMb, 2)} MB |`,
+    `| Collab instances (RSS before → peak, CPU mean / peak, rooms) | ${r.instances
+      .map(
+        (i, n) =>
+          `#${n + 1}: ${s1(i.rssBaselineMb, 0)} → ${s1(i.rssPeakMb, 0)} MB, ${s1(i.cpuMeanPct, 0)} / ${s1(i.cpuPeakPct, 0)} % of a core, ${i.rooms} rooms`,
+      )
+      .join('; ')} |`,
+    `| Driver (this process) | ${s1(r.driver.cpuMeanPct, 0)} % CPU, event-loop delay p95 ${s1(r.driver.eventLoopDelayP95Ms)} ms / max ${s1(r.driver.eventLoopDelayMaxMs)} ms${busy ? ' — **busy: latencies are an upper bound**' : ''} |`,
+    `| Rooms whose clients ended with different text | ${r.consistency.diverged} of ${r.consistency.rooms} |`,
+    `| Stored in Postgres | ${r.stored.updateRows} log rows (${r.keystrokes.sent} keystrokes), ${r.stored.docRows} documents |`,
+    `| Connections closed unexpectedly | ${r.unexpectedCloses} |`,
+    `<!-- /pad:${k} -->`,
+  );
+  return lines.join('\n');
+}
+
+/** Adds or replaces the block of this run under the pad heading. */
+export function updatePad(doc, result) {
+  const base = doc.trim() === '' ? HEADER : doc;
+  const key = keyOf(result.label);
+  const block = renderPad(result);
+  const re = new RegExp(`<!-- pad:${key} -->[\\s\\S]*?<!-- /pad:${key} -->`);
+  if (re.test(base)) return base.replace(re, block);
+  const withHeading = base.includes(PAD_HEADING)
+    ? base
+    : `${base.trimEnd()}\n\n${PAD_HEADING}\n\n${PAD_INTRO}\n`;
+  return `${withHeading.trimEnd()}\n\n${block}\n`;
+}
+
 function main() {
   const rest = process.argv.slice(2);
   const arg = (n) => {
     const i = rest.indexOf(`--${n}`);
     return i >= 0 ? rest[i + 1] : undefined;
   };
+  if (arg('pad')) {
+    const out = arg('out') ?? 'docs/METRICS.md';
+    const doc = existsSync(out) ? readFileSync(out, 'utf8') : '';
+    writeFileSync(out, updatePad(doc, JSON.parse(readFileSync(arg('pad'), 'utf8'))));
+    console.log(`updated ${out} (pad load test)`);
+    return;
+  }
   if (arg('contest')) {
     const out = arg('out') ?? 'docs/METRICS.md';
     const doc = existsSync(out) ? readFileSync(out, 'utf8') : '';

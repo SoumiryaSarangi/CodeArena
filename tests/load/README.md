@@ -50,3 +50,29 @@ D2s_v5 costs about $95 a month.
 - Database (`report.json`): queue wait (worker claim − submit), time to verdict, service time per language,
   verdict mix, drain time, per-worker share. The claim time comes from the journey stored with each verdict.
 - The client may be far from the VM: accept latency includes the network round trip.
+
+## Interview pad (CP-08)
+
+The pad's collab tier is measured separately from the judge pipeline: `apps/collab/src/load/pad-load.ts` starts real collab
+processes on the Compose Postgres and Redis, creates N rooms with 2 to 4 simulated typists each (real Hocuspocus clients, a
+stand-in for the API's ticket check), and has everyone type for a while. Every typed character is a unique private-use
+character that records who sent it and which keystroke it was, so each receiver can compute how long it took to arrive.
+
+```bash
+docker compose up -d postgres redis
+pnpm --filter @codearena/collab pad-load -- --rooms 10 --typists 3 --seconds 60 --out /tmp/pad.json --label "10 rooms × 3"
+node scripts/metrics-report.mjs --pad /tmp/pad.json            # writes the block into docs/METRICS.md
+```
+
+Options: `--rooms N` (10), `--typists N` or `MIN-MAX` (3, at most 4), `--rate` keystrokes per second per typist (4),
+`--seconds` (30), `--instances` (2; a room always goes to the same one, as the edge's URI hash does), `--seed`,
+`--no-awareness` (leave out the cursor traffic), `--label`, `--out`.
+
+What comes out: propagation p50 / p95 / p99 / max, join time, keystrokes sent against delivered, the memory and CPU of each collab
+process (read from `/proc`, so Linux only), memory per room (growth of the collab processes divided by the rooms), whether every
+room ended with identical text on all its clients, and that Postgres holds exactly one log row per keystroke. SRS NFR-PERF-06
+(p95 ≤ 200 ms with 10 rooms of 3) is judged only for that size; the others are headroom measurements.
+
+Read the numbers with these limits in mind: client and servers share one machine (no network time), and all clients share one
+Node process. The driver reports its own CPU and event-loop delay; when that is high the latencies are an upper bound for the
+servers. The run needs no secrets and creates and drops its own database.

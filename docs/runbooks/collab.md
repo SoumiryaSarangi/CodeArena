@@ -45,3 +45,12 @@ Postgres within the 20 s grace period). The pad then shows "Joining the room…"
 | One instance restarts in a loop | Its logs: `DATABASE_URL`/`REDIS_URL` empty (it refuses to start), or Postgres/Redis unreachable |
 | Edits seem to vanish after a restart | Look for `could not store` in the logs; a failed store keeps the document in memory, and clients re-send theirs when they reconnect |
 | Cursors missing for some people | Redis down or `hocuspocus:own:*` claims stuck (they expire after 2 minutes) |
+
+## Measuring capacity (CP-08)
+
+`pnpm --filter @codearena/collab pad-load -- --rooms 10 --typists 3 --seconds 60 --label "10 rooms × 3" --out /tmp/pad.json`, then
+`node scripts/metrics-report.mjs --pad /tmp/pad.json` adds the result to `docs/METRICS.md`. It runs on a developer machine against
+the Compose Postgres and Redis and never touches production. See `tests/load/README.md` for what it measures and how far to trust it.
+The convergence guarantee itself is tested without a network by `apps/collab/src/convergence.test.ts` (random concurrent edits,
+restores and reordered, repeated delivery on 3 to 5 replicas), and the loss of an instance by `chaos.test.ts`.
+

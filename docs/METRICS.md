@@ -303,3 +303,76 @@ The shipped combiner is fitted on all 3476 pairs: weights fp 3.41, emb 18.52, le
 
 <!--data {"pairs": 3476, "ap": {"Stage A (fingerprints)": 0.929598355977463, "Stage B (embedding)": 0.9499618440868954, "A + B (combined)": 0.9566267038085703}, "threshold": 0.5371677652987297} -->
 <!-- /plag-eval -->
+
+## Interview pad load test (CP-08)
+
+N rooms with 2 to 4 simulated typists, real Hocuspocus clients against real collab processes on Postgres and Redis
+(`pnpm --filter @codearena/collab pad-load`, then `node scripts/metrics-report.mjs --pad FILE`). The target is SRS
+NFR-PERF-06: a keystroke reaches the other typists in at most 200 ms at the 95th percentile with 10 rooms of 3. Every run
+is one block; the same label replaces its block. The client and the servers share one machine, so there is no network time,
+and the clients share one process: when the driver's own load is high (its event-loop delay is shown) the latencies are an
+upper bound for the server, not a measurement of it.
+
+### How to read these (written by hand; the blocks below are generated)
+
+- **The target is met by a wide margin.** At the SRS point (10 rooms of 3, 4 keystrokes a second each) a keystroke reached the other typists in 2.1 ms at the 95th percentile (target 200 ms), and still 5.8 ms at 292 clients in 100 rooms. The slowest single delivery in any run was 326 ms (the 100-room run, while 292 clients and the collab servers shared one machine); the p99 stayed under 18 ms.
+- **Nothing was lost or doubled.** In every run each keystroke reached every other typist of its room (152,201 of 152,201 at the largest), every room ended with identical text on all its clients, and Postgres held exactly one log row per keystroke.
+- **Memory per room is not one number.** It is the growth of the collab processes' resident memory divided by the rooms, and the first rooms pay for the process warming up: 14.6 MB per room at 10 rooms, 6.5 at 50 and 3.8 at 100. Between the 50-room and the 100-room run the processes grew by about 1 MB per extra room (and by about 0.4 MB per extra client). Plan with 1 to 5 MB per room plus about 110 MB for the idle process; a peak of 380 MB over both instances at 100 rooms is a measurement, not a limit. It is resident memory, not heap, so garbage not yet collected is included.
+- **CPU.** About 50 to 75 % of one core per instance at 100 rooms (292 clients); about 15 to 30 % at the SRS point. The driver itself used 64 % of a core at 100 rooms with an event-loop delay p95 of 12 ms, so the client side was not the bottleneck.
+- **What this does not measure.** No network (clients and servers are on one machine), Postgres and Redis CPU, a browser's own rendering time (the NFR counts the remote render; the ≈ 2 ms here ends when the client's document has the change, a browser adds a few milliseconds), or a whole contest-day crowd. Rooms are split over the two instances by a hash of the room id, as the edge does; a room never spans two instances here, so the Redis relay between instances is covered by the chaos and persistence tests rather than by this load.
+- Typing here is inserts near the end of the code with a cursor update each keystroke (4 a second per typist is a fast typist); deletes, pastes and Run results are not part of this load.
+
+<!-- pad:10-rooms-3 -->
+### Pad — 10 rooms × 3
+
+2026-10-09 20:06 UTC · 10 rooms × 3 typists (30 clients) · 4 keystrokes/s each for 60 s · 2 collab instance(s) · with cursor awareness · 28 CPUs, 8 GB, Node v24.21.0
+
+| What | Value |
+|---|---|
+| NFR-PERF-06: p95 propagation ≤ 200 ms | 2.1 ms: ✓ met |
+| Edit propagation p50 / p95 / p99 / max | 1.0 / 2.1 / 3.0 / 24.0 ms over 14428 deliveries |
+| Keystrokes sent · delivered to the others | 7214 · 14428 of 14428 (100 %) |
+| Joining (connect to synced) p50 / p95 | 159 / 170 ms |
+| Memory per room (growth of the collab processes ÷ rooms) | 14.57 MB |
+| Collab instances (RSS before → peak, CPU mean / peak, rooms) | #1: 114 → 201 MB, 15 / 30 % of a core, 7 rooms; #2: 116 → 174 MB, 8 / 13 % of a core, 3 rooms |
+| Driver (this process) | 13 % CPU, event-loop delay p95 10.8 ms / max 27.6 ms |
+| Rooms whose clients ended with different text | 0 of 10 |
+| Stored in Postgres | 7214 log rows (7214 keystrokes), 10 documents |
+| Connections closed unexpectedly | 0 |
+<!-- /pad:10-rooms-3 -->
+
+<!-- pad:50-rooms-3 -->
+### Pad — 50 rooms × 3
+
+2026-10-09 20:07 UTC · 50 rooms × 3 typists (150 clients) · 4 keystrokes/s each for 60 s · 2 collab instance(s) · with cursor awareness · 28 CPUs, 8 GB, Node v24.21.0
+
+| What | Value |
+|---|---|
+| Edit propagation p50 / p95 / p99 / max | 0.6 / 1.6 / 4.3 / 163.8 ms over 72124 deliveries |
+| Keystrokes sent · delivered to the others | 36062 · 72124 of 72124 (100 %) |
+| Joining (connect to synced) p50 / p95 | 38 / 146 ms |
+| Memory per room (growth of the collab processes ÷ rooms) | 6.52 MB |
+| Collab instances (RSS before → peak, CPU mean / peak, rooms) | #1: 113 → 270 MB, 31 / 50 % of a core, 27 rooms; #2: 112 → 280 MB, 27 / 48 % of a core, 23 rooms |
+| Driver (this process) | 33 % CPU, event-loop delay p95 10.9 ms / max 15.3 ms |
+| Rooms whose clients ended with different text | 0 of 50 |
+| Stored in Postgres | 36062 log rows (36062 keystrokes), 50 documents |
+| Connections closed unexpectedly | 0 |
+<!-- /pad:50-rooms-3 -->
+
+<!-- pad:100-rooms-2-4 -->
+### Pad — 100 rooms × 2-4
+
+2026-10-09 20:08 UTC · 100 rooms × 2-4 typists (292 clients) · 4 keystrokes/s each for 60 s · 2 collab instance(s) · with cursor awareness · 28 CPUs, 8 GB, Node v24.21.0
+
+| What | Value |
+|---|---|
+| Edit propagation p50 / p95 / p99 / max | 1.0 / 5.8 / 17.6 / 325.7 ms over 152201 deliveries |
+| Keystrokes sent · delivered to the others | 70108 · 152201 of 152201 (100 %) |
+| Joining (connect to synced) p50 / p95 | 40 / 135 ms |
+| Memory per room (growth of the collab processes ÷ rooms) | 3.79 MB |
+| Collab instances (RSS before → peak, CPU mean / peak, rooms) | #1: 111 → 302 MB, 45 / 74 % of a core, 49 rooms; #2: 117 → 305 MB, 47 / 73 % of a core, 51 rooms |
+| Driver (this process) | 64 % CPU, event-loop delay p95 12.0 ms / max 57.1 ms |
+| Rooms whose clients ended with different text | 0 of 100 |
+| Stored in Postgres | 70108 log rows (70108 keystrokes), 100 documents |
+| Connections closed unexpectedly | 0 |
+<!-- /pad:100-rooms-2-4 -->
