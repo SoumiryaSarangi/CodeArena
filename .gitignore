@@ -24,5 +24,6 @@ infra/terraform/crash.log
 
 # UI-07: third-party design skills are not committed (their licences differ); scripts/setup-design-skills.sh reproduces them.
 .claude/skills/
+.claude/agents/
 .claude/settings.local.json
 .impeccable/config.local.json

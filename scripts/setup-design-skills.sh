@@ -50,13 +50,14 @@ else
   $SKILLS add emilkowalski/skills -a claude-code -y --copy --skill "${EMIL[@]}"
 fi
 
-say "2. Impeccable (Apache-2.0, as stated in the card): the npm package 'impeccable'"
+say "2. Impeccable (Apache-2.0): https://github.com/pbakaus/impeccable (npm package 'impeccable')"
 need_flags "npx --yes impeccable install" --providers --scope --no-hooks
 # --no-hooks on purpose: the hooks download and run a binary on every edit. To enable them later, see docs/design-skills.md.
 if [ "$FORCE" != 1 ] && [ -d ".impeccable" -o -f "$DIR/impeccable/SKILL.md" ]; then
   echo "already installed (.impeccable or .claude/skills/impeccable exists)"
 else
-  npx --yes impeccable install --providers=claude --scope=project --no-hooks
+  force=(); [ "$FORCE" = 1 ] && force=(--force)
+  npx --yes impeccable install --providers=claude --scope=project --no-hooks "${force[@]}"
 fi
 
 say "3. hairline (MIT): https://github.com/lucasmarkes/hairline"
