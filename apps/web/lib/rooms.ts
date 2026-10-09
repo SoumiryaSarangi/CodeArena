@@ -4,6 +4,9 @@ import type {
   RoomInviteCreate,
   RoomJoined,
   RoomList,
+  RoomRunAccepted,
+  RoomRunCreate,
+  RoomRunList,
   RoomView,
   TicketResponse,
 } from '@codearena/contracts';
@@ -31,6 +34,13 @@ export const closeRoom = (id: string) =>
   apiFetch<{ status: 'closed' }>('POST', `/rooms/${enc(id)}/close`, undefined, {
     auth: 'required',
   });
+
+/** CP-04: run or submit the room's shared code. 202; the verdict arrives on the room's SSE topic. */
+export const startRoomRun = (id: string, body: RoomRunCreate) =>
+  apiFetch<RoomRunAccepted>('POST', `/rooms/${enc(id)}/runs`, body, { auth: 'required' });
+
+export const roomRuns = (id: string, signal?: AbortSignal) =>
+  apiFetch<RoomRunList>('GET', `/rooms/${enc(id)}/runs`, undefined, { auth: 'required', signal });
 
 /** A single-use ticket for the pad connection; the provider asks for a fresh one on every (re)connect. */
 export const padTicket = async (roomId: string) =>

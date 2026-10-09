@@ -15,6 +15,7 @@ import { LANGUAGES, isLanguage, languageInfo } from '@/lib/languages';
 import { clock, closeRoom, createInvite, roomGet } from '@/lib/rooms';
 import { signInHref, useSession } from '@/lib/session';
 import { PresenceList, PresenceStyles } from './presence';
+import { RunPanel } from './run-panel';
 import { usePad } from './use-pad';
 
 const PadEditor = dynamic(() => import('./pad-editor'), {
@@ -266,25 +267,34 @@ function LiveRoom({ room }: { room: RoomView }) {
       ) : null}
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_22rem]">
-        <section
-          aria-label="Shared code"
-          className="min-h-96 overflow-hidden rounded-md border border-border-strong"
-        >
-          {pad && synced ? (
-            <PadEditor
-              key={pad.doc.guid}
-              pad={pad}
-              language={info.monaco}
-              readOnly={observer}
-              label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
-            />
-          ) : (
-            <div role="status" className="p-4 text-14 text-text-2">
-              {status === 'reconnecting' ? 'Reconnecting…' : 'Joining the room…'}
-              <Skeleton className="mt-3 h-40 w-full" />
-            </div>
-          )}
-        </section>
+        <div className="flex min-w-0 flex-col gap-3">
+          <section
+            aria-label="Shared code"
+            className="min-h-96 overflow-hidden rounded-md border border-border-strong"
+          >
+            {pad && synced ? (
+              <PadEditor
+                key={pad.doc.guid}
+                pad={pad}
+                language={info.monaco}
+                readOnly={observer}
+                label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
+              />
+            ) : (
+              <div role="status" className="p-4 text-14 text-text-2">
+                {status === 'reconnecting' ? 'Reconnecting…' : 'Joining the room…'}
+                <Skeleton className="mt-3 h-40 w-full" />
+              </div>
+            )}
+          </section>
+          <RunPanel
+            roomId={room.id}
+            pad={pad}
+            language={language}
+            canRun={!observer}
+            hasProblem={!!room.problem}
+          />
+        </div>
         {room.problem ? (
           <aside
             aria-label="Problem"

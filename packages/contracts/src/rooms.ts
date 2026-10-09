@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { RoomRole } from './collab';
-import { Language } from './enums';
+import { Language, Verdict } from './enums';
 
 /** Interview rooms (CP-02): SRS §3.1.2 rooms, FR-PAD-01/02, US-10.1. Dates are ISO strings. */
 
@@ -82,3 +82,77 @@ export const RoomJoined = z
   .strict()
   .meta({ id: 'RoomJoined' });
 export type RoomJoined = z.infer<typeof RoomJoined>;
+
+// ---- running code from the pad (CP-04, FR-PAD-08) -----------------------------------------------------------------
+
+export const ROOM_RUN_INTERVAL_MS = 2000;
+/** Output is cut here in what everyone is sent (the full output stays in the database). */
+export const ROOM_RUN_OUTPUT_CAP = 16 * 1024;
+export const RoomRunMode = z.enum(['run', 'submit']);
+export type RoomRunMode = z.infer<typeof RoomRunMode>;
+
+/**
+ * POST /api/rooms/{id}/runs. `runId` is chosen by the client (a UUID): sending the same one again does not run twice.
+ * `run` takes optional standard input; `submit` judges against the attached problem's hidden tests and takes none.
+ */
+export const RoomRunCreate = z
+  .object({
+    runId: z.uuid(),
+    mode: RoomRunMode,
+    language: Language,
+    source: z
+      .string()
+      .min(1)
+      .max(64 * 1024),
+    input: z
+      .string()
+      .max(64 * 1024)
+      .optional(),
+  })
+  .strict()
+  .refine((r) => r.mode === 'run' || r.input === undefined, {
+    message: 'A submission takes no input',
+    path: ['input'],
+  })
+  .meta({ id: 'RoomRunCreate' });
+export type RoomRunCreate = z.infer<typeof RoomRunCreate>;
+
+export const RoomRunStatus = z.enum(['queued', 'running', 'done', 'failed']);
+
+/** What every member sees of a run: the SSE `room.run` event on topic `room:{id}`, and the history. Hidden test data never appears. */
+export const RoomRunView = z
+  .object({
+    runId: z.uuid(),
+    mode: RoomRunMode,
+    by: z.string(),
+    language: z.string(),
+    status: RoomRunStatus,
+    verdict: Verdict.nullable(),
+    timeMs: z.number().int().nullable(),
+    memKb: z.number().int().nullable(),
+    output: z.string().nullable(),
+    stderr: z.string().nullable(),
+    compileLog: z.string().nullable(),
+    /** The output was longer than {@link ROOM_RUN_OUTPUT_CAP} and has been cut. */
+    truncated: z.boolean(),
+    /** Per-test verdicts of a submission (numbers and times only). */
+    tests: z.array(
+      z.object({ no: z.number().int(), verdict: Verdict, timeMs: z.number().int() }).strict(),
+    ),
+    createdAt: z.string(),
+  })
+  .strict()
+  .meta({ id: 'RoomRunView' });
+export type RoomRunView = z.infer<typeof RoomRunView>;
+
+export const RoomRunList = z
+  .object({ items: z.array(RoomRunView) })
+  .strict()
+  .meta({ id: 'RoomRunList' });
+export type RoomRunList = z.infer<typeof RoomRunList>;
+
+export const RoomRunAccepted = z
+  .object({ runId: z.uuid() })
+  .strict()
+  .meta({ id: 'RoomRunAccepted' });
+export type RoomRunAccepted = z.infer<typeof RoomRunAccepted>;

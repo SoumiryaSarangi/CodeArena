@@ -97,6 +97,17 @@ export class TicketsService {
       return run ? undefined : deny();
     }
 
+    // CP-04: what happens in a room (its runs) goes to its members, observers included.
+    const room = /^room:([0-9a-f-]{36})$/.exec(topic);
+    if (room) {
+      if (!user) return deny();
+      const [m] = await this.db
+        .select({ uid: roomMembers.userId })
+        .from(roomMembers)
+        .where(and(eq(roomMembers.roomId, room[1]!), eq(roomMembers.userId, user.id)));
+      return m ? undefined : deny();
+    }
+
     const contest = /^contest:([0-9a-f-]{36}):([a-z0-9:_-]+)$/.exec(topic);
     if (contest) {
       const [c] = await this.db

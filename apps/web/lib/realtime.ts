@@ -35,7 +35,7 @@ export interface RealtimeDeps {
   isOnline?: () => boolean;
 }
 
-const TYPES: SseEventType[] = [
+export const TYPES: SseEventType[] = [
   'submission.progress',
   'submission.queue',
   'submission.verdict',
@@ -48,6 +48,7 @@ const TYPES: SseEventType[] = [
   'announce.new',
   'contest.state',
   'review.ready',
+  'room.run',
   'sys.status',
 ];
 

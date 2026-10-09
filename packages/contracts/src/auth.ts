@@ -89,7 +89,7 @@ export const Topic = z
   .string()
   .max(128)
   .regex(
-    /^(sys|admin:[a-z0-9:_-]+|sub:[0-9a-f-]{36}|contest:[0-9a-f-]{36}:[a-z0-9:_-]+)$/,
+    /^(sys|admin:[a-z0-9:_-]+|sub:[0-9a-f-]{36}|room:[0-9a-f-]{36}|contest:[0-9a-f-]{36}:[a-z0-9:_-]+)$/,
     'Unknown topic',
   );
 

@@ -1,0 +1,136 @@
+{
+  "$id": "RoomRunView.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "by": {
+      "type": "string"
+    },
+    "compileLog": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "memKb": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "mode": {
+      "enum": [
+        "run",
+        "submit"
+      ],
+      "type": "string"
+    },
+    "output": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "runId": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "stderr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tests": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "no": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "timeMs": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "verdict": {
+            "$ref": "Verdict.json"
+          }
+        },
+        "required": [
+          "no",
+          "verdict",
+          "timeMs"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "timeMs": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "Verdict.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "runId",
+    "mode",
+    "by",
+    "language",
+    "status",
+    "verdict",
+    "timeMs",
+    "memKb",
+    "output",
+    "stderr",
+    "compileLog",
+    "truncated",
+    "tests",
+    "createdAt"
+  ],
+  "type": "object"
+}

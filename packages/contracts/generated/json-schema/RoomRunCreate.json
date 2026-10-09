@@ -1,0 +1,38 @@
+{
+  "$id": "RoomRunCreate.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "input": {
+      "maxLength": 65536,
+      "type": "string"
+    },
+    "language": {
+      "$ref": "Language.json"
+    },
+    "mode": {
+      "enum": [
+        "run",
+        "submit"
+      ],
+      "type": "string"
+    },
+    "runId": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    },
+    "source": {
+      "maxLength": 65536,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "runId",
+    "mode",
+    "language",
+    "source"
+  ],
+  "type": "object"
+}

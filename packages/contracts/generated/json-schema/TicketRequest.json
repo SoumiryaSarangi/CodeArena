@@ -8,7 +8,7 @@
         "topics": {
           "items": {
             "maxLength": 128,
-            "pattern": "^(sys|admin:[a-z0-9:_-]+|sub:[0-9a-f-]{36}|contest:[0-9a-f-]{36}:[a-z0-9:_-]+)$",
+            "pattern": "^(sys|admin:[a-z0-9:_-]+|sub:[0-9a-f-]{36}|room:[0-9a-f-]{36}|contest:[0-9a-f-]{36}:[a-z0-9:_-]+)$",
             "type": "string"
           },
           "maxItems": 20,

@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
-import { RoomCreate, RoomInviteCreate, RoomJoin } from '@codearena/contracts';
+import { RoomCreate, RoomInviteCreate, RoomJoin, RoomRunCreate } from '@codearena/contracts';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { RateLimit } from '../../rate-limit/rate-limit';
 import { RequireHandle } from '../auth/guards';
+import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
 
 const Id = z.uuid();
@@ -12,7 +13,10 @@ const Id = z.uuid();
 @RequireHandle()
 @Controller('rooms')
 export class RoomsController {
-  constructor(@Inject(RoomsService) private readonly rooms: RoomsService) {}
+  constructor(
+    @Inject(RoomsService) private readonly rooms: RoomsService,
+    @Inject(RoomRunsService) private readonly runs: RoomRunsService,
+  ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
   @Post()
@@ -50,5 +54,17 @@ export class RoomsController {
   @HttpCode(200)
   close(@Req() req: Request, @Param('id') id: string) {
     return this.rooms.close(req.user!, Id.parse(id));
+  }
+
+  /** FR-PAD-08: run or submit the room's shared code. 202: the verdict arrives on the room's SSE topic. */
+  @Post(':id/runs')
+  @HttpCode(202)
+  run(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.runs.start(req.user!, Id.parse(id), RoomRunCreate.parse(body));
+  }
+
+  @Get(':id/runs')
+  runList(@Req() req: Request, @Param('id') id: string) {
+    return this.runs.list(req.user!, Id.parse(id));
   }
 }

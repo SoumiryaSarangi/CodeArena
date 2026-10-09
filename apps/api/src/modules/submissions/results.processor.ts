@@ -5,10 +5,11 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { Redis } from 'ioredis';
 import type { Logger } from 'pino';
 import { DB, type Db } from '../../db/db.module';
-import { customRuns, judgeRuns, submissions, testResults } from '../../db/schema';
+import { customRuns, judgeRuns, submissions, testResults, users } from '../../db/schema';
 import { REDIS } from '../../redis/redis.module';
 import { LOGGER } from '../../telemetry/logger';
 import { contextFromTraceparent, traceKey } from '../../telemetry/trace-context';
+import { roomRunView } from '../rooms/room-run';
 import { publishEvent } from '../realtime/events';
 import { QUEUE_KEY_PREFIX } from './queue.service';
 import { BoardService } from '../board/board.service';
@@ -37,6 +38,8 @@ export type Outcome =
       kind: 'applied';
       event: SubmissionVerdictData;
       contest?: ContestRef;
+      /** A run started from an interview room: everyone in it is told too (CP-04). */
+      room?: { roomId: string };
       /** For the verdict metrics; absent for custom runs. */
       stats?: { lane: string; language: string; createdAt: Date };
     }
@@ -250,6 +253,7 @@ export class ResultsProcessor {
         });
       }
       await this.publish(outcome.event);
+      if (outcome.room) await this.publishRoomRun(outcome.room.roomId, outcome.event.submissionId);
       // After the commit, so the board reads the stored verdict (C-02). Never throws.
       if (outcome.contest) {
         const { contestId, userId, versionId } = outcome.contest;
@@ -304,7 +308,7 @@ export class ResultsProcessor {
     r: JudgeResult,
   ): Promise<Outcome> {
     const [run] = await tx
-      .select({ id: customRuns.id })
+      .select({ id: customRuns.id, roomId: customRuns.roomId })
       .from(customRuns)
       .where(eq(customRuns.id, r.submissionId))
       .limit(1);
@@ -346,6 +350,7 @@ export class ResultsProcessor {
     if (updated.length === 0) return { kind: 'duplicate' };
     return {
       kind: 'applied',
+      ...(run.roomId ? { room: { roomId: run.roomId } } : {}),
       event: {
         submissionId: r.submissionId,
         runVersion: r.runVersion,
@@ -362,6 +367,40 @@ export class ResultsProcessor {
    * Tells the user (SD-§10): see `publishEvent`. Runs after the commit and only for the call that
    * stored the verdict, so replays are silent.
    */
+  /** CP-04: the finished run, as stored, to everyone in the room: they all read the same row. */
+  private async publishRoomRun(roomId: string, runId: string): Promise<void> {
+    try {
+      const [row] = await this.db
+        .select({
+          id: customRuns.id,
+          by: users.handle,
+          language: customRuns.language,
+          input: customRuns.input,
+          status: customRuns.status,
+          result: customRuns.result,
+          createdAt: customRuns.createdAt,
+        })
+        .from(customRuns)
+        .innerJoin(users, eq(users.id, customRuns.userId))
+        .where(eq(customRuns.id, runId))
+        .limit(1);
+      if (!row) return;
+      await publishEvent(
+        this.redis,
+        this.prefix,
+        this.log,
+        `room:${roomId}`,
+        'room.run',
+        roomRunView(row),
+      );
+    } catch (err) {
+      this.log.warn(
+        { roomId, runId, err: { message: (err as Error).message } },
+        'could not tell the room about a run',
+      );
+    }
+  }
+
   private async publish(data: SubmissionVerdictData): Promise<void> {
     await publishEvent(
       this.redis,

@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import { createConnection } from 'node:net';
 import { resolve } from 'node:path';
-import { stubApi } from './stub-api';
+import { emit, sseUrls, stubApi } from './stub-api';
 
 /**
  * CP-02: the real collab server (apps/collab) and the real web app in real browsers; only the REST API is stubbed.
@@ -74,7 +74,7 @@ test.afterAll(async () => {
 });
 
 let colour = 0;
-function roomJson(role: Role, status = 'open') {
+function roomJson(role: Role, status = 'open', withProblem = false) {
   const now = Date.now();
   return {
     id: ROOM,
@@ -82,7 +82,7 @@ function roomJson(role: Role, status = 'open') {
     status,
     language: 'cpp17',
     durationMin: 45,
-    problem: null,
+    problem: withProblem ? { slug: 'chai-bill', title: 'Chai Bill' } : null,
     createdAt: new Date(now - 5 * 60_000).toISOString(),
     expiresAt: new Date(now + 85 * 60_000).toISOString(),
     memberCount: 2,
@@ -100,6 +100,10 @@ async function enter(
   handle: string,
   role: Role,
   status = 'open',
+  opts: {
+    problem?: boolean;
+    runs?: (body: Record<string, unknown>) => { status: number; body: unknown };
+  } = {},
 ): Promise<Page> {
   const page = await context.newPage();
   const colorIndex = colour++ % 8;
@@ -108,9 +112,38 @@ async function enter(
     r.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(roomJson(role, status)),
+      body: JSON.stringify(roomJson(role, status, opts.problem)),
     }),
   );
+  await page.route('**/api/problems/chai-bill', (r) =>
+    r.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        slug: 'chai-bill',
+        title: 'Chai Bill',
+        statementMd: '# Chai Bill\n\nPrint the bill.\n',
+      }),
+    }),
+  );
+  // CP-04: the runs endpoint. The history is empty; a run is answered by the test's handler.
+  await page.route(`**/api/rooms/${ROOM}/runs`, (r) => {
+    if (r.request().method() === 'GET') {
+      return r.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [] }),
+      });
+    }
+    const answer = (opts.runs ?? ((b) => ({ status: 202, body: { runId: b.runId } })))(
+      r.request().postDataJSON() as Record<string, unknown>,
+    );
+    return r.fulfill({
+      status: answer.status,
+      contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
+      body: JSON.stringify(answer.body),
+    });
+  });
   await page.route('**/api/realtime/ticket', (r) => {
     const ticket = `t-${randomUUID()}`;
     tickets.set(ticket, {
@@ -361,5 +394,211 @@ test.describe('CP-02: rooms list, invite links', () => {
       'href',
       `/signin?returnTo=${encodeURIComponent(`/r/join?token=${'tok'.repeat(10)}`)}`,
     );
+  });
+});
+
+/** The room's event stream is open (the page asks for a ticket first, so it is not instant). */
+const listening = (page: Page) =>
+  expect
+    .poll(async () => decodeURIComponent((await sseUrls(page)).join(' ')), { timeout: 10_000 })
+    .toContain(`room:${ROOM}`);
+
+const view = (over: object = {}) => ({
+  runId: '88888888-8888-4888-8888-888888888881',
+  mode: 'run',
+  by: 'meera',
+  language: 'python3',
+  status: 'queued',
+  verdict: null,
+  timeMs: null,
+  memKb: null,
+  output: null,
+  stderr: null,
+  compileLog: null,
+  truncated: false,
+  tests: [],
+  createdAt: new Date().toISOString(),
+  ...over,
+});
+
+test.describe('CP-04: run and submit from the pad', () => {
+  test('FR-PAD-08: Run sends the shared code, language and input; everyone sees who ran it and the same output', async ({
+    browser,
+  }) => {
+    const sent: Record<string, unknown>[] = [];
+    const [ca, cb, cc] = [
+      await browser.newContext(),
+      await browser.newContext(),
+      await browser.newContext(),
+    ];
+    const meera = await enter(ca, 'meera', 'interviewer', 'open', {
+      runs: (b) => (sent.push(b), { status: 202, body: { runId: b.runId } }),
+    });
+    const asha = await enter(cb, 'asha', 'candidate');
+    const ravi = await enter(cc, 'ravi', 'observer');
+    for (const p of [meera, asha, ravi]) await ready(p);
+
+    // they are listening on the room's topic
+    await listening(meera);
+
+    await type(meera, 'print(42)');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('print(42)');
+    await meera.getByLabel('Input for Run').fill('21\n');
+    await meera.getByRole('button', { name: 'Run', exact: true }).click();
+    await expect.poll(() => sent.length).toBe(1);
+    expect(sent[0]).toMatchObject({
+      mode: 'run',
+      language: 'cpp17',
+      source: 'print(42)',
+      input: '21\n',
+    });
+    expect(String(sent[0]!.runId)).toMatch(/^[0-9a-f-]{36}$/);
+
+    // the server tells all three, first "waiting", then the result
+    const id = String(sent[0]!.runId);
+    for (const p of [meera, asha, ravi]) {
+      await emit(p, ROOM, 'room.run', 'e1', view({ runId: id, language: 'cpp17' }), `room:${ROOM}`);
+    }
+    for (const p of [meera, asha, ravi])
+      await expect(p.getByText('Waiting for a judge')).toBeVisible();
+    for (const p of [meera, asha, ravi]) {
+      await emit(
+        p,
+        ROOM,
+        'room.run',
+        'e2',
+        view({
+          runId: id,
+          language: 'cpp17',
+          status: 'done',
+          verdict: 'AC',
+          timeMs: 14,
+          output: '42\n',
+        }),
+        `room:${ROOM}`,
+      );
+    }
+    for (const p of [meera, asha, ravi]) {
+      const item = p
+        .getByRole('list', { name: 'Runs, newest first' })
+        .getByRole('listitem')
+        .first();
+      await expect(item).toContainText('@meera');
+      await expect(item).toContainText('ran');
+      await expect(item).toContainText('AC');
+      await expect(item).toContainText('14 ms');
+      await expect(item.getByText('42')).toBeVisible();
+      await expect(p.getByText('Waiting for a judge')).toHaveCount(0); // replaced, not duplicated
+      await expect(
+        p.getByRole('list', { name: 'Runs, newest first' }).getByRole('listitem'),
+      ).toHaveCount(1);
+    }
+    await Promise.all([ca.close(), cb.close(), cc.close()]);
+  });
+
+  test('an observer can read the output but cannot run; Submit needs a problem', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const ravi = await enter(ctx, 'ravi', 'observer');
+    await ready(ravi);
+    await expect(ravi.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
+    await expect(ravi.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    await expect(
+      ravi.getByText('you can read the output but not run code', { exact: false }),
+    ).toBeVisible();
+    await ctx.close();
+    const c2 = await browser.newContext();
+    const meera = await enter(c2, 'meera', 'interviewer');
+    await ready(meera);
+    await expect(meera.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
+    await expect(meera.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    await expect(meera.getByText('this room has none attached', { exact: false })).toBeVisible();
+    await c2.close();
+  });
+
+  test('Submit (with a problem) sends no input and shows per-test verdicts', async ({
+    browser,
+  }) => {
+    const sent: Record<string, unknown>[] = [];
+    const ctx = await browser.newContext();
+    const asha = await enter(ctx, 'asha', 'candidate', 'open', {
+      problem: true,
+      runs: (b) => (sent.push(b), { status: 202, body: { runId: b.runId } }),
+    });
+    await ready(asha);
+    await type(asha, 'x');
+    await asha.getByRole('button', { name: 'Submit' }).click();
+    await expect.poll(() => sent.length).toBe(1);
+    await listening(asha);
+    expect(sent[0]).toMatchObject({ mode: 'submit' });
+    expect(sent[0]).not.toHaveProperty('input');
+    await emit(
+      asha,
+      ROOM,
+      'room.run',
+      'e3',
+      view({
+        runId: String(sent[0]!.runId),
+        mode: 'submit',
+        by: 'asha',
+        language: 'cpp17',
+        status: 'done',
+        verdict: 'WA',
+        timeMs: 20,
+        tests: [
+          { no: 1, verdict: 'AC', timeMs: 3 },
+          { no: 2, verdict: 'WA', timeMs: 5 },
+        ],
+      }),
+      `room:${ROOM}`,
+    );
+    const item = asha
+      .getByRole('list', { name: 'Runs, newest first' })
+      .getByRole('listitem')
+      .first();
+    await expect(item).toContainText('submitted');
+    await expect(item.getByRole('list', { name: 'Tests' })).toContainText('Test 2 WA');
+    await ctx.close();
+  });
+
+  test('a run pressed too soon says to wait, and the room can try again', async ({ browser }) => {
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer', 'open', {
+      runs: () => ({
+        status: 429,
+        body: {
+          title: 'Too many requests',
+          status: 429,
+          code: 'rate-limited',
+          detail: 'One run every 2 seconds per room',
+        },
+      }),
+    });
+    await ready(meera);
+    await meera.getByRole('button', { name: 'Run', exact: true }).click();
+    await expect(
+      meera.getByText('One run every 2 seconds in this room', { exact: false }),
+    ).toBeVisible();
+    await expect(meera.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
+    await ctx.close();
+  });
+
+  test('the output panel is accessible', async ({ browser }) => {
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer', 'open', { problem: true });
+    await ready(meera);
+    await emit(
+      meera,
+      ROOM,
+      'room.run',
+      'e4',
+      view({ status: 'done', verdict: 'AC', timeMs: 5, output: 'hi\n', stderr: 'warn\n' }),
+      `room:${ROOM}`,
+    );
+    await expect(meera.getByText('warn')).toBeVisible();
+    const results = await new AxeBuilder({ page: meera }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await ctx.close();
   });
 });
