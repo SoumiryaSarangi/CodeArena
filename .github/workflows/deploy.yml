@@ -149,3 +149,67 @@ jobs:
           export SSH_CONFIG
           SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
           bash infra/prod/ci/deploy-judges.sh "$RUNNER_TEMP/bin/worker" "$RUNNER_TEMP/bin/node_exporter"
+
+  # PL-06: the plagiarism job. Off until the repository variable PLAG_ENABLED is "true"; it never blocks or fails the
+  # API/judge deploy (continue-on-error), and it only runs after the API deploy succeeded.
+  plag-image:
+    needs: deploy-api
+    if: vars.PLAG_ENABLED == 'true'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image name (lowercase, as registries require)
+        id: name
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-plag" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: apps/plag
+          push: true
+          tags: ${{ steps.name.outputs.name }}:${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha,scope=plag
+          cache-to: type=gha,mode=max,scope=plag
+      - name: The reference to deploy is the digest, not the tag
+        id: ref
+        run: echo "ref=${{ steps.name.outputs.name }}@${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  deploy-plag:
+    needs: plag-image
+    if: needs.plag-image.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Start the plagiarism job (puts the previous image back if it does not stay up)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          API_HOST: ${{ vars.API_HOST }}
+          API_HOST_KEY: ${{ vars.API_HOST_KEY }}
+          JUDGE_HOST_KEYS: ${{ vars.JUDGE_HOST_KEYS }}
+          PLAG_IMAGE_REF: ${{ needs.plag-image.outputs.ref }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          export SSH_CONFIG
+          SSH_CONFIG="$(bash infra/prod/ci/ssh-config.sh)"
+          bash infra/prod/ci/deploy-plag.sh

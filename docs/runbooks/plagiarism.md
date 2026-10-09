@@ -18,15 +18,23 @@ automatically** and nothing changes a score or a ranking.
 - **Compose** (`infra/prod/docker-compose.yml`, service `plag`, profile `plag`): **off unless asked for**; no database,
   Redis or storage access, read-only, 1 CPU and 2 GB at most so it cannot starve the API.
 
-## Turning it on (once, on the API VM; not done yet)
+## Turning it on (PL-06; off until you do this)
 
-1. The token. A new install already has `PLAG_SERVICE_TOKEN` in `prod.env`. An existing one:
-   `ssh codearena@<api> 'cd /opt/codearena && ./init-env.sh ensure prod PLAG_SERVICE_TOKEN $(openssl rand -hex 24)'`
-   then restart the API (`docker compose ... up -d --force-recreate api`) so it reads it.
-2. The image: build `apps/plag` (about 4 GB with the model; a few minutes), push it somewhere the VM can pull from, or build
-   it on the VM. Deploying it through the pipeline is not set up (a follow-up).
-3. Start it: `PLAG_IMAGE=<image> docker compose --env-file prod.env --profile plag up -d plag`. `docker compose logs -f plag`
-   prints each run ("run <id>: done").
+The pipeline does it. Set the repository variable `PLAG_ENABLED` to `true` (Settings → Secrets and variables → Actions →
+Variables, or `gh variable set PLAG_ENABLED --body true`). From the next deploy of `main`, after the API deploy has
+succeeded, two extra jobs run:
+
+1. `plag-image` builds `apps/plag` (about 4 GB with the model; the first build takes several minutes, later ones use the
+   cache) and pushes `ghcr.io/<owner>/codearena-plag:<sha>`.
+2. `deploy-plag` runs `infra/prod/deploy-plag.sh` on the API VM: adds `PLAG_SERVICE_TOKEN` to `prod.env` if it is missing
+   (and recreates the API once so it reads it), pulls the image by digest, starts the `plag` service, waits 20 s and checks
+   it is still running. If not, the previous image is put back (or the job is stopped when there was none).
+
+Both jobs are `continue-on-error` and nothing waits for them: a failure here never fails or rolls back an API or judge
+deploy. Do not turn it on the day of a contest (the first run pulls 4 GB and uses 1 CPU / 2 GB on the API VM).
+To turn it off: set `PLAG_ENABLED` to `false`; to stop the running job:
+`ssh codearena@<api> 'cd /opt/codearena && docker compose --env-file prod.env --profile plag stop plag'`.
+`docker compose --env-file prod.env --profile plag logs -f plag` prints each run ("run <id>: done").
 
 ## Running a check
 

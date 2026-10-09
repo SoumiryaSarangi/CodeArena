@@ -1077,3 +1077,10 @@ Not done on purpose (touching the deploy pipeline the day before the contest is 
 Follow-up **PL-06 (deploy the plag job):** CI builds and pushes the image (about 4 GB, mostly the model), `deploy.sh` runs it under the `plag` profile and checks it polls, `ensure`s the token, a restart policy test on the VM.
 Ayush must: nothing before Saturday. After the contest (when you want a check): the three steps of the runbook (token, image, start), or ask me to do PL-06 first.
 Model: S · Sonnet 5.5 (via opusplan)
+
+## 2026-10-09 · PL-06 · done (deploy of the plag job; off until PLAG_ENABLED=true)
+Built: workflow jobs `plag-image` (builds and pushes `codearena-plag:<sha>` from `apps/plag`, gha cache, 45 min) and `deploy-plag`, both gated by the repository variable `PLAG_ENABLED`, `continue-on-error`, after `deploy-api`, and needed by nothing else (a plag failure cannot fail or roll back the API/judge deploy). `infra/prod/ci/deploy-plag.sh` (registry login by stdin, logout afterwards) and server-side `infra/prod/deploy-plag.sh`: digest-pinned only, ensures the token (recreates the API once if it was added), pulls, `up -d --no-deps plag`, checks it stays up, otherwise restores the previous image or stops the job; state in `state/plag-current`. It never touches caddy, Postgres or migrations. Runbook updated. Also caught and fixed in f2f61ac (before this card): PL-05's Compose change would have broken every deploy (required variables evaluated for inactive profiles); a test now renders the real file like a deploy.
+Tests: `plag-deploy.test.sh` 23 checks (digest-only, first start, old install without token, crash with and without a previous image, failed pull, token by stdin only, logout on failure, the workflow stays gated, non-blocking and unreferenced); the existing infra tests (ci 36, deploy 34, compose, env) still pass; CI runs every `tests/*.test.sh`.
+Not done: the real run (needs `PLAG_ENABLED`, a 4 GB build and a pull on the VM; not before Saturday's contest).
+Ayush must: nothing now. After the contest: `gh variable set PLAG_ENABLED --body true`, then merge/dispatch a deploy and watch the two jobs.
+Model: S · Sonnet 5.5 (via opusplan)
