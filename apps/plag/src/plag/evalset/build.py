@@ -18,9 +18,13 @@ from ..stage_a import boilerplate_hashes, fingerprint_set
 from .transforms import RECIPES, apply
 
 ORIGINALS = {"cpp17": "main.cpp", "python3": "alt.py"}
-#: Boilerplate is judged on the independent work plus the original: a contest's copies are a small share of its
-#: submissions, whereas a pool made mostly of copies of one program would turn that program into "boilerplate".
-MIN_BACKGROUND = 4
+#: Boilerplate is judged on the background programs of a whole language (the originals and the independent solutions,
+#: never the copies): a fingerprint in more than 30 % of them is an idiom every program has (an input loop, `int main`
+#: scaffolding). A per-problem rule is deliberately NOT used here: a problem has only 3 to 5 background programs in this
+#: set, so any fingerprint two independent solutions share would already be "common" and be removed, which would erase
+#: exactly the evidence that produces false positives and inflate the precision. Without it the eval is conservative:
+#: a real contest also drops what its own submissions share, which can only make independent work look less alike.
+MIN_LANGUAGE_BACKGROUND = 5
 
 
 @dataclass(frozen=True)
@@ -47,6 +51,8 @@ class PairRow:
     emb: float
     len_ratio: float
     label: bool
+    #: The two programs normalise to exactly the same tokens (independent solutions that converged on one program).
+    same_tokens: bool = False
 
 
 def build_pool(
@@ -77,11 +83,18 @@ def _kind(a: Doc, b: Doc) -> tuple[str, bool]:
     return "-".join(kinds), label
 
 
-def pair_rows(docs: Sequence[Doc], embedder: Embedder) -> list[PairRow]:
+def language_boilerplate(pools: Sequence[Sequence[Doc]]) -> frozenset[int]:
+    """Fingerprints in more than 30 % of all the background (original and independent) programs of a language:
+    input loops, `ios::sync_with_stdio`, `int main()` scaffolding. Real contests find these in the problem's own
+    submissions; here a problem has too few to say, so the whole language stands in for them."""
+    sets = [fingerprint_set(d.source, d.language) for pool in pools for d in pool if d.kind != "variant"]
+    return boilerplate_hashes(sets, minimum=MIN_LANGUAGE_BACKGROUND)
+
+
+def pair_rows(docs: Sequence[Doc], embedder: Embedder, extra_ignore: frozenset[int] = frozenset()) -> list[PairRow]:
     """Every pair in the pool, with its Stage A containment, embedding cosine and length ratio."""
     sets = {d.id: fingerprint_set(d.source, d.language) for d in docs}
-    background = [sets[d.id] for d in docs if d.kind != "variant"]
-    ignore = boilerplate_hashes(background, minimum=MIN_BACKGROUND)
+    ignore = extra_ignore
     kept = {k: {h: p for h, p in s.items() if h not in ignore} for k, s in sets.items()}
     norm = {d.id: normalise(d.source, d.language) for d in docs}
     vectors = embedder.embed([norm[d.id].text for d in docs])
@@ -121,15 +134,26 @@ def build_rows(
 ) -> list[PairRow]:
     rows: list[PairRow] = []
     for lang, filename in ORIGINALS.items():
+        pools = []
         for sol in sorted(problems_root.glob(f"*/solutions/{filename}")):
             slug = sol.parent.parent.name
             ind = [i["source"] for i in independents if i["slug"] == slug and i["language"] == lang]
-            rows.extend(pair_rows(build_pool(slug, lang, sol.read_text(), ind, seed), embedder))
+            pools.append(build_pool(slug, lang, sol.read_text(), ind, seed))
+        common = language_boilerplate(pools)
+        for pool in pools:
+            rows.extend(pair_rows(pool, embedder, common))
     return rows
 
 
 def to_json(rows: Sequence[PairRow]) -> list[dict[str, object]]:
-    return [asdict(r) for r in rows]
+    """Rows as JSON; the scores are rounded to 6 decimals so the stored file is small and re-derivable exactly."""
+    out = []
+    for r in rows:
+        d = asdict(r)
+        for k in ("fp", "emb", "len_ratio"):
+            d[k] = round(float(d[k]), 6)
+        out.append(d)
+    return out
 
 
 def from_json(data: Sequence[dict[str, object]]) -> list[PairRow]:

@@ -77,7 +77,7 @@ def test_payload_matches_the_api_columns():
         "11111111-1111-4111-8111-111111111111",
         "22222222-2222-4222-8222-222222222222",
     ]
-    assert p["params"]["combiner"]["threshold"] == 0.5 and p["params"]["embed_on"] == "normalised"
+    assert p["params"]["combiner"]["threshold"] == DEFAULT.threshold and p["params"]["embed_on"] == "normalised"
     json.dumps(p)  # serialisable as it is
 
 

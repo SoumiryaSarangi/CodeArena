@@ -69,6 +69,9 @@ class Summary:
     recall_by_recipe: dict[str, dict[str, float | int]]
     hard_negatives: dict[str, float]
     chance: float
+    #: Negative pairs that are the same program once normalised (independent solutions that converged), and how many of
+    #: the A + B false positives they account for: no detector can tell those from a copy.
+    converged: dict[str, int]
 
 
 def cross_validate(rows: Sequence[PairRow], min_precision: float = 0.9) -> Summary:
@@ -108,6 +111,7 @@ def cross_validate(rows: Sequence[PairRow], min_precision: float = 0.9) -> Summa
         "emb mean": sum(r.emb for r in ind) / len(ind) if ind else 0.0,
         "emb max": max((r.emb for r in ind), default=0.0),
     }
+    converged_pairs = [h for h in held if not h[0].label and h[0].same_tokens]
     return Summary(
         pairs=len(held),
         positives=sum(labels),
@@ -120,6 +124,12 @@ def cross_validate(rows: Sequence[PairRow], min_precision: float = 0.9) -> Summa
         recall_by_recipe=recall,
         hard_negatives=hard,
         chance=sum(labels) / len(labels) if labels else 0.0,
+        converged={
+            "pairs": len(converged_pairs),
+            "flagged_by_stage_a": sum(1 for h in converged_pairs if h[2]),
+            "flagged_by_a_plus_b": sum(1 for h in converged_pairs if h[3]),
+            "a_plus_b_false_positives": sum(1 for h in held if not h[0].label and h[3]),
+        },
     )
 
 

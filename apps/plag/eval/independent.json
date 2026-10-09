@@ -1,0 +1,626 @@
+[
+ {
+  "slug": "budget-windows",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    long long S;\n    if(!(cin>>n>>S)) return 0;\n    vector<int>a(n);\n    for(int i=0;i<n;i++)cin>>a[i];\n    long long ans=0, sum=0;\n    int r=0;\n    for(int l=0;l<n;l++){\n        while(r<n && sum + a[r] <= S){\n            sum+=a[r];\n            ++r;\n        }\n        ans += r - l;          // subarrays starting at l and ending before r\n        sum -= a[l];           // move left border\n    }\n    cout<<ans<<\"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    long long S;\n    if (!(cin >> n >> S)) return 0;\n    vector<int> a(n);\n    for (int &x : a) cin >> x;\n\n    long long answer = 0;\n    long long curSum = 0;\n    int left = 0; // 0‑based index\n\n    for (int right = 0; right < n; ++right) {\n        curSum += a[right];\n        while (curSum > S && left <= right) {\n            curSum -= a[left];\n            ++left;\n        }\n        // now sum of [left, right] <= S\n        answer += (right - left + 1);\n    }\n\n    cout << answer << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    long long S;\n    if (!(cin >> n >> S)) return 0;\n    vector<int> a(n);\n    for (int &x : a) cin >> x;\n    long long ans = 0;\n    long long cur = 0;\n    int r = 0;\n    for (int l = 0; l < n; ++l) {\n        while (r < n && cur + a[r] <= S) {\n            cur += a[r];\n            ++r;\n        }\n        // window [l, r-1] is the maximal with sum <= S\n        ans += (r - l);\n        // move left bound forward\n        if (r == l) {\n            // cannot include a[l], move both pointers\n            ++r;\n        } else {\n            cur -= a[l];\n        }\n    }\n    cout << ans << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    S = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n\n    left = 0\n    cur = 0\n    ans = 0\n    for right in range(n):\n        cur += a[right]\n        while cur > S:\n            cur -= a[left]\n            left += 1\n        ans += right - left + 1   # all subarrays ending at right starting from left..right\n    print(ans)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\n\ndef main() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    S = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n\n    left = 0               # 0‑based index of window start\n    current_sum = 0\n    answer = 0\n\n    for right in range(n):\n        current_sum += a[right]\n\n        while current_sum > S:\n            current_sum -= a[left]\n            left += 1\n\n        # windows [left .. right], [left+1 .. right], ..., [right .. right]\n        answer += right - left + 1\n\n    print(answer)\n\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "python3",
+  "persona": 2,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    S = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n\n    left = 0\n    cur_sum = 0\n    ans = 0\n    for right in range(n):\n        cur_sum += a[right]\n        while cur_sum > S and left <= right:\n            cur_sum -= a[left]\n            left += 1\n        ans += (right - left + 1)\n    print(ans)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "budget-windows",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    S = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n\n    total = 0\n    cur_sum = 0\n    r = 0\n    for l in range(n):\n        while r < n and cur_sum + a[r] <= S:\n            cur_sum += a[r]\n            r += 1\n        # windows starting at l and ending before r are valid\n        total += r - l\n        # move left bound forward\n        if r > l:\n            cur_sum -= a[l]\n        else:\n            # r == l, need to advance both\n            r = l + 1\n    print(total)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n,m;\n    if(!(cin>>n>>m))return 0;\n    vector<vector<pair<int,int>>> g(n+1);\n    for(int i=0,u,v,w;i<m;i++){\n        cin>>u>>v>>w;\n        g[u].push_back({v,w});\n        g[v].push_back({u,w});\n    }\n    const long long INF=LLONG_MAX/4;\n    vector<long long> d(n+1,INF);\n    priority_queue<pair<long long,int>,vector<pair<long long,int>>,greater<pair<long long,int>>> pq;\n    d[1]=0; pq.push({0,1});\n    while(!pq.empty()){\n        auto [dist,u]=pq.top();pq.pop();\n        if(dist!=d[u])continue;\n        if(u==n)break;\n        for(auto [v,w]:g[u]){\n            long long nd=dist+w;\n            if(nd<d[v]){\n                d[v]=nd;\n                pq.push({nd,v});\n            }\n        }\n    }\n    if(d[n]==INF) cout<<-1<<\"\\n\";\n    else cout<<d[n]<<\"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Long long type for large distances\nusing ll = long long;\n\n// Edge representation\nstruct Edge {\n    int to;     // destination town\n    int weight; // cost of the road\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n\n    vector<vector<Edge>> graph(n + 1); // 1-indexed\n\n    for (int i = 0; i < m; ++i) {\n        int u, v, w;\n        cin >> u >> v >> w;\n        graph[u].push_back({v, w});\n        graph[v].push_back({u, w}); // undirected road\n    }\n\n    const ll INF = 4e18;          // sufficiently large\n    vector<ll> dist(n + 1, INF);  // shortest known distance from town 1\n    priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<>> pq;\n\n    dist[1] = 0;\n    pq.push({0, 1});\n\n    while (!pq.empty()) {\n        auto [d, u] = pq.top();\n        pq.pop();\n        if (d != dist[u]) continue;          // outdated entry\n\n        for (const auto& e : graph[u]) {\n            int v = e.to;\n            ll nd = d + e.weight;\n            if (nd < dist[v]) {\n                dist[v] = nd;\n                pq.push({nd, v});\n            }\n        }\n    }\n\n    if (dist[n] == INF) cout << -1 << '\\n';\n    else cout << dist[n] << '\\n';\n\n    return 0;\n}"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    vector<vector<pair<int,int>>> g(n+1);\n    for (int i = 0; i < m; ++i) {\n        int u,v,w;\n        cin >> u >> v >> w;\n        g[u].push_back({v,w});\n        g[v].push_back({u,w});\n    }\n    const long long INF = (1LL<<62);\n    vector<long long> dist(n+1, INF);\n    priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<pair<long long,int>>> pq;\n    dist[1] = 0;\n    pq.push({0,1});\n    while (!pq.empty()){\n        auto [d,u] = pq.top(); pq.pop();\n        if (d!=dist[u]) continue;\n        if (u==n) break;\n        for (auto [v,w]: g[u]){\n            long long nd = d + w;\n            if (nd < dist[v]){\n                dist[v] = nd;\n                pq.push({nd,v});\n            }\n        }\n    }\n    if (dist[n]==INF) cout << -1 << \"\\n\";\n    else cout << dist[n] << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    vector<vector<pair<int,int>>> adj(n + 1);\n    for (int i = 0; i < m; ++i) {\n        int u, v, w;\n        cin >> u >> v >> w;\n        adj[u].push_back({v, w});\n        adj[v].push_back({u, w});\n    }\n\n    const long long INF = LLONG_MAX / 4;\n    vector<long long> dist(n + 1, INF);\n    priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<pair<long long,int>>> pq;\n    dist[1] = 0;\n    pq.push({0, 1});\n\n    while (!pq.empty()) {\n        auto [d, u] = pq.top();\n        pq.pop();\n        if (d != dist[u]) continue;\n        if (u == n) break;\n        for (auto [v, w] : adj[u]) {\n            long long nd = d + w;\n            if (nd < dist[v]) {\n                dist[v] = nd;\n                pq.push({nd, v});\n            }\n        }\n    }\n\n    if (dist[n] == INF) cout << -1 << '\\n';\n    else cout << dist[n] << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys, heapq\n\ndef solve() -> None:\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it)); m = int(next(it))\n    g = [[] for _ in range(n + 1)]\n    for _ in range(m):\n        u = int(next(it)); v = int(next(it)); w = int(next(it))\n        g[u].append((v, w))\n        g[v].append((u, w))\n    INF = 10**18\n    dist = [INF] * (n + 1)\n    dist[1] = 0\n    h = [(0, 1)]\n    while h:\n        d, u = heapq.heappop(h)\n        if d != dist[u]:\n            continue\n        if u == n:\n            break\n        for v, w in g[u]:\n            nd = d + w\n            if nd < dist[v]:\n                dist[v] = nd\n                heapq.heappush(h, (nd, v))\n    print(-1 if dist[n] == INF else dist[n])\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\nimport sys\nimport heapq\n\ndef read_input():\n    data = sys.stdin.read().strip().split()\n    it = iter(data)\n    n = int(next(it))\n    m = int(next(it))\n    adj = [[] for _ in range(n + 1)]\n    for _ in range(m):\n        u = int(next(it))\n        v = int(next(it))\n        w = int(next(it))\n        adj[u].append((v, w))\n        adj[v].append((u, w))\n    return n, adj\n\ndef dijkstra(n, adj):\n    INF = 10**19\n    dist = [INF] * (n + 1)\n    dist[1] = 0\n    heap = [(0, 1)]  # (distance, node)\n    while heap:\n        d, u = heapq.heappop(heap)\n        if d != dist[u]:\n            continue\n        if u == n:\n            return d\n        for v, w in adj[u]:\n            nd = d + w\n            if nd < dist[v]:\n                dist[v] = nd\n                heapq.heappush(heap, (nd, v))\n    return -1\n\ndef main():\n    n, adj = read_input()\n    answer = dijkstra(n, adj)\n    print(answer)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "python3",
+  "persona": 2,
+  "source": "#!/usr/bin/env python3\nimport sys\nimport heapq\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    m = int(next(it))\n    graph = [[] for _ in range(n + 1)]\n    for _ in range(m):\n        u = int(next(it)); v = int(next(it)); w = int(next(it))\n        graph[u].append((v, w))\n        graph[v].append((u, w))\n\n    INF = 10**18\n    dist = [INF] * (n + 1)\n    dist[1] = 0\n    pq = [(0, 1)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        if d != dist[u]:\n            continue\n        if u == n:\n            break\n        for v, w in graph[u]:\n            nd = d + w\n            if nd < dist[v]:\n                dist[v] = nd\n                heapq.heappush(pq, (nd, v))\n\n    print(dist[n] if dist[n] != INF else -1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "cheapest-route",
+  "language": "python3",
+  "persona": 3,
+  "source": "#!/usr/bin/env python3\nimport sys\nimport heapq\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it)); m = int(next(it))\n    adj = [[] for _ in range(n + 1)]\n    for _ in range(m):\n        u = int(next(it)); v = int(next(it)); w = int(next(it))\n        adj[u].append((v, w))\n        adj[v].append((u, w))\n\n    INF = 10**20\n    dist = [INF] * (n + 1)\n    dist[1] = 0\n    pq = [(0, 1)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        if d != dist[u]:\n            continue\n        if u == n:\n            break\n        for v, w in adj[u]:\n            nd = d + w\n            if nd < dist[v]:\n                dist[v] = nd\n                heapq.heappush(pq, (nd, v))\n\n    print(dist[n] if dist[n] != INF else -1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int q;\n    if (!(cin >> q)) return 0;\n    vector<int> xs(q);\n    int maxv = 0;\n    for (int i = 0; i < q; ++i) {\n        cin >> xs[i];\n        if (xs[i] > maxv) maxv = xs[i];\n    }\n    vector<int> divcnt(maxv + 1, 0);\n    for (int i = 1; i <= maxv; ++i) {\n        for (int j = i; j <= maxv; j += i)\n            ++divcnt[j];\n    }\n    for (int i = 0; i < q; ++i) {\n        if (i) cout << ' ';\n        cout << divcnt[xs[i]];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Compute divisor counts for all numbers up to maxVal\nvector<int> computeDivisorCounts(int maxVal) {\n    vector<int> divCnt(maxVal + 1, 0);\n    for (int i = 1; i <= maxVal; ++i) {\n        for (int j = i; j <= maxVal; j += i) {\n            ++divCnt[j];\n        }\n    }\n    return divCnt;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int q;\n    if (!(cin >> q)) return 0;\n    vector<int> queries(q);\n    int maxVal = 0;\n    for (int i = 0; i < q; ++i) {\n        cin >> queries[i];\n        if (queries[i] > maxVal) maxVal = queries[i];\n    }\n    \n    // Precompute divisor counts\n    vector<int> divCnt = computeDivisorCounts(maxVal);\n    \n    // Output answers\n    for (int i = 0; i < q; ++i) {\n        if (i) cout << ' ';\n        cout << divCnt[queries[i]];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int q;\n    if (!(cin >> q)) return 0;\n    vector<int> xs(q);\n    int maxv = 0;\n    for (int i = 0; i < q; ++i) {\n        cin >> xs[i];\n        if (xs[i] > maxv) maxv = xs[i];\n    }\n\n    vector<int> divcnt(maxv + 1, 0);\n    for (int i = 1; i <= maxv; ++i) {\n        for (int j = i; j <= maxv; j += i)\n            ++divcnt[j];\n    }\n\n    for (int i = 0; i < q; ++i) {\n        if (i) cout << ' ';\n        cout << divcnt[xs[i]];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int q;\n    if (!(cin >> q)) return 0;\n    vector<int> xs(q);\n    int maxv = 0;\n    for (int i = 0; i < q; ++i) {\n        cin >> xs[i];\n        maxv = max(maxv, xs[i]);\n    }\n    \n    vector<int> divcnt(maxv + 1, 0);\n    for (int i = 1; i <= maxv; ++i) {\n        for (int j = i; j <= maxv; j += i)\n            ++divcnt[j];\n    }\n    \n    for (int i = 0; i < q; ++i) {\n        if (i) cout << ' ';\n        cout << divcnt[xs[i]];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "python3",
+  "persona": 0,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    q = int(data[0])\n    xs = list(map(int, data[1:1+q]))\n    max_x = max(xs)\n    div_cnt = [0]*(max_x+1)\n    for i in range(1, max_x+1):\n        for j in range(i, max_x+1, i):\n            div_cnt[j] += 1\n    out = ' '.join(str(div_cnt[x]) for x in xs)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    q = int(data[0])\n    nums = list(map(int, data[1:1+q]))\n    max_val = max(nums)\n\n    # divisor count array, 1-indexed\n    div_count = [0] * (max_val + 1)\n    div_count[0] = 0  # unused\n\n    # Sieve-like approach to count divisors\n    for i in range(1, max_val + 1):\n        for j in range(i, max_val + 1, i):\n            div_count[j] += 1\n\n    # Prepare output\n    out = ' '.join(str(div_count[x]) for x in nums)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    q = int(data[0])\n    nums = list(map(int, data[1:1+q]))\n    max_n = max(nums)\n    divcnt = [0] * (max_n + 1)\n    for i in range(1, max_n + 1):\n        for j in range(i, max_n + 1, i):\n            divcnt[j] += 1\n    out = ' '.join(str(divcnt[x]) for x in nums)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "divisor-census",
+  "language": "python3",
+  "persona": 3,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = list(map(int, sys.stdin.read().split()))\n    if not data:\n        return\n    q = data[0]\n    xs = data[1:1+q]\n    max_x = max(xs)\n    divcnt = [0] * (max_x + 1)\n    for i in range(1, max_x + 1):\n        step = i\n        for j in range(i, max_x + 1, step):\n            divcnt[j] += 1\n    out = ' '.join(str(divcnt[x]) for x in xs)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Item {\n    long long w, v;\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    long long W;\n    if (!(cin >> n >> W)) return 0;\n    vector<Item> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i].w >> a[i].v;\n    sort(a.begin(), a.end(), [](const Item& x, const Item& y) {\n        return (__int128)x.v * y.w > (__int128)y.v * x.w;\n    });\n    long long remaining = W;\n    long double total = 0.0L;\n    for (const auto& it : a) {\n        if (!remaining) break;\n        long long take = min(remaining, it.w);\n        total += (long double)take * it.v / it.w;\n        remaining -= take;\n    }\n    cout.setf(ios::fixed); cout << setprecision(10) << (double)total << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Item {\n    long long w, v;\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    long long W;\n    if (!(cin >> n >> W)) return 0;\n    vector<Item> items(n);\n    for (int i = 0; i < n; ++i) {\n        cin >> items[i].w >> items[i].v;\n    }\n    \n    // Sort by decreasing value density v / w\n    sort(items.begin(), items.end(), [](const Item& a, const Item& b) {\n        // compare a.v / a.w > b.v / b.w -> a.v * b.w > b.v * a.w\n        return (__int128)a.v * b.w > (__int128)b.v * a.w;\n    });\n    \n    double totalValue = 0.0;\n    long long remaining = W;\n    \n    for (const auto& it : items) {\n        if (remaining == 0) break;\n        long long take = min<long long>(remaining, it.w);\n        totalValue += (double)take * it.v / it.w;\n        remaining -= take;\n    }\n    \n    cout.setf(ios::fixed);\n    cout << setprecision(10) << totalValue << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    long long W;\n    if (!(cin >> n >> W)) return 0;\n    struct Item { long long w, v; double ratio; };\n    vector<Item> items;\n    items.reserve(n);\n    for (int i = 0; i < n; ++i) {\n        long long w, v;\n        cin >> w >> v;\n        items.push_back({w, v, double(v) / w});\n    }\n    sort(items.begin(), items.end(), [](const Item& a, const Item& b){\n        return a.ratio > b.ratio;\n    });\n    long long remaining = W;\n    double total = 0.0;\n    for (const auto& it : items) {\n        if (remaining == 0) break;\n        long long take = min(remaining, it.w);\n        total += it.ratio * take;\n        remaining -= take;\n    }\n    cout.setf(ios::fixed); cout << setprecision(10) << total << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Item {\n    long long w;\n    long long v;\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    long long W;\n    if (!(cin >> n >> W)) return 0;\n    vector<Item> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i].w >> a[i].v;\n    sort(a.begin(), a.end(), [](const Item& a, const Item& b){\n        long double va = (long double)a.v / a.w;\n        long double vb = (long double)b.v / b.w;\n        return va > vb;\n    });\n    long double remaining = W;\n    long double total = 0.0;\n    for (const auto& it : a) {\n        if (remaining <= 0) break;\n        long double take = min((long double)it.w, remaining);\n        total += take * ((long double)it.v / it.w);\n        remaining -= take;\n    }\n    cout.setf(ios::fixed);\n    cout << setprecision(10) << (double)total << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    W = int(next(it))\n    items = []\n    for _ in range(n):\n        w = int(next(it))\n        v = int(next(it))\n        items.append((v / w, w, v))  # ratio, weight, value\n    items.sort(key=lambda x: x[0], reverse=True)\n\n    total_value = 0.0\n    remaining = W\n    for ratio, w, v in items:\n        if remaining <= 0:\n            break\n        take = min(remaining, w)\n        total_value += take * ratio\n        remaining -= take\n    print(f\"{total_value:.10f}\")\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    W = int(next(it))\n    items = []\n    for _ in range(n):\n        w = int(next(it))\n        v = int(next(it))\n        items.append((v / w, w, v))  # store ratio, weight, value\n\n    # sort by descending value-to-weight ratio\n    items.sort(key=lambda x: x[0], reverse=True)\n\n    remaining = W\n    total_value = 0.0\n    for ratio, w, v in items:\n        if remaining <= 0:\n            break\n        take = min(remaining, w)\n        total_value += take * ratio\n        remaining -= take\n\n    # print with sufficient precision\n    print(f\"{total_value:.10f}\")\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    W = int(next(it))\n    items = []\n    for _ in range(n):\n        w = int(next(it))\n        v = int(next(it))\n        items.append((v / w, w, v))   # (ratio, weight, value)\n\n    items.sort(key=lambda x: x[0], reverse=True)\n\n    remaining = W\n    total_value = 0.0\n    for ratio, w, v in items:\n        if remaining <= 0:\n            break\n        take = w if w <= remaining else remaining\n        total_value += ratio * take\n        remaining -= take\n\n    # output with sufficient precision\n    print(\"{:.10f}\".format(total_value))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "fractional-loot",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    W = int(next(it))\n    items = []\n    for _ in range(n):\n        w = int(next(it))\n        v = int(next(it))\n        items.append((v / w, w, v))\n    items.sort(key=lambda x: x[0], reverse=True)\n\n    remain = W\n    total = 0.0\n    for ratio, w, v in items:\n        if remain == 0:\n            break\n        take = w if w <= remain else remain\n        total += ratio * take\n        remain -= take\n\n    # Print with enough precision\n    sys.stdout.write(f\"{total:.10f}\")\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "hall-of-fame",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    vector<pair<string, int>> v;\n    v.reserve(n);\n    for (int i = 0; i < n; ++i) {\n        string name;\n        int score;\n        cin >> name >> score;\n        v.emplace_back(name, score);\n    }\n    \n    sort(v.begin(), v.end(), [](const auto& a, const auto& b) {\n        if (a.second != b.second) return a.second > b.second; // higher score first\n        return a.first < b.first; // alphabetical\n    });\n    \n    for (const auto& p : v) {\n        cout << p.first << ' ' << p.second << '\\n';\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "hall-of-fame",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\n\ndef read_input() -> list:\n    \"\"\"Read all lines from stdin and return a list of (name, score) tuples.\"\"\"\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return []\n    n = int(data[0])\n    entries = []\n    for line in data[1:n+1]:\n        name, score_str = line.split()\n        entries.append((name, int(score_str)))\n    return entries\n\ndef sort_leaderboard(entries: list) -> list:\n    \"\"\"Return entries sorted by descending score, then ascending name.\"\"\"\n    return sorted(entries, key=lambda item: (-item[1], item[0]))\n\ndef solve() -> None:\n    entries = read_input()\n    sorted_entries = sort_leaderboard(entries)\n    out_lines = [f\"{name} {score}\" for name, score in sorted_entries]\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "hall-of-fame",
+  "language": "python3",
+  "persona": 3,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    n = int(data[0])\n    entries = []\n    idx = 1\n    for _ in range(n):\n        name = data[idx]\n        score = int(data[idx + 1])\n        entries.append((name, score))\n        idx += 2\n    entries.sort(key=lambda x: (-x[1], x[0]))\n    out_lines = [f\"{name} {score}\" for name, score in entries]\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "hop-distances",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    \n    vector<vector<int>> adj(n + 1);\n    for (int i = 0; i < m; ++i) {\n        int u, v;\n        cin >> u >> v;\n        if (u < 1 || u > n || v < 1 || v > n) continue; // safety, though constraints guarantee valid\n        adj[u].push_back(v);\n        if (u != v) adj[v].push_back(u); // avoid double for self-loop\n    }\n    \n    vector<int> dist(n + 1, -1);\n    queue<int> q;\n    dist[1] = 0;\n    q.push(1);\n    \n    while (!q.empty()) {\n        int cur = q.front();\n        q.pop();\n        for (int nxt : adj[cur]) {\n            if (dist[nxt] == -1) {\n                dist[nxt] = dist[cur] + 1;\n                q.push(nxt);\n            }\n        }\n    }\n    \n    for (int i = 1; i <= n; ++i) {\n        if (i > 1) cout << ' ';\n        cout << dist[i];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "hop-distances",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    vector<vector<int>> g(n + 1);\n    for (int i = 0; i < m; ++i) {\n        int u, v;\n        cin >> u >> v;\n        g[u].push_back(v);\n        g[v].push_back(u);\n    }\n    \n    vector<int> dist(n + 1, -1);\n    queue<int> q;\n    dist[1] = 0;\n    q.push(1);\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        for (int v : g[u]) {\n            if (dist[v] == -1) {\n                dist[v] = dist[u] + 1;\n                q.push(v);\n            }\n        }\n    }\n    \n    for (int i = 1; i <= n; ++i) {\n        if (i > 1) cout << ' ';\n        cout << dist[i];\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "hop-distances",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\nfrom collections import deque\n\ndef read_input() -> tuple[int, int, list[tuple[int, int]]]:\n    \"\"\"Read the whole input and return n, m and the list of edges.\"\"\"\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return 0, 0, []\n    it = iter(data)\n    n = int(next(it))\n    m = int(next(it))\n    edges = []\n    for _ in range(m):\n        u = int(next(it))\n        v = int(next(it))\n        edges.append((u, v))\n    return n, m, edges\n\ndef build_adjacency_list(n: int, edges: list[tuple[int, int]]) -> list[list[int]]:\n    \"\"\"Create an adjacency list for an undirected graph.\"\"\"\n    adjacency = [[] for _ in range(n + 1)]  # 1‑based indexing\n    for u, v in edges:\n        adjacency[u].append(v)\n        if u != v:                     # avoid adding the same entry twice for self‑loops\n            adjacency[v].append(u)\n    return adjacency\n\ndef bfs_shortest_hops(n: int, adjacency: list[list[int]]) -> list[int]:\n    \"\"\"Return a list where result[i] is the minimum number of hops from node 1 to i,\n    or -1 if i is unreachable.\"\"\"\n    distance = [-1] * (n + 1)\n    distance[1] = 0\n    queue = deque([1])\n\n    while queue:\n        current = queue.popleft()\n        current_dist = distance[current]\n        for neighbor in adjacency[current]:\n            if distance[neighbor] == -1:          # not visited yet\n                distance[neighbor] = current_dist + 1\n                queue.append(neighbor)\n\n    return distance\n\ndef main() -> None:\n    n, m, edges = read_input()\n    if n == 0:      # no data\n        return\n    adjacency = build_adjacency_list(n, edges)\n    distances = bfs_shortest_hops(n, adjacency)\n\n    # Skip index 0 to output distances for computers 1..n\n    output = ' '.join(str(distances[i]) for i in range(1, n + 1))\n    sys.stdout.write(output)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "hop-distances",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\nfrom collections import deque\n\ndef solve() -> None:\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    m = int(next(it))\n    adj = [[] for _ in range(n + 1)]\n    for _ in range(m):\n        u = int(next(it))\n        v = int(next(it))\n        adj[u].append(v)\n        adj[v].append(u)\n\n    dist = [-1] * (n + 1)\n    q = deque([1])\n    dist[1] = 0\n    while q:\n        u = q.popleft()\n        du = dist[u] + 1\n        for v in adj[u]:\n            if dist[v] == -1:\n                dist[v] = du\n                q.append(v)\n\n    out = ' '.join(str(dist[i]) if dist[i] != -1 else '-1' for i in range(1, n + 1))\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "matching-pair",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    long long T;\n    if (!(cin >> n >> T)) return 0;\n    vector<long long> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i];\n    \n    unordered_map<long long, int> pos; // value -> first index (0‑based)\n    pos.reserve(n * 2);\n    \n    for (int j = 0; j < n; ++j) {\n        long long need = T - a[j];\n        auto it = pos.find(need);\n        if (it != pos.end()) {\n            cout << it->second + 1 << ' ' << j + 1 << '\\n';\n            return 0;\n        }\n        // store first occurrence only\n        if (pos.find(a[j]) == pos.end())\n            pos[a[j]] = j;\n    }\n    cout << -1 << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "matching-pair",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\ndef solve():\n    data = sys.stdin.read().split()\n    if not data: \n        return\n    it = iter(data)\n    n = int(next(it)); T = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n    mp = {}\n    for idx, val in enumerate(a):\n        need = T - val\n        if need in mp:\n            print(mp[need]+1, idx+1)\n            return\n        mp[val] = idx\n    print(-1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "matching-pair",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\n\ndef find_two_banknotes(values, target_sum):\n    \"\"\"\n    Returns a tuple (i, j) with 1‑based indices such that\n    values[i-1] + values[j-1] == target_sum and i < j,\n    or None if no such pair exists.\n    \"\"\"\n    # maps a banknote value to its first occurrence index (1‑based)\n    first_position = {}\n\n    for current_index, current_value in enumerate(values, start=1):\n        needed = target_sum - current_value\n        if needed in first_position:\n            # we have already seen the complement\n            return first_position[needed], current_index\n        # store only the first occurrence; later duplicates are not needed\n        if current_value not in first_position:\n            first_position[current_value] = current_index\n\n    return None\n\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    n = int(data[0])\n    target = int(data[1])\n    a = list(map(int, data[2:2 + n]))\n\n    result = find_two_banknotes(a, target)\n    if result is None:\n        sys.stdout.write(\"-1\")\n    else:\n        i, j = result\n        sys.stdout.write(f\"{i} {j}\")\n\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "matching-pair",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    T = int(next(it))\n    a = [int(next(it)) for _ in range(n)]\n\n    # Map value -> first index (1‑based) where it appears\n    seen = {}\n    for idx, val in enumerate(a, 1):\n        need = T - val\n        if need in seen:\n            # found a pair: earlier index must be smaller\n            i = seen[need]\n            j = idx\n            if i < j:\n                print(i, j)\n            else:\n                print(j, i)\n            return\n        # store only if not already present to keep earliest index\n        if val not in seen:\n            seen[val] = idx\n\n    print(-1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "matching-pair",
+  "language": "python3",
+  "persona": 3,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    n = int(data[0])\n    T = int(data[1])\n    a = list(map(int, data[2:2 + n]))\n    pos = {}\n    for idx, val in enumerate(a):\n        need = T - val\n        if need in pos:\n            # pos[need] is earlier index\n            print(pos[need] + 1, idx + 1)\n            return\n        # store only the first occurrence to keep i < j\n        if val not in pos:\n            pos[val] = idx\n    print(-1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "maze-runner",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    vector<string> g(n);\n    for (int i = 0; i < n; ++i) cin >> g[i];\n    pair<int,int> start, target;\n    for (int i = 0; i < n; ++i)\n        for (int j = 0; j < m; ++j) {\n            if (g[i][j]=='S') start={i,j};\n            if (g[i][j]=='T') target={i,j};\n        }\n    vector<vector<int>> dist(n, vector<int>(m, -1));\n    queue<pair<int,int>> q;\n    dist[start.first][start.second]=0;\n    q.push(start);\n    int dr[4]={-1,1,0,0}, dc[4]={0,0,-1,1};\n    while(!q.empty()){\n        auto [r,c]=q.front(); q.pop();\n        if (r==target.first && c==target.second) break;\n        for(int k=0;k<4;k++){\n            int nr=r+dr[k], nc=c+dc[k];\n            if(nr<0||nr>=n||nc<0||nc>=m) continue;\n            if(g[nr][nc]=='#') continue;\n            if(dist[nr][nc]!=-1) continue;\n            dist[nr][nc]=dist[r][c]+1;\n            q.push({nr,nc});\n        }\n    }\n    cout << dist[target.first][target.second] << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "maze-runner",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    vector<string> g(n);\n    for (int i = 0; i < n; ++i) cin >> g[i];\n    pair<int,int> S{-1,-1}, T{-1,-1};\n    for (int i = 0; i < n; ++i)\n        for (int j = 0; j < m; ++j) {\n            if (g[i][j] == 'S') S = {i,j};\n            else if (g[i][j] == 'T') T = {i,j};\n        }\n    const int INF = -1;\n    vector<vector<int>> dist(n, vector<int>(m, INF));\n    queue<pair<int,int>> q;\n    dist[S.first][S.second] = 0;\n    q.push(S);\n    const int dr[4] = {-1,1,0,0};\n    const int dc[4] = {0,0,-1,1};\n    while (!q.empty()) {\n        auto [r,c] = q.front(); q.pop();\n        if (r == T.first && c == T.second) break;\n        for (int k = 0; k < 4; ++k) {\n            int nr = r + dr[k], nc = c + dc[k];\n            if (nr < 0 || nr >= n || nc < 0 || nc >= m) continue;\n            if (g[nr][nc] == '#') continue;\n            if (dist[nr][nc] != INF) continue;\n            dist[nr][nc] = dist[r][c] + 1;\n            q.emplace(nr, nc);\n        }\n    }\n    cout << dist[T.first][T.second] << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "maze-runner",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\nfrom collections import deque\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    n, m = map(int, data[0].split())\n    grid = [list(line.rstrip()) for line in data[1:1+n]]\n    start = target = None\n    for i in range(n):\n        for j in range(m):\n            if grid[i][j] == 'S':\n                start = (i, j)\n            elif grid[i][j] == 'T':\n                target = (i, j)\n    q = deque()\n    q.append(start)\n    dist = [[-1]*m for _ in range(n)]\n    dist[start[0]][start[1]] = 0\n    dirs = [(1,0),(-1,0),(0,1),(0,-1)]\n    while q:\n        x, y = q.popleft()\n        if (x, y) == target:\n            print(dist[x][y])\n            return\n        for dx, dy in dirs:\n            nx, ny = x+dx, y+dy\n            if 0 <= nx < n and 0 <= ny < m and grid[nx][ny] != '#' and dist[nx][ny] == -1:\n                dist[nx][ny] = dist[x][y] + 1\n                q.append((nx, ny))\n    print(-1)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "maze-runner",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\nfrom collections import deque\n\ndef solve() -> None:\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    n, m = map(int, data[0].split())\n    grid = data[1:]\n    start = end = None\n    for i in range(n):\n        row = grid[i]\n        for j, ch in enumerate(row):\n            if ch == 'S':\n                start = (i, j)\n            elif ch == 'T':\n                end = (i, j)\n    # BFS\n    INF = -1\n    dist = [[INF] * m for _ in range(n)]\n    q = deque()\n    si, sj = start\n    dist[si][sj] = 0\n    q.append((si, sj))\n    dirs = [(1,0), (-1,0), (0,1), (0,-1)]\n    while q:\n        i, j = q.popleft()\n        if (i, j) == end:\n            break\n        d = dist[i][j] + 1\n        for di, dj in dirs:\n            ni, nj = i + di, j + dj\n            if 0 <= ni < n and 0 <= nj < m:\n                if grid[ni][nj] != '#' and dist[ni][nj] == INF:\n                    dist[ni][nj] = d\n                    q.append((ni, nj))\n    ei, ej = end\n    print(dist[ei][ej])\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "maze-runner",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\nfrom collections import deque\n\ndef solve() -> None:\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    n, m = map(int, data[0].split())\n    grid = data[1:]\n    start = target = None\n    for i in range(n):\n        for j, ch in enumerate(grid[i]):\n            if ch == 'S':\n                start = (i, j)\n            elif ch == 'T':\n                target = (i, j)\n\n    dist = [[-1] * m for _ in range(n)]\n    q = deque([start])\n    dist[start[0]][start[1]] = 0\n    dirs = [(-1,0),(1,0),(0,-1),(0,1)]\n    while q:\n        x, y = q.popleft()\n        if (x, y) == target:\n            break\n        d = dist[x][y] + 1\n        for dx, dy in dirs:\n            nx, ny = x+dx, y+dy\n            if 0 <= nx < n and 0 <= ny < m and grid[nx][ny] != '#' and dist[nx][ny] == -1:\n                dist[nx][ny] = d\n                q.append((nx, ny))\n    print(dist[target[0]][target[1]])\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "needle-in-text",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    string t, p;\n    if (!getline(cin, t)) return 0;\n    getline(cin, p);\n    string s = p + '#' + t;\n    int n = s.size(), m = p.size();\n    vector<int> pi(n);\n    for (int i = 1; i < n; ++i) {\n        int j = pi[i-1];\n        while (j && s[i] != s[j]) j = pi[j-1];\n        if (s[i] == s[j]) ++j;\n        pi[i] = j;\n    }\n    long long ans = 0;\n    for (int i = m + 1; i < n; ++i)\n        if (pi[i] == m) ++ans;\n    cout << ans << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "needle-in-text",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef kmp_count(t, p):\n    n, m = len(t), len(p)\n    # build prefix function for pattern\n    pi = [0]*m\n    for i in range(1, m):\n        j = pi[i-1]\n        while j and p[i]!=p[j]:\n            j = pi[j-1]\n        if p[i]==p[j]:\n            j+=1\n        pi[i]=j\n    cnt=0\n    j=0\n    for i in range(n):\n        while j and t[i]!=p[j]:\n            j=pi[j-1]\n        if t[i]==p[j]:\n            j+=1\n        if j==m:\n            cnt+=1\n            j=pi[j-1]\n    return cnt\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if len(data) < 2:\n        return\n    t, p = data[0].strip(), data[1].strip()\n    print(kmp_count(t, p))\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "needle-in-text",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\n\"\"\"\nCount overlapping occurrences of a pattern in a text using the KMP algorithm.\n\"\"\"\n\nimport sys\n\ndef build_prefix_function(pattern: str) -> list[int]:\n    \"\"\"Construct the longest proper prefix which is also suffix array.\"\"\"\n    m = len(pattern)\n    pi = [0] * m\n    j = 0\n    for i in range(1, m):\n        while j > 0 and pattern[i] != pattern[j]:\n            j = pi[j - 1]\n        if pattern[i] == pattern[j]:\n            j += 1\n            pi[i] = j\n    return pi\n\ndef count_occurrences(text: str, pattern: str) -> int:\n    \"\"\"Return the number of (possibly overlapping) occurrences of pattern in text.\"\"\"\n    n, m = len(text), len(pattern)\n    if m > n:\n        return 0\n    pi = build_prefix_function(pattern)\n    count = 0\n    j = 0  # current length of matched prefix in pattern\n    for i in range(n):\n        while j > 0 and text[i] != pattern[j]:\n            j = pi[j - 1]\n        if text[i] == pattern[j]:\n            j += 1\n            if j == m:\n                count += 1\n                j = pi[j - 1]  # allow overlapping\n    return count\n\ndef main() -> None:\n    data = sys.stdin.read().splitlines()\n    if len(data) < 2:\n        return\n    text, pattern = data[0].strip(), data[1].strip()\n    result = count_occurrences(text, pattern)\n    print(result)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "needle-in-text",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef compute_prefix(p: str):\n    n = len(p)\n    pi = [0] * n\n    for i in range(1, n):\n        j = pi[i - 1]\n        while j > 0 and p[i] != p[j]:\n            j = pi[j - 1]\n        if p[i] == p[j]:\n            j += 1\n        pi[i] = j\n    return pi\n\ndef count_occurrences(t: str, p: str) -> int:\n    if len(p) > len(t):\n        return 0\n    pi = compute_prefix(p)\n    k = 0\n    ans = 0\n    for ch in t:\n        while k > 0 and ch != p[k]:\n            k = pi[k - 1]\n        if ch == p[k]:\n            k += 1\n        if k == len(p):\n            ans += 1\n            k = pi[k - 1]          # allow overlapping matches\n    return ans\n\ndef solve() -> None:\n    data = sys.stdin.read().splitlines()\n    if len(data) >= 2:\n        t = data[0].strip()\n        p = data[1].strip()\n        print(count_occurrences(t, p))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "network-islands",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct DSU {\n    vector<int> p, sz;\n    DSU(int n): p(n+1), sz(n+1,1) { iota(p.begin(), p.end(), 0); }\n    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }\n    void unite(int a,int b){\n        a=find(a); b=find(b);\n        if(a==b) return;\n        if(sz[a]<sz[b]) swap(a,b);\n        p[b]=a;\n        sz[a]+=sz[b];\n    }\n};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n,m;\n    if(!(cin>>n>>m)) return 0;\n    DSU dsu(n);\n    for(int i=0;i<m;i++){\n        int u,v; cin>>u>>v;\n        dsu.unite(u,v);\n    }\n    unordered_set<int> comps;\n    int maxsz=0;\n    for(int i=1;i<=n;i++){\n        int r=dsu.find(i);\n        comps.insert(r);\n        maxsz=max(maxsz, dsu.sz[r]);\n    }\n    cout<<comps.size()<<\" \"<<maxsz<<\"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "network-islands",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct DSU {\n    vector<int> p, sz;\n    DSU(int n = 0) { init(n); }\n    void init(int n) {\n        p.resize(n + 1);\n        sz.assign(n + 1, 1);\n        iota(p.begin(), p.end(), 0);\n    }\n    int find(int x) {\n        return p[x] == x ? x : p[x] = find(p[x]);\n    }\n    void unite(int a, int b) {\n        a = find(a);\n        b = find(b);\n        if (a == b) return;\n        if (sz[a] < sz[b]) swap(a, b);\n        p[b] = a;\n        sz[a] += sz[b];\n    }\n    int size(int x) { return sz[find(x)]; }\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, m;\n    if (!(cin >> n >> m)) return 0;\n    DSU dsu(n);\n    for (int i = 0, u, v; i < m; ++i) {\n        cin >> u >> v;\n        dsu.unite(u, v);\n    }\n    int islands = 0, largest = 0;\n    for (int i = 1; i <= n; ++i) {\n        if (dsu.find(i) == i) {\n            ++islands;\n            largest = max(largest, dsu.sz[i]);\n        }\n    }\n    cout << islands << ' ' << largest << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "network-islands",
+  "language": "python3",
+  "persona": 2,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef solve() -> None:\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    m = int(next(it))\n    parent = list(range(n + 1))\n    size = [1] * (n + 1)\n\n    def find(x: int) -> int:\n        while parent[x] != x:\n            parent[x] = parent[parent[x]]\n            x = parent[x]\n        return x\n\n    for _ in range(m):\n        u = int(next(it))\n        v = int(next(it))\n        ru, rv = find(u), find(v)\n        if ru != rv:\n            if size[ru] < size[rv]:\n                ru, rv = rv, ru\n            parent[rv] = ru\n            size[ru] += size[rv]\n\n    comps = 0\n    max_sz = 0\n    for i in range(1, n + 1):\n        if parent[i] == i:\n            comps += 1\n            if size[i] > max_sz:\n                max_sz = size[i]\n    print(comps, max_sz)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "packing-the-van",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    int n, W;\n    if (!(cin >> n >> W)) return 0;\n    vector<long long> dp(W + 1, 0);\n    for (int i = 0; i < n; ++i) {\n        int w;\n        long long v;\n        cin >> w >> v;\n        for (int j = W; j >= w; --j) {\n            dp[j] = max(dp[j], dp[j - w] + v);\n        }\n    }\n    cout << dp[W] << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "packing-the-van",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\n// A struct representing a parcel to be delivered.\nstruct Parcel {\n    int weight;\n    long long value;\n};\n\n// Reads the inputs from standard input.\nvoid read_input(int& total_parcels, int& max_van_capacity, std::vector<Parcel>& parcel_list) {\n    if (!(std::cin >> total_parcels >> max_van_capacity)) {\n        return;\n    }\n    parcel_list.resize(total_parcels);\n    for (int i = 0; i < total_parcels; ++i) {\n        std::cin >> parcel_list[i].weight >> parcel_list[i].value;\n    }\n}\n\n// Computes the maximum possible earnings using 0-1 Knapsack Dynamic Programming.\nlong long calculate_maximum_earnings(int max_van_capacity, const std::vector<Parcel>& parcel_list) {\n    // max_earnings_by_weight[w] stores the maximum value we can get with a total weight of at most w.\n    std::vector<long long> max_earnings_by_weight(max_van_capacity + 1, 0LL);\n\n    for (const auto& current_parcel : parcel_list) {\n        // We iterate backwards to ensure we only use each parcel at most once.\n        for (int current_capacity = max_van_capacity; current_capacity >= current_parcel.weight; --current_capacity) {\n            long long earnings_if_we_take_parcel = max_earnings_by_weight[current_capacity - current_parcel.weight] + current_parcel.value;\n            long long earnings_if_we_skip_parcel = max_earnings_by_weight[current_capacity];\n            \n            max_earnings_by_weight[current_capacity] = std::max(earnings_if_we_skip_parcel, earnings_if_we_take_parcel);\n        }\n    }\n\n    return max_earnings_by_weight[max_van_capacity];\n}\n\nint main() {\n    // Optimize standard I/O operations for speed.\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(NULL);\n\n    int total_parcels = 0;\n    int max_van_capacity = 0;\n    std::vector<Parcel> parcel_list;\n\n    read_input(total_parcels, max_van_capacity, parcel_list);\n\n    long long maximum_earnings = calculate_maximum_earnings(max_van_capacity, parcel_list);\n\n    std::cout << maximum_earnings << \"\\n\";\n\n    return 0;\n}"
+ },
+ {
+  "slug": "packing-the-van",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, W;\n    if (!(cin >> n >> W)) return 0;\n    vector<long long> dp(W + 1, 0);\n    for (int i = 0; i < n; ++i) {\n        int w; long long v;\n        cin >> w >> v;\n        for (int cap = W; cap >= w; --cap)\n            dp[cap] = max(dp[cap], dp[cap - w] + v);\n    }\n    long long ans = 0;\n    for (int cap = 0; cap <= W; ++cap) ans = max(ans, dp[cap]);\n    cout << ans << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "packing-the-van",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef main():\n    input = sys.stdin.read\n    data = input().split()\n    if not data:\n        return\n    n = int(data[0])\n    W = int(data[1])\n    \n    dp = [0] * (W + 1)\n    \n    idx = 2\n    for _ in range(n):\n        w = int(data[idx])\n        v = int(data[idx+1])\n        idx += 2\n        for j in range(W, w - 1, -1):\n            if dp[j - w] + v > dp[j]:\n                dp[j] = dp[j - w] + v\n                \n    print(dp[W])\n\nif __name__ == '__main__':\n    main()"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <iostream>\n\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    int n;\n    if (!(cin >> n)) return 0;\n    long long max_val = -2000000000LL;\n    int max_idx = -1;\n    for (int i = 1; i <= n; ++i) {\n        long long x;\n        cin >> x;\n        if (x > max_val) {\n            max_val = x;\n            max_idx = i;\n        }\n    }\n    cout << max_val << \" \" << max_idx << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <iostream>\n#include <vector>\n\n// A structure to hold the result of our search:\n// the maximum temperature value found and its first 1-based index.\nstruct PeakReadingResult {\n    long long maximum_value;\n    int first_occurrence_index;\n};\n\n// This helper function finds the maximum value and its first 1-based index\n// in a given list of temperature readings.\nPeakReadingResult find_peak_reading(const std::vector<long long>& temperature_readings) {\n    // We assume the list is not empty because the problem statement guarantees 1 <= n.\n    long long max_value = temperature_readings[0];\n    int best_index = 1; // 1-based index of the first reading\n\n    for (size_t current_index = 0; current_index < temperature_readings.size(); ++current_index) {\n        long long current_value = temperature_readings[current_index];\n        // If we find a value strictly greater than our current maximum,\n        // we update the maximum and its 1-based index.\n        if (current_value > max_value) {\n            max_value = current_value;\n            best_index = static_cast<int>(current_index) + 1;\n        }\n    }\n\n    PeakReadingResult result;\n    result.maximum_value = max_value;\n    result.first_occurrence_index = best_index;\n    return result;\n}\n\nint main() {\n    // Optimize standard input/output streams for faster execution\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(NULL);\n\n    int number_of_readings = 0;\n    if (!(std::cin >> number_of_readings)) {\n        return 0;\n    }\n\n    std::vector<long long> temperature_readings(number_of_readings);\n    for (int i = 0; i < number_of_readings; ++i) {\n        std::cin >> temperature_readings[i];\n    }\n\n    // Find the peak reading and its index\n    PeakReadingResult result = find_peak_reading(temperature_readings);\n\n    // Print the maximum value and its 1-based position\n    std::cout << result.maximum_value << \" \" << result.first_occurrence_index << \"\\n\";\n\n    return 0;\n}"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <iterator>\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n;\n    if (std::cin >> n) {\n        std::vector<int> a(n);\n        for (auto& x : a) {\n            std::cin >> x;\n        }\n        const auto it = std::max_element(a.begin(), a.end());\n        if (it != a.end()) {\n            std::cout << *it << \" \" << (std::distance(a.begin(), it) + 1) << \"\\n\";\n        }\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\n\ndef main():\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    n = int(input_data[0])\n    a = [int(x) for x in input_data[1 : n + 1]]\n    mx = max(a)\n    idx = a.index(mx) + 1\n    print(mx, idx)\n\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\n\ndef find_peak_reading_and_index(temperature_readings):\n    \"\"\"\n    Finds the maximum temperature reading and the 1-based index of its first occurrence.\n    \n    Parameters:\n    temperature_readings (list of int): The logged temperature readings.\n    \n    Returns:\n    tuple: (maximum_temperature, first_occurrence_index)\n    \"\"\"\n    # Initialize with the first reading\n    maximum_temperature = temperature_readings[0]\n    first_occurrence_index = 1\n    \n    # Iterate through all readings to find the maximum\n    for current_index in range(len(temperature_readings)):\n        current_temperature = temperature_readings[current_index]\n        \n        # Since we want the FIRST occurrence, we only update if \n        # the current reading is strictly greater than the maximum found so far.\n        if current_temperature > maximum_temperature:\n            maximum_temperature = current_temperature\n            first_occurrence_index = current_index + 1  # Convert 0-based index to 1-based\n            \n    return maximum_temperature, first_occurrence_index\n\ndef main():\n    # Read all tokens from standard input\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    \n    # Parse the number of readings and the readings list\n    number_of_readings = int(input_data[0])\n    temperature_readings = []\n    for i in range(1, number_of_readings + 1):\n        temperature_readings.append(int(input_data[i]))\n        \n    # Find the peak reading and its first occurrence\n    peak_value, peak_index = find_peak_reading_and_index(temperature_readings)\n    \n    # Print the result separated by a space\n    print(f\"{peak_value} {peak_index}\")\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef main():\n    # Read all inputs from standard input\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    \n    # The first element is n, the rest are the temperature readings\n    n = int(input_data[0])\n    readings = map(int, input_data[1:n+1])\n    \n    # Find the max tuple of (value, -index)\n    val, neg_idx = max((val, -idx) for idx, val in enumerate(readings, 1))\n    \n    # Output the maximum value and the 1-based index\n    print(f\"{val} {-neg_idx}\")\n\nif __name__ == '__main__':\n    main()"
+ },
+ {
+  "slug": "peak-reading",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\n\ndef main():\n    _, *arr = map(int, sys.stdin.read().split())\n    val = max(arr)\n    print(val, arr.index(val) + 1)\n\nif __name__ == '__main__':\n    main()"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <iostream>\n#include <vector>\n\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    \n    int n, q;\n    if (!(cin >> n >> q)) return 0;\n    \n    vector<long long> p(n + 1, 0);\n    for (int i = 1; i <= n; ++i) {\n        long long val;\n        cin >> val;\n        p[i] = p[i - 1] + val;\n    }\n    \n    for (int i = 0; i < q; ++i) {\n        int l, r;\n        cin >> l >> r;\n        cout << p[r] - p[l - 1] << \"\\n\";\n    }\n    \n    return 0;\n}"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n, q;\n    if (!(cin >> n >> q)) return 0;\n    vector<long long> pref(n + 1, 0);\n    for (int i = 1; i <= n; ++i) {\n        long long x; cin >> x;\n        pref[i] = pref[i - 1] + x;\n    }\n    while (q--) {\n        int l, r; cin >> l >> r;\n        cout << pref[r] - pref[l - 1] << '\\n';\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <iostream>\n#include <vector>\n#include <numeric>\n#include <algorithm>\n#include <iterator>\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n\n    int n, q;\n    if (std::cin >> n >> q) {\n        std::vector<long long> p(n + 1, 0);\n        std::generate_n(p.begin() + 1, n, [sum = 0LL]() mutable {\n            long long x;\n            std::cin >> x;\n            return sum += x;\n        });\n        std::generate_n(std::ostream_iterator<long long>(std::cout, \"\\n\"), q, [&p]() {\n            int l, r;\n            std::cin >> l >> r;\n            return p[r] - p[l - 1];\n        });\n    }\n}"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef solve():\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    n = int(input_data[0])\n    q = int(input_data[1])\n    \n    pref = [0] * (n + 1)\n    for i in range(n):\n        pref[i+1] = pref[i] + int(input_data[2 + i])\n        \n    out = []\n    idx = 2 + n\n    for _ in range(q):\n        l = int(input_data[idx])\n        r = int(input_data[idx+1])\n        idx += 2\n        out.append(str(pref[r] - pref[l-1]))\n        \n    sys.stdout.write('\\n'.join(out) + '\\n')\n\nif __name__ == '__main__':\n    solve()"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    q = int(next(it))\n    # Read rainfall amounts\n    a = [0] * (n + 1)  # 1-indexed\n    for i in range(1, n + 1):\n        a[i] = int(next(it))\n    # Build prefix sums\n    pref = [0] * (n + 1)\n    for i in range(1, n + 1):\n        pref[i] = pref[i - 1] + a[i]\n    out_lines = []\n    for _ in range(q):\n        l = int(next(it))\n        r = int(next(it))\n        total = pref[r] - pref[l - 1]\n        out_lines.append(str(total))\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "rainfall-totals",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\nfrom itertools import accumulate\n\ndef main():\n    input_data = sys.stdin.read().split()\n    if not input_data:\n        return\n    n, q = map(int, input_data[:2])\n    a = [int(x) for x in input_data[2:2+n]]\n    queries = [int(x) for x in input_data[2+n:2+n+2*q]]\n    \n    pref = [0] + list(accumulate(a))\n    \n    results = (str(pref[queries[2*i+1]] - pref[queries[2*i] - 1]) for i in range(q))\n    print('\\n'.join(results))\n\nif __name__ == '__main__':\n    main()"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nint main() {\n    ios_base::sync_with_stdio(false);\n    cin.tie(NULL);\n    int n;\n    if (cin >> n) {\n        vector<int> t;\n        for (int i = 0; i < n; ++i) {\n            int x;\n            cin >> x;\n            auto it = lower_bound(t.begin(), t.end(), x);\n            if (it == t.end()) t.push_back(x);\n            else *it = x;\n        }\n        cout << t.size() << \"\\n\";\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    vector<long long> heights(n);\n    for (int i = 0; i < n; ++i) cin >> heights[i];\n\n    // tails[k] = minimal possible last value of an increasing subsequence of length k+1\n    vector<long long> tails;\n    tails.reserve(n);\n\n    for (long long h : heights) {\n        // find first element >= h\n        auto it = lower_bound(tails.begin(), tails.end(), h);\n        if (it == tails.end())\n            tails.push_back(h);          // extend longest subsequence\n        else\n            *it = h;                      // improve minimal last value\n    }\n\n    cout << tails.size() << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    vector<long long> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i];\n    \n    vector<long long> tail;\n    tail.reserve(n);\n    for (long long x : a) {\n        auto it = lower_bound(tail.begin(), tail.end(), x);\n        if (it == tail.end()) tail.push_back(x);\n        else *it = x;\n    }\n    cout << tail.size() << \"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    if (!(cin >> n)) return 0;\n    vector<long long> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i];\n\n    vector<long long> tails; // tails[i] = smallest tail of an increasing subsequence of length i+1\n    tails.reserve(n);\n\n    for (long long x : a) {\n        auto it = lower_bound(tails.begin(), tails.end(), x);\n        if (it == tails.end())\n            tails.push_back(x);\n        else\n            *it = x;\n    }\n    cout << tails.size() << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\n\"\"\"\nCompute the length of the longest strictly increasing subsequence\n(LIS) for a sequence of flower heights.\n\nThe algorithm used is the classic patience sorting approach,\nachieving O(n log n) time and O(n) memory.\n\"\"\"\n\nimport sys\nimport bisect\n\ndef read_input() -> list[int]:\n    \"\"\"\n    Read the input from standard input.\n\n    Returns:\n        A list of integers representing the flower heights.\n    \"\"\"\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return []\n    n = int(data[0])          # number of flowers\n    heights = list(map(int, data[1:1 + n]))\n    return heights\n\ndef longest_increasing_subsequence_length(heights: list[int]) -> int:\n    \"\"\"\n    Compute the length of the longest strictly increasing subsequence\n    in the given list of heights.\n\n    This function implements the patience sorting technique:\n    For each element, find the position in the 'tails' list where it\n    should be inserted to maintain increasing order. The length of\n    'tails' at the end is the LIS length.\n\n    Parameters:\n        heights: List of integer heights.\n\n    Returns:\n        Length of the LIS (int).\n    \"\"\"\n    # 'tails' holds the smallest possible tail value for increasing\n    # subsequences of length i+1 at index i.\n    tails = []\n\n    for height in heights:\n        # Find the insertion point for 'height' in 'tails' to keep it sorted.\n        pos = bisect.bisect_left(tails, height)\n        if pos == len(tails):\n            # 'height' extends the longest subsequence found so far.\n            tails.append(height)\n        else:\n            # Replace an existing tail to potentially allow longer sequences later.\n            tails[pos] = height\n\n    return len(tails)\n\ndef main() -> None:\n    heights = read_input()\n    if not heights:\n        print(0)\n        return\n    lis_length = longest_increasing_subsequence_length(heights)\n    print(lis_length)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "rising-subsequence",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys, bisect\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    n = int(data[0])\n    heights = list(map(int, data[1:1+n]))\n\n    tails = []  # tails[i] = smallest possible tail of an increasing subsequence of length i+1\n    for h in heights:\n        pos = bisect.bisect_left(tails, h)\n        if pos == len(tails):\n            tails.append(h)\n        else:\n            tails[pos] = h\n    print(len(tails))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "room-booking",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    if (!(cin >> n)) return 0;\n    vector<pair<int,int>> v;\n    v.reserve(n);\n    for (int i = 0; i < n; ++i) {\n        int s, e;\n        cin >> s >> e;\n        v.emplace_back(e, s); // sort by end\n    }\n    sort(v.begin(), v.end());\n    int ans = 0;\n    int last_end = -1;\n    for (auto [e, s] : v) {\n        if (s >= last_end) {\n            ++ans;\n            last_end = e;\n        }\n    }\n    cout << ans << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "room-booking",
+  "language": "python3",
+  "persona": 1,
+  "source": "import sys\n\ndef read_input() -> list:\n    \"\"\"Read all intervals from standard input.\"\"\"\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return []\n    n = int(data[0])\n    intervals = []\n    idx = 1\n    for _ in range(n):\n        s = int(data[idx])\n        e = int(data[idx + 1])\n        intervals.append((s, e))\n        idx += 2\n    return intervals\n\ndef maximum_non_overlapping(intervals: list) -> int:\n    \"\"\"\n    Greedy algorithm: sort by finishing time and pick each interval\n    whose start is not earlier than the end of the last chosen one.\n    \"\"\"\n    intervals.sort(key=lambda interval: interval[1])   # sort by end time\n    count = 0\n    last_end = -1   # no meeting yet, any start >= 0 will be accepted\n    for start, end in intervals:\n        if start >= last_end:\n            count += 1\n            last_end = end\n    return count\n\ndef solve() -> None:\n    intervals = read_input()\n    result = maximum_non_overlapping(intervals)\n    print(result)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "room-booking",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    intervals = [(int(next(it)), int(next(it))) for _ in range(n)]\n    # sort by end time, tie‑break by start (optional)\n    intervals.sort(key=lambda x: (x[1], x[0]))\n    cnt = 0\n    last_end = -1\n    for s, e in intervals:\n        if s >= last_end:\n            cnt += 1\n            last_end = e\n    sys.stdout.write(str(cnt))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "room-booking",
+  "language": "python3",
+  "persona": 3,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    intervals = [(int(next(it)), int(next(it))) for _ in range(n)]  # (s, e)\n    # sort by end time, then start time to be deterministic\n    intervals.sort(key=lambda x: (x[1], x[0]))\n    last_end = -1\n    count = 0\n    for s, e in intervals:\n        if s >= last_end:\n            count += 1\n            last_end = e\n    print(count)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "shelf-search",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\n/*  Returns the 1‑based position of the first element in the sorted\n    vector `sortedValues` that is >= `target`.  If no such element exists,\n    returns `sortedValues.size() + 1`.                                            */\nstatic int firstPositionAtLeast(const vector<int>& sortedValues, int target) {\n    auto it = lower_bound(sortedValues.begin(), sortedValues.end(), target);\n    if (it == sortedValues.end())\n        return static_cast<int>(sortedValues.size()) + 1;   // no element large enough\n    return static_cast<int>(it - sortedValues.begin()) + 1; // convert to 1‑based index\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int numberOfBooks, numberOfQueries;\n    if (!(cin >> numberOfBooks >> numberOfQueries)) return 0;\n\n    vector<int> catalogueNumbers(numberOfBooks);\n    for (int i = 0; i < numberOfBooks; ++i) cin >> catalogueNumbers[i];\n\n    vector<int> queryValues(numberOfQueries);\n    for (int i = 0; i < numberOfQueries; ++i) cin >> queryValues[i];\n\n    for (int i = 0; i < numberOfQueries; ++i) {\n        int answer = firstPositionAtLeast(catalogueNumbers, queryValues[i]);\n        if (i) cout << ' ';\n        cout << answer;\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "shelf-search",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n, q;\n    if (!(cin >> n >> q)) return 0;\n    vector<int> a(n);\n    for (int i = 0; i < n; ++i) cin >> a[i];\n    vector<int> x(q);\n    for (int i = 0; i < q; ++i) cin >> x[i];\n\n    for (int i = 0; i < q; ++i) {\n        auto it = lower_bound(a.begin(), a.end(), x[i]);\n        int pos = (it == a.end()) ? n + 1 : (it - a.begin() + 1);\n        cout << pos;\n        if (i + 1 < q) cout << ' ';\n    }\n    cout << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "shelf-search",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys, bisect\n\ndef solve() -> None:\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    n, q = data[0], data[1]\n    a = data[2:2 + n]\n    xs = data[2 + n:2 + n + q]\n    res = []\n    for x in xs:\n        idx = bisect.bisect_left(a, x)\n        res.append(str(idx + 1 if idx < n else n + 1))\n    sys.stdout.write(' '.join(res))\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "spell-fixer",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Compute the Levenshtein distance (minimum number of single-letter edits)\n// to transform string a into string b.\nint editDistance(const string& a, const string& b) {\n    int n = a.size();\n    int m = b.size();\n\n    // Use a 2D DP array: dp[i][j] = distance between a[0..i) and b[0..j)\n    vector<vector<int>> dp(n + 1, vector<int>(m + 1));\n\n    // Base cases: transforming empty string to prefixes\n    for (int i = 0; i <= n; ++i) dp[i][0] = i;   // delete i characters\n    for (int j = 0; j <= m; ++j) dp[0][j] = j;   // insert j characters\n\n    // Fill DP table\n    for (int i = 1; i <= n; ++i) {\n        for (int j = 1; j <= m; ++j) {\n            if (a[i - 1] == b[j - 1]) {\n                // No edit needed for the last characters\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                // Minimum of replace, insert, delete\n                int replaceCost = dp[i - 1][j - 1];\n                int insertCost  = dp[i][j - 1];\n                int deleteCost  = dp[i - 1][j];\n                dp[i][j] = 1 + min({replaceCost, insertCost, deleteCost});\n            }\n        }\n    }\n    return dp[n][m];\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    string a, b;\n    if (!getline(cin, a)) return 0;\n    getline(cin, b);\n    \n    cout << editDistance(a, b) << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "spell-fixer",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\n\"\"\"\nLevenshtein edit distance: minimal number of insertions, deletions, or substitutions\nto transform word a into word b.\n\"\"\"\n\ndef compute_edit_distance(a: str, b: str) -> int:\n    \"\"\"Return the minimal edit distance between strings a and b.\"\"\"\n    n, m = len(a), len(b)\n    # Ensure that we use the shorter string for the inner loop to save memory\n    if n < m:\n        a, b = b, a\n        n, m = m, n\n\n    # dp[j] will hold the distance between a[:i] and b[:j] for current i\n    prev_row = list(range(m + 1))  # distance when a is empty\n\n    for i in range(1, n + 1):\n        curr_row = [i] + [0] * m  # distance when b is empty\n        for j in range(1, m + 1):\n            cost = 0 if a[i - 1] == b[j - 1] else 1\n            curr_row[j] = min(\n                prev_row[j] + 1,       # deletion\n                curr_row[j - 1] + 1,   # insertion\n                prev_row[j - 1] + cost # substitution or match\n            )\n        prev_row = curr_row\n\n    return prev_row[m]\n\ndef main() -> None:\n    import sys\n    data = sys.stdin.read().splitlines()\n    if len(data) < 2:\n        return\n    a, b = data[0].strip(), data[1].strip()\n    result = compute_edit_distance(a, b)\n    print(result)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "spell-fixer",
+  "language": "python3",
+  "persona": 2,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    a = data[0].strip()\n    b = data[1].strip() if len(data) > 1 else ''\n    n, m = len(a), len(b)\n\n    # Ensure we iterate over the shorter string for the inner loop to save time\n    if m < n:\n        a, b = b, a\n        n, m = m, n\n\n    # dp[j] = edit distance between a[:i] and b[:j]\n    prev = list(range(m + 1))\n    cur = [0] * (m + 1)\n\n    for i in range(1, n + 1):\n        cur[0] = i\n        ai = a[i - 1]\n        for j in range(1, m + 1):\n            cost = 0 if ai == b[j - 1] else 1\n            cur[j] = min(\n                prev[j] + 1,          # deletion\n                cur[j - 1] + 1,       # insertion\n                prev[j - 1] + cost    # substitution / match\n            )\n        prev, cur = cur, prev  # reuse lists\n\n    print(prev[m])\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "spell-fixer",
+  "language": "python3",
+  "persona": 3,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().splitlines()\n    if len(data) < 2:\n        return\n    a, b = data[0].strip(), data[1].strip()\n    n, m = len(a), len(b)\n\n    # Initialize previous row: distance from empty a to prefixes of b (insertions)\n    prev = list(range(m + 1))\n\n    for i in range(1, n + 1):\n        cur = [i] + [0] * m  # first column: deletions\n        ai = a[i - 1]\n        for j in range(1, m + 1):\n            cost = 0 if ai == b[j - 1] else 1\n            cur[j] = min(\n                prev[j] + 1,      # deletion\n                cur[j - 1] + 1,   # insertion\n                prev[j - 1] + cost  # substitution / match\n            )\n        prev = cur\n\n    print(prev[m])\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "stair-climb",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    const int MOD = 1'000'000'007;\n    int n, k;\n    if (!(cin >> n >> k)) return 0;\n    vector<char> broken(n + 1, 0);\n    for (int i = 0; i < k; ++i) {\n        int x; cin >> x;\n        broken[x] = 1;\n    }\n    vector<int> dp(n + 1, 0);\n    dp[0] = 1;\n    for (int i = 1; i <= n; ++i) {\n        if (broken[i]) continue;\n        long long sum = dp[i - 1];\n        if (i >= 2) sum += dp[i - 2];\n        if (i >= 3) sum += dp[i - 3];\n        dp[i] = sum % MOD;\n    }\n    cout << dp[n] << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "stair-climb",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nconst int MOD = 1'000'000'007;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n, k;\n    if (!(cin >> n >> k)) return 0;\n    vector<char> broken(n + 1, 0);\n    for (int i = 0, x; i < k; ++i) {\n        cin >> x;\n        broken[x] = 1;\n    }\n    vector<int> dp(n + 1, 0);\n    dp[0] = 1;\n    for (int i = 1; i <= n; ++i) {\n        if (broken[i]) {\n            dp[i] = 0;\n            continue;\n        }\n        long long ways = dp[i - 1];\n        if (i >= 2) ways += dp[i - 2];\n        if (i >= 3) ways += dp[i - 3];\n        dp[i] = ways % MOD;\n    }\n    cout << dp[n] << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "stair-climb",
+  "language": "python3",
+  "persona": 1,
+  "source": "#!/usr/bin/env python3\nimport sys\n\nMOD = 10**9 + 7\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    n = int(next(it))\n    k = int(next(it))\n\n    broken = [False] * (n + 1)  # indices 0..n\n    for _ in range(k):\n        step = int(next(it))\n        broken[step] = True\n\n    dp = [0] * (n + 1)\n    dp[0] = 1  # start at floor\n\n    for i in range(1, n + 1):\n        if broken[i]:\n            dp[i] = 0\n            continue\n        val = dp[i-1]\n        if i >= 2:\n            val += dp[i-2]\n        if i >= 3:\n            val += dp[i-3]\n        dp[i] = val % MOD\n\n    print(dp[n] % MOD)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    long long a, b;\n    if (cin >> a >> b) {\n        cout << a + b << '\\n';\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    long long firstNumber = 0;\n    long long secondNumber = 0;\n    if (cin >> firstNumber >> secondNumber) {\n        // Use built‑in 64‑bit signed integer; it can hold values up to ±9·10^18,\n        // which is sufficient for the required range (‑2·10^18 … 2·10^18).\n        long long total = firstNumber + secondNumber;\n        cout << total << '\\n';\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    long long a, b;\n    if (cin >> a >> b) {\n        cout << (a + b) << '\\n';\n    }\n    return 0;\n}"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    a, b = map(int, data[:2])\n    print(a + b)\n\nif __name__ == \"__main__\":\n    solve()"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "python3",
+  "persona": 1,
+  "source": "def read_two_integers():\n    \"\"\"Read a line from standard input and return two integers.\"\"\"\n    import sys\n    line = sys.stdin.readline()\n    # Strip newline and split by whitespace\n    parts = line.strip().split()\n    # Convert to integers\n    return int(parts[0]), int(parts[1])\n\ndef compute_sum(first_number, second_number):\n    \"\"\"Return the sum of two integers.\"\"\"\n    return first_number + second_number\n\ndef main():\n    a, b = read_two_integers()\n    total = compute_sum(a, b)\n    print(total)\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "sum-two-numbers",
+  "language": "python3",
+  "persona": 2,
+  "source": "#!/usr/bin/env python3\nimport sys\n\ndef main() -> None:\n    # Read the two numbers as strings to avoid any accidental\n    # conversion to a smaller integer type (though Python handles\n    # arbitrary precision natively).\n    data = sys.stdin.read().strip().split()\n    if len(data) < 2:\n        return\n    a_str, b_str = data[0], data[1]\n\n    # Perform the addition manually to demonstrate an alternative\n    # to the obvious int(a) + int(b) approach.\n    def parse_num(s: str):\n        sign = -1 if s[0] == '-' else 1\n        digits = s.lstrip('+-')\n        return sign, digits\n\n    def add_strings(x: str, y: str):\n        # add two non‑negative decimal strings\n        i, j = len(x) - 1, len(y) - 1\n        carry = 0\n        res = []\n        while i >= 0 or j >= 0 or carry:\n            d1 = ord(x[i]) - 48 if i >= 0 else 0\n            d2 = ord(y[j]) - 48 if j >= 0 else 0\n            s = d1 + d2 + carry\n            res.append(chr(s % 10 + 48))\n            carry = s // 10\n            i -= 1\n            j -= 1\n        return ''.join(reversed(res))\n\n    sign_a, digs_a = parse_num(a_str)\n    sign_b, digs_b = parse_num(b_str)\n\n    if sign_a == sign_b:\n        # same sign – add magnitudes and keep the sign\n        sum_digits = add_strings(digs_a, digs_b)\n        result = ('-' if sign_a == -1 else '') + sum_digits\n    else:\n        # opposite signs – subtract smaller magnitude from larger\n        # Compare magnitudes\n        if len(digs_a) > len(digs_b) or (len(digs_a) == len(digs_b) and digs_a >= digs_b):\n            larger, smaller, larger_sign = digs_a, digs_b, sign_a\n        else:\n            larger, smaller, larger_sign = digs_b, digs_a, sign_b\n\n        # subtraction of two decimal strings (larger >= smaller)\n        i, j = len(larger) - 1, len(smaller) - 1\n        borrow = 0\n        res = []\n        while i >= 0:\n            d1 = ord(larger[i]) - 48\n            d2 = ord(smaller[j]) - 48 if j >= 0 else 0\n            d = d1 - borrow\n            if d < d2:\n                d += 10\n                borrow = 1\n            else:\n                borrow = 0\n            res.append(chr(d - d2 + 48))\n            i -= 1\n            j -= 1\n        # Remove leading zeros\n        while len(res) > 1 and res[-1] == '0':\n            res.pop()\n        sum_digits = ''.join(reversed(res))\n        result = ('-' if larger_sign == -1 else '') + sum_digits\n\n    sys.stdout.write(result + '\\n')\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "cpp17",
+  "persona": 0,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int n;\n    if(!(cin>>n)) return 0;\n    unordered_set<int> s;\n    s.reserve(n*2);\n    for(int i=0;i<n;i++){\n        int x;cin>>x;\n        s.insert(x);\n    }\n    cout<<s.size()<<\"\\n\";\n    return 0;\n}"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "cpp17",
+  "persona": 1,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    unordered_set<int> distinctBadges;\n    distinctBadges.reserve(n * 2);\n    for (int i = 0; i < n; ++i) {\n        int badge;\n        cin >> badge;\n        distinctBadges.insert(badge);\n    }\n    cout << distinctBadges.size() << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "cpp17",
+  "persona": 2,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    unordered_set<int> seen;\n    seen.reserve(n * 2);\n    for (int i = 0, x; i < n; ++i) {\n        cin >> x;\n        seen.insert(x);\n    }\n    cout << seen.size() << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "cpp17",
+  "persona": 3,
+  "source": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int n;\n    if (!(cin >> n)) return 0;\n    unordered_set<int> seen;\n    seen.reserve(n * 2);\n    for (int i = 0, x; i < n; ++i) {\n        cin >> x;\n        seen.insert(x);\n    }\n    cout << seen.size() << '\\n';\n    return 0;\n}"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "python3",
+  "persona": 0,
+  "source": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    n = int(data[0])\n    badges = map(int, data[1:1+n])\n    print(len(set(badges)))\n\nif __name__ == \"__main__\":\n    main()"
+ },
+ {
+  "slug": "unique-badges",
+  "language": "python3",
+  "persona": 1,
+  "source": "def read_input() -> tuple[int, list[int]]:\n    \"\"\"\n    Reads the problem input from standard input.\n    Returns:\n        A tuple containing the number of scans and the list of badge numbers.\n    \"\"\"\n    import sys\n\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return 0, []\n    number_of_scans = int(data[0])\n    badge_numbers = list(map(int, data[1:1 + number_of_scans]))\n    return number_of_scans, badge_numbers\n\n\ndef count_distinct_badges(badge_numbers: list[int]) -> int:\n    \"\"\"\n    Counts how many different badge numbers appear in the list.\n    Args:\n        badge_numbers: List of scanned badge identifiers.\n    Returns:\n        The count of distinct identifiers.\n    \"\"\"\n    distinct_set = set(badge_numbers)\n    return len(distinct_set)\n\n\ndef main() -> None:\n    \"\"\"Main execution function.\"\"\"\n    _, badges = read_input()\n    result = count_distinct_badges(badges)\n    print(result)\n\n\nif __name__ == \"__main__\":\n    main()"
+ }
+]

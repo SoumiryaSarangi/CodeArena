@@ -3,24 +3,31 @@
 import random
 
 from plag.cluster import clusters
-from plag.combine import DEFAULT, Combiner, choose_threshold, fit
+from plag.combine import DEFAULT, HAND_SET, Combiner, choose_threshold, fit
 
 
 class TestCombiner:
-    def test_default_weights_make_each_signal_necessary_but_not_sufficient_alone(self):
+    def test_the_hand_set_weights_made_each_signal_necessary_but_not_sufficient_alone(self):
         # shared fingerprints are strong evidence by themselves (even with an unremarkable embedding)
-        assert DEFAULT.score(fp=1.0, emb=0.6, len_ratio=1.0, same_language=True) >= DEFAULT.threshold
+        assert HAND_SET.score(fp=1.0, emb=0.6, len_ratio=1.0, same_language=True) >= HAND_SET.threshold
         # a high cosine alone is not enough: the measured different-problem maximum is 0.918
-        assert DEFAULT.score(fp=0.0, emb=0.92, len_ratio=1.0, same_language=True) < DEFAULT.threshold
-        assert DEFAULT.score(fp=0.0, emb=0.99, len_ratio=1.0, same_language=True) < DEFAULT.threshold
+        assert HAND_SET.score(fp=0.0, emb=0.92, len_ratio=1.0, same_language=True) < HAND_SET.threshold
+        assert HAND_SET.score(fp=0.0, emb=0.99, len_ratio=1.0, same_language=True) < HAND_SET.threshold
         # a moderate overlap plus a close embedding is
-        assert DEFAULT.score(fp=0.5, emb=0.9, len_ratio=1.0, same_language=True) >= DEFAULT.threshold
-        assert DEFAULT.score(fp=0.0, emb=0.5, len_ratio=1.0, same_language=True) < 0.02
+        assert HAND_SET.score(fp=0.5, emb=0.9, len_ratio=1.0, same_language=True) >= HAND_SET.threshold
+        assert HAND_SET.score(fp=0.0, emb=0.5, len_ratio=1.0, same_language=True) < 0.02
+
+    def test_the_default_is_the_one_fitted_on_the_labelled_set(self):
+        assert DEFAULT != HAND_SET
+        assert DEFAULT.weights[0] > 0 and DEFAULT.weights[1] > 0  # both kinds of evidence count
+        assert 0.0 < DEFAULT.threshold < 1.0
+        assert DEFAULT.score(0.9, 0.97, 0.9, True) >= DEFAULT.threshold > DEFAULT.score(0.0, 0.7, 0.8, True)
 
     def test_monotone_in_the_two_evidence_features(self):
-        base = DEFAULT.score(0.3, 0.8, 1.0, True)
-        assert DEFAULT.score(0.5, 0.8, 1.0, True) > base
-        assert DEFAULT.score(0.3, 0.9, 1.0, True) > base
+        for combiner in (DEFAULT, HAND_SET):
+            base = combiner.score(0.3, 0.8, 1.0, True)
+            assert combiner.score(0.5, 0.8, 1.0, True) > base
+            assert combiner.score(0.3, 0.9, 1.0, True) > base
 
     def test_json_round_trip(self):
         c = Combiner((1.0, 2.0, 3.0, 4.0), -5.0, 0.7)

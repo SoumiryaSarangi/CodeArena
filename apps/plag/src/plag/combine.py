@@ -1,9 +1,8 @@
 """Combining Stage A and Stage B into one score (SD-§13.1 step 6).
 
-A logistic model over four features. Until the labelled set (PL-03) has fitted one, `DEFAULT` holds weights chosen by
-hand so the pipeline works: a high embedding cosine alone is suspicious but not enough, shared fingerprints alone
-are strong, both together are decisive. `fit` trains on labelled pairs and `choose_threshold` picks the decision
-threshold for a precision target (0.9 in the design).
+A logistic model over four features. `DEFAULT` is the one fitted on the labelled eval set (PL-03,
+`fitted_combiner.json`); `HAND_SET` is what was used before there was data. `fit` trains on labelled pairs and
+`choose_threshold` picks the decision threshold for a precision target (0.9 in the design).
 """
 
 from __future__ import annotations
@@ -12,6 +11,7 @@ import json
 import math
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 import numpy as np
 
@@ -41,8 +41,17 @@ class Combiner:
         return Combiner((w[0], w[1], w[2], w[3]), float(d["bias"]), float(d["threshold"]))
 
 
-#: Hand-set until PL-03 fits it on labelled data (see the module docstring).
-DEFAULT = Combiner(weights=(4.0, 8.0, 0.0, 0.0), bias=-8.5, threshold=0.5)
+#: The weights chosen by hand before there was labelled data (kept for reference and for the tests of the maths).
+HAND_SET = Combiner(weights=(4.0, 8.0, 0.0, 0.0), bias=-8.5, threshold=0.5)
+
+
+def _fitted() -> Combiner:
+    """The combiner fitted by the labelled eval (PL-03: `python -m plag.evalset report --write-combiner`)."""
+    path = Path(__file__).with_name("fitted_combiner.json")
+    return Combiner.from_json(path.read_text()) if path.exists() else HAND_SET
+
+
+DEFAULT = _fitted()
 
 
 def choose_threshold(scores: Sequence[float], labels: Sequence[bool], min_precision: float = 0.9) -> float:

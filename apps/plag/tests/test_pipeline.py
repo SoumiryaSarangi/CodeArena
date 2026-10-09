@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from plag.combine import Combiner
+from plag.combine import HAND_SET, Combiner
 from plag.embed import TokenBagEmbedder, Vectors, normalise_rows
 from plag.pipeline import Params, run_problem
 from plag.stage_a import Submission, Template
@@ -82,12 +82,14 @@ def test_the_sweep_adds_a_pair_stage_a_missed_but_the_embedding_alone_does_not_c
     b = Submission("b", "cpp17", "int solve(int q){ return q * q; } int main(){ print(solve(read())); }", "ub")
     c = Submission("c", "cpp17", "int main(){ for(;;) {} }", "uc")
     embedder = Scripted({0: 0, 1: 0, 2: 5})  # a and b look identical to the model, c does not
-    r = run_problem("p", [a, b, c], embedder=embedder)
+    r = run_problem("p", [a, b, c], embedder=embedder, combiner=HAND_SET)
     assert r.metrics["sweepPairs"] == 1
     assert r.metrics["stageAPairs"] == 0
     pair = r.pairs[0]
     assert {pair.a, pair.b} == {"a", "b"} and pair.fp_score == 0.0 and pair.emb_score > 0.99
-    assert r.clusters == []  # reported for review, not clustered: a cosine alone is not evidence enough
+    assert (
+        r.clusters == []
+    )  # reported for review, not clustered: with the hand-set weights a cosine alone is not enough
     # a combiner that trusts the embedding (what a fit might learn) does cluster it
     trusting = Combiner((1.0, 20.0, 0.0, 0.0), -15.0, 0.5)
     assert [

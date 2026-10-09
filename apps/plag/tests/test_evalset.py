@@ -162,9 +162,49 @@ class TestLabelsAndPairs:
         neg = [r.fp for r in rows if r.kind == "independent-independent"]
         assert min(pos) > 0.9 and max(neg) < 0.35
 
+    def test_independent_solutions_that_share_structure_keep_their_overlap(self):
+        # Three solutions that look alike (as independent ones often do) must NOT lose that overlap to a per-problem
+        # boilerplate rule: with 3 to 5 programs, anything two of them share would count as "common" and vanish, and the
+        # eval would report a precision it never earned.
+        base = 'int main() { int n; scanf("%d", &n); long long best = 0; for (int i = 0; i < n; i++) { int x; scanf("%d", &x); if (x > best) best = x; best += x * 2; } printf("%lld", best); }'
+        ind = [base.replace("best", f"m{k}") + f" int tail{k}() {{ return {k * 5 + 1}; }}" for k in range(3)]
+        docs = [
+            build.Doc("o", "p", "cpp17", "original", (), base),
+            *[build.Doc(f"i{k}", "p", "cpp17", "independent", (), s) for k, s in enumerate(ind)],
+        ]
+        rows = [r for r in build.pair_rows(docs, TokenBagEmbedder()) if r.kind == "independent-independent"]
+        assert len(rows) == 3 and all(r.fp > 0.3 for r in rows)
+
+    def test_language_wide_boilerplate_is_what_most_programs_of_a_language_share(self):
+        scaffold = (
+            'int main() { int n; scanf("%d", &n); for (int i = 0; i < n; i++) { total += i; } printf("%d", total); }'
+        )
+        pools = [
+            [
+                build.Doc(
+                    f"p{k}:o",
+                    f"p{k}",
+                    "cpp17",
+                    "original",
+                    (),
+                    scaffold + f" int extra{k}() {{ return {k} * {k + 3} - {k + 7}; }}",
+                )
+            ]
+            for k in range(6)
+        ]
+        common = build.language_boilerplate(pools)
+        assert common  # the scaffold is in every program
+        assert not build.language_boilerplate(pools[:3])  # three programs are too few to call anything common
+        variant_pool = [[build.Doc("v", "p", "cpp17", "variant", ("rename",), scaffold)] * 9]
+        assert not build.language_boilerplate(variant_pool)  # copies are never background
+
     def test_the_json_round_trip_keeps_every_field(self):
         rows = build.pair_rows(self.pool()[:4], TokenBagEmbedder())
-        assert build.from_json(json.loads(json.dumps(build.to_json(rows)))) == rows
+        once = build.to_json(rows)
+        again = build.to_json(build.from_json(json.loads(json.dumps(once))))
+        assert again == once  # stable (scores are rounded to 6 decimals on the way out)
+        assert [r["label"] for r in once] == [r.label for r in rows]
+        assert all(abs(r["fp"] - row.fp) < 1e-6 for r, row in zip(once, rows, strict=True))
 
 
 def synthetic(problems: int = 6) -> list[build.PairRow]:
@@ -350,3 +390,41 @@ class TestValidateAndCli:
         assert evalset_main(["report", "--pairs", str(pairs), "--metrics", str(md), "--model", "token-bag"]) == 0
         text = md.read_text()
         assert report.HEADING in text and "A + B combined" in text
+
+
+class TestTheStoredEvalIsAuditable:
+    """The labelled pairs (with their features) are committed, so the shipped combiner and the numbers in METRICS.md can be
+    checked without the 500 MB model: anyone can re-derive them."""
+
+    EVAL = Path(__file__).resolve().parents[1] / "eval"
+    METRICS = Path(__file__).resolve().parents[3] / "docs" / "METRICS.md"
+
+    def rows(self):
+        return build.from_json(json.loads((self.EVAL / "pairs.json").read_text()))
+
+    def test_the_pairs_are_the_labelled_set_the_report_describes(self):
+        rows = self.rows()
+        assert len(rows) > 3000 and len({r.problem for r in rows}) >= 20
+        assert {r.language for r in rows} == {"cpp17", "python3"}
+        assert sum(r.label for r in rows) > 1000 and sum(not r.label for r in rows) > 1000
+        for r in rows:  # the labels follow the rule in `build`
+            assert r.label == ("independent" not in r.kind)
+        independents = json.loads((self.EVAL / "independent.json").read_text())
+        assert len(independents) >= 100 and all(s["source"].strip() for s in independents)
+
+    def test_the_shipped_combiner_is_what_fitting_the_stored_pairs_gives(self):
+        from plag.combine import DEFAULT
+
+        refit = metrics.fit_all(self.rows())
+        assert refit.weights == pytest.approx(DEFAULT.weights, abs=1e-6)
+        assert refit.bias == pytest.approx(DEFAULT.bias, abs=1e-6)
+        assert refit.threshold == pytest.approx(DEFAULT.threshold, abs=1e-6)
+
+    def test_metrics_md_reports_the_numbers_the_stored_pairs_give(self):
+        text = self.METRICS.read_text()
+        block = text[text.index(report.OPEN) : text.index(report.CLOSE)]
+        s = metrics.cross_validate(self.rows())
+        assert f"Stage A (fingerprints) {s.average_precision['Stage A (fingerprints)']:.3f}" in block
+        assert f"A + B (combined) {s.average_precision['A + B (combined)']:.3f}" in block
+        assert f"{s.stage_ab.tp} | {s.stage_ab.fp} | {s.stage_ab.fn} | {s.stage_ab.tn} |" in block
+        assert f"{s.stage_a.tp} | {s.stage_a.fp} | {s.stage_a.fn} | {s.stage_a.tn} |" in block
