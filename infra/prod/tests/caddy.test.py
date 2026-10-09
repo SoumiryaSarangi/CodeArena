@@ -199,10 +199,12 @@ class Edge(unittest.TestCase):
         r.read()
         c.close()
 
-    def test_the_pad_route_answers_503_until_it_exists(self):
+    def test_the_pad_route_answers_a_friendly_503_while_no_instance_runs(self):
+        # `collab1`/`collab2` do not exist here, exactly like production before the collab profile is started.
+        start = time.time()
         c, r = get("/collab/room-1")
-        self.assertEqual(r.status, 503)
-        r.read()
+        self.assertEqual((r.status, r.read()), (503, b"The collaborative pad is not available right now."))
+        self.assertLess(time.time() - start, 8, "it should give up after the retry window, not hang")
         c.close()
 
     def test_the_root_and_unknown_paths_do_not_reach_the_api(self):
@@ -212,6 +214,147 @@ class Edge(unittest.TestCase):
         c, r = get("/not-an-api-path")
         self.assertEqual(r.read(), b"CodeArena API")  # never forwarded upstream
         c.close()
+
+
+class FakeCollab(BaseHTTPRequestHandler):
+    """One collab instance: says who it is, and does a bare WebSocket handshake plus echo for /collab/ws."""
+
+    name = "?"
+
+    def log_message(self, *a):
+        pass
+
+    def do_GET(self):
+        if self.headers.get("Upgrade", "").lower() == "websocket":
+            import base64
+            import hashlib
+
+            key = self.headers["Sec-WebSocket-Key"]
+            accept = base64.b64encode(hashlib.sha1((key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest()).decode()
+            self.send_response(101, "Switching Protocols")
+            self.send_header("Upgrade", "websocket")
+            self.send_header("Connection", "Upgrade")
+            self.send_header("Sec-WebSocket-Accept", accept)
+            self.end_headers()
+            self.wfile.flush()
+            while True:  # echo whatever arrives on the upgraded connection
+                data = self.connection.recv(4096)
+                if not data:
+                    break
+                self.connection.sendall(data)
+            self.close_connection = True
+            return
+        body = json.dumps({"instance": self.name, "path": self.path}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+@unittest.skipUnless(CADDY, "no Caddy binary: set CADDY_BIN (CI downloads one)")
+class CollabRouting(unittest.TestCase):
+    """CP-03: rooms are routed by URI hash to one of two instances, a dead instance is skipped, WebSockets pass through.
+    Tests are numbered because they stop instances one after the other."""
+
+    PORT = 18081
+    UP = (14101, 14102)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.servers = []
+        for i, port in enumerate(cls.UP):
+            handler = type(f"Collab{i}", (FakeCollab,), {"name": f"collab{i + 1}"})
+            srv = ThreadingHTTPServer(("127.0.0.1", port), handler)
+            srv.daemon_threads = True
+            threading.Thread(target=srv.serve_forever, daemon=True).start()
+            cls.servers.append(srv)
+        cls.tmp = tempfile.mkdtemp()
+        cfg = Path(cls.tmp) / "Caddyfile"
+        cfg.write_text("{\n\tadmin off\n}\n\n" + (PROD / "Caddyfile").read_text())
+        env = {
+            **os.environ,
+            "API_HOST": f":{cls.PORT}",
+            "WEB_ORIGIN": WEB_ORIGIN,
+            "COLLAB_UPSTREAMS": " ".join(f"127.0.0.1:{p}" for p in cls.UP),
+            "XDG_DATA_HOME": cls.tmp,
+            "XDG_CONFIG_HOME": cls.tmp,
+        }
+        cls.proc = subprocess.Popen([CADDY, "run", "--config", str(cfg), "--adapter", "caddyfile"], env=env,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if not wait_port(cls.PORT):
+            cls.proc.kill()
+            raise RuntimeError("caddy did not start:\n" + cls.proc.stdout.read().decode()[-2000:])
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.proc.terminate()
+        cls.proc.wait(timeout=10)
+        for s in cls.servers:
+            try:
+                s.shutdown()
+            except Exception:
+                pass
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def ask(self, room):
+        c = http.client.HTTPConnection("127.0.0.1", self.PORT, timeout=15)
+        c.request("GET", f"/collab/{room}")
+        r = c.getresponse()
+        body = r.read()
+        c.close()
+        return r.status, body
+
+    rooms = [f"3f2a{n:04d}-0000-4000-8000-00000000{n:04d}" for n in range(60)]
+
+    def test_1_the_same_room_always_reaches_the_same_instance_and_rooms_spread_over_both(self):
+        owner = {}
+        for room in self.rooms:
+            seen = set()
+            for _ in range(5):
+                status, body = self.ask(room)
+                self.assertEqual(status, 200)
+                seen.add(json.loads(body)["instance"])
+            self.assertEqual(len(seen), 1, f"room {room} moved between instances: {seen}")
+            owner[room] = seen.pop()
+        type(self).owner = owner
+        counts = {n: list(owner.values()).count(n) for n in ("collab1", "collab2")}
+        self.assertGreaterEqual(min(counts.values()), 10, f"rooms are not spread over both instances: {counts}")
+
+    def test_2_a_websocket_upgrade_passes_through_and_stays_open(self):
+        key = "dGhlIHNhbXBsZSBub25jZQ=="
+        with socket.create_connection(("127.0.0.1", self.PORT), timeout=10) as s:
+            s.sendall(
+                (
+                    f"GET /collab/{self.rooms[0]} HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+                    f"Sec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n"
+                ).encode()
+            )
+            head = b""
+            while b"\r\n\r\n" not in head:
+                head += s.recv(1024)
+            self.assertTrue(head.startswith(b"HTTP/1.1 101"), head[:80])
+            self.assertIn(b"s3pPLMBiTxaQ9kYGzzhZRbK+xOo=", head)  # the accept value for that key
+            s.sendall(b"ping-through-the-edge")
+            self.assertEqual(s.recv(100), b"ping-through-the-edge")
+
+    def test_3_when_one_instance_dies_its_rooms_move_to_the_other_and_every_request_succeeds(self):
+        self.servers[1].shutdown()
+        self.servers[1].server_close()  # collab2 is gone: connections to it are refused
+        for room in self.rooms:
+            status, body = self.ask(room)
+            self.assertEqual(status, 200, f"room {room} failed after collab2 died")
+            self.assertEqual(json.loads(body)["instance"], "collab1")
+        # rooms that were already on collab1 did not move
+        for room, name in self.owner.items():
+            if name == "collab1":
+                self.assertEqual(json.loads(self.ask(room)[1])["instance"], "collab1")
+
+    def test_4_with_no_instance_left_the_answer_is_the_friendly_503(self):
+        self.servers[0].shutdown()
+        self.servers[0].server_close()
+        status, body = self.ask(self.rooms[0])
+        self.assertEqual((status, body), (503, b"The collaborative pad is not available right now."))
 
 
 if __name__ == "__main__":

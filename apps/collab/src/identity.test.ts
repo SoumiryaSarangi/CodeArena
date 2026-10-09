@@ -11,7 +11,7 @@ const who = { name: 'asha', role: 'candidate', colorIndex: 3 } as const;
 const ID = '123e4567-e89b-42d3-a456-426614174000';
 
 describe('FR-PAD-03: document names', () => {
-  it('only room:{uuid} is a room', () => {
+  it('only room:{uuid} is a room', async () => {
     expect(roomIdOf(`room:${ID}`)).toBe(ID);
     for (const bad of [
       '',
@@ -30,7 +30,7 @@ describe('FR-PAD-03: document names', () => {
 });
 
 describe('FR-PAD-04: awareness rewriting', () => {
-  it('presence carries only verified fields, and the colour index stays inside the palette', () => {
+  it('presence carries only verified fields, and the colour index stays inside the palette', async () => {
     expect(presenceUser({ ...who, colorIndex: 11 })).toEqual({
       name: 'asha',
       role: 'candidate',
@@ -38,12 +38,12 @@ describe('FR-PAD-04: awareness rewriting', () => {
     });
   });
 
-  it('replaces `user` in every state a connection owns and keeps the other fields', () => {
+  it('replaces `user` in every state a connection owns and keeps the other fields', async () => {
     const owners = new AwarenessOwners();
     const states = new Map<number, Record<string, unknown> | null>([
       [1, { user: { name: 'Admin' }, cursor: { anchor: 1 } }],
     ]);
-    expect(rewriteAwareness(states, who, 'room:a', 's1', owners)).toEqual({
+    expect(await rewriteAwareness(states, who, 'room:a', 's1', owners)).toEqual({
       rewritten: 1,
       dropped: 0,
     });
@@ -53,42 +53,44 @@ describe('FR-PAD-04: awareness rewriting', () => {
     });
   });
 
-  it('a state without a user gets one; removing your own presence passes through', () => {
+  it('a state without a user gets one; removing your own presence passes through', async () => {
     const owners = new AwarenessOwners();
     const states = new Map<number, Record<string, unknown> | null>([[7, { cursor: 1 }]]);
-    rewriteAwareness(states, who, 'room:a', 's1', owners);
+    await rewriteAwareness(states, who, 'room:a', 's1', owners);
     expect(states.get(7)!.user).toBeDefined();
     const gone = new Map<number, Record<string, unknown> | null>([[7, null]]);
-    expect(rewriteAwareness(gone, who, 'room:a', 's1', owners)).toEqual({
+    expect(await rewriteAwareness(gone, who, 'room:a', 's1', owners)).toEqual({
       rewritten: 0,
       dropped: 0,
     });
     expect(gone.has(7)).toBe(true);
   });
 
-  it('ids owned by another connection are dropped, in the same document only, and free up on disconnect', () => {
+  it('ids owned by another connection are dropped, in the same document only, and free up on disconnect', async () => {
     const owners = new AwarenessOwners();
-    rewriteAwareness(new Map([[5, { cursor: 1 }]]), who, 'room:a', 's1', owners);
+    await rewriteAwareness(new Map([[5, { cursor: 1 }]]), who, 'room:a', 's1', owners);
     const attack = new Map<number, Record<string, unknown> | null>([
       [5, { user: { name: 'x' } }],
       [6, null],
     ]);
-    expect(rewriteAwareness(attack, who, 'room:a', 's2', owners)).toMatchObject({ dropped: 1 });
+    expect(await rewriteAwareness(attack, who, 'room:a', 's2', owners)).toMatchObject({
+      dropped: 1,
+    });
     expect(attack.has(5)).toBe(false);
     expect(attack.has(6)).toBe(true); // s2 takes a fresh id
     const sameIdOtherRoom = new Map<number, Record<string, unknown> | null>([[5, { cursor: 2 }]]);
-    expect(rewriteAwareness(sameIdOtherRoom, who, 'room:b', 's2', owners).dropped).toBe(0);
-    owners.release('room:a', 's1');
+    expect((await rewriteAwareness(sameIdOtherRoom, who, 'room:b', 's2', owners)).dropped).toBe(0);
+    await owners.release('room:a', 's1');
     const after = new Map<number, Record<string, unknown> | null>([[5, { cursor: 3 }]]);
-    expect(rewriteAwareness(after, who, 'room:a', 's2', owners).dropped).toBe(0);
+    expect((await rewriteAwareness(after, who, 'room:a', 's2', owners)).dropped).toBe(0);
   });
 
-  it('drops a state over the size limit', () => {
+  it('drops a state over the size limit', async () => {
     const owners = new AwarenessOwners();
     const big = new Map<number, Record<string, unknown> | null>([
       [1, { blob: 'z'.repeat(MAX_AWARENESS_BYTES) }],
     ]);
-    expect(rewriteAwareness(big, who, 'room:a', 's1', owners)).toEqual({
+    expect(await rewriteAwareness(big, who, 'room:a', 's1', owners)).toEqual({
       rewritten: 0,
       dropped: 1,
     });

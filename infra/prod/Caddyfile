@@ -43,12 +43,27 @@
 		reverse_proxy api:4000
 	}
 
-	# Collaborative pad (Day 12). Prepared, not deployed: when the two `collab` instances exist, replace
-	# this with
-	#     reverse_proxy collab1:1234 collab2:1234 { lb_policy uri_hash }
-	# so every request for one room id lands on the same instance (SD-§11.3 room-hash routing).
+	# Collaborative pad (CP-03): two collab instances, and every request for one room id goes to the same one
+	# (`uri_hash`, SD-§11.3), so a room normally lives on one instance. The URL carries the room id and nothing that
+	# changes between reconnects. A dead instance is skipped (active health check, and a connection that fails is retried
+	# on the other for a few seconds); with none running the answer is the same friendly 503 as before they existed.
+	# COLLAB_UPSTREAMS overrides the two addresses (the Caddy test points it at local fakes).
 	handle /collab/* {
-		respond "The collaborative pad is not deployed yet." 503
+		reverse_proxy {$COLLAB_UPSTREAMS:collab1:1234 collab2:1234} {
+			lb_policy uri_hash
+			lb_try_duration 3s
+			lb_try_interval 250ms
+			health_uri /
+			health_interval 5s
+			health_timeout 2s
+			fail_duration 10s
+			max_fails 1
+		}
+	}
+
+	handle_errors {
+		@pad path /collab/*
+		respond @pad "The collaborative pad is not available right now." 503
 	}
 
 	handle {

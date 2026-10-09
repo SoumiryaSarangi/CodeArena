@@ -1,0 +1,20 @@
+# The root .dockerignore keeps apps/collab out of the API image; this one is for the collab image only (BuildKit uses
+# <Dockerfile>.dockerignore when it exists).
+**/node_modules
+**/.next
+**/dist
+.git
+.github
+docs
+apps/web
+apps/worker
+apps/plag
+apps/api
+problems-private
+infra
+tests
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+**/*.test.ts

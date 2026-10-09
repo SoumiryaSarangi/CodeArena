@@ -20,30 +20,70 @@ export const MAX_AWARENESS_BYTES = 4096;
 type State = Record<string, unknown> | null;
 
 /**
+ * Where a claim on an awareness client id is recorded beyond this process. With several collab instances a claim has to
+ * be shared, or an attacker on instance B could take the id of someone on instance A (FR-PAD-04).
+ */
+export interface ClaimBackend {
+  /** True if `socketId` holds this id afterwards (it took it, or already had it); false if someone else holds it. */
+  claim(documentName: string, clientId: number, socketId: string): Promise<boolean>;
+  release(documentName: string, clientId: number, socketId: string): Promise<void>;
+  /** Keeps live claims alive; claims of a dead instance expire by themselves. */
+  refresh?(claims: { documentName: string; clientId: number; socketId: string }[]): Promise<void>;
+}
+
+/**
  * Who may speak for which awareness client id. The first connection to write an id owns it until that connection goes
  * away; another connection that writes the same id (to rename a peer, or to remove them) is ignored. Without this a
- * contestant-grade attacker could erase or impersonate the interviewer's cursor.
+ * contestant-grade attacker could erase or impersonate the interviewer's cursor. A local map answers the common case;
+ * the optional backend makes the claim hold across instances. If the backend cannot be reached the claim is refused:
+ * presence may be lost for a moment, it is never taken over.
  */
 export class AwarenessOwners {
   private readonly owners = new Map<string, Map<number, string>>();
 
+  constructor(private readonly backend?: ClaimBackend) {}
+
   /** True if `socketId` owns (or now takes) `clientId` in this document. */
-  claim(documentName: string, clientId: number, socketId: string): boolean {
+  async claim(documentName: string, clientId: number, socketId: string): Promise<boolean> {
     let doc = this.owners.get(documentName);
-    if (!doc) this.owners.set(documentName, (doc = new Map()));
-    const owner = doc.get(clientId);
-    if (owner === undefined) {
-      doc.set(clientId, socketId);
-      return true;
+    const owner = doc?.get(clientId);
+    if (owner !== undefined) return owner === socketId;
+    if (this.backend) {
+      try {
+        if (!(await this.backend.claim(documentName, clientId, socketId))) return false;
+      } catch {
+        return false;
+      }
     }
-    return owner === socketId;
+    // Another update of the same connection may have claimed it while we waited.
+    doc = this.owners.get(documentName);
+    if (!doc) this.owners.set(documentName, (doc = new Map()));
+    const now = doc.get(clientId);
+    if (now !== undefined && now !== socketId) return false;
+    doc.set(clientId, socketId);
+    return true;
   }
 
-  release(documentName: string, socketId: string): void {
+  async release(documentName: string, socketId: string): Promise<void> {
     const doc = this.owners.get(documentName);
     if (!doc) return;
-    for (const [id, owner] of doc) if (owner === socketId) doc.delete(id);
+    for (const [id, owner] of [...doc]) {
+      if (owner !== socketId) continue;
+      doc.delete(id);
+      await this.backend?.release(documentName, id, socketId).catch(() => undefined);
+    }
     if (doc.size === 0) this.owners.delete(documentName);
+  }
+
+  /** Everything this process currently owns, for the refresh timer. */
+  claims(): { documentName: string; clientId: number; socketId: string }[] {
+    return [...this.owners].flatMap(([documentName, doc]) =>
+      [...doc].map(([clientId, socketId]) => ({ documentName, clientId, socketId })),
+    );
+  }
+
+  async refresh(): Promise<void> {
+    await this.backend?.refresh?.(this.claims()).catch(() => undefined);
   }
 }
 
@@ -52,17 +92,17 @@ export class AwarenessOwners {
  * the verified identity (cursor and selection stay), states for ids the connection does not own are dropped, and
  * oversized states are dropped. Returns how many states were changed or removed (for the metric).
  */
-export function rewriteAwareness(
+export async function rewriteAwareness(
   states: Map<number, State>,
   who: Pick<CollabIdentity, 'name' | 'role' | 'colorIndex'>,
   documentName: string,
   socketId: string,
   owners: AwarenessOwners,
-): { rewritten: number; dropped: number } {
+): Promise<{ rewritten: number; dropped: number }> {
   let rewritten = 0;
   let dropped = 0;
   for (const [clientId, state] of [...states]) {
-    if (!owners.claim(documentName, clientId, socketId)) {
+    if (!(await owners.claim(documentName, clientId, socketId))) {
       states.delete(clientId);
       dropped++;
       continue;

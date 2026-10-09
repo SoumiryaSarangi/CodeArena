@@ -110,6 +110,50 @@ services:
     depends_on:
       api: { condition: service_healthy }
 
+  # The interview pad's collaboration server (CP-03): two instances behind Caddy's URI-hash routing, sharing updates through
+  # Redis and storing documents in Postgres. Off until the `collab` profile is started (the pipeline job is CP-DEPLOY).
+  # Optional variables with defaults, for the same reason as `plag` above. They get the three variables they need from
+  # prod.env and nothing else: no JWT key, no AI keys.
+  collab1: &collab
+    <<: *restart
+    image: ${COLLAB_IMAGE:-codearena-collab:not-deployed}
+    profiles: ['collab']
+    environment: &collab-env
+      PORT: '1234'
+      API_URL: http://api:4000
+      DATABASE_URL: ${DATABASE_URL:-}
+      REDIS_URL: ${REDIS_URL:-}
+      COLLAB_SERVICE_TOKEN: ${COLLAB_SERVICE_TOKEN:-}
+      COLLAB_INSTANCE: collab1
+    read_only: true
+    tmpfs: ['/tmp']
+    cpus: 0.5
+    mem_limit: 512m
+    # Caddy reaches it by service name; nothing is published. SIGTERM flushes open documents, give it time.
+    stop_grace_period: 20s
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      api: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:1234/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  collab2:
+    <<: *collab
+    environment:
+      <<: *collab-env
+      COLLAB_INSTANCE: collab2
+
   postgres:
     <<: *restart
     image: postgres:16

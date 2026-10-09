@@ -153,6 +153,57 @@ class PlagJob(unittest.TestCase):
         self.assertTrue(services["plag"]["image"].startswith("${PLAG_IMAGE:-"))
 
 
+class CollabInstances(unittest.TestCase):
+    """CP-03: two collab instances, opt-in, with the three variables they need and nothing else."""
+
+    NAMES = ["collab1", "collab2"]
+
+    def test_they_only_run_when_asked_for(self):
+        for n in self.NAMES:
+            self.assertEqual(services[n]["profiles"], ["collab"])
+
+    def test_they_get_exactly_these_variables_and_no_env_file(self):
+        for n in self.NAMES:
+            svc = services[n]
+            self.assertNotIn("env_file", svc, "prod.env holds the JWT key and the AI keys")
+            self.assertEqual(
+                sorted(svc["environment"]),
+                ["API_URL", "COLLAB_INSTANCE", "COLLAB_SERVICE_TOKEN", "DATABASE_URL", "PORT", "REDIS_URL"],
+            )
+            for k in ("DATABASE_URL", "REDIS_URL", "COLLAB_SERVICE_TOKEN"):
+                # optional with a default (see the plag job), never `:?`
+                self.assertRegex(svc["environment"][k], r"^\$\{" + k + r":-\}$")
+            self.assertEqual(svc["environment"]["API_URL"], "http://api:4000")
+
+    def test_the_instances_differ_only_by_name(self):
+        a, b = (services[n] for n in self.NAMES)
+        self.assertEqual({k: v for k, v in a.items() if k != "environment"}, {k: v for k, v in b.items() if k != "environment"})
+        self.assertEqual([a["environment"]["COLLAB_INSTANCE"], b["environment"]["COLLAB_INSTANCE"]], self.NAMES)
+        self.assertEqual({k: v for k, v in a["environment"].items() if k != "COLLAB_INSTANCE"}, {k: v for k, v in b["environment"].items() if k != "COLLAB_INSTANCE"})
+
+    def test_they_publish_nothing_and_are_locked_down(self):
+        for n in self.NAMES:
+            svc = services[n]
+            self.assertEqual(svc.get("ports", []), [], "Caddy reaches them by service name")
+            self.assertTrue(svc["read_only"])
+            self.assertEqual(svc["restart"], "unless-stopped")
+            self.assertNotIn("volumes", svc)
+            self.assertRegex(str(svc["mem_limit"]), r"^\d+[mg]$")
+            self.assertLessEqual(float(svc["cpus"]), 1.0)
+
+    def test_they_wait_for_their_dependencies_and_get_time_to_flush_on_stop(self):
+        for n in self.NAMES:
+            svc = services[n]
+            self.assertEqual(sorted(svc["depends_on"]), ["api", "postgres", "redis"])
+            self.assertTrue(all(v == {"condition": "service_healthy"} for v in svc["depends_on"].values()))
+            self.assertGreaterEqual(int(str(svc["stop_grace_period"]).rstrip("s")), 15)  # SIGTERM stores open documents
+            self.assertIn("healthcheck", svc)
+
+    def test_the_image_is_chosen_by_the_operator(self):
+        for n in self.NAMES:
+            self.assertTrue(services[n]["image"].startswith("${COLLAB_IMAGE:-"))
+
+
 class RendersLikeADeploy(unittest.TestCase):
     """The deploy runs Compose with API_IMAGE (and prod.env) and nothing else. Compose evaluates `${X:?}` for every
     service, even those in an inactive profile, so one service that needs another variable breaks every deploy: this renders
@@ -191,6 +242,25 @@ class RendersLikeADeploy(unittest.TestCase):
         names = r.stdout.split()
         self.assertIn("api", names)
         self.assertNotIn("plag", names)  # and the job is not part of it
+        self.assertNotIn("collab1", names)  # nor are the pad instances
+        self.assertNotIn("collab2", names)
+
+    def test_the_collab_profile_renders_with_defaults_and_passes_only_its_variables(self):
+        r = self.render("--profile", "collab", "config", "--services")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue({"collab1", "collab2"} <= set(r.stdout.split()))
+        r = self.render(
+            "--profile", "collab", "config", "--format", "json",
+            extra_env={"COLLAB_IMAGE": "ghcr.io/x/codearena-collab@sha256:" + "2" * 64, "COLLAB_SERVICE_TOKEN": "c" * 48},
+        )  # fmt: skip
+        self.assertEqual(r.returncode, 0, r.stderr)
+        rendered = json.loads(r.stdout)["services"]
+        for n in ("collab1", "collab2"):
+            env = rendered[n]["environment"]
+            self.assertEqual(env["COLLAB_SERVICE_TOKEN"], "c" * 48)
+            self.assertTrue(env["DATABASE_URL"] == "" or env["DATABASE_URL"].startswith("postgres"))
+            self.assertNotIn("JWT_PRIVATE_KEY", env)
+            self.assertTrue(rendered[n]["image"].startswith("ghcr.io/x/codearena-collab@sha256:"))
 
     def test_the_plag_profile_renders_with_its_defaults_and_with_real_values(self):
         r = self.render("--profile", "plag", "config", "--services")
@@ -204,7 +274,7 @@ class RendersLikeADeploy(unittest.TestCase):
         self.assertIn("ghcr.io/x/codearena-plag@sha256:", r.stdout)
 
     def test_every_service_with_a_profile_renders_when_only_the_deploy_variables_are_set(self):
-        for profile in ("tools", "observability", "plag"):
+        for profile in ("tools", "observability", "plag", "collab"):
             r = self.render("--profile", profile, "config", "--services")
             self.assertEqual(r.returncode, 0, f"{profile}: {r.stderr}")
 
@@ -263,9 +333,13 @@ class Caddy(unittest.TestCase):
         self.assertIn('X-Content-Type-Options "nosniff"', caddyfile)
         self.assertIn("-Server", caddyfile)
 
-    def test_the_pad_route_is_prepared_but_answers_503_until_it_exists(self):
-        self.assertIn("503", self.block("/collab/*"))
-        self.assertIn("lb_policy uri_hash", caddyfile)  # documented for when the instances exist
+    def test_the_pad_is_routed_by_room_id_to_two_instances_with_a_friendly_503_when_none_runs(self):
+        pad = self.block("/collab/*")
+        self.assertIn("lb_policy uri_hash", pad)
+        self.assertIn("collab1:1234 collab2:1234", pad)
+        self.assertIn("health_uri", pad)  # a dead instance is skipped
+        self.assertIn("lb_try_duration", pad)
+        self.assertRegex(caddyfile, r"handle_errors\s*\{[^}]*/collab/\*[^}]*503")
 
     def test_no_directive_can_render_empty(self):
         # An optional environment value in a directive that needs an argument (`email {$X:}` with X
