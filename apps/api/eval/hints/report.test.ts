@@ -188,7 +188,15 @@ describe('FR-AI-09: human labels and the sheet', () => {
       ],
     };
     const l = summarize(rows, ds, sheet).labels!;
-    expect(l).toMatchObject({ labelled: 4, total: 5 });
+    expect(l).toMatchObject({
+      labelled: 4,
+      total: 5,
+      labelledBy: 'Ayush',
+      counts: { leak: 2, spoiler: 1, ok: 1 },
+    });
+    // the judge against "spoiler or leak": a→leak (said code-leak: TP), b→ok (said ok: TN), c→leak (said ok: FN), d→spoiler (said ok: FN)
+    expect(l.spoilerJudge).toMatchObject({ tp: 1, fp: 0, fn: 2, tn: 1, precision: 1 });
+    expect(l.spoilerJudge.recall).toBeCloseTo(1 / 3);
     const by = Object.fromEntries(l.detectors.map((d) => [d.name.split(' ')[0], d]));
     expect(by.D1).toMatchObject({ tp: 1, fp: 1, fn: 1, tn: 1, precision: 0.5, recall: 0.5 });
     expect(by.D3).toMatchObject({ tp: 1, fp: 0, fn: 1, tn: 2, precision: 1, recall: 0.5 });
@@ -247,7 +255,7 @@ describe('FR-AI-09: METRICS.md', () => {
     null,
   );
 
-  it('renders both stages, the M7 verdict, the cost, and says the human labels are pending', () => {
+  it('renders both stages, the M7 verdict, the cost, and says the labels are pending', () => {
     const md = renderBlock(s);
     expect(md).toContain('<!-- hints-eval:hint-main@1 -->');
     expect(md).toContain('A · main model alone (no removal pass)');
@@ -256,6 +264,25 @@ describe('FR-AI-09: METRICS.md', () => {
     expect(md).toContain('50.0% (1/2)');
     expect(md).toContain('Human labels: 0 of 20 (pending');
     expect(md).toContain('p95 2.0 s');
+  });
+
+  it("says who labelled, so labels by a model are never read as a person's", () => {
+    const sheet: LabelSheet = {
+      note: '',
+      labelledBy: "Claude, at Ayush's request",
+      entries: [
+        { key: 'x#A', level: 1, problem: 'p', statementExcerpt: '', text: 't', label: 'ok' },
+      ],
+    };
+    const rows = [row({ id: 'x', A: stage('t', { d3: 'spoiler' }) })];
+    const md = renderBlock(summarize(rows, ds, sheet));
+    expect(md).toContain(
+      "Against the labels by Claude, at Ayush's request (1 of 1 labelled: 0 leak, 0 spoiler, 1 ok",
+    );
+    expect(md).toContain(
+      'Over-reveals, the judge\'s "spoiler or code-leak" against the labels "spoiler or leak"',
+    );
+    expect(md).toContain('precision 0%');
   });
 
   it('adds the block under its heading, replaces the same prompt version, keeps other versions and other sections', () => {

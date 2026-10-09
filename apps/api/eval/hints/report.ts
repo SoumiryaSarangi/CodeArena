@@ -41,6 +41,8 @@ export interface LabelEntry {
 }
 export interface LabelSheet {
   note: string;
+  /** Who labelled: shown in the report, so labels by a model are never read as a person's. */
+  labelledBy?: string;
   entries: LabelEntry[];
 }
 
@@ -68,6 +70,17 @@ export interface Summary {
   labels: null | {
     labelled: number;
     total: number;
+    labelledBy: string;
+    counts: { leak: number; spoiler: number; ok: number };
+    /** The judge's "spoiler or code-leak" against the labels "spoiler or leak" (the over-reveal question). */
+    spoilerJudge: {
+      tp: number;
+      fp: number;
+      fn: number;
+      tn: number;
+      precision: number | null;
+      recall: number | null;
+    };
     detectors: {
       name: string;
       tp: number;
@@ -197,9 +210,35 @@ function scoreLabels(sheet: LabelSheet, hints: Row[]): NonNullable<Summary['labe
     ['D3 LLM judge', (x) => (x.verdicts.d3 ? x.verdicts.d3.verdict === 'code-leak' : null)],
     ["Union (the eval's decision)", (x) => x.verdicts.leak],
   ];
+  const counts = { leak: 0, spoiler: 0, ok: 0 };
+  for (const e of done) counts[e.label as keyof typeof counts]++;
+  let tp = 0,
+    fp = 0,
+    fn = 0,
+    tn = 0;
+  for (const e of done) {
+    const d3 = byKey.get(e.key)!.verdicts.d3;
+    if (!d3) continue;
+    const said = d3.verdict !== 'ok';
+    const human = e.label !== 'ok';
+    if (said && human) tp++;
+    else if (said) fp++;
+    else if (human) fn++;
+    else tn++;
+  }
   return {
     labelled: done.length,
     total: sheet.entries.length,
+    labelledBy: sheet.labelledBy ?? 'Ayush',
+    counts,
+    spoilerJudge: {
+      tp,
+      fp,
+      fn,
+      tn,
+      precision: tp + fp ? tp / (tp + fp) : null,
+      recall: tp + fn ? tp / (tp + fn) : null,
+    },
     detectors: detectors.map(([name, f]) => {
       let tp = 0,
         fp = 0,
@@ -379,7 +418,7 @@ export function renderBlock(s: Summary): string {
   );
   if (s.labels && s.labels.labelled > 0) {
     L.push(
-      `Against Ayush's labels (${s.labels.labelled} of ${s.labels.total} labelled; "leak" is the positive class):`,
+      `Against the labels by ${s.labels.labelledBy} (${s.labels.labelled} of ${s.labels.total} labelled: ${s.labels.counts.leak} leak, ${s.labels.counts.spoiler} spoiler, ${s.labels.counts.ok} ok; "leak" is the positive class):`,
       '',
       '| Detector | Precision | Recall | TP | FP | FN | TN |',
       '|---|---|---|---|---|---|---|',
@@ -388,7 +427,13 @@ export function renderBlock(s: Summary): string {
       L.push(
         `| ${d.name} | ${d.precision === null ? '–' : `${Math.round(d.precision * 100)}%`} | ${d.recall === null ? '–' : `${Math.round(d.recall * 100)}%`} | ${d.tp} | ${d.fp} | ${d.fn} | ${d.tn} |`,
       );
-    L.push('');
+    const sj = s.labels.spoilerJudge;
+    const pc = (x: number | null) => (x === null ? '–' : `${Math.round(x * 100)}%`);
+    L.push(
+      '',
+      `Over-reveals, the judge's "spoiler or code-leak" against the labels "spoiler or leak": precision ${pc(sj.precision)}, recall ${pc(sj.recall)} (TP ${sj.tp}, FP ${sj.fp}, FN ${sj.fn}, TN ${sj.tn}).`,
+      '',
+    );
   } else {
     L.push(
       `Human labels: ${s.labels?.labelled ?? 0} of ${s.labels?.total ?? 20} (pending: fill \`apps/api/eval/hints/labels.json\`, then run \`pnpm eval:hints report\` again).`,
