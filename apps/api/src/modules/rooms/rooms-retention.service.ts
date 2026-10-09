@@ -15,7 +15,7 @@ export const LOG_RETENTION_DAYS = 90;
 const EVERY_MS = 6 * 3_600_000;
 
 /**
- * CP-06 (SD-§6.4): 90 days after a room closed, its update log and checkpoints are deleted ("compacted to the final
+ * CP-06 (SD-§6.4): 90 days after a room closed, its update log, checkpoints and version snapshots are deleted ("compacted to the final
  * state": the final document stays in `room_docs`, and the events and notes stay with the room). A room nobody closed counts
  * from the end of its 90-minute session. Idempotent, so every API instance may run it.
  */
@@ -29,15 +29,18 @@ export class RoomsRetention implements OnApplicationBootstrap, OnApplicationShut
     @Inject(LOGGER) private readonly log: Logger,
   ) {}
 
-  async purge(now: Date = new Date()): Promise<{ updates: number; checkpoints: number }> {
+  async purge(
+    now: Date = new Date(),
+  ): Promise<{ updates: number; checkpoints: number; snapshots: number }> {
     const cutoff = new Date(now.getTime() - LOG_RETENTION_DAYS * 86_400_000).toISOString();
     const old = sql`(select id from rooms where coalesce(closed_at, created_at + interval '90 minutes') < ${cutoff}::timestamptz)`;
     const count = async (q: ReturnType<typeof sql>) => (await this.db.execute(q)).rowCount ?? 0;
     const checkpoints = await count(sql`delete from room_checkpoints where room_id in ${old}`);
     const updates = await count(sql`delete from room_updates where room_id in ${old}`);
-    if (updates + checkpoints > 0)
-      this.log.info({ updates, checkpoints }, 'room update logs past retention deleted');
-    return { updates, checkpoints };
+    const snapshots = await count(sql`delete from room_snapshots where room_id in ${old}`);
+    if (updates + checkpoints + snapshots > 0)
+      this.log.info({ updates, checkpoints, snapshots }, 'room update logs past retention deleted');
+    return { updates, checkpoints, snapshots };
   }
 
   onApplicationBootstrap() {

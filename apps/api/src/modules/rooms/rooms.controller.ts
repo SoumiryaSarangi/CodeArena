@@ -18,6 +18,7 @@ import {
   RoomInviteCreate,
   RoomJoin,
   RoomNotesPut,
+  RoomRestore,
   RoomRunCreate,
 } from '@codearena/contracts';
 import type { Request, Response } from 'express';
@@ -26,6 +27,7 @@ import { RateLimit } from '../../rate-limit/rate-limit';
 import { RequireHandle } from '../auth/guards';
 import { RoomNotesService } from './room-notes.service';
 import { RoomPlaybackService } from './room-playback.service';
+import { RoomRestoreService } from './room-restore.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
 
@@ -47,6 +49,7 @@ export class RoomsController {
     @Inject(RoomRunsService) private readonly runs: RoomRunsService,
     @Inject(RoomNotesService) private readonly notes: RoomNotesService,
     @Inject(RoomPlaybackService) private readonly playback: RoomPlaybackService,
+    @Inject(RoomRestoreService) private readonly restorer: RoomRestoreService,
   ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
@@ -97,6 +100,13 @@ export class RoomsController {
   @Get(':id/runs')
   runList(@Req() req: Request, @Param('id') id: string) {
     return this.runs.list(req.user!, Id.parse(id));
+  }
+
+  /** FR-PAD-12: put the code of one of the room's runs back, as an edit everyone converges on. Interviewer only. */
+  @Post(':id/restore')
+  @HttpCode(200)
+  restore(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.restorer.restore(req.user!, Id.parse(id), RoomRestore.parse(body));
   }
 
   /** FR-PAD-09: the interviewer's private notes. Never cached; nobody else gets them by any route. */

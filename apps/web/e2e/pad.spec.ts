@@ -14,6 +14,7 @@ import { emit, sseUrls, stubApi } from './stub-api';
 const PORT = Number(process.env.COLLAB_E2E_PORT ?? 1299);
 const SERVICE_TOKEN = 'e'.repeat(40);
 const ROOM = randomUUID();
+const DOC_CAP = 8_000;
 
 type Role = 'interviewer' | 'candidate' | 'observer';
 interface Identity {
@@ -61,6 +62,8 @@ test.beforeAll(async () => {
       COLLAB_SERVICE_TOKEN: SERVICE_TOKEN,
       // the browser tests need no database: documents live in memory (never allowed in production)
       COLLAB_MEMORY: '1',
+      // FR-PAD-13 without pasting 2 MB: the cap is lowered for the browser tests
+      COLLAB_MAX_DOC_BYTES: String(DOC_CAP),
     },
     stdio: 'ignore',
   });
@@ -106,6 +109,7 @@ async function enter(
     problem?: boolean;
     notes?: (body: Record<string, unknown>) => { status: number; body: unknown };
     runs?: (body: Record<string, unknown>) => { status: number; body: unknown };
+    restore?: (body: Record<string, unknown>) => Promise<{ status: number; body: unknown }>;
   } = {},
 ): Promise<Page> {
   const page = await context.newPage();
@@ -165,6 +169,20 @@ async function enter(
     const answer = (opts.runs ?? ((b) => ({ status: 202, body: { runId: b.runId } })))(
       r.request().postDataJSON() as Record<string, unknown>,
     );
+    return r.fulfill({
+      status: answer.status,
+      contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
+      body: JSON.stringify(answer.body),
+    });
+  });
+  // CP-07: restore. The test's handler plays the API, and may forward to the real collab server.
+  await page.route(`**/api/rooms/${ROOM}/restore`, async (r) => {
+    const answer = (await opts.restore?.(
+      r.request().postDataJSON() as Record<string, unknown>,
+    )) ?? {
+      status: 404,
+      body: { type: 'about:blank', title: 'Not found', status: 404, code: 'not-found' },
+    };
     return r.fulfill({
       status: answer.status,
       contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
@@ -752,6 +770,163 @@ test.describe('CP-05: private interviewer notes', () => {
       await meera.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
     ).toBe(false);
     const results = await new AxeBuilder({ page: meera }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await ctx.close();
+  });
+});
+
+test.describe('CP-07: the document size cap', () => {
+  test('FR-PAD-13: a paste past the cap is refused with a clear message; the others keep the saved code', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+    await type(meera, 'saved code');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('saved code');
+    const length = (p: Page) =>
+      p.evaluate(() =>
+        (
+          globalThis as unknown as {
+            monaco: { editor: { getModels: () => { getValueLength: () => number }[] } };
+          }
+        ).monaco.editor
+          .getModels()[0]!
+          .getValueLength(),
+      );
+    const block = ('x'.repeat(99) + '\n').repeat(Math.floor(DOC_CAP / 2 / 100));
+    await asha.locator('.monaco-editor').first().click();
+    await asha.keyboard.insertText(block); // fits: about half the cap
+    await expect.poll(() => length(meera), { timeout: 10_000 }).toBe(block.length + 10);
+    await asha.keyboard.insertText(block); // would pass the cap
+    await expect(asha.getByRole('alert').filter({ hasText: '2 MB limit' })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(asha.getByRole('alert').filter({ hasText: 'not saved' })).toBeVisible();
+    // the editor sends a big paste as many small changes: the server takes them until the cap and no further
+    await new Promise((r) => setTimeout(r, 500));
+    const kept = await length(meera);
+    expect(kept).toBeGreaterThan(block.length);
+    expect(kept).toBeLessThanOrEqual(DOC_CAP);
+    expect(kept).toBeLessThan(block.length * 2 + 10);
+    // the interviewer is not disturbed, and clearing the full pad is never refused. (History is kept for the replay,
+    // so deleting does not make room again: that is what the cap is for.)
+    await meera.locator('.monaco-editor').first().click();
+    await meera.keyboard.press('ControlOrMeta+A');
+    await meera.keyboard.press('Delete');
+    await expect.poll(() => length(meera)).toBe(0);
+    await ca.close();
+    await cb.close();
+  });
+});
+
+test.describe('CP-07: restoring a version', () => {
+  const show = async (pages: Page[], runId: string) => {
+    for (const p of pages) {
+      await listening(p);
+      await emit(
+        p,
+        ROOM,
+        'room.run',
+        `e-${runId}`,
+        view({ runId, status: 'done', verdict: 'AC' }),
+        `room:${ROOM}`,
+      );
+    }
+  };
+
+  test('FR-PAD-12: the interviewer restores a run and the candidate sees the code and the language go back, without reloading', async ({
+    browser,
+  }) => {
+    const asked: Record<string, unknown>[] = [];
+    const saved = new Map([['r1', { text: 'int main() {}', language: 'cpp17' }]]);
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    let interviewerId = '';
+    const meera = await enter(ca, 'meera', 'interviewer', 'open', {
+      // the API: look the version up, then ask the real collab server to apply it
+      restore: async (b) => {
+        asked.push(b);
+        const snap = saved.get('r1')!;
+        const res = await fetch(`http://127.0.0.1:${PORT}/internal/rooms/${ROOM}/restore`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-service-token': SERVICE_TOKEN },
+          body: JSON.stringify({ ...snap, userId: interviewerId || randomUUID() }),
+        });
+        return { status: res.status === 200 ? 200 : 500, body: { runId: b.runId } };
+      },
+    });
+    interviewerId = randomUUID();
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+
+    await type(meera, 'int main() {}');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('int main() {}');
+    await show([meera, asha], 'r1');
+    // the candidate has no way to restore
+    await expect(asha.getByRole('button', { name: 'Restore this version' })).toHaveCount(0);
+
+    await type(asha, ' // and then a lot of other code');
+    await asha.getByLabel('Language').selectOption('python3');
+    await expect.poll(() => editorText(meera), { timeout: 10_000 }).toContain('other code');
+    await expect(meera.getByLabel('Language')).toHaveValue('python3');
+
+    await meera.getByRole('button', { name: 'Restore this version' }).click();
+    const dialog = meera.getByRole('dialog', { name: 'Restore this version?' });
+    await expect(dialog).toContainText('Everyone in the room will see the code go back');
+    await dialog.getByRole('button', { name: 'Restore', exact: true }).click();
+
+    await expect(meera.getByText(/^Restored the code from @meera's run at/)).toBeVisible();
+    expect(asked).toEqual([{ runId: 'r1' }]);
+    for (const p of [meera, asha]) {
+      await expect.poll(() => editorText(p), { timeout: 10_000 }).toBe('int main() {}');
+      await expect(p.getByLabel('Language')).toHaveValue('cpp17');
+    }
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-12: the button is only for the interviewer, and a refusal is shown in words', async ({
+    browser,
+  }) => {
+    const [ca, cb, cc] = [
+      await browser.newContext(),
+      await browser.newContext(),
+      await browser.newContext(),
+    ];
+    const meera = await enter(ca, 'meera', 'interviewer', 'open', {
+      restore: async () => ({ status: 404, body: { code: 'not-found', title: 'Not found' } }),
+    });
+    const asha = await enter(cb, 'asha', 'candidate');
+    const ravi = await enter(cc, 'ravi', 'observer');
+    for (const p of [meera, asha, ravi]) await ready(p);
+    await show([meera, asha, ravi], 'old-run');
+    await expect(meera.getByRole('button', { name: 'Restore this version' })).toBeVisible();
+    for (const p of [asha, ravi]) {
+      await expect(p.getByText('@meera')).toBeVisible();
+      await expect(p.getByRole('button', { name: 'Restore this version' })).toHaveCount(0);
+    }
+    await meera.getByRole('button', { name: 'Restore this version' }).click();
+    await meera.getByRole('dialog').getByRole('button', { name: 'Restore', exact: true }).click();
+    await expect(meera.getByText('That run has no saved version.')).toBeVisible();
+    await ca.close();
+    await cb.close();
+    await cc.close();
+  });
+
+  test('the restore dialog is accessible and fits a phone', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const meera = await enter(ctx, 'meera', 'interviewer');
+    await ready(meera);
+    await show([meera], 'phone-run');
+    await meera.getByRole('button', { name: 'Restore this version' }).click();
+    await expect(meera.getByRole('dialog', { name: 'Restore this version?' })).toBeVisible();
+    expect(
+      await meera.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false);
+    const results = await new AxeBuilder({ page: meera }).analyze();
     expect(results.violations).toEqual([]);
     await ctx.close();
   });

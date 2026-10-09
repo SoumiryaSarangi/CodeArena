@@ -168,6 +168,14 @@ export class RoomRunsService {
             kind: 'run',
             payload: { runId: body.runId, mode: body.mode, language: body.language },
           });
+          // CP-07 (FR-PAD-12): every run is a version of the code the interviewer can go back to. The snapshot shares the
+          // run's id, and `seq` ties it to the replay (the log position at that moment).
+          await tx.execute(sql`
+            insert into room_snapshots (id, room_id, seq, label, snapshot)
+            values (${body.runId}, ${roomId},
+                    (select coalesce(max(seq), 0) from room_updates where room_id = ${roomId}),
+                    ${`${body.mode === 'submit' ? 'Submit' : 'Run'} by @${handle}`},
+                    ${Buffer.from(JSON.stringify({ text: body.source, language: body.language }), 'utf8')})`);
           return inserted;
         });
 

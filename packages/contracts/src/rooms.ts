@@ -182,6 +182,14 @@ export const RoomNotesPut = z
   .meta({ id: 'RoomNotesPut' });
 export type RoomNotesPut = z.infer<typeof RoomNotesPut>;
 
+// ---- snapshots and restore (CP-07, FR-PAD-12) -----------------------------------------------------------------------
+
+export const ROOM_RESTORE_INTERVAL_MS = 2000;
+
+/** POST /api/rooms/{id}/restore: put the code of one of the room's runs back. Interviewer only. */
+export const RoomRestore = z.object({ runId: z.uuid() }).strict().meta({ id: 'RoomRestore' });
+export type RoomRestore = z.infer<typeof RoomRestore>;
+
 // ---- update log and playback (CP-06, FR-PAD-10/11) ------------------------------------------------------------------
 
 /** A checkpoint of the room's document is written every this many logged updates (SD-§11.4). */

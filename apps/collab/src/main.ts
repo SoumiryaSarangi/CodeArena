@@ -45,6 +45,10 @@ const storage: Pick<CollabOptions, 'store' | 'redis' | 'log'> = {
 const collab = createServer({
   ...storage,
   port: Number(process.env.PORT ?? 1234),
+  // FR-PAD-13: the cap is the contract's 2 MiB; the browser tests lower it to avoid pasting megabytes.
+  ...(process.env.COLLAB_MAX_DOC_BYTES
+    ? { maxDocBytes: Number(process.env.COLLAB_MAX_DOC_BYTES) }
+    : {}),
   api: { url: need('API_URL'), token },
   token,
 });

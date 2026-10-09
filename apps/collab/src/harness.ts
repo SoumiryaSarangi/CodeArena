@@ -91,6 +91,7 @@ export async function createHarness() {
       log?: Partial<PgLogOptions>;
       redis?: boolean;
       debounce?: number;
+      maxDocBytes?: number;
     } = {},
   ) => {
     const store = PgDocStore.connect(t.url);
@@ -111,6 +112,7 @@ export async function createHarness() {
       ...(client ? { redis: { client, instance: `h${seq++}` } } : {}),
       debounce: opts.debounce ?? 100,
       maxDebounce: 500,
+      ...(opts.maxDocBytes ? { maxDocBytes: opts.maxDocBytes } : {}),
       sweepMs: 60_000,
     });
     await collab.listen();

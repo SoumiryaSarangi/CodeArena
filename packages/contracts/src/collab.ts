@@ -4,6 +4,10 @@ import { z } from 'zod';
 
 /** The longest a room session lasts, from the room's creation (FR-PAD-13). */
 export const ROOM_SESSION_MAX_MINUTES = 90;
+/** The shared document is capped at this many bytes of Yjs state (FR-PAD-13). */
+export const ROOM_DOC_MAX_BYTES = 2 * 1024 * 1024;
+/** Why the server closes a connection whose change would pass the cap. */
+export const DOC_TOO_LARGE_REASON = 'document-too-large';
 /** Presence colours are assigned by the server as an index into the UI's palette of this many (UI_UX §5.1). */
 export const PRESENCE_COLOURS = 8;
 
@@ -36,3 +40,14 @@ export const CollabIdentity = z
   .strict()
   .meta({ id: 'CollabIdentity' });
 export type CollabIdentity = z.infer<typeof CollabIdentity>;
+
+/** The API asks collab to put a snapshot's text back (CP-07, FR-PAD-12). Internal: service token. */
+export const CollabRestoreRequest = z
+  .object({
+    text: z.string().max(256 * 1024),
+    language: z.string().min(1).max(40),
+    userId: z.uuid(),
+  })
+  .strict()
+  .meta({ id: 'CollabRestoreRequest' });
+export type CollabRestoreRequest = z.infer<typeof CollabRestoreRequest>;

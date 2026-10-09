@@ -3,10 +3,11 @@ import type { RoomRunView } from '@codearena/contracts';
 import { useCallback, useEffect, useState } from 'react';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ApiError } from '@/lib/api';
 import { languageInfo } from '@/lib/languages';
 import { subscribe } from '@/lib/realtime';
-import { roomRuns, startRoomRun } from '@/lib/rooms';
+import { restoreRoom, roomRuns, startRoomRun } from '@/lib/rooms';
 import type { Pad } from './use-pad';
 
 /** Newest first, one entry per run: a later event for the same run replaces the earlier one. */
@@ -31,6 +32,7 @@ export function RunPanel({
   pad,
   language,
   canRun,
+  canRestore = false,
   hasProblem,
 }: {
   roomId: string;
@@ -38,12 +40,17 @@ export function RunPanel({
   /** The shared language id (`cpp17`, `python3`…). */
   language: string;
   canRun: boolean;
+  /** The interviewer of an open room may put an earlier run's code back (CP-07). */
+  canRestore?: boolean;
   hasProblem: boolean;
 }) {
   const [runs, setRuns] = useState<RoomRunView[]>([]);
   const [input, setInput] = useState('');
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [restoring, setRestoring] = useState<RoomRunView | null>(null);
+  const [restoreBusy, setRestoreBusy] = useState(false);
+  const [restored, setRestored] = useState('');
 
   useEffect(() => {
     const ctl = new AbortController();
@@ -86,6 +93,31 @@ export function RunPanel({
     },
     [pad, pending, roomId, language, input],
   );
+
+  const restore = useCallback(async () => {
+    if (!restoring) return;
+    setRestoreBusy(true);
+    setMessage('');
+    setRestored('');
+    try {
+      await restoreRoom(roomId, restoring.runId);
+      setRestored(
+        `Restored the code from @${restoring.by}'s run at ${new Date(restoring.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+      );
+    } catch (e) {
+      const err = e as ApiError;
+      setMessage(
+        err.status === 404
+          ? 'That run has no saved version.'
+          : err.status === 429
+            ? 'One restore every 2 seconds in this room. Try again in a moment.'
+            : err.message || 'The code could not be restored.',
+      );
+    } finally {
+      setRestoreBusy(false);
+      setRestoring(null);
+    }
+  }, [restoring, roomId]);
 
   return (
     <section
@@ -140,6 +172,9 @@ export function RunPanel({
       <p role="status" aria-live="polite" className="text-13 text-danger">
         {message}
       </p>
+      <p role="status" aria-live="polite" className="text-13 text-text-2">
+        {restored}
+      </p>
       <ol aria-label="Runs, newest first" className="flex flex-col gap-3">
         {runs.length === 0 ? (
           <li className="text-13 text-text-3">Nothing has been run yet.</li>
@@ -173,6 +208,13 @@ export function RunPanel({
             {r.compileLog ? <Out label="Compiler" text={r.compileLog} /> : null}
             {r.output ? <Out label="Output" text={r.output} /> : null}
             {r.stderr ? <Out label="Errors" text={r.stderr} /> : null}
+            {canRestore ? (
+              <div>
+                <Button size="sm" onClick={() => setRestoring(r)}>
+                  Restore this version
+                </Button>
+              </div>
+            ) : null}
             {r.truncated ? (
               <p className="text-13 text-text-3">
                 The output is longer than 16 KB and has been cut.
@@ -181,6 +223,21 @@ export function RunPanel({
           </li>
         ))}
       </ol>
+      <Dialog open={restoring !== null} onOpenChange={(o) => (o ? undefined : setRestoring(null))}>
+        <DialogContent
+          title="Restore this version?"
+          description="Everyone in the room will see the code go back to this run's. What was typed since stays in the replay. Anything typed at this moment is kept and may end up mixed in."
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setRestoring(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" loading={restoreBusy} onClick={() => void restore()}>
+              Restore
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

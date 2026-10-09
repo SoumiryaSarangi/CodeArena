@@ -2,9 +2,10 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
+import { DOC_TOO_LARGE_REASON } from '@codearena/contracts';
 import { collabUrl, padTicket } from '@/lib/rooms';
 
-export type PadStatus = 'connecting' | 'connected' | 'reconnecting' | 'denied';
+export type PadStatus = 'connecting' | 'connected' | 'reconnecting' | 'denied' | 'too-large';
 
 /** A person in the room, from awareness; the server wrote `user`, the client cannot (FR-PAD-04). */
 export interface Peer {
@@ -44,11 +45,23 @@ export function usePad(roomId: string, me?: Omit<Peer, 'clientId' | 'self'>) {
           setStatus('connected');
         } else if (s === 'disconnected') {
           setStatus((prev) =>
-            prev === 'denied' ? prev : everConnected ? 'reconnecting' : 'connecting',
+            prev === 'denied' || prev === 'too-large'
+              ? prev
+              : everConnected
+                ? 'reconnecting'
+                : 'connecting',
           );
         }
       },
       onAuthenticationFailed: () => setStatus('denied'),
+      // FR-PAD-13: the server refused a change because the document is full. Retrying the same change would only be
+      // refused again, so stop here and say so (the code others see is unchanged).
+      onClose: ({ event }) => {
+        if (event.reason === DOC_TOO_LARGE_REASON) {
+          setStatus('too-large');
+          provider.disconnect();
+        }
+      },
       onSynced: () => setSynced(true),
       onAwarenessChange: ({ states }) => {
         const list: Peer[] = [];

@@ -264,6 +264,12 @@ function LiveRoom({ room }: { room: RoomView }) {
           className="h-8 rounded-md border border-border-control bg-surface-1 px-2 font-mono text-13"
         />
       ) : null}
+      {status === 'too-large' ? (
+        <p role="alert" className="rounded-md border border-danger px-3 py-2 text-14 text-danger">
+          The shared code reached the 2 MB limit, so your last change was not saved. Reload to see
+          the saved code.
+        </p>
+      ) : null}
       {failure ? (
         <p role="alert" className="text-13 text-danger">
           {failure}
@@ -299,7 +305,7 @@ function LiveRoom({ room }: { room: RoomView }) {
                   key={pad.doc.guid}
                   pad={pad}
                   language={info.monaco}
-                  readOnly={observer}
+                  readOnly={observer || status === 'too-large'}
                   label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
                 />
               ) : (
@@ -314,6 +320,7 @@ function LiveRoom({ room }: { room: RoomView }) {
               pad={pad}
               language={language}
               canRun={!observer}
+              canRestore={interviewer && !ended}
               hasProblem={!!room.problem}
             />
           </TabsContent>

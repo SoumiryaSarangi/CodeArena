@@ -1,5 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
-import type { CollabIdentity } from '@codearena/contracts';
+import {
+  CollabRestoreRequest,
+  ROOM_DOC_MAX_BYTES,
+  type CollabIdentity,
+} from '@codearena/contracts';
 import { Database } from '@hocuspocus/extension-database';
 import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
 import { isTransactionOrigin, Server, type Extension } from '@hocuspocus/server';
@@ -9,6 +13,8 @@ import { metrics, trace } from '@opentelemetry/api';
 import { authorizeTicket, type ApiLink } from './auth';
 import { RedisClaims } from './claims';
 import { AwarenessOwners, rewriteAwareness, roomIdOf } from './identity';
+import { CLOSE_DOC_TOO_LARGE, DocSizeGuard } from './doc-size';
+import { restoreSnapshot } from './restore';
 import { CLOSE_SESSION_ENDED, Sessions } from './session';
 import type { DocStore } from './store';
 import type { UpdateLog } from './update-log';
@@ -23,6 +29,9 @@ const open = meter.createUpDownCounter('ca_collab_connections_open', {
 });
 const awareness = meter.createCounter('ca_collab_awareness_total', {
   description: 'Awareness states rewritten with the verified identity, or dropped',
+});
+const restores = meter.createCounter('ca_collab_restores_total', {
+  description: 'Snapshots put back into a room document',
 });
 const closed = meter.createCounter('ca_collab_sessions_closed_total', {
   description: 'Connections the server closed, by reason',
@@ -52,12 +61,16 @@ export interface CollabOptions {
   /** Milliseconds after the last change before the document is stored (default 2000), and the longest it may wait (10000). */
   debounce?: number;
   maxDebounce?: number;
+  /** The most Yjs state a room's document may hold (FR-PAD-13); a test seam, the default is the contract's. */
+  maxDocBytes?: number;
 }
 
 /** What `onAuthenticate` puts on the connection: everything the rest of the server may believe about the client. */
 export interface CollabContext {
   identity: CollabIdentity;
 }
+
+const RESTORE_BODY_MAX = 400 * 1024;
 
 const sameToken = (expected: string, given: string | undefined) => {
   const a = Buffer.from(given ?? '');
@@ -76,6 +89,7 @@ export function createServer(opts: CollabOptions) {
   const claims = opts.redis ? new RedisClaims(opts.redis.client, instance) : undefined;
   const owners = new AwarenessOwners(claims);
   const sessions = new Sessions();
+  const docSize = new DocSizeGuard(opts.maxDocBytes ?? ROOM_DOC_MAX_BYTES);
 
   // Redis first (its docs: it must run before the Database extension so one instance stores at a time), then Postgres.
   const extensions: Extension[] = [];
@@ -151,6 +165,11 @@ export function createServer(opts: CollabOptions) {
         data.connection.close(CLOSE_SESSION_ENDED);
         throw new Error('session ended');
       }
+      if (!docSize.allows(data.document, data.update)) {
+        closed.add(1, { reason: 'document-too-large' });
+        data.connection.close(CLOSE_DOC_TOO_LARGE);
+        throw new Error('document too large');
+      }
     },
 
     async beforeHandleAwareness(data) {
@@ -192,11 +211,13 @@ export function createServer(opts: CollabOptions) {
         if (!event.keysChanged.has('language')) return;
         const origin = txn.origin;
         if (isTransactionOrigin(origin) && origin.source === 'redis') return;
-        const who =
-          (isTransactionOrigin(origin) && 'connection' in origin
-            ? (origin.connection?.context as CollabContext | undefined)
-            : undefined
-          )?.identity.userId ?? null;
+        const ctx =
+          isTransactionOrigin(origin) && 'connection' in origin
+            ? origin.connection?.context
+            : isTransactionOrigin(origin) && origin.source === 'local'
+              ? origin.context // a restore the API asked for (CP-07)
+              : undefined;
+        const who = (ctx as CollabContext | undefined)?.identity?.userId ?? null;
         void log.event(roomId, 'language', who, {
           language: data.document.getMap('meta').get('language') ?? null,
         });
@@ -220,9 +241,10 @@ export function createServer(opts: CollabOptions) {
       }
     },
 
-    // Internal HTTP, for the API: `POST /internal/rooms/{roomId}/close` ends every session in that room (CP-02).
+    // Internal HTTP, for the API: `POST /internal/rooms/{roomId}/close` ends every session in that room (CP-02);
+    // `POST /internal/rooms/{roomId}/restore` puts a snapshot's code back (CP-07).
     async onRequest({ request, response }) {
-      const m = /^\/internal\/rooms\/([0-9a-f-]{36})\/close$/.exec(
+      const m = /^\/internal\/rooms\/([0-9a-f-]{36})\/(close|restore)$/.exec(
         request.url?.split('?')[0] ?? '',
       );
       if (!m || request.method !== 'POST') return;
@@ -234,11 +256,60 @@ export function createServer(opts: CollabOptions) {
         // An empty rejection tells Hocuspocus the request is handled (its documented idiom).
         throw undefined;
       }
-      closeRoom(m[1]!);
-      response.writeHead(204).end();
+      if (m[2] === 'close') {
+        closeRoom(m[1]!);
+        response.writeHead(204).end();
+        throw undefined;
+      }
+      await handleRestore(m[1]!, request, response);
       throw undefined;
     },
   });
+
+  async function handleRestore(
+    roomId: string,
+    request: import('node:http').IncomingMessage,
+    response: import('node:http').ServerResponse,
+  ) {
+    const send = (code: number, body?: object) => {
+      response
+        .writeHead(code, body ? { 'content-type': 'application/json' } : {})
+        .end(body ? JSON.stringify(body) : undefined);
+    };
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const c of request) {
+      size += (c as Buffer).length;
+      if (size > RESTORE_BODY_MAX) return send(413);
+      chunks.push(c as Buffer);
+    }
+    let body: CollabRestoreRequest;
+    try {
+      body = CollabRestoreRequest.parse(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+    } catch {
+      return send(400);
+    }
+    // The context is what the update log attributes the change to: the interviewer who asked, not "the server".
+    const identity = {
+      userId: body.userId,
+      role: 'interviewer',
+      readOnly: false,
+    } as CollabIdentity;
+    try {
+      const edits = await tracer.startActiveSpan('collab.restore', async (span) => {
+        try {
+          return await restoreSnapshot(server.hocuspocus, roomId, body, { identity });
+        } finally {
+          span.end();
+        }
+      });
+      restores.add(1);
+      send(200, { edits });
+    } catch (err) {
+      console.warn('collab: restore failed', err instanceof Error ? err.message : err);
+      send(500);
+    }
+  }
 
   /** Ends every session in a room (the room was closed or the invite revoked). Returns how many connections it had. */
   function closeRoom(roomId: string): void {

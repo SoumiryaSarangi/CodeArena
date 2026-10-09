@@ -208,9 +208,17 @@ describe.skipIf(!ready)('CP-06: the update log (needs Compose Postgres + Redis)'
       client.release();
     };
     await until(async () => (await events(roomId)).some((e) => e.kind === 'join'), 5000);
+    // wait for each change to reach the server before the next step: leaving at once could drop an unsent update
+    const languages = async (n: number) =>
+      until(
+        async () => (await events(roomId)).filter((e) => e.kind === 'language').length >= n,
+        5000,
+      );
     c.meta.set('language', 'python3');
+    await languages(1);
     await apiRunEvent();
     c.meta.set('language', 'java21');
+    await languages(2);
     await apiRunEvent();
     c.leave();
     await until(async () => (await events(roomId)).some((e) => e.kind === 'leave'), 5000);

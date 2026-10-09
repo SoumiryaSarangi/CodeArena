@@ -45,6 +45,10 @@ export const startRoomRun = (id: string, body: RoomRunCreate) =>
 export const roomRuns = (id: string, signal?: AbortSignal) =>
   apiFetch<RoomRunList>('GET', `/rooms/${enc(id)}/runs`, undefined, { auth: 'required', signal });
 
+/** CP-07: put the code of one of the room's runs back, for everyone in the room. Interviewer only. */
+export const restoreRoom = (id: string, runId: string) =>
+  apiFetch<{ runId: string }>('POST', `/rooms/${enc(id)}/restore`, { runId }, { auth: 'required' });
+
 /** CP-05: the interviewer's private notes. Only an interviewer ever gets an answer. */
 export const roomNotes = (id: string, signal?: AbortSignal) =>
   apiFetch<RoomNotes>('GET', `/rooms/${enc(id)}/notes`, undefined, { auth: 'required', signal });
