@@ -65,6 +65,8 @@ const schema = z.object({
 
   // Plagiarism job (PL-05): the shared secret of the plag service. Unset: its endpoints answer 403 "not configured".
   PLAG_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
+  // Collab server (CP-01): its own shared secret for the internal authorize call. Unset: that endpoint answers 403.
+  COLLAB_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
   /** A run that has been `running` this long without a result is taken over by the next claim (the job died). */
   PLAG_STALE_MINUTES: z.coerce.number().int().min(1).default(30),
 

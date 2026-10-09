@@ -9,6 +9,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContestsModule } from './modules/contests/contests.module';
 import { OpsModule } from './modules/ops/ops.module';
+import { CollabModule } from './modules/collab/collab.module';
 import { PlagModule } from './modules/plag/plag.module';
 import { SignalsModule } from './modules/signals/signals.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
@@ -58,6 +59,7 @@ export class AppModule {
         ContestsModule,
         OpsModule,
         PlagModule,
+        CollabModule,
         SignalsModule,
         RatingsModule,
         StatusModule,
