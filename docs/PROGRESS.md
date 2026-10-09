@@ -1084,3 +1084,10 @@ Tests: `plag-deploy.test.sh` 23 checks (digest-only, first start, old install wi
 Not done: the real run (needs `PLAG_ENABLED`, a 4 GB build and a pull on the VM; not before Saturday's contest).
 Ayush must: nothing now. After the contest: `gh variable set PLAG_ENABLED --body true`, then merge/dispatch a deploy and watch the two jobs.
 Model: S · Sonnet 5.5 (via opusplan)
+
+## 2026-10-09 · PL-06 · done (live: the plag job runs on the API VM)
+Ayush set `PLAG_ENABLED=true` and asked for it now. Verified on the VM: `codearena-plag-1` up (restart `unless-stopped`, 2 GB limit, read-only, 78 MB / 0.1 % CPU idle), its polls reach `POST /api/admin/plag/runs/claim` every 15 s and get 204; API healthy; `PLAG_SERVICE_TOKEN` added to `prod.env` by the pipeline; `state/plag-current` holds the digest. Deploy run 37921962526: every job green.
+Two defects found by the first live run, both fixed: (1) `deploy-plag.sh` ran Compose without `API_IMAGE`, which the file requires to render (the first `deploy-plag` job failed at the pull; production untouched, token added and API recreated once): the script now exports the live release for every command and the fake docker in `plag-deploy.test.sh` refuses any compose call without it (removing the export fails 6 checks); (2) a flaky test, `contests.test.ts` FR-CONT-01 built start/end from two `Date.now()` calls (a millisecond apart made "end == start" valid in CI): now one clock reading.
+Note for operating: nothing starts a check by itself; an admin starts it with `POST /api/admin/plag/runs` after a contest ends (see `docs/runbooks/plagiarism.md`). Do not run it while a contest is live. Every push to `main` now also rebuilds and restarts the plag container.
+Ayush must: nothing.
+Model: S · Sonnet 5.5 (via opusplan)
