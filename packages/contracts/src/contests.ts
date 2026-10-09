@@ -182,6 +182,8 @@ export type ContestProblemList = z.infer<typeof ContestProblemList>;
 
 export const ContestProblemDetail = ContestProblemItem.extend({
   statementMd: z.string(),
+  /** IN-02: only when the organisers switched the canary on; shown visually hidden, never to a screen reader. */
+  canaryText: z.string().nullable().optional(),
   samples: z.array(z.object({ in: z.string(), out: z.string() }).strict()),
   testsCount: z.number().int(),
   checker: z
@@ -202,6 +204,8 @@ export const AdminContestProblem = z
     validationStatus: z.enum(['pending', 'running', 'passed', 'failed']).nullable(),
     /** Hidden from contestants and the board (C-07). */
     hidden: z.boolean(),
+    /** The canary instruction is switched on for this problem (IN-02). */
+    canaryOn: z.boolean(),
   })
   .strict();
 

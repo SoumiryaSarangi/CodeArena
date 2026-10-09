@@ -187,6 +187,8 @@ export const PlagClusterDetail = z
           timeToAcMinutes: z.number().int().nullable(),
           /** 0 = writes like their earlier programs, 1 = nothing alike; null without enough earlier programs. */
           styleShift: z.number().min(0).max(1).nullable(),
+          /** IN-02, a weak signal: the problem's canary name appears in the code (null = no canary was set for it). */
+          canary: z.boolean().nullable(),
         })
         .strict(),
     ),

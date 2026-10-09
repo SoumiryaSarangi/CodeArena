@@ -241,6 +241,8 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
       ? json(r, { code: 'not-found', title: 'Not found', status: 404, type: 'x' }, 404)
       : json(r, { ...state.profile, handle });
   });
+  // IN-01: contest pages report editor signals; the stub accepts and ignores them (signals.spec.ts looks at them).
+  await page.route('**/api/signals', (r) => r.fulfill({ status: 204 }));
   await page.route('**/api/health/live', (r) => json(r, { status: 'ok' }));
   await page.route('**/api/auth/refresh', (r) => {
     calls.refreshes++;

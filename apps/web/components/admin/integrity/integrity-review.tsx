@@ -280,7 +280,8 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
               <th className="py-1 pr-3 font-normal">Pastes over 50 characters</th>
               <th className="py-1 pr-3 font-normal">Left the window</th>
               <th className="py-1 pr-3 font-normal">Minutes to first accepted</th>
-              <th className="py-1 font-normal">Style change</th>
+              <th className="py-1 pr-3 font-normal">Style change</th>
+              <th className="py-1 font-normal">Canary name in code</th>
             </tr>
           </thead>
           <tbody>
@@ -296,7 +297,14 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
                   {s.openedAt ? `${s.focusLosses} times` : 'not recorded'}
                 </td>
                 <td className="py-1 pr-3">{s.timeToAcMinutes ?? 'not available'}</td>
-                <td className="py-1">{styleText(s.styleShift)}</td>
+                <td className="py-1 pr-3">{styleText(s.styleShift)}</td>
+                <td className="py-1">
+                  {s.canary === null
+                    ? 'not set for this problem'
+                    : s.canary
+                      ? 'present (weak signal)'
+                      : 'absent'}
+                </td>
               </tr>
             ))}
           </tbody>

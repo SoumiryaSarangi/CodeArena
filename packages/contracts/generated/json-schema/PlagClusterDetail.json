@@ -152,6 +152,12 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "canary": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
           "focusLosses": {
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
@@ -218,7 +224,8 @@
           "focusLosses",
           "openedAt",
           "timeToAcMinutes",
-          "styleShift"
+          "styleShift",
+          "canary"
         ],
         "type": "object"
       },

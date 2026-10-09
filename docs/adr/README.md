@@ -17,3 +17,4 @@ Short records (context, decision, alternatives, consequences) for the locked dec
 - [ADR-013: Hosting: Vercel for web, Azure for Students VMs for API and judges, Terraform](013-hosting.md)
 - [ADR-014: Upgrade paths documented but not built](014-upgrade-paths.md)
 - [ADR-015: PostgreSQL is the source of truth; Redis is always rebuildable](015-postgres-source-of-truth.md)
+- [ADR-016: Canary text: optional, off by default, a weak signal](016-canary-text.md)

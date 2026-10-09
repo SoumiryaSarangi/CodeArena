@@ -59,6 +59,7 @@ function detail(decisions: object[] = [], status = 'open') {
         openedAt: '2026-10-10T13:35:00Z',
         timeToAcMinutes: 28,
         styleShift: 0.41,
+        canary: true,
       },
       {
         handle: 'ben',
@@ -67,6 +68,7 @@ function detail(decisions: object[] = [], status = 'open') {
         openedAt: null,
         timeToAcMinutes: null,
         styleShift: null,
+        canary: null,
       },
       {
         handle: 'chen',
@@ -75,6 +77,7 @@ function detail(decisions: object[] = [], status = 'open') {
         openedAt: '2026-10-10T13:50:00Z',
         timeToAcMinutes: null,
         styleShift: 0.05,
+        canary: false,
       },
     ],
     decisions,
@@ -145,6 +148,11 @@ test.describe('PL-04: plagiarism review (FR-PLAG-04, FR-PLAG-05)', () => {
     await expect(page.getByRole('row', { name: /@ben none/ })).toContainText(
       'not enough earlier code',
     );
+    await expect(signalRow).toContainText('present (weak signal)');
+    await expect(page.getByRole('row', { name: /@ben none/ })).toContainText(
+      'not set for this problem',
+    );
+    await expect(page.getByRole('row', { name: /@chen/ }).last()).toContainText('absent');
     await expect(page.getByText('never evidence on their own')).toBeVisible();
     await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 60_000 });
     // picking another pair changes what is compared

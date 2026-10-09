@@ -112,12 +112,15 @@ export function WorkspaceView({
   problem,
   wide,
   contest,
+  canary,
   onVerdict,
 }: {
   problem: ProblemDetail;
   wide: boolean;
   /** Contest mode (S09): submissions go to the contest, drafts are kept per contest problem, no Coach. */
   contest?: { slug: string; label: string };
+  /** IN-02: the organisers' hidden instruction for automated assistants (contest problems, when switched on). */
+  canary?: string | null;
   onVerdict?: () => void;
 }) {
   // Drafts, layout and sign-in return paths are keyed by this, so a contest problem and its
@@ -294,7 +297,9 @@ export function WorkspaceView({
       onPaste={onPaste}
     />
   );
-  const statement = <StatementPane problem={problem} onRunSample={runSample} canRun={signedIn} />;
+  const statement = (
+    <StatementPane problem={problem} onRunSample={runSample} canRun={signedIn} canary={canary} />
+  );
   const drawer = (
     <Drawer value={tab} onValue={setTab} tabs={tabs}>
       {{

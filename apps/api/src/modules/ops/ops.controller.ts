@@ -1,5 +1,10 @@
 import { Body, Controller, Get, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
-import { ContestExtend, ContestProblemVisibility, Rejudge } from '@codearena/contracts';
+import {
+  ContestExtend,
+  ContestProblemCanary,
+  ContestProblemVisibility,
+  Rejudge,
+} from '@codearena/contracts';
 import type { Request } from 'express';
 import { Roles } from '../auth/guards';
 import { OpsService } from './ops.service';
@@ -25,6 +30,18 @@ export class OpsController {
     @Body() body: unknown,
   ) {
     return this.ops.setHidden(id, label, ContestProblemVisibility.parse(body).hidden, req.user!);
+  }
+
+  /** IN-02: the optional canary instruction for one problem (off by default). */
+  @Post('contests/:id/problems/:label/canary')
+  @HttpCode(200)
+  canary(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('label') label: string,
+    @Body() body: unknown,
+  ) {
+    return this.ops.setCanary(id, label, ContestProblemCanary.parse(body).enabled, req.user!);
   }
 
   @Post('rejudge')

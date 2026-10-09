@@ -20,6 +20,7 @@ import { auditLog, contestProblems, contests, problemVersions, submissions } fro
 import { REDIS } from '../../redis/redis.module';
 import { BoardService } from '../board/board.service';
 import { contestState } from '../contests/state';
+import { newCanaryToken } from '../signals/canary';
 import { MessagesService } from '../contests/messages.service';
 import { buildJob } from '../submissions/job-builder';
 import { laneDepth } from '../submissions/lane-depth';
@@ -63,6 +64,46 @@ export class OpsService {
     return this.db
       .insert(auditLog)
       .values({ actorId: actor.id, action, targetType, targetId, meta: meta ?? null });
+  }
+
+  /**
+   * IN-02: switch a problem's canary instruction on or off. The identifier is created the first time and kept, so a
+   * submission can still be checked after the switch is turned off. Audit-logged.
+   */
+  async setCanary(
+    id: string,
+    label: string,
+    enabled: boolean,
+    actor: Actor,
+  ): Promise<{ enabled: boolean }> {
+    return tracer.startActiveSpan('ops.canary', async (span) => {
+      try {
+        const c = await this.contest(id);
+        const [row] = await this.db
+          .select({ token: contestProblems.canaryToken })
+          .from(contestProblems)
+          .where(and(eq(contestProblems.contestId, c.id), eq(contestProblems.label, label)))
+          .limit(1);
+        if (!row) throw new ProblemError('not-found', 'No such problem');
+        await this.db
+          .update(contestProblems)
+          .set({ canaryOn: enabled, canaryToken: row.token ?? (enabled ? newCanaryToken() : null) })
+          .where(and(eq(contestProblems.contestId, c.id), eq(contestProblems.label, label)));
+        await this.audit(
+          actor,
+          enabled ? 'contest.canary-on' : 'contest.canary-off',
+          'contest',
+          c.id,
+          {
+            label,
+          },
+        );
+        actions.add(1, { action: enabled ? 'canary-on' : 'canary-off' });
+        return { enabled };
+      } finally {
+        span.end();
+      }
+    });
   }
 
   /** FR-CONT-05: move the end later and tell the contestants. The freeze time stays where it was. */

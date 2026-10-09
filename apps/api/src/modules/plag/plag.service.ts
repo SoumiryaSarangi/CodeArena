@@ -30,6 +30,7 @@ import {
   users,
 } from '../../db/schema';
 import { contestState } from '../contests/state';
+import { containsCanary } from '../signals/canary';
 import { styleShift, timeToAcMinutes } from '../signals/derive';
 
 const tracer = trace.getTracer('api');
@@ -295,6 +296,14 @@ export class PlagService {
     }[],
   ): Promise<PlagClusterDetail['signals']> {
     const userIds = members.map((m) => m.userId);
+    const [cp] = await this.db
+      .select({ token: contestProblems.canaryToken })
+      .from(contestProblems)
+      .where(
+        and(eq(contestProblems.contestId, contestId), eq(contestProblems.problemId, problemId)),
+      )
+      .limit(1);
+    const canaryToken = cp?.token ?? null;
     const rows = await this.db
       .select({
         userId: editorSignals.userId,
@@ -357,6 +366,7 @@ export class PlagService {
           m.source,
           history.map((h) => h.source),
         ),
+        canary: containsCanary(m.source, canaryToken),
       });
     }
     return out;

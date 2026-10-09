@@ -14,6 +14,7 @@ import {
   opsSummary,
   rebuildBoard,
   rejudge,
+  setProblemCanary,
   setProblemHidden,
 } from '@/lib/contests';
 import { ActionError } from './problem-errors';
@@ -299,9 +300,32 @@ export function OpsConsole({
               >
                 {p.hidden ? 'Show' : 'Hide'}
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={busy !== null || over}
+                loading={busy === `canary${p.label}`}
+                aria-pressed={p.canaryOn}
+                aria-label={`Canary instruction for problem ${p.label}: ${p.canaryOn ? 'on' : 'off'}`}
+                onClick={() =>
+                  run(`canary${p.label}`, async () => {
+                    await setProblemCanary(contest.id, p.label, !p.canaryOn);
+                    return p.canaryOn
+                      ? `Canary instruction for problem ${p.label} is off.`
+                      : `Canary instruction for problem ${p.label} is on.`;
+                  })
+                }
+              >
+                Canary {p.canaryOn ? 'on' : 'off'}
+              </Button>
             </li>
           ))}
         </ul>
+        <p className="text-13 text-text-3">
+          Canary: a hidden sentence in the statement that asks an AI assistant to use a particular
+          variable name. People never see it and screen readers skip it. Finding the name in code is
+          a weak signal, shown as such in the integrity review. Off by default.
+        </p>
       </div>
 
       <div className="flex flex-col gap-1">

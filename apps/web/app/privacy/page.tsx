@@ -66,6 +66,11 @@ export default function PrivacyPage() {
           code style differs from your own earlier programs.
         </p>
         <p>
+          On some problems the organisers may add a sentence for automated assistants to the
+          statement that people never see and screen readers skip; finding its variable name in code
+          is shown to administrators as a weak signal.
+        </p>
+        <p>
           These are advisory hints shown to administrators next to similar submissions, clearly
           labelled, and are never used to change a score or ranking. They are deleted 30 days after
           the contest ends.

@@ -3,7 +3,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ContestRules } from '@codearena/contracts';
 import type { INestApplication } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
@@ -570,6 +570,24 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
     });
     expect(r.body.decisions).toEqual([]);
     expect(JSON.stringify(r.body)).not.toContain('example.test'); // no e-mail address anywhere
+    // IN-02: no canary was set, so nothing is said; once one is set, only the code that uses the name is marked
+    expect(r.body.signals.every((x: { canary: boolean | null }) => x.canary === null)).toBe(true);
+    await db
+      .update(contestProblems)
+      .set({ canaryToken: 'ans_abcd1234', canaryOn: true })
+      .where(and(eq(contestProblems.contestId, c.id), eq(contestProblems.problemId, v.problemId)));
+    await db
+      .update(submissions)
+      .set({ source: 'int ans_abcd1234 = 1;' })
+      .where(eq(submissions.id, sb));
+    const marked = await adminCall('get', `/admin/plag/clusters/${cl!.id}`);
+    const canaryOf = (h: string) =>
+      marked.body.signals.find((x: { handle: string }) => x.handle === h).canary;
+    expect([canaryOf(a.handle), canaryOf(b.handle), canaryOf(d.handle)]).toEqual([
+      false,
+      true,
+      false,
+    ]);
     clusterUnderReview = { id: cl!.id, runId: run!.id, subs: [sa, sb, sd] };
   });
 

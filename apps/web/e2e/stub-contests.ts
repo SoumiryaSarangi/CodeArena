@@ -97,6 +97,7 @@ export interface ContestStub {
     summary: Record<string, unknown>;
     dlq: Record<string, unknown>[];
     hidden: Record<string, boolean>;
+    canary: Record<string, boolean>;
     extended: number[];
     rejudged: Record<string, unknown>[];
     rebuilds: number;
@@ -160,6 +161,8 @@ export async function stubContests(
     reviews?: 'mixed' | 'none';
     /** Opening a queued review answers `queued`. */
     reviewsBusy?: boolean;
+    /** The canary sentence the contest problem carries (IN-02). */
+    canary?: string;
   } = {},
 ): Promise<ContestStub> {
   const o = { startsInSec: 3600, durationMin: 120, clockSkewMs: 0, ...opts };
@@ -260,6 +263,7 @@ export async function stubContests(
         },
       ],
       hidden: {},
+      canary: {},
       extended: [],
       rejudged: [],
       rebuilds: 0,
@@ -456,6 +460,7 @@ export async function stubContests(
       slug: label === 'A' ? 'chai-bill' : 'lantern-lighting',
       difficulty: 800,
       limits: { timeMs: 500, memMb: 256, outputKb: 1024 },
+      canaryText: opts.canary ?? null,
       statementMd: `# ${title}\n\nGiven $n$ cups, print the bill.\n\n## Input\n\nOne integer.\n\n## Output\n\nOne integer.\n\n## Notes\n\nNothing special for ${label}.\n`,
       samples: [{ in: '2\n', out: '10\n' }],
       testsCount: 12,
@@ -689,6 +694,7 @@ export async function stubContests(
           version: 1,
           validationStatus: 'passed',
           hidden: st.ops.hidden[i.label] ?? false,
+          canaryOn: st.ops.canary[i.label] ?? false,
         }))
       : [],
   });
@@ -780,6 +786,12 @@ export async function stubContests(
     const { hidden } = r.request().postDataJSON() as { hidden: boolean };
     st.ops.hidden[label] = hidden;
     return json(r, { hidden });
+  });
+  await page.route(`**/api/admin/contests/${ID}/problems/*/canary`, (r) => {
+    const label = r.request().url().split('/').at(-2)!;
+    const { enabled } = r.request().postDataJSON() as { enabled: boolean };
+    st.ops.canary[label] = enabled;
+    return json(r, { enabled });
   });
   await page.route('**/api/admin/rejudge', (r) => {
     st.ops.rejudged.push(r.request().postDataJSON() as Record<string, unknown>);

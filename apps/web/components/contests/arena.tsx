@@ -287,6 +287,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         problem={asProblem(problem.v)}
         wide={wide}
         contest={{ slug, label }}
+        canary={problem.v.canaryText}
         onVerdict={() => refresh(600)}
       />
 

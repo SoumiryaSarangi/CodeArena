@@ -160,6 +160,15 @@ export const setProblemHidden = (id: string, label: string, hidden: boolean) =>
     { auth: 'required' },
   );
 
+/** IN-02: the optional hidden instruction for a problem (off by default). */
+export const setProblemCanary = (id: string, label: string, enabled: boolean) =>
+  apiFetch<{ enabled: boolean }>(
+    'POST',
+    `/admin/contests/${enc(id)}/problems/${enc(label)}/canary`,
+    { enabled },
+    { auth: 'required' },
+  );
+
 export const rejudge = (body: { scope: Rejudge['scope']; id: string; urgent: boolean }) =>
   apiFetch<RejudgeResult>('POST', '/admin/rejudge', body, { auth: 'required' });
 

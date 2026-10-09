@@ -46,6 +46,10 @@ export const contestProblems = pgTable(
     position: integer('position').notNull(),
     /** Pulled from the contest (C-07): not shown, not accepted, not on the board. */
     hidden: boolean('hidden').notNull().default(false),
+    /** IN-02: the canary identifier, kept once it was created so a submission can still be checked after it is switched off. */
+    canaryToken: text('canary_token'),
+    /** IN-02: while true, contestants' copy of the statement carries the hidden instruction. Off by default. */
+    canaryOn: boolean('canary_on').notNull().default(false),
   },
   (t) => [primaryKey({ columns: [t.contestId, t.label] })],
 );

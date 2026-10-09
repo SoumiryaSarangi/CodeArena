@@ -40,6 +40,9 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "canaryOn": {
+            "type": "boolean"
+          },
           "hidden": {
             "type": "boolean"
           },
@@ -84,7 +87,8 @@
           "title",
           "version",
           "validationStatus",
-          "hidden"
+          "hidden",
+          "canaryOn"
         ],
         "type": "object"
       },

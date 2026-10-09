@@ -91,6 +91,26 @@ test.describe('C-07: contest operations (S16)', () => {
     expect(st.ops.hidden).toEqual({ B: false });
   });
 
+  test('IN-02: the canary instruction is off by default and can be switched per problem, with its caveat shown', async ({
+    page,
+  }) => {
+    const st = await open(page);
+    const b = page.getByRole('button', { name: 'Canary instruction for problem B: off' });
+    await expect(b).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+      page.getByText('People never see it and screen readers skip it', { exact: false }),
+    ).toBeVisible();
+    expect(st.ops.canary).toEqual({});
+    await b.click();
+    await expect(status(page).first()).toContainText('Canary instruction for problem B is on');
+    expect(st.ops.canary).toEqual({ B: true });
+    await expect(
+      page.getByRole('button', { name: 'Canary instruction for problem B: on' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Canary instruction for problem B: on' }).click();
+    expect(st.ops.canary).toEqual({ B: false });
+  });
+
   test('FR-OPS-02: rejudge by contest, by problem and by submission, with urgent', async ({
     page,
   }) => {

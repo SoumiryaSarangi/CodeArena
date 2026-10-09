@@ -16,6 +16,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { metrics, trace } from '@opentelemetry/api';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { canaryText } from '../signals/canary';
 import { ProblemError } from '../../common/problem';
 import { DB, type Db } from '../../db/db.module';
 import {
@@ -237,6 +238,8 @@ export class ContestsService {
         samples: problemVersions.samples,
         testsCount: problemVersions.testsCount,
         checker: problemVersions.checker,
+        canaryToken: contestProblems.canaryToken,
+        canaryOn: contestProblems.canaryOn,
       })
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))
@@ -275,6 +278,7 @@ export class ContestsService {
       difficulty: r.difficulty,
       limits: r.limits as ContestProblemDetail['limits'],
       statementMd: r.statementMd,
+      canaryText: r.canaryOn && r.canaryToken ? canaryText(r.canaryToken) : null,
       samples: r.samples as ContestProblemDetail['samples'],
       testsCount: r.testsCount,
       // The checker's source location stays server-side (FR-PROB-06).
@@ -333,6 +337,7 @@ export class ContestsService {
         version: problemVersions.version,
         validationStatus: problemVersions.validationStatus,
         hidden: contestProblems.hidden,
+        canaryOn: contestProblems.canaryOn,
       })
       .from(contestProblems)
       .innerJoin(problems, eq(problems.id, contestProblems.problemId))
@@ -478,6 +483,19 @@ export class ContestsService {
         if (errors.length > 0) {
           throw new ProblemError('validation', 'Some problems cannot be used', { errors });
         }
+        // IN-02: a problem that stays keeps its canary (the list is replaced as a whole).
+        const kept = new Map(
+          (
+            await this.db
+              .select({
+                problemId: contestProblems.problemId,
+                token: contestProblems.canaryToken,
+                on: contestProblems.canaryOn,
+              })
+              .from(contestProblems)
+              .where(eq(contestProblems.contestId, c.id))
+          ).map((r) => [r.problemId, r]),
+        );
         await this.db.transaction(async (tx) => {
           await tx.delete(contestProblems).where(eq(contestProblems.contestId, c.id));
           if (body.items.length === 0) return;
@@ -492,6 +510,8 @@ export class ContestsService {
                   problemId: p.id,
                   versionId: p.versionId!,
                   position,
+                  canaryToken: kept.get(p.id)?.token ?? null,
+                  canaryOn: kept.get(p.id)?.on ?? false,
                 };
               }),
           );

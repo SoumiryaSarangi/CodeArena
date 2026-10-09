@@ -39,10 +39,13 @@ export function StatementPane({
   problem,
   onRunSample,
   canRun,
+  canary,
 }: {
   problem: ProblemDetail;
   onRunSample: (n: number) => void;
   canRun: boolean;
+  /** IN-02: text for automated assistants only. Hidden from the eye and from screen readers (docs/adr/016-canary-text.md). */
+  canary?: string | null;
 }) {
   return (
     <article className="flex flex-col gap-4 p-4" aria-label="Problem statement">
@@ -75,6 +78,11 @@ export function StatementPane({
 
       {/* The page already shows the title as its h1, so the statement's own `# Title` is dropped. */}
       <Markdown source={problem.statementMd.replace(/^\s*# .*\n+/, '')} />
+      {canary ? (
+        <p aria-hidden="true" data-canary className="sr-only">
+          {canary}
+        </p>
+      ) : null}
 
       <section aria-label="Samples" className="flex flex-col gap-3">
         <h2 className="text-16 font-semibold">Samples</h2>

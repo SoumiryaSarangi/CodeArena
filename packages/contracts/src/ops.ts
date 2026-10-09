@@ -22,6 +22,13 @@ export const ContestProblemVisibility = z
   .meta({ id: 'ContestProblemVisibility' });
 export type ContestProblemVisibility = z.infer<typeof ContestProblemVisibility>;
 
+/** IN-02: switch a problem's hidden canary instruction on or off (off by default). */
+export const ContestProblemCanary = z
+  .object({ enabled: z.boolean() })
+  .strict()
+  .meta({ id: 'ContestProblemCanary' });
+export type ContestProblemCanary = z.infer<typeof ContestProblemCanary>;
+
 export const Rejudge = z
   .object({
     scope: z.enum(['submission', 'problem', 'contest']),
