@@ -21,3 +21,8 @@ infra/terraform/*.tfstate
 infra/terraform/*.tfstate.*
 infra/terraform/*.tfvars
 infra/terraform/crash.log
+
+# UI-07: third-party design skills are not committed (their licences differ); scripts/setup-design-skills.sh reproduces them.
+.claude/skills/
+.claude/settings.local.json
+.impeccable/config.local.json

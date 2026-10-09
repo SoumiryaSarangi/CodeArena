@@ -9,8 +9,8 @@ CodeArena is a production-grade online judge + contest platform with an AI Coach
 - `docs/PRD.md` — what and why; stories `US-<epic>.<n>`; product rules (scoring, rating, AI, fair play) in §9
 - `docs/SRS.md` — requirements `FR-<AREA>-<nn>` / `NFR-*`, REST/SSE/WS interfaces, error catalogue
 - `docs/SYSTEM_DESIGN.md` — how; sections `SD-§n` (flows, schema, Redis keys, judge, leaderboard maths, AI budgets, security)
-- `docs/UI_UX.md` — tokens (§5.1 is authoritative), components (§7), screens `S01–S18`, copy (§10), a11y (§11)
-- Precedence: SYSTEM_DESIGN/SRS/UI_UX decide _how_; PLAN decides _when/who_; locked decisions in PLAN §4 beat everything. If two docs conflict, stop and ask.
+- `docs/UI_UX.md` — tokens are a starting point; the redesign (UI-08 to UI-14) may change them and UI-14 updates this doc to match what was built; components (§7), screens `S01–S18`, copy (§10), a11y (§11)
+- Precedence: SYSTEM_DESIGN/SRS/UI_UX decide _how_; PLAN decides _when/who_; locked decisions in PLAN §4 beat everything. For visual design, the design skills and Ayush decide; UI_UX still describes screens, copy and behaviour. If two docs conflict, stop and ask.
 - Find things by ID: `grep -n "FR-QUEUE-06\|## §8" docs/*.md`.
 
 ## Start of every session
@@ -73,9 +73,16 @@ Do not change these without asking Ayush: monorepo layout, NestJS/Drizzle, Go wo
 
 - TypeScript strict; Zod validation at every boundary; RFC 7807 errors.
 - Every new endpoint/job: a trace span + a metric.
-- UI: design tokens only (UI_UX §5.1) — no hard-coded colours, no gradients, no decorative animation; respect prefers-reduced-motion; verdicts always carry a text label; keyboard-accessible; works at 1280px and 390px.
+- UI: no gradients. Everything else about look and feel is decided by the design skills (docs/design-skills.md). Existing tests are the gate: if one blocks a design choice, update it and say why in the PR; never delete a test silently.
 - Tests with every change. Don't skip tests without a follow-up card.
 - Name tests after requirement IDs: `it('FR-BOARD-02: packed score stays below 2^53', …)`. Mention covered FR IDs in the PR.
+
+## Design skills
+
+- Installed by `scripts/setup-design-skills.sh` (not committed); sources, licences and versions are in `docs/design-skills.md`.
+- Use `/impeccable` (all its commands), Emil's skills (including `apple-design` in full), `hairline-create` and `pick-ui-library` as the design authority.
+- Pre-approved dependencies: `@lucasmarkes/hairline` and any library `pick-ui-library` recommends; list each one added in its PR and in `docs/design-skills.md`.
+- Impeccable's hooks stay off unless Ayush says so. `taste` is installed by Ayush, never committed.
 
 ## Token economy (Pro plan)
 

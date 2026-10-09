@@ -831,6 +831,34 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 🤖 **Claude Code**
 
+#### UI-07 · Design skills setup · **S**
+- Build: `scripts/setup-design-skills.sh` (Emil Kowalski's skills, Impeccable without hooks, hairline; idempotent, project scope), `.gitignore` entries so third-party skill files are not committed, `docs/design-skills.md` (sources, licences, installed versions, what each skill is for, how to reinstall, pre-approved dependencies), CLAUDE.md edits (UI rule, precedence, a short "Design skills" section). No product code.
+- Accept: `pnpm check` passes; the script is re-runnable; the PR lists what Ayush must do for the `taste` analyser.
+
+#### UI-08 · Design direction + audit (read-only, no product code) · **P**
+- Build: `/impeccable init` (answer from PRD and UI_UX, ask Ayush only for gaps), then `/impeccable document`. Screenshot S01–S18 with Playwright at 1280 and 390. Run `/impeccable audit` and `critique`, Emil `review-animations` and `find-animation-opportunities`, `mobile-native` at 390, `break-ui` with worst-case data on S03, S06, S08, S10, S12, S17. If taste is installed, `/taste` https://linear.app and https://vercel.com into `docs/design-refs/` as references. Decide ONE design direction (palette, type, spacing, density, motion, any hairline figures and where) and write `docs/design/DIRECTION.md` (why, in plain language, with the tokens it implies) and `docs/design/AUDIT.md` (findings ranked by severity: screen, fix, owning card). List every new dependency proposed.
+- Accept: DIRECTION.md and AUDIT.md exist; every AUDIT item names its owning card (UI-09 to UI-13).
+
+#### UI-09 · Design foundation: tokens, fonts, base components, app shell · **P**
+- Build: apply DIRECTION.md to `tokens.css`, fonts, `apps/web/components/ui` and the shell; update any token tests that assert old values (keep: colours only in tokens.css, no gradients) and say so in the PR. Before/after screenshots of S01 and S03 as a pilot.
+- Accept: `pnpm check` and the e2e pass; the pilot screens show the new direction.
+
+#### UI-10 · Polish S01–S04 · **S**
+- Build: Each: fix that group's AUDIT.md items using /impeccable polish, typeset, layout, harden, clarify, colorize, bolder and delight as the skills judge best, plus emil-design-eng and apple-design for interaction feel; before/after screenshots at 1280 and 390 in the PR; pnpm check and the e2e for touched screens pass.
+
+#### UI-11 · Polish S05–S06 · **S**
+- Build: Each: fix that group's AUDIT.md items using /impeccable polish, typeset, layout, harden, clarify, colorize, bolder and delight as the skills judge best, plus emil-design-eng and apple-design for interaction feel; before/after screenshots at 1280 and 390 in the PR; pnpm check and the e2e for touched screens pass.
+
+#### UI-12 · Polish S07–S12 · **S**
+- Build: Each: fix that group's AUDIT.md items using /impeccable polish, typeset, layout, harden, clarify, colorize, bolder and delight as the skills judge best, plus emil-design-eng and apple-design for interaction feel; before/after screenshots at 1280 and 390 in the PR; pnpm check and the e2e for touched screens pass.
+
+#### UI-13 · Polish S13–S18 · **S**
+- Build: Each: fix that group's AUDIT.md items using /impeccable polish, typeset, layout, harden, clarify, colorize, bolder and delight as the skills judge best, plus emil-design-eng and apple-design for interaction feel; before/after screenshots at 1280 and 390 in the PR; pnpm check and the e2e for touched screens pass.
+
+#### UI-14 · Sync docs to what was built · **S**
+- Build: update `docs/UI_UX.md` (§5.1 tokens, screens, "As built" notes), `docs/design/DIRECTION.md` and the README screenshots; confirm UI_UX and the code agree.
+- Accept: no token or screen in UI_UX.md differs from the code.
+
 #### AI-03 · Post-contest review · **S**
 - Build: reviews of each participant's final submission per attempted problem (complexity, missed edge cases, intended-approach comparison, readability), **generated on demand when opened plus a paced background job within the daily budget** (SD-§12.3); review page UI (S11) with ready / generating / queued states.
 
