@@ -28,10 +28,10 @@ test.describe('ED-01: code suggestions in the practice editor', () => {
     await expect(widget(page)).toBeVisible();
     await expect(rows(page).first()).toContainText('while');
     await page.keyboard.press('Tab');
-    expect(await editorText(page)).toContain('while (condition) {');
+    await expect.poll(() => editorText(page)).toContain('while (condition) {');
     // the first tab stop is selected: typing replaces the placeholder
     await page.keyboard.type('x < 3');
-    expect(await editorText(page)).toContain('while (x < 3) {');
+    await expect.poll(() => editorText(page)).toContain('while (x < 3) {');
   });
 
   test('FR-EDIT-01: for offers the loop snippet and library names are offered too (C++)', async ({
@@ -99,7 +99,7 @@ test.describe('ED-01: a contest can switch suggestions off', () => {
     await page.waitForTimeout(500);
     await expect(widget(page)).toHaveCount(0);
     // the editor itself still works
-    expect(await editorText(page)).toContain('whi');
+    await expect.poll(() => editorText(page)).toContain('whi');
     await page.keyboard.press('Enter');
     await page.keyboard.type('ok');
     await expect.poll(() => editorText(page)).toContain('ok');
