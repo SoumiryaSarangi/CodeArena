@@ -40,11 +40,14 @@ export interface Solution {
   source: string;
 }
 
+export const haveKey = (slug: string, language: string, persona: number) =>
+  `${slug}:${language}:${persona}`;
+
 export function prompt(language: keyof typeof LANGUAGES, persona: number, statement: string) {
   return [
     {
       role: 'system' as const,
-      content: `${PERSONAS[persona]} Solve the programming problem. Reply with one complete ${LANGUAGES[language]} program that reads standard input and writes standard output, in a single fenced code block, and nothing else.`,
+      content: `${PERSONAS[persona]} Solve the programming problem. Reply with one complete, compilable ${LANGUAGES[language]} program that reads standard input and writes standard output, in a single fenced code block, and nothing else. Real code only: never pseudo-code, never an outline.`,
     },
     { role: 'user' as const, content: statement },
   ];
@@ -53,6 +56,8 @@ export function prompt(language: keyof typeof LANGUAGES, persona: number, statem
 async function main() {
   const problems = JSON.parse(readFileSync(0, 'utf8')) as Problem[];
   const perLanguage = Number(process.argv[2] ?? '4');
+  // `slug:language:persona` entries already done (a resumed run): the validated solutions of an earlier pass
+  const have = new Set((process.env.PLAG_HAVE ?? '').split(',').filter(Boolean));
   const config = loadConfig();
   const redis = new Redis(config.REDIS_URL);
   const router = new AiRouter(
@@ -63,6 +68,7 @@ async function main() {
   for (const p of problems) {
     for (const language of Object.keys(LANGUAGES) as (keyof typeof LANGUAGES)[]) {
       for (let persona = 0; persona < perLanguage; persona++) {
+        if (have.has(haveKey(p.slug, language, persona))) continue;
         for (let attempt = 0; attempt < 4; attempt++) {
           try {
             const r = await router.complete({
