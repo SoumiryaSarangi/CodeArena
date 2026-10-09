@@ -9,6 +9,10 @@ export default tseslint.config(
       '**/dist',
       '**/.turbo',
       'docs',
+      // third-party design skills and helper agents installed by scripts/setup-design-skills.sh (UI-07), not our code
+      '.claude/skills',
+      '.claude/agents',
+      '.impeccable',
       'apps/plag',
       'apps/worker',
       'problems',
