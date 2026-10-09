@@ -2,6 +2,7 @@
 import type { ProblemDetail, RoomView } from '@codearena/contracts';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ConnectionPill } from '@/components/connection-pill';
@@ -9,12 +10,14 @@ import { Markdown } from '@/components/markdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { ApiError, apiGet } from '@/lib/api';
 import { LANGUAGES, isLanguage, languageInfo } from '@/lib/languages';
 import { clock, closeRoom, createInvite, roomGet } from '@/lib/rooms';
 import { signInHref, useSession } from '@/lib/session';
 import { PresenceList, PresenceStyles } from './presence';
+import { NotesPanel } from './notes-panel';
 import { RunPanel } from './run-panel';
 import { usePad } from './use-pad';
 
@@ -142,6 +145,7 @@ function LiveRoom({ room }: { room: RoomView }) {
   const [link, setLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [panel, setPanel] = useState('code');
   const [failure, setFailure] = useState<string | null>(null);
 
   const copyInvite = async (role: 'candidate' | 'observer') => {
@@ -267,34 +271,58 @@ function LiveRoom({ room }: { room: RoomView }) {
       ) : null}
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_22rem]">
-        <div className="flex min-w-0 flex-col gap-3">
-          <section
-            aria-label="Shared code"
-            className="min-h-96 overflow-hidden rounded-md border border-border-strong"
+        <Tabs value={panel} onValueChange={setPanel} className="flex min-w-0 flex-col gap-3">
+          <TabsList aria-label="Room panels">
+            <TabsTrigger value="code">Code</TabsTrigger>
+            {interviewer ? (
+              <TabsTrigger value="notes" title="Private: only you can see these">
+                <span className="inline-flex items-center gap-1">
+                  <Lock className="size-3.5" aria-hidden />
+                  Notes
+                </span>
+              </TabsTrigger>
+            ) : null}
+          </TabsList>
+          {/* both stay mounted: switching must not unbind the editor or lose unsaved notes */}
+          <TabsContent
+            value="code"
+            forceMount
+            hidden={panel !== 'code'}
+            className="flex min-w-0 flex-col gap-3"
           >
-            {pad && synced ? (
-              <PadEditor
-                key={pad.doc.guid}
-                pad={pad}
-                language={info.monaco}
-                readOnly={observer}
-                label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
-              />
-            ) : (
-              <div role="status" className="p-4 text-14 text-text-2">
-                {status === 'reconnecting' ? 'Reconnecting…' : 'Joining the room…'}
-                <Skeleton className="mt-3 h-40 w-full" />
-              </div>
-            )}
-          </section>
-          <RunPanel
-            roomId={room.id}
-            pad={pad}
-            language={language}
-            canRun={!observer}
-            hasProblem={!!room.problem}
-          />
-        </div>
+            <section
+              aria-label="Shared code"
+              className="min-h-96 overflow-hidden rounded-md border border-border-strong"
+            >
+              {pad && synced ? (
+                <PadEditor
+                  key={pad.doc.guid}
+                  pad={pad}
+                  language={info.monaco}
+                  readOnly={observer}
+                  label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
+                />
+              ) : (
+                <div role="status" className="p-4 text-14 text-text-2">
+                  {status === 'reconnecting' ? 'Reconnecting…' : 'Joining the room…'}
+                  <Skeleton className="mt-3 h-40 w-full" />
+                </div>
+              )}
+            </section>
+            <RunPanel
+              roomId={room.id}
+              pad={pad}
+              language={language}
+              canRun={!observer}
+              hasProblem={!!room.problem}
+            />
+          </TabsContent>
+          {interviewer ? (
+            <TabsContent value="notes" forceMount hidden={panel !== 'notes'}>
+              <NotesPanel roomId={room.id} />
+            </TabsContent>
+          ) : null}
+        </Tabs>
         {room.problem ? (
           <aside
             aria-label="Problem"

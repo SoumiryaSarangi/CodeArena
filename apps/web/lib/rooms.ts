@@ -4,6 +4,8 @@ import type {
   RoomInviteCreate,
   RoomJoined,
   RoomList,
+  RoomNotes,
+  RoomNotesPut,
   RoomRunAccepted,
   RoomRunCreate,
   RoomRunList,
@@ -41,6 +43,13 @@ export const startRoomRun = (id: string, body: RoomRunCreate) =>
 
 export const roomRuns = (id: string, signal?: AbortSignal) =>
   apiFetch<RoomRunList>('GET', `/rooms/${enc(id)}/runs`, undefined, { auth: 'required', signal });
+
+/** CP-05: the interviewer's private notes. Only an interviewer ever gets an answer. */
+export const roomNotes = (id: string, signal?: AbortSignal) =>
+  apiFetch<RoomNotes>('GET', `/rooms/${enc(id)}/notes`, undefined, { auth: 'required', signal });
+
+export const saveRoomNotes = (id: string, body: RoomNotesPut) =>
+  apiFetch<RoomNotes>('PUT', `/rooms/${enc(id)}/notes`, body, { auth: 'required' });
 
 /** A single-use ticket for the pad connection; the provider asks for a fresh one on every (re)connect. */
 export const padTicket = async (roomId: string) =>

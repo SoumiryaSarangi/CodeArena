@@ -156,3 +156,28 @@ export const RoomRunAccepted = z
   .strict()
   .meta({ id: 'RoomRunAccepted' });
 export type RoomRunAccepted = z.infer<typeof RoomRunAccepted>;
+
+// ---- private interviewer notes (CP-05, FR-PAD-09) ------------------------------------------------------------------
+
+export const ROOM_NOTES_MAX_BYTES = 64 * 1024;
+
+/** GET /api/rooms/{id}/notes and the answer to a save. Only the interviewer is ever sent this. */
+export const RoomNotes = z
+  .object({
+    body: z.string(),
+    /** When it was last saved; null while nothing has been saved. The next save sends it back as `baseUpdatedAt`. */
+    updatedAt: z.string().nullable(),
+  })
+  .strict()
+  .meta({ id: 'RoomNotes' });
+export type RoomNotes = z.infer<typeof RoomNotes>;
+
+/** PUT /api/rooms/{id}/notes. `baseUpdatedAt` is what the client last saw: a different value is a 409 `conflict`. */
+export const RoomNotesPut = z
+  .object({
+    body: z.string().max(ROOM_NOTES_MAX_BYTES),
+    baseUpdatedAt: z.string().nullable(),
+  })
+  .strict()
+  .meta({ id: 'RoomNotesPut' });
+export type RoomNotesPut = z.infer<typeof RoomNotesPut>;

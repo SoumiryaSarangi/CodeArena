@@ -244,6 +244,7 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | `forbidden` / `forbidden-topic` | 403 | Role or resource check failed |
 | `not-found` | 404 | Unknown or invisible resource (also used to hide existence) |
 | `handle-taken`, `already-registered` | 409 | Conflicts |
+| `conflict` | 409 | The resource changed since the client last read it (private room notes: read them again to get the current `updatedAt`) |
 | `payload-too-large` | 413 | Source > 64 KB, input > 1 MB, package > 100 MB |
 | `unsupported-language` | 422 | Language not enabled |
 | `contest-not-started`, `contest-ended`, `problem-hidden` | 422 | Contest timing rules |

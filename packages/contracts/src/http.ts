@@ -11,6 +11,7 @@ export const ErrorCode = z
     'not-found',
     'handle-taken',
     'already-registered',
+    'conflict',
     'payload-too-large',
     'unsupported-language',
     'contest-not-started',

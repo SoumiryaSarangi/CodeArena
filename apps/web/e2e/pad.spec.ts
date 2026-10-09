@@ -74,6 +74,8 @@ test.afterAll(async () => {
 });
 
 let colour = 0;
+/** What each page asked of the notes endpoint (CP-05). */
+const notesLog = new WeakMap<Page, { method: string; body: Record<string, unknown> | null }[]>();
 function roomJson(role: Role, status = 'open', withProblem = false) {
   const now = Date.now();
   return {
@@ -102,6 +104,7 @@ async function enter(
   status = 'open',
   opts: {
     problem?: boolean;
+    notes?: (body: Record<string, unknown>) => { status: number; body: unknown };
     runs?: (body: Record<string, unknown>) => { status: number; body: unknown };
   } = {},
 ): Promise<Page> {
@@ -126,6 +129,30 @@ async function enter(
       }),
     }),
   );
+  // CP-05: the interviewer's notes. Every request is recorded: a candidate or an observer must make none.
+  const log: { method: string; body: Record<string, unknown> | null }[] = [];
+  notesLog.set(page, log);
+  let saves = 0;
+  await page.route(`**/api/rooms/${ROOM}/notes`, (r) => {
+    const method = r.request().method();
+    const body = method === 'PUT' ? (r.request().postDataJSON() as Record<string, unknown>) : null;
+    log.push({ method, body });
+    const answer =
+      method === 'GET'
+        ? { status: 200, body: { body: '', updatedAt: null } }
+        : (opts.notes?.(body!) ?? {
+            status: 200,
+            body: {
+              body: body!.body,
+              updatedAt: new Date(Date.UTC(2026, 9, 10, 14, 0, ++saves)).toISOString(),
+            },
+          });
+    return r.fulfill({
+      status: answer.status,
+      contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
+      body: JSON.stringify(answer.body),
+    });
+  });
   // CP-04: the runs endpoint. The history is empty; a run is answered by the test's handler.
   await page.route(`**/api/rooms/${ROOM}/runs`, (r) => {
     if (r.request().method() === 'GET') {
@@ -597,6 +624,133 @@ test.describe('CP-04: run and submit from the pad', () => {
       `room:${ROOM}`,
     );
     await expect(meera.getByText('warn')).toBeVisible();
+    const results = await new AxeBuilder({ page: meera }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await ctx.close();
+  });
+});
+
+test.describe('CP-05: private interviewer notes', () => {
+  test('FR-PAD-09: the interviewer has a Notes tab; typing saves once after a pause, with the chain of base times; leaving the box saves at once', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer');
+    await ready(meera);
+    await meera.getByRole('tab', { name: 'Notes' }).click();
+    const box = meera.getByLabel('Private notes: only you can see these');
+    await expect(box).toBeEnabled();
+    const log = notesLog.get(meera)!;
+    expect(log.filter((c) => c.method === 'GET')).toHaveLength(1);
+
+    await box.pressSequentially('thinks aloud well', { delay: 30 }); // many keystrokes...
+    expect(log.filter((c) => c.method === 'PUT')).toHaveLength(0); // ...none of them saves
+    await expect
+      .poll(() => log.filter((c) => c.method === 'PUT').length, { timeout: 5000 })
+      .toBe(1);
+    await new Promise((r) => setTimeout(r, 1500));
+    expect(log.filter((c) => c.method === 'PUT')).toHaveLength(1); // ...and one save in the end
+    expect(log.find((c) => c.method === 'PUT')!.body).toEqual({
+      body: 'thinks aloud well',
+      baseUpdatedAt: null,
+    });
+    await expect(meera.getByText(/^Saved \d/)).toBeVisible();
+
+    await box.fill('thinks aloud well, slow start');
+    await meera.getByRole('tab', { name: 'Code' }).click(); // leaving the box saves at once, not after the pause
+    await expect.poll(() => log.filter((c) => c.method === 'PUT').length, { timeout: 500 }).toBe(2);
+    const second = log.filter((c) => c.method === 'PUT')[1]!.body!;
+    expect(second.body).toBe('thinks aloud well, slow start');
+    expect(second.baseUpdatedAt).toBe(new Date(Date.UTC(2026, 9, 10, 14, 0, 1)).toISOString()); // what the first save returned
+    await ctx.close();
+  });
+
+  test('FR-PAD-09: a candidate and an observer have no Notes tab and never ask for the notes; the text is nowhere in the shared document', async ({
+    browser,
+  }) => {
+    const [ca, cb, cc] = [
+      await browser.newContext(),
+      await browser.newContext(),
+      await browser.newContext(),
+    ];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    const ravi = await enter(cc, 'ravi', 'observer');
+    for (const p of [meera, asha, ravi]) await ready(p);
+    await expect(meera.getByRole('tab', { name: 'Notes' })).toBeVisible();
+    for (const p of [asha, ravi]) {
+      await expect(p.getByRole('tab', { name: 'Notes' })).toHaveCount(0);
+      await expect(p.getByLabel('Private notes: only you can see these')).toHaveCount(0);
+    }
+    await meera.getByRole('tab', { name: 'Notes' }).click();
+    await meera.getByLabel('Private notes: only you can see these').fill('NOTE-ONLY-FOR-ME');
+    await expect
+      .poll(() => notesLog.get(meera)!.filter((c) => c.method === 'PUT').length, { timeout: 5000 })
+      .toBe(1);
+    // the shared code is untouched, for everyone including the interviewer's own Code tab
+    await meera.getByRole('tab', { name: 'Code' }).click();
+    await type(meera, 'print(1)');
+    await expect.poll(() => editorText(asha), { timeout: 10_000 }).toContain('print(1)');
+    for (const p of [meera, asha, ravi])
+      expect(await editorText(p)).not.toContain('NOTE-ONLY-FOR-ME');
+    for (const p of [asha, ravi]) {
+      expect(await p.content()).not.toContain('NOTE-ONLY-FOR-ME');
+      expect(notesLog.get(p)).toEqual([]); // not a single request to the notes endpoint
+    }
+    await Promise.all([ca.close(), cb.close(), cc.close()]);
+  });
+
+  test('a save from another window is not overwritten silently: the interviewer chooses', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    let refuse = true;
+    const meera = await enter(ctx, 'meera', 'interviewer', 'open', {
+      notes: (b) =>
+        refuse
+          ? {
+              status: 409,
+              body: {
+                title: 'Changed elsewhere',
+                status: 409,
+                code: 'conflict',
+                detail: 'saved from another window',
+              },
+            }
+          : { status: 200, body: { body: b.body, updatedAt: '2026-10-10T14:30:00.000Z' } },
+    });
+    await ready(meera);
+    await meera.getByRole('tab', { name: 'Notes' }).click();
+    const box = meera.getByLabel('Private notes: only you can see these');
+    await box.fill('mine');
+    await expect(meera.getByText('saved from another window', { exact: false })).toBeVisible({
+      timeout: 5000,
+    });
+    const log = notesLog.get(meera)!;
+    const putsBefore = log.filter((c) => c.method === 'PUT').length;
+    await box.fill('mine, more'); // typing during a conflict does not keep hammering the server
+    await new Promise((r) => setTimeout(r, 1500));
+    expect(log.filter((c) => c.method === 'PUT').length).toBe(putsBefore);
+
+    refuse = false;
+    await meera.getByRole('button', { name: 'Keep mine' }).click();
+    await expect
+      .poll(() => log.filter((c) => c.method === 'PUT').at(-1)?.body?.body, { timeout: 5000 })
+      .toBe('mine, more');
+    await expect(meera.getByText(/^Saved \d/)).toBeVisible();
+    await expect(meera.getByRole('button', { name: 'Keep mine' })).toHaveCount(0);
+    await ctx.close();
+  });
+
+  test('the notes panel is accessible and fits a phone', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const meera = await enter(ctx, 'meera', 'interviewer');
+    await ready(meera);
+    await meera.getByRole('tab', { name: 'Notes' }).click();
+    await expect(meera.getByLabel('Private notes: only you can see these')).toBeVisible();
+    expect(
+      await meera.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false);
     const results = await new AxeBuilder({ page: meera }).include('#main').analyze();
     expect(results.violations).toEqual([]);
     await ctx.close();

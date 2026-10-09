@@ -1,9 +1,27 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
-import { RoomCreate, RoomInviteCreate, RoomJoin, RoomRunCreate } from '@codearena/contracts';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
+import {
+  RoomCreate,
+  RoomInviteCreate,
+  RoomJoin,
+  RoomNotesPut,
+  RoomRunCreate,
+} from '@codearena/contracts';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { RateLimit } from '../../rate-limit/rate-limit';
 import { RequireHandle } from '../auth/guards';
+import { RoomNotesService } from './room-notes.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
 
@@ -16,6 +34,7 @@ export class RoomsController {
   constructor(
     @Inject(RoomsService) private readonly rooms: RoomsService,
     @Inject(RoomRunsService) private readonly runs: RoomRunsService,
+    @Inject(RoomNotesService) private readonly notes: RoomNotesService,
   ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
@@ -66,5 +85,19 @@ export class RoomsController {
   @Get(':id/runs')
   runList(@Req() req: Request, @Param('id') id: string) {
     return this.runs.list(req.user!, Id.parse(id));
+  }
+
+  /** FR-PAD-09: the interviewer's private notes. Never cached; nobody else gets them by any route. */
+  @Get(':id/notes')
+  @Header('Cache-Control', 'no-store')
+  notesGet(@Req() req: Request, @Param('id') id: string) {
+    return this.notes.get(req.user!, Id.parse(id));
+  }
+
+  @RateLimit({ scope: 'room-notes', perMinute: 120 })
+  @Put(':id/notes')
+  @Header('Cache-Control', 'no-store')
+  notesSave(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.notes.save(req.user!, Id.parse(id), RoomNotesPut.parse(body));
   }
 }

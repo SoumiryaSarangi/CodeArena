@@ -1,0 +1,21 @@
+{
+  "$id": "RoomNotes.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "body": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "body",
+    "updatedAt"
+  ],
+  "type": "object"
+}
