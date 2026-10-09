@@ -91,6 +91,7 @@ export class RoomsService {
               problemId,
               language: body.language,
               durationMin: body.durationMin,
+              suggestions: body.suggestions,
             })
             .returning({ id: rooms.id });
           await tx
@@ -140,6 +141,7 @@ export class RoomsService {
       createdAt: iso(room.createdAt),
       expiresAt: iso(expiryOf(room)),
       memberCount: nBy.get(room.id) ?? 0,
+      suggestions: room.suggestions,
     }));
   }
 

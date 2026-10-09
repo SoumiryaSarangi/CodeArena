@@ -23,6 +23,7 @@ export function InterviewList() {
   const [error, setError] = useState<ApiError | null>(null);
   const [problem, setProblem] = useState('');
   const [language, setLanguage] = useState('cpp17');
+  const [suggestions, setSuggestions] = useState(true);
   const [duration, setDuration] = useState('45');
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<Error | null>(null);
@@ -75,6 +76,7 @@ export function InterviewList() {
       const room = await createRoom({
         language: language as never,
         durationMin: Number(duration) as 30 | 45 | 60 | 90,
+        suggestions,
         ...(problem ? { problemSlug: problem } : {}),
       });
       router.push(`/r/${room.id}`);
@@ -113,6 +115,14 @@ export function InterviewList() {
             ))}
           </Select>
         </div>
+        <label className="flex items-center gap-2 text-14">
+          <input
+            type="checkbox"
+            checked={suggestions}
+            onChange={(e) => setSuggestions(e.target.checked)}
+          />
+          Code suggestions in the editor (keywords, library names and snippets)
+        </label>
         <div>
           <Button type="submit" variant="primary" loading={saving}>
             Create room

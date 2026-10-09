@@ -72,6 +72,9 @@
         "archived"
       ],
       "type": "string"
+    },
+    "suggestions": {
+      "type": "boolean"
     }
   },
   "required": [
@@ -83,7 +86,8 @@
     "problem",
     "createdAt",
     "expiresAt",
-    "memberCount"
+    "memberCount",
+    "suggestions"
   ],
   "type": "object"
 }

@@ -45,6 +45,15 @@ export const startRoomRun = (id: string, body: RoomRunCreate) =>
 export const roomRuns = (id: string, signal?: AbortSignal) =>
   apiFetch<RoomRunList>('GET', `/rooms/${enc(id)}/runs`, undefined, { auth: 'required', signal });
 
+/** ED-01: the interviewer switches code suggestions on or off for the room. */
+export const setRoomSuggestions = (id: string, suggestions: boolean) =>
+  apiFetch<{ suggestions: boolean }>(
+    'PATCH',
+    `/rooms/${enc(id)}/settings`,
+    { suggestions },
+    { auth: 'required' },
+  );
+
 /** CP-07: put the code of one of the room's runs back, for everyone in the room. Interviewer only. */
 export const restoreRoom = (id: string, runId: string) =>
   apiFetch<{ runId: string }>('POST', `/rooms/${enc(id)}/restore`, { runId }, { auth: 'required' });

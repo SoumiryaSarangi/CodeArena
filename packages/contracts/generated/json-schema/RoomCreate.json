@@ -30,11 +30,16 @@
       "maxLength": 100,
       "minLength": 1,
       "type": "string"
+    },
+    "suggestions": {
+      "default": true,
+      "type": "boolean"
     }
   },
   "required": [
     "language",
-    "durationMin"
+    "durationMin",
+    "suggestions"
   ],
   "type": "object"
 }

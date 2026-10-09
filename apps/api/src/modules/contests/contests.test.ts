@@ -238,6 +238,7 @@ describe.skipIf(!ready)(
         rated: true,
         lateRegistration: true,
         examMode: false,
+        suggestions: true,
       });
       const dup = await call('post', '/admin/contests', admin.token, {
         slug: 'val-ok',
@@ -245,6 +246,53 @@ describe.skipIf(!ready)(
       });
       expect(dup.status).toBe(400);
       expect(dup.body.errors[0].path).toBe('slug');
+    });
+
+    it('FR-EDIT-02: suggestions are on by default, the organiser can switch them off before the start, and a contest stored before the setting existed reads as on', async () => {
+      const made = await call('post', '/admin/contests', admin.token, {
+        slug: 'sugg-rule',
+        title: 'Suggestions rule',
+        startsAt: at(60 * MIN),
+        endsAt: at(180 * MIN),
+      });
+      expect(made.status).toBe(201);
+      expect(made.body.rules.suggestions).toBe(true);
+      const id = made.body.id as string;
+      const off = await call('patch', `/admin/contests/${id}`, admin.token, {
+        rules: { suggestions: false },
+      });
+      expect(off.status).toBe(200);
+      expect(off.body.rules.suggestions).toBe(false);
+      expect(off.body.rules.penaltyMinutes).toBe(20); // the other rules are untouched
+      expect(
+        (
+          await call('patch', `/admin/contests/${id}`, admin.token, {
+            rules: { suggestions: 'no' },
+          })
+        ).status,
+      ).toBe(400);
+      // a row written before this setting existed has no such key
+      await db
+        .update(contests)
+        .set({ rules: { penaltyMinutes: 10 } })
+        .where(eq(contests.id, id));
+      const old = await call('get', '/contests/sugg-rule', admin.token);
+      expect(old.status).toBe(200);
+      expect(old.body.rules.suggestions).toBe(true);
+      expect(old.body.rules.penaltyMinutes).toBe(10);
+      // once the contest has begun the rules are locked, this one included
+      await db
+        .update(contests)
+        .set({
+          status: 'scheduled',
+          startsAt: new Date(Date.now() - MIN),
+          endsAt: new Date(Date.now() + 120 * MIN),
+        })
+        .where(eq(contests.id, id));
+      const late = await call('patch', `/admin/contests/${id}`, admin.token, {
+        rules: { suggestions: false },
+      });
+      expect(late.status).toBe(400);
     });
 
     it('FR-PROB-05: a draft is hidden, and publishing needs validated problem versions', async () => {

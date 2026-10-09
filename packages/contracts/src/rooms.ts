@@ -20,6 +20,8 @@ export const RoomCreate = z
     problemSlug: z.string().min(1).max(100).optional(),
     language: Language,
     durationMin: RoomDuration,
+    /** Code suggestions in the room's editor (ED-01, FR-EDIT-03); the interviewer can change it while the room is open. */
+    suggestions: z.boolean().default(true),
   })
   .strict()
   .meta({ id: 'RoomCreate' });
@@ -38,6 +40,7 @@ export const RoomSummary = z
     /** The session ends then whatever the timer says: creation + 90 minutes. */
     expiresAt: z.string(),
     memberCount: z.number().int(),
+    suggestions: z.boolean(),
   })
   .strict()
   .meta({ id: 'RoomSummary' });
@@ -181,6 +184,22 @@ export const RoomNotesPut = z
   .strict()
   .meta({ id: 'RoomNotesPut' });
 export type RoomNotesPut = z.infer<typeof RoomNotesPut>;
+
+// ---- editor settings (ED-01, FR-EDIT-03) ------------------------------------------------------------------------------
+
+/** PATCH /api/rooms/{id}/settings. Interviewer only; everyone in the room is told through the SSE `room.settings` event. */
+export const RoomSettingsPatch = z
+  .object({ suggestions: z.boolean() })
+  .strict()
+  .meta({ id: 'RoomSettingsPatch' });
+export type RoomSettingsPatch = z.infer<typeof RoomSettingsPatch>;
+
+/** Payload of the `room.settings` event on topic `room:{id}`. */
+export const RoomSettingsEvent = z
+  .object({ suggestions: z.boolean() })
+  .strict()
+  .meta({ id: 'RoomSettingsEvent' });
+export type RoomSettingsEvent = z.infer<typeof RoomSettingsEvent>;
 
 // ---- snapshots and restore (CP-07, FR-PAD-12) -----------------------------------------------------------------------
 

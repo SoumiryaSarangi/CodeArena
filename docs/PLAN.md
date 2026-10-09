@@ -960,6 +960,10 @@ Dry-run bug fixes first (from U7.2 issues), then:
 #### CP-11 · AI interview summary · **S**
 - Build: reuses AI-01 pipeline: summary of the session (approach, complexity, communication moments from event log, bugs fixed) visible only to the interviewer.
 
+#### ED-01 · Code completion · **S**
+- Build: keyword, library-name and snippet suggestions in every editor (`apps/web/lib/completions/`: per-language data, one provider per Monaco language, an on/off switch per editor); per-contest rule `suggestions` (organiser, before the start; no migration) and a per-room switch the interviewer can flip live (`rooms.suggestions`, migration 0012, `PATCH /api/rooms/{id}/settings`, SSE `room.settings`). A convenience applied by the browser, not an integrity control.
+- Accept: typing `whi` offers `while` and Tab inserts the snippet (C++, C, Java, Python, JS); a contest with the rule off never opens the list, Ctrl+Space included; in a room the interviewer's switch reaches the candidate's editor live; practice is unaffected by either.
+
 #### W-01 · README + docs · **S**
 - Build: README (pitch, GIFs, architecture Mermaid, metrics table from METRICS.md, security section, how to run locally), `docs/interview/answers.md` first draft for §13 of the research doc + §6.13, ADR index.
 

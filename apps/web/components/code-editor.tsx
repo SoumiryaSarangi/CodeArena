@@ -3,6 +3,8 @@ import Editor, { loader } from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '@/components/ui/states';
+import { applySuggestions } from '@/lib/completions/enabled';
+import { registerCompletions } from '@/lib/completions/register';
 import { currentTheme, defineThemes, themeName, type EditorTheme } from '@/lib/monaco-theme';
 
 // Self-hosted (copied to public/ by scripts/copy-monaco.mjs): no CDN, no worker bundling in Next.
@@ -29,6 +31,8 @@ export interface CodeEditorProps {
   onRun?: () => void;
   onSubmit?: () => void;
   readOnly?: boolean;
+  /** Keyword, library and snippet suggestions (ED-01); a contest or a room may switch them off. Default on. */
+  suggestions?: boolean;
   /** Characters just pasted into the editor (contest signals, IN-01); never the text. */
   onPaste?: (chars: number) => void;
 }
@@ -49,8 +53,10 @@ export default function CodeEditor({
   onRun,
   onSubmit,
   readOnly,
+  suggestions = true,
   onPaste,
 }: CodeEditorProps) {
+  const monacoRef = useRef<typeof Monaco | null>(null);
   const [theme, setTheme] = useState<EditorTheme>('dark');
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const initial = useRef(initialValue);
@@ -73,6 +79,12 @@ export default function CodeEditor({
     editorRef.current?.setValue(initial.current);
   }, [resetKey]);
 
+  // Switching suggestions on or off later (the interviewer, or a contest's setting loading) needs no remount.
+  useEffect(() => {
+    if (editorRef.current && monacoRef.current)
+      applySuggestions(editorRef.current, monacoRef.current, suggestions);
+  }, [suggestions]);
+
   // Follow the app theme, including later toggles.
   useEffect(() => {
     setTheme(currentTheme());
@@ -89,9 +101,14 @@ export default function CodeEditor({
       theme={themeName(theme)}
       onChange={(v) => onChange(v ?? '')}
       loading={<Skeleton className="size-full min-h-40" />}
-      beforeMount={defineThemes}
+      beforeMount={(monaco) => {
+        defineThemes(monaco);
+        registerCompletions(monaco);
+      }}
       onMount={(editor, monaco: typeof Monaco) => {
         editorRef.current = editor;
+        monacoRef.current = monaco;
+        applySuggestions(editor, monaco, suggestions);
         editor.onDidPaste((e) => {
           const model = editor.getModel();
           pasted.current?.(model ? model.getValueInRange(e.range).length : 0);

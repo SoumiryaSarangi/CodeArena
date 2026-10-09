@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SubmissionsModule } from '../submissions/submissions.module';
 import { RoomNotesService } from './room-notes.service';
 import { RoomRestoreService } from './room-restore.service';
+import { RoomSettingsService } from './room-settings.service';
 import { RoomPlaybackService } from './room-playback.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsController } from './rooms.controller';
@@ -17,6 +18,7 @@ import { RoomsService } from './rooms.service';
     RoomRunsService,
     RoomNotesService,
     RoomRestoreService,
+    RoomSettingsService,
     RoomPlaybackService,
     RoomsRetention,
   ],

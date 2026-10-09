@@ -35,6 +35,10 @@ scripts/scale-judges.sh to 1          # steady state: 1 judge, default size, loc
 - An extra Standard_B2s_v2 costs about $0.12/h (about $85 a month if forgotten): **`to 1` once the contest is over**.
 - It needs `az login`, `gh auth login`, Terraform state in `infra/terraform`, and your SSH key.
 
+## Before you publish: code suggestions
+
+The editor suggests keywords, library names and snippets (`for`, `vector`, `range`...). It is on for every contest unless you untick **Code suggestions in the editor** in the contest's rules (admin, before the contest begins; the rules are fixed once it starts). This is a convenience, not an anti-cheating measure: a contestant can still paste from another editor, and that is what the paste signals (IN-01) and the plagiarism review are for. Practice is not affected.
+
 ## T-5 h
 
 - [ ] `scripts/scale-judges.sh up 1`; ops console shows 2 workers with fresh heartbeats.

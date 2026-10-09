@@ -1,5 +1,6 @@
 import {
   bigint,
+  boolean,
   index,
   integer,
   jsonb,
@@ -27,6 +28,8 @@ export const rooms = pgTable('rooms', {
   createdAt: createdAt(),
   closedAt: ts('closed_at'),
   docBytes: integer('doc_bytes').notNull().default(0),
+  /** Code suggestions in the editor (ED-01); the interviewer may switch them while the room is open. */
+  suggestions: boolean('suggestions').notNull().default(true),
 });
 
 const roomId = () =>

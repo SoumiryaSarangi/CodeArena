@@ -79,7 +79,7 @@ test.afterAll(async () => {
 let colour = 0;
 /** What each page asked of the notes endpoint (CP-05). */
 const notesLog = new WeakMap<Page, { method: string; body: Record<string, unknown> | null }[]>();
-function roomJson(role: Role, status = 'open', withProblem = false) {
+function roomJson(role: Role, status = 'open', withProblem = false, suggestions = true) {
   const now = Date.now();
   return {
     id: ROOM,
@@ -87,6 +87,7 @@ function roomJson(role: Role, status = 'open', withProblem = false) {
     status,
     language: 'cpp17',
     durationMin: 45,
+    suggestions,
     problem: withProblem ? { slug: 'chai-bill', title: 'Chai Bill' } : null,
     createdAt: new Date(now - 5 * 60_000).toISOString(),
     expiresAt: new Date(now + 85 * 60_000).toISOString(),
@@ -107,6 +108,10 @@ async function enter(
   status = 'open',
   opts: {
     problem?: boolean;
+    /** The room was created with code suggestions off (ED-01). */
+    suggestionsOff?: boolean;
+    /** What the stubbed API answers to a settings change; records it. */
+    settings?: (body: Record<string, unknown>) => { status: number; body: unknown };
     notes?: (body: Record<string, unknown>) => { status: number; body: unknown };
     runs?: (body: Record<string, unknown>) => { status: number; body: unknown };
     restore?: (body: Record<string, unknown>) => Promise<{ status: number; body: unknown }>;
@@ -119,7 +124,7 @@ async function enter(
     r.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(roomJson(role, status, opts.problem)),
+      body: JSON.stringify(roomJson(role, status, opts.problem, !opts.suggestionsOff)),
     }),
   );
   await page.route('**/api/problems/chai-bill', (r) =>
@@ -169,6 +174,16 @@ async function enter(
     const answer = (opts.runs ?? ((b) => ({ status: 202, body: { runId: b.runId } })))(
       r.request().postDataJSON() as Record<string, unknown>,
     );
+    return r.fulfill({
+      status: answer.status,
+      contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
+      body: JSON.stringify(answer.body),
+    });
+  });
+  // ED-01: the interviewer's suggestions switch.
+  await page.route(`**/api/rooms/${ROOM}/settings`, (r) => {
+    const body = r.request().postDataJSON() as Record<string, unknown>;
+    const answer = opts.settings?.(body) ?? { status: 200, body };
     return r.fulfill({
       status: answer.status,
       contentType: answer.status >= 400 ? 'application/problem+json' : 'application/json',
@@ -387,7 +402,43 @@ test.describe('CP-02: rooms list, invite links', () => {
     await page.getByLabel('Duration').selectOption('60');
     await page.getByRole('button', { name: 'Create room' }).click();
     await expect(page).toHaveURL(new RegExp(`/r/${ROOM}$`));
-    expect(posts).toEqual([{ language: 'python3', durationMin: 60 }]);
+    expect(posts).toEqual([{ language: 'python3', durationMin: 60, suggestions: true }]);
+  });
+
+  test('FR-EDIT-03: the new-room form has the suggestions box, ticked, and unticking it is posted', async ({
+    page,
+  }) => {
+    await stubApi(page, { handle: 'meera' });
+    const posts: unknown[] = [];
+    await page.route('**/api/rooms', (r) => {
+      if (r.request().method() === 'POST') {
+        posts.push(r.request().postDataJSON());
+        return r.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify(roomJson('interviewer', 'open', false, false)),
+        });
+      }
+      return r.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: [] }),
+      });
+    });
+    await page.route(`**/api/rooms/${ROOM}`, (r) =>
+      r.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(roomJson('interviewer', 'closed')),
+      }),
+    );
+    await page.goto('/interview');
+    const box = page.getByLabel(/Code suggestions in the editor/);
+    await expect(box).toBeChecked();
+    await box.uncheck();
+    await page.getByRole('button', { name: 'Create room' }).click();
+    await expect(page).toHaveURL(new RegExp(`/r/${ROOM}$`));
+    expect(posts).toEqual([{ language: 'cpp17', durationMin: 45, suggestions: false }]);
   });
 
   test('an invite link joins and opens the room; a bad one says it is not valid; a guest signs in first', async ({
@@ -928,6 +979,94 @@ test.describe('CP-07: restoring a version', () => {
     ).toBe(false);
     const results = await new AxeBuilder({ page: meera }).analyze();
     expect(results.violations).toEqual([]);
+    await ctx.close();
+  });
+});
+
+test.describe('ED-01: code suggestions in the pad', () => {
+  const widget = (p: Page) => p.locator('.suggest-widget.visible');
+  const typeAt = async (p: Page, text: string) => {
+    await p.locator('.monaco-editor').first().click();
+    await p.keyboard.press('Control+A');
+    await p.keyboard.press('Delete');
+    await p.keyboard.type(text, { delay: 40 });
+  };
+
+  test('FR-EDIT-03: the interviewer switches suggestions off and on, and the candidate follows live without reloading', async ({
+    browser,
+  }) => {
+    const changes: Record<string, unknown>[] = [];
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer', 'open', {
+      settings: (b) => (changes.push(b), { status: 200, body: b }),
+    });
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+    await listening(asha);
+    // on at first, for both
+    await typeAt(asha, 'whi');
+    await expect(widget(asha)).toBeVisible();
+    await asha.keyboard.press('Escape');
+    // only the interviewer has the switch
+    await expect(asha.getByRole('button', { name: /^Suggestions/ })).toHaveCount(0);
+    const toggle = meera.getByRole('button', { name: 'Suggestions: on' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await toggle.click();
+    await expect.poll(() => changes).toEqual([{ suggestions: false }]);
+    await expect(meera.getByRole('button', { name: 'Suggestions: off' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    // the server tells the room; the candidate's editor stops suggesting
+    await emit(asha, ROOM, 'room.settings', 's1', { suggestions: false }, `room:${ROOM}`);
+    await typeAt(asha, 'whi');
+    await asha.waitForTimeout(800);
+    await expect(widget(asha)).toHaveCount(0);
+    await asha.keyboard.press('Control+Space');
+    await asha.waitForTimeout(400);
+    await expect(widget(asha)).toHaveCount(0);
+    // and back on
+    await meera.getByRole('button', { name: 'Suggestions: off' }).click();
+    await expect.poll(() => changes.length).toBe(2);
+    expect(changes[1]).toEqual({ suggestions: true });
+    await emit(asha, ROOM, 'room.settings', 's2', { suggestions: true }, `room:${ROOM}`);
+    await typeAt(asha, 'whi');
+    await expect(widget(asha)).toBeVisible();
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-EDIT-03: a room created with suggestions off starts off for everyone, observers included', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer', 'open', { suggestionsOff: true });
+    const asha = await enter(cb, 'asha', 'candidate', 'open', { suggestionsOff: true });
+    await ready(meera);
+    await ready(asha);
+    await expect(meera.getByRole('button', { name: 'Suggestions: off' })).toBeVisible();
+    await typeAt(asha, 'whi');
+    await asha.waitForTimeout(800);
+    await expect(widget(asha)).toHaveCount(0);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-EDIT-03: a refused change says so and leaves the switch where it was', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer', 'open', {
+      settings: () => ({
+        status: 410,
+        body: { code: 'room-closed', title: 'Room is closed', detail: 'The room has ended' },
+      }),
+    });
+    await ready(meera);
+    await meera.getByRole('button', { name: 'Suggestions: on' }).click();
+    await expect(meera.getByRole('alert').filter({ hasText: /ended|closed/i })).toBeVisible();
+    await expect(meera.getByRole('button', { name: 'Suggestions: on' })).toBeVisible();
     await ctx.close();
   });
 });

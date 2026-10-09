@@ -3,6 +3,8 @@ import Editor, { loader } from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '@/components/ui/states';
+import { applySuggestions } from '@/lib/completions/enabled';
+import { registerCompletions } from '@/lib/completions/register';
 import { currentTheme, defineThemes, themeName, type EditorTheme } from '@/lib/monaco-theme';
 import type { Pad } from './use-pad';
 
@@ -18,6 +20,7 @@ export default function PadEditor({
   readOnly,
   label,
   fontSize = 14,
+  suggestions = true,
 }: {
   pad: Pad;
   /** Monaco language id. */
@@ -25,10 +28,18 @@ export default function PadEditor({
   readOnly: boolean;
   label: string;
   fontSize?: number;
+  /** Keyword, library and snippet suggestions (ED-01); the interviewer may switch them off for the room. */
+  suggestions?: boolean;
 }) {
+  const monacoRef = useRef<typeof Monaco | null>(null);
   const [theme, setTheme] = useState<EditorTheme>('dark');
   const binding = useRef<{ destroy: () => void } | null>(null);
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  useEffect(() => {
+    if (editorRef.current && monacoRef.current)
+      applySuggestions(editorRef.current, monacoRef.current, suggestions);
+  }, [suggestions]);
 
   useEffect(() => {
     setTheme(currentTheme());
@@ -63,9 +74,14 @@ export default function PadEditor({
       language={language}
       theme={themeName(theme)}
       loading={<Skeleton className="size-full min-h-40" />}
-      beforeMount={defineThemes}
-      onMount={(editor) => {
+      beforeMount={(monaco) => {
+        defineThemes(monaco);
+        registerCompletions(monaco);
+      }}
+      onMount={(editor, monaco: typeof Monaco) => {
         editorRef.current = editor;
+        monacoRef.current = monaco;
+        applySuggestions(editor, monaco, suggestions);
         void bind(editor);
       }}
       options={{

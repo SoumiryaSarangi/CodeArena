@@ -469,6 +469,8 @@ macOS shows ⌘ where Ctrl is listed.
 
 Remote selection colours come from presence colours at 25% opacity.
 
+Suggestion list (ED-01): `editorSuggestWidget` background and text are the editor's own, the border is the line-number colour at 40%, the selected row is the selection colour, the matched letters use the accent. Suggestions are on by default in every editor; a contest can switch them off before it starts and an interviewer can switch them for a room (the room header shows **Suggestions: on/off**).
+
 ---
 
 ## §15. Performance UX budgets

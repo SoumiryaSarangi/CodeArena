@@ -40,7 +40,8 @@
         },
         "lateRegistration": true,
         "penaltyMinutes": 20,
-        "rated": true
+        "rated": true,
+        "suggestions": true
       }
     },
     "slug": {

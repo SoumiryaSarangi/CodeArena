@@ -70,6 +70,10 @@
         "rated": {
           "default": true,
           "type": "boolean"
+        },
+        "suggestions": {
+          "default": true,
+          "type": "boolean"
         }
       },
       "type": "object"

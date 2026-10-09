@@ -64,6 +64,12 @@ export function defineThemes(monaco: typeof Monaco) {
         // accent at 28% (dark) / 18% (light)
         'editor.selectionBackground': p.accent + (t === 'dark' ? '47' : '2E'),
         'editorCursor.foreground': p.accent,
+        // The suggestion list (ED-01): the editor's own background and text, the accent for the match and the selection.
+        'editorSuggestWidget.background': p.bg,
+        'editorSuggestWidget.foreground': p.fg,
+        'editorSuggestWidget.border': p.line + '66',
+        'editorSuggestWidget.selectedBackground': p.accent + (t === 'dark' ? '47' : '2E'),
+        'editorSuggestWidget.highlightForeground': p.accent,
         // The diff view (S17): --v-ac / --v-wa at low strength, so comments and numbers keep their contrast.
         'diffEditor.insertedLineBackground': p.added + '0A',
         'diffEditor.removedLineBackground': p.removed + '0A',

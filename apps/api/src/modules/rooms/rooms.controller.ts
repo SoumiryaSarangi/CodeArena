@@ -6,6 +6,7 @@ import {
   HttpCode,
   Inject,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -20,6 +21,7 @@ import {
   RoomNotesPut,
   RoomRestore,
   RoomRunCreate,
+  RoomSettingsPatch,
 } from '@codearena/contracts';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
@@ -28,6 +30,7 @@ import { RequireHandle } from '../auth/guards';
 import { RoomNotesService } from './room-notes.service';
 import { RoomPlaybackService } from './room-playback.service';
 import { RoomRestoreService } from './room-restore.service';
+import { RoomSettingsService } from './room-settings.service';
 import { RoomRunsService } from './room-runs.service';
 import { RoomsService } from './rooms.service';
 
@@ -50,6 +53,7 @@ export class RoomsController {
     @Inject(RoomNotesService) private readonly notes: RoomNotesService,
     @Inject(RoomPlaybackService) private readonly playback: RoomPlaybackService,
     @Inject(RoomRestoreService) private readonly restorer: RoomRestoreService,
+    @Inject(RoomSettingsService) private readonly settings: RoomSettingsService,
   ) {}
 
   @RateLimit({ scope: 'room-create', perMinute: 10 })
@@ -100,6 +104,14 @@ export class RoomsController {
   @Get(':id/runs')
   runList(@Req() req: Request, @Param('id') id: string) {
     return this.runs.list(req.user!, Id.parse(id));
+  }
+
+  /** FR-EDIT-03: the interviewer switches code suggestions on or off for the room. */
+  @RateLimit({ scope: 'room-settings', perMinute: 30 })
+  @Patch(':id/settings')
+  @HttpCode(200)
+  setSettings(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return this.settings.patch(req.user!, Id.parse(id), RoomSettingsPatch.parse(body));
   }
 
   /** FR-PAD-12: put the code of one of the room's runs back, as an edit everyone converges on. Interviewer only. */

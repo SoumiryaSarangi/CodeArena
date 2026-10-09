@@ -30,6 +30,11 @@ export const ContestRules = z
      * window three times finishes it for them. Off unless the organiser ticks it.
      */
     examMode: z.boolean().default(false),
+    /**
+     * Code suggestions in the editor (ED-01, FR-EDIT-02): keywords, library names and snippets. A convenience that the
+     * browser applies, not an integrity control. On unless the organiser switches it off before the contest begins.
+     */
+    suggestions: z.boolean().default(true),
   })
   .strict()
   .meta({ id: 'ContestRules' });

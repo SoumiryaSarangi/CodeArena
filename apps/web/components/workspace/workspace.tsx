@@ -114,6 +114,7 @@ export function WorkspaceView({
   contest,
   canary,
   onVerdict,
+  suggestions = true,
 }: {
   problem: ProblemDetail;
   wide: boolean;
@@ -122,6 +123,8 @@ export function WorkspaceView({
   /** IN-02: the organisers' hidden instruction for automated assistants (contest problems, when switched on). */
   canary?: string | null;
   onVerdict?: () => void;
+  /** ED-01: a contest's rules may switch the editor's suggestions off. Practice always has them. */
+  suggestions?: boolean;
 }) {
   // Drafts, layout and sign-in return paths are keyed by this, so a contest problem and its
   // practice twin never share code.
@@ -295,6 +298,7 @@ export function WorkspaceView({
       retryIn={judging.retryIn}
       hideActions={!wide}
       onPaste={onPaste}
+      suggestions={suggestions}
     />
   );
   const statement = (

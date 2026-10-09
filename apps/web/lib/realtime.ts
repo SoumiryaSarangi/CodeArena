@@ -49,6 +49,7 @@ export const TYPES: SseEventType[] = [
   'contest.state',
   'review.ready',
   'room.run',
+  'room.settings',
   'sys.status',
 ];
 

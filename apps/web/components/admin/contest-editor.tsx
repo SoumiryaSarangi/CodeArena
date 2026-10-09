@@ -279,6 +279,10 @@ export function ContestEditor({ id }: { id: string }) {
               ['rated', 'Rated'],
               ['lateRegistration', 'Allow registration while the contest runs'],
               [
+                'suggestions',
+                'Code suggestions in the editor (keywords, library names and snippets)',
+              ],
+              [
                 'examMode',
                 'Exam mode: one entry, a Finish test button, and leaving the window 3 times submits the test',
               ],

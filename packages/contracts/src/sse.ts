@@ -17,6 +17,7 @@ export const SseEventType = z
     'contest.state',
     'review.ready',
     'room.run',
+    'room.settings',
     'sys.status',
   ])
   .meta({ id: 'SseEventType' });

@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { ApiError, apiGet } from '@/lib/api';
 import { LANGUAGES, isLanguage, languageInfo } from '@/lib/languages';
-import { clock, closeRoom, createInvite, roomGet } from '@/lib/rooms';
+import { subscribe } from '@/lib/realtime';
+import { clock, closeRoom, createInvite, roomGet, setRoomSuggestions } from '@/lib/rooms';
 import { signInHref, useSession } from '@/lib/session';
 import { PresenceList, PresenceStyles } from './presence';
 import { NotesPanel } from './notes-panel';
@@ -118,6 +119,28 @@ function LiveRoom({ room }: { room: RoomView }) {
     const meta = pad.doc.getMap<string>('meta');
     if (!meta.get('language')) meta.set('language', room.language);
   }, [pad, synced, observer, room.language]);
+
+  // Code suggestions (ED-01): what the room was created with, then whatever the interviewer sets while it is open.
+  const [suggestions, setSuggestions] = useState(room.suggestions !== false);
+  const [suggestionsBusy, setSuggestionsBusy] = useState(false);
+  useEffect(() => {
+    return subscribe([`room:${room.id}`], (e) => {
+      if (e.type === 'room.settings')
+        setSuggestions(Boolean((e.data as { suggestions?: boolean }).suggestions));
+    });
+  }, [room.id]);
+  const toggleSuggestions = async () => {
+    setSuggestionsBusy(true);
+    setFailure(null);
+    try {
+      const r = await setRoomSuggestions(room.id, !suggestions);
+      setSuggestions(r.suggestions);
+    } catch (e) {
+      setFailure((e as Error).message);
+    } finally {
+      setSuggestionsBusy(false);
+    }
+  };
 
   // The timer counts from the room's creation; the room ends for good at `expiresAt`.
   const [now, setNow] = useState(() => Date.now());
@@ -225,6 +248,14 @@ function LiveRoom({ room }: { room: RoomView }) {
           </Select>
           {interviewer ? (
             <>
+              <Button
+                size="sm"
+                aria-pressed={suggestions}
+                disabled={suggestionsBusy}
+                onClick={() => void toggleSuggestions()}
+              >
+                Suggestions: {suggestions ? 'on' : 'off'}
+              </Button>
               <Button size="sm" disabled={busy} onClick={() => void copyInvite('candidate')}>
                 Copy candidate link
               </Button>
@@ -305,6 +336,7 @@ function LiveRoom({ room }: { room: RoomView }) {
                   key={pad.doc.guid}
                   pad={pad}
                   language={info.monaco}
+                  suggestions={suggestions}
                   readOnly={observer || status === 'too-large'}
                   label={`Shared code, ${info.label}${observer ? ', read-only' : ''}`}
                 />

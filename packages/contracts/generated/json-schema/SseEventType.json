@@ -15,6 +15,7 @@
     "contest.state",
     "review.ready",
     "room.run",
+    "room.settings",
     "sys.status"
   ],
   "type": "string"

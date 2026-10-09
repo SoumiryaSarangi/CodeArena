@@ -448,6 +448,9 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-PAD-13 | Documents shall use `gc: false`, capped at 2 MB and 90-minute sessions. | P1 | CP-07 | T |
 | FR-PAD-14 | Offline edits shall persist locally (y-indexeddb) and merge on reconnect. | P2 | CP-09 | T |
 | FR-PAD-15 | A whiteboard (pen, rect, arrow, text, eraser) shall sync and appear in playback; every action has a non-drag alternative. | P2 | CP-10 | T |
+| FR-EDIT-01 | Every code editor shall suggest language keywords, common library names and snippets (C, C++, Java, Python, JavaScript), not only words already typed; nothing inside a line comment; after a `.` only member names. | P1 | ED-01 | T |
+| FR-EDIT-02 | An organiser shall be able to switch code suggestions off for a contest before it begins (rule `suggestions`, default on); with it off the contest editor opens no list, by typing or by Ctrl/⌘+Space; practice is unaffected. | P1 | ED-01 | T |
+| FR-EDIT-03 | A room shall be created with suggestions on or off and its interviewer shall be able to change it while the room is open; everyone connected follows without reloading (`room.settings`). | P1 | ED-01 | T |
 
 #### 3.2.14 Analytics (EVT)
 

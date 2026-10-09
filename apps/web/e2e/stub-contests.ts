@@ -18,6 +18,7 @@ const RULES = {
   rated: true,
   lateRegistration: true,
   examMode: false,
+  suggestions: true,
 };
 
 import { rankRows } from '../lib/board';
@@ -157,6 +158,8 @@ export async function stubContests(
     noLateRegistration?: boolean;
     /** The contest has exam mode (C-10). */
     exam?: boolean;
+    /** The contest's code-suggestions rule (ED-01); on unless false. */
+    suggestions?: boolean;
     /** AI reviews for the viewer (AI-03): `mixed` = A ready, B queued; `none` = nothing submitted. */
     reviews?: 'mixed' | 'none';
     /** Opening a queued review answers `queued`. */
@@ -371,6 +374,7 @@ export async function stubContests(
       ...RULES,
       lateRegistration: !opts.noLateRegistration,
       examMode: !!opts.exam,
+      suggestions: opts.suggestions ?? true,
     },
     exam:
       opts.exam && st.registered

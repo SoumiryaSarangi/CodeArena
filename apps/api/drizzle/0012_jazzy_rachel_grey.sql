@@ -1,0 +1,1 @@
+ALTER TABLE "rooms" ADD COLUMN "suggestions" boolean DEFAULT true NOT NULL;

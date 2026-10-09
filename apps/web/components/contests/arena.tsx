@@ -288,6 +288,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         wide={wide}
         contest={{ slug, label }}
         canary={problem.v.canaryText}
+        suggestions={contest?.rules.suggestions ?? true}
         onVerdict={() => refresh(600)}
       />
 

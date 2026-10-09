@@ -35,6 +35,7 @@ export function EditorPane({
   retryIn,
   hideActions,
   onPaste,
+  suggestions = true,
 }: {
   language: Language;
   onLanguage: (l: Language) => void;
@@ -55,6 +56,8 @@ export function EditorPane({
   hideActions?: boolean;
   /** Contest signals (IN-01): characters pasted into the editor. */
   onPaste?: (chars: number) => void;
+  /** Code suggestions (ED-01); a contest may switch them off. */
+  suggestions?: boolean;
 }) {
   const mod = useModLabel();
   const info = languageInfo(language);
@@ -124,6 +127,7 @@ export function EditorPane({
           onRun={onRun}
           onSubmit={onSubmit}
           onPaste={onPaste}
+          suggestions={suggestions}
         />
       </div>
     </div>
