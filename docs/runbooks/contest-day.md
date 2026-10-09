@@ -68,8 +68,20 @@ Watch lane depth, p95, DLQ, worker heartbeats.
 
 - [ ] 21:00 freeze stays on; 21:15 resolver ceremony (`/c/<slug>/board?present=1`).
 - [ ] 21:45 Finalise the contest (ratings), AI reviews are queued.
-- [ ] 22:00 `scripts/scale-judges.sh to 1`; export metrics; feedback form.
+- [ ] 22:00 `scripts/scale-judges.sh to 1`; export metrics (below); feedback form.
 - [ ] 23:00 start the plagiarism run (review next day).
+
+### Export the contest's numbers (W-00, read-only, safe while it runs too)
+
+```bash
+tests/load/prod.sh contest-report <contest-slug> /tmp/contest.json
+node scripts/metrics-report.mjs --contest /tmp/contest.json     # writes the block into docs/METRICS.md
+```
+
+The block compares the result with the PRD targets (M1 participants, M2 at least one AC, M3 every verdict stored once,
+M4 p95 time to verdict) and lists submissions, the busiest minute, verdict mix, workers, dead letters, the plagiarism run
+and the AI reviews. Run it again after the plagiarism review or after the reviews finish: it replaces its own block.
+Review the numbers, then commit `docs/METRICS.md`.
 
 ## Failure drills
 

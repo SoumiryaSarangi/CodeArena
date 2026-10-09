@@ -3,6 +3,7 @@
 #
 #   tests/load/prod.sh seed 150 /tmp/load-seed.json     # fake users + a running lt-* contest
 #   tests/load/prod.sh report lt-abc123 /tmp/report.json
+#   tests/load/prod.sh contest-report SLUG FILE         # read-only numbers of any contest, for scripts/metrics-report.mjs --contest (W-00)
 #   tests/load/prod.sh verify SLUG                      # read-only: is every verdict stored exactly once, nothing stuck? (any contest)
 #   tests/load/prod.sh cleanup                          # deletes only @loadtest.invalid users, lt-* contests and their submissions
 #
@@ -23,9 +24,12 @@ case "${1:-}" in
   report)
     slug="${2:?contest slug}"; out="${3:?output file}"
     remote report "$slug" >"$out"; echo "report written to $out" ;;
+  contest-report)
+    slug="${2:?contest slug}"; out="${3:?output file}"
+    remote contest-report "$slug" >"$out"; echo "contest report written to $out" ;;
   verify)
     slug="${2:?contest slug}"
     remote verify "$slug" ;;
   cleanup) remote cleanup ;;
-  *) echo "usage: prod.sh seed N FILE | report SLUG FILE | verify SLUG | cleanup" >&2; exit 2 ;;
+  *) echo "usage: prod.sh seed N FILE | report SLUG FILE | contest-report SLUG FILE | verify SLUG | cleanup" >&2; exit 2 ;;
 esac

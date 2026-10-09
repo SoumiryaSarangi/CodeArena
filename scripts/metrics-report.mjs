@@ -6,10 +6,12 @@
 //   node scripts/metrics-report.mjs --run run.json --report report.json --label "judges=1" [--scale scale.json]
 //        [--out docs/METRICS.md]
 //   node scripts/metrics-report.mjs --drills drills.json [--out docs/METRICS.md]       (O-06 failure drills)
+//   node scripts/metrics-report.mjs --contest contest.json [--out docs/METRICS.md]     (W-00: a real contest's numbers)
 //
 // run.json    from tests/load/burst.mjs run     (what a client saw)
 // report.json from load-cli report              (what the database recorded)
 // scale.json  from tests/load/burst.mjs watch   (when each new worker appeared)
+// contest.json from `load-cli contest-report SLUG` (tests/load/prod.sh contest-report SLUG FILE): read-only, any contest
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -215,12 +217,97 @@ export function updateDrills(doc, drills) {
   return `${withHeading.trimEnd()}\n\n${block}\n`;
 }
 
+const CONTEST_HEADING = '## Contest reports (W-00)';
+const CONTEST_INTRO = `One block per contest, read from the database after it ended (\`tests/load/prod.sh contest-report SLUG FILE\`, then
+\`node scripts/metrics-report.mjs --contest FILE\`). Running it again for the same contest replaces its block. The targets
+are PRD §6.3 (M1 to M4); a missing number is shown as "–", never as a pass.`;
+
+const pctOf = (n, d) => (d > 0 ? `${Math.round((100 * n) / d)} %` : '–');
+const mark = (ok) => (ok === null ? '–' : ok ? '✓ met' : '✗ NOT met');
+
+/** The block for one real contest, with the PRD targets next to the numbers. */
+export function renderContest(r) {
+  const k = keyOf(r.contest.slug);
+  const p = r.participants;
+  const sub = r.submissions;
+  const solvedShare = p.registered > 0 ? p.solvedOne / p.registered : null;
+  const lines = [
+    `<!-- contest:${k} -->`,
+    `### ${r.contest.title} (${r.contest.slug})`,
+    '',
+    `${r.contest.startsAt.slice(0, 16).replace('T', ' ')} to ${r.contest.endsAt.slice(0, 16).replace('T', ' ')} UTC · report made ${r.generatedAt.slice(0, 16).replace('T', ' ')} UTC`,
+    '',
+    '| PRD target | Result | |',
+    '|---|---|---|',
+    `| M1 participants ≥ 20 | ${p.registered} registered, ${p.submitted} submitted | ${mark(p.registered >= 20)} |`,
+    `| M2 at least one AC ≥ 80 % | ${p.solvedOne} of ${p.registered} (${pctOf(p.solvedOne, p.registered)}) | ${mark(solvedShare === null ? null : solvedShare >= 0.8)} |`,
+    `| M3 lost or duplicated verdicts = 0 | ${r.integrity.ok ? 'every verdict stored once, nothing stuck' : r.integrity.problems.join('; ')}${r.integrity.notChecked.length ? ` (not checked: ${r.integrity.notChecked.join('; ')})` : ''} | ${mark(r.integrity.ok)} |`,
+    `| M4 p95 time to verdict ≤ 15 s | p50 ${s1(r.timeToVerdict.p50)} s, p95 ${s1(r.timeToVerdict.p95)} s, max ${s1(r.timeToVerdict.max)} s over ${r.timeToVerdict.n} verdicts | ${mark(r.timeToVerdict.p95 === null ? null : r.timeToVerdict.p95 <= 15)} |`,
+    '',
+    '| What | Value |',
+    '|---|---|',
+    `| Submissions | ${sub.total} (${sub.judged} judged) |`,
+    `| Busiest minute | ${sub.peakPerMinute} submissions${sub.peakMinuteAt ? ` at ${sub.peakMinuteAt.slice(11, 16)} UTC` : ''}; mean ${s1(sub.meanPerMinute, 2)} per minute over the contest |`,
+    `| Queue wait p50 / p95 / max | ${s1(r.queueWait.p50)} / ${s1(r.queueWait.p95)} / ${s1(r.queueWait.max)} s |`,
+    `| Verdict mix | ${
+      Object.entries(sub.byVerdict)
+        .map(([v, n]) => `${v} ${n}`)
+        .join(' · ') || '–'
+    } |`,
+    `| Languages | ${
+      Object.entries(sub.byLanguage)
+        .map(([v, n]) => `${v} ${n}`)
+        .join(' · ') || '–'
+    } |`,
+    `| Judge workers | ${r.workers.length === 0 ? '–' : r.workers.map((w) => `${w.id}: ${w.runs}`).join(', ')} |`,
+    `| Dead letters (jobs / results) | ${r.deadLetters.jobs ?? 'not read'} / ${r.deadLetters.results ?? 'not read'} |`,
+    `| Plagiarism | ${
+      r.plagiarism.latest
+        ? `${r.plagiarism.runs} run(s); latest ${r.plagiarism.latest.status}, ${r.plagiarism.latest.clusters} cluster(s) flagged: ${r.plagiarism.latest.open} open, ${r.plagiarism.latest.cleared} cleared, ${r.plagiarism.latest.confirmed} confirmed, ${r.plagiarism.latest.discuss} to discuss`
+        : 'not run'
+    } |`,
+    `| AI reviews | ${r.reviews.total} (${
+      Object.entries(r.reviews.byStatus)
+        .map(([v, n]) => `${v} ${n}`)
+        .join(', ') || '–'
+    }); ${r.reviews.tokens} tokens${
+      Object.keys(r.reviews.models).length
+        ? ` on ${Object.entries(r.reviews.models)
+            .map(([m, n]) => `${m} ×${n}`)
+            .join(', ')}`
+        : ''
+    }; rated helpful ${r.reviews.helpful.yes}, not helpful ${r.reviews.helpful.no}; cost $0 (free provider tiers) |`,
+    `<!-- /contest:${k} -->`,
+  ];
+  return lines.join('\n');
+}
+
+/** Adds or replaces the block of this contest under the contest-reports heading. */
+export function updateContest(doc, report) {
+  const base = doc.trim() === '' ? HEADER : doc;
+  const key = keyOf(report.contest.slug);
+  const block = renderContest(report);
+  const re = new RegExp(`<!-- contest:${key} -->[\\s\\S]*?<!-- /contest:${key} -->`);
+  if (re.test(base)) return base.replace(re, block);
+  const withHeading = base.includes(CONTEST_HEADING)
+    ? base
+    : `${base.trimEnd()}\n\n${CONTEST_HEADING}\n\n${CONTEST_INTRO}\n`;
+  return `${withHeading.trimEnd()}\n\n${block}\n`;
+}
+
 function main() {
   const rest = process.argv.slice(2);
   const arg = (n) => {
     const i = rest.indexOf(`--${n}`);
     return i >= 0 ? rest[i + 1] : undefined;
   };
+  if (arg('contest')) {
+    const out = arg('out') ?? 'docs/METRICS.md';
+    const doc = existsSync(out) ? readFileSync(out, 'utf8') : '';
+    writeFileSync(out, updateContest(doc, JSON.parse(readFileSync(arg('contest'), 'utf8'))));
+    console.log(`updated ${out} (contest report)`);
+    return;
+  }
   if (arg('drills')) {
     const out = arg('out') ?? 'docs/METRICS.md';
     const doc = existsSync(out) ? readFileSync(out, 'utf8') : '';

@@ -3,6 +3,7 @@
  *
  *   LOAD_TEST=on tsx load-cli.ts seed --users 150 --out /tmp/load-seed.json   (--out - = stdout)
  *   LOAD_TEST=on tsx load-cli.ts report <contest-slug> [--out report.json]
+ *   tsx load-cli.ts contest-report <contest-slug> [--out FILE]   (W-00: read-only numbers of any contest; no flag needed)
  *   LOAD_TEST=on tsx load-cli.ts verify <contest-slug> [--expect-jobs-dlq N]   (O-06: exits 1 if an invariant is broken)
  *   LOAD_TEST=on tsx load-cli.ts poison <contest-slug> --source - [--label C]   (O-06: a job that cannot run yet; source on stdin)
  *   LOAD_TEST=on tsx load-cli.ts poison-repair <contest-slug> [--label C]       (O-06: the testset its job names now exists)
@@ -20,6 +21,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Redis } from 'ioredis';
 import { cleanupLoad, hasLoadData, reportLoad, seedLoad } from './load-test';
 import { createPoison, removePoisonObjects, repairPoison } from './poison';
+import { contestReport } from './contest-report';
 import { verifyContest } from './verify';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -29,12 +31,13 @@ const flag = (name: string) => {
 };
 const usage = () => {
   console.error(
-    'usage: load-cli <seed --users N [--problems a,b,c] --out FILE|- | report SLUG [--out FILE] | verify SLUG [--expect-jobs-dlq N] | poison SLUG --source - | poison-repair SLUG | cleanup>',
+    'usage: load-cli <seed --users N [--problems a,b,c] --out FILE|- | report SLUG [--out FILE] | contest-report SLUG [--out FILE] | verify SLUG [--expect-jobs-dlq N] | poison SLUG --source - | poison-repair SLUG | cleanup>',
   );
   process.exit(2);
 };
 
-if (process.env.LOAD_TEST !== 'on') {
+// `contest-report` only reads, so it may run against the live database without the flag.
+if (process.env.LOAD_TEST !== 'on' && cmd !== 'contest-report') {
   console.error('refused: set LOAD_TEST=on to run load-test commands');
   process.exit(1);
 }
@@ -75,6 +78,29 @@ try {
     const out = flag('out');
     if (out) writeFileSync(out, json);
     else console.log(json);
+  } else if (cmd === 'contest-report') {
+    const slug = rest[0];
+    if (!slug) usage();
+    const redis = process.env.REDIS_URL
+      ? new Redis(process.env.REDIS_URL, {
+          connectTimeout: 5000,
+          maxRetriesPerRequest: 2,
+          retryStrategy: () => null,
+        })
+      : null;
+    redis?.on('error', () => undefined);
+    try {
+      const json = JSON.stringify(
+        await contestReport(db, redis, slug!, { prefix: process.env.QUEUE_KEY_PREFIX ?? '' }),
+        null,
+        2,
+      );
+      const out = flag('out');
+      if (out) writeFileSync(out, json);
+      else console.log(json);
+    } finally {
+      redis?.disconnect();
+    }
   } else if (cmd === 'verify') {
     const slug = rest[0];
     if (!slug) usage();

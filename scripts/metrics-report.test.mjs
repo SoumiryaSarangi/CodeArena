@@ -3,9 +3,11 @@ import { test } from 'node:test';
 import {
   keyOf,
   renderDrills,
+  renderContest,
   renderRun,
   summaryTable,
   update,
+  updateContest,
   updateDrills,
   upsertBlock,
 } from './metrics-report.mjs';
@@ -165,4 +167,111 @@ test('O-06: each environment has its own block under one heading; a rerun replac
   );
   assert.match(rerun, /✗ FAIL/); // production untouched
   assert.match(rerun, /notes/);
+});
+
+const contest = (over = {}) => ({
+  contest: {
+    slug: 'warm-up-1',
+    title: 'CodeArena Warm-up #1',
+    startsAt: '2026-10-10T13:30:00.000Z',
+    endsAt: '2026-10-10T15:30:00.000Z',
+    status: 'scheduled',
+  },
+  generatedAt: '2026-10-10T16:00:00.000Z',
+  participants: { registered: 32, submitted: 28, solvedOne: 27 },
+  submissions: {
+    total: 240,
+    judged: 240,
+    byVerdict: { AC: 120, WA: 90 },
+    byLanguage: { cpp17: 150, python3: 90 },
+    peakPerMinute: 21,
+    peakMinuteAt: '2026-10-10T14:05:00.000Z',
+    meanPerMinute: 2,
+  },
+  timeToVerdict: { n: 240, p50: 3.1, p95: 9.8, max: 14.2 },
+  queueWait: { n: 240, p50: 0.4, p95: 2.2, max: 4 },
+  workers: [
+    { id: 'judge-0', runs: 130 },
+    { id: 'judge-1', runs: 110 },
+  ],
+  deadLetters: { jobs: 0, results: 0 },
+  integrity: { ok: true, problems: [], notChecked: [] },
+  plagiarism: {
+    runs: 1,
+    latest: { status: 'done', clusters: 3, open: 1, cleared: 1, confirmed: 1, discuss: 0 },
+  },
+  reviews: {
+    total: 28,
+    byStatus: { ready: 27, failed: 1 },
+    tokens: 25000,
+    models: { 'gpt-oss-120b': 27 },
+    helpful: { yes: 12, no: 2 },
+  },
+  ...over,
+});
+
+test('W-00: a contest block shows every number the card names, against the PRD targets', () => {
+  const b = renderContest(contest());
+  assert.match(b, /<!-- contest:warm-up-1 -->/);
+  assert.match(b, /M1 participants ≥ 20 \| 32 registered, 28 submitted \| ✓ met/);
+  assert.match(b, /M2 .* \| 27 of 32 \(84 %\) \| ✓ met/);
+  assert.match(b, /M3 .* every verdict stored once, nothing stuck \| ✓ met/);
+  assert.match(b, /M4 .* p50 3\.1 s, p95 9\.8 s, max 14\.2 s over 240 verdicts \| ✓ met/);
+  assert.match(b, /Busiest minute \| 21 submissions at 14:05 UTC; mean 2\.00 per minute/);
+  assert.match(b, /Verdict mix \| AC 120 · WA 90/);
+  assert.match(b, /Judge workers \| judge-0: 130, judge-1: 110/);
+  assert.match(b, /Dead letters \(jobs \/ results\) \| 0 \/ 0/);
+  assert.match(b, /3 cluster\(s\) flagged: 1 open, 1 cleared, 1 confirmed, 0 to discuss/);
+  assert.match(
+    b,
+    /AI reviews \| 28 \(ready 27, failed 1\); 25000 tokens on gpt-oss-120b ×27; rated helpful 12, not helpful 2; cost \$0/,
+  );
+});
+
+test('W-00: targets that are missed say so, and unknown numbers are a dash, never a pass', () => {
+  const bad = renderContest(
+    contest({
+      participants: { registered: 12, submitted: 10, solvedOne: 5 },
+      timeToVerdict: { n: 100, p50: 6, p95: 18.5, max: 40 },
+      integrity: { ok: false, problems: ['2 submission(s) have no final verdict'], notChecked: [] },
+    }),
+  );
+  assert.match(bad, /M1 .* ✗ NOT met/);
+  assert.match(bad, /M2 .* 5 of 12 \(42 %\) \| ✗ NOT met/);
+  assert.match(bad, /M3 .* 2 submission\(s\) have no final verdict \| ✗ NOT met/);
+  assert.match(bad, /M4 .* p95 18\.5 s, .* ✗ NOT met/);
+  const unknown = renderContest(
+    contest({
+      participants: { registered: 0, submitted: 0, solvedOne: 0 },
+      timeToVerdict: { n: 0, p50: null, p95: null, max: null },
+      deadLetters: { jobs: null, results: null },
+      plagiarism: { runs: 0, latest: null },
+    }),
+  );
+  assert.match(unknown, /M2 .* \| 0 of 0 \(–\) \| – \|/);
+  assert.match(unknown, /M4 .* p95 – s, .* \| – \|/);
+  assert.doesNotMatch(unknown, /M4 .*✓ met/);
+  assert.match(unknown, /Dead letters \(jobs \/ results\) \| not read \/ not read/);
+  assert.match(unknown, /Plagiarism \| not run/);
+});
+
+test('W-00: one heading, one block per contest, a rerun replaces only its own block', () => {
+  let doc = updateContest('# Metrics\n\nnotes\n', contest());
+  doc = updateContest(
+    doc,
+    contest({ contest: { ...contest().contest, slug: 'warm-up-2', title: 'Warm-up #2' } }),
+  );
+  assert.equal(doc.match(/## Contest reports \(W-00\)/g).length, 1);
+  assert.equal(doc.match(/<!-- contest:/g).length, 2);
+  const again = updateContest(
+    doc,
+    contest({ participants: { registered: 40, submitted: 30, solvedOne: 30 } }),
+  );
+  assert.equal(again.match(/<!-- contest:warm-up-1 -->/g).length, 1);
+  assert.match(again, /40 registered, 30 submitted/);
+  const first = again.match(/<!-- contest:warm-up-1 -->[\s\S]*?<!-- \/contest:warm-up-1 -->/)[0];
+  assert.doesNotMatch(first, /32 registered/);
+  assert.match(again, /32 registered/); // the other contest's block is untouched
+  assert.match(again, /Warm-up #2/);
+  assert.match(again, /notes/);
 });
