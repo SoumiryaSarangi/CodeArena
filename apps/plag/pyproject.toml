@@ -3,6 +3,11 @@ name = "plag"
 version = "0.0.0"
 requires-python = ">=3.11"
 dependencies = [
+    "networkx>=3.6.1",
+    "numpy>=2.4.6",
+    "scikit-learn>=1.9.1",
+    "torch>=2.14.1",
+    "transformers>=5.19.0",
     "tree-sitter>=0.26.0",
     "tree-sitter-c>=0.24.2",
     "tree-sitter-cpp>=0.23.4",
@@ -34,3 +39,19 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.mypy]
 strict = true
 files = ["src"]
+
+# CPU-only torch: the default PyPI wheel drags in the CUDA stack (gigabytes) that the API VM cannot use.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.mypy.overrides]]
+module = ["networkx.*", "sklearn.*", "transformers.*", "torch.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = ["model: needs the real UniXcoder model (set PLAG_MODEL=1; downloads about 500 MB the first time)"]

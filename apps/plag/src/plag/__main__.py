@@ -1,3 +1,5 @@
-from plag import hello
+import sys
 
-print(hello())
+from .cli import main
+
+sys.exit(main())
