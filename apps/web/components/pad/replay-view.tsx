@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { ApiError } from '@/lib/api';
 import { isLanguage, languageInfo } from '@/lib/languages';
+import { BoardCanvas } from './board-canvas';
 import { Player, parseFrame, type Frame, type SliceSource } from '@/lib/playback';
 import { eventLabel, sessionClock } from '@/lib/replay-labels';
 import { roomGet, roomNotes, roomPlayback, roomTimeline } from '@/lib/rooms';
@@ -82,6 +83,11 @@ function Replay({ room }: { room: RoomView }) {
   const [busy, setBusy] = useState(false);
   const [slow, setSlow] = useState(false);
   const [notes, setNotes] = useState<string | null>(null);
+  // the whiteboard section appears once anything was drawn, and stays (the board is empty again if it was cleared)
+  const [boardSeen, setBoardSeen] = useState(false);
+  useEffect(() => {
+    if (frame && frame.shapes.length > 0) setBoardSeen(true);
+  }, [frame]);
   const playerRef = useRef<Player | null>(null);
   const seekTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dragAt, setDragAt] = useState<number | null>(null);
@@ -247,6 +253,15 @@ function Replay({ room }: { room: RoomView }) {
           )}
         </aside>
       </div>
+
+      {boardSeen ? (
+        <section aria-label="Replayed whiteboard" className="flex flex-col gap-2">
+          <h2 className="text-14 font-medium">Whiteboard at this moment</h2>
+          <div className="max-w-3xl">
+            <BoardCanvas shapes={frame?.shapes ?? []} label="Replayed whiteboard, read-only" />
+          </div>
+        </section>
+      ) : null}
 
       <section
         aria-label="Controls"

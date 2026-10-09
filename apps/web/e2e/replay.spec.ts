@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import * as Y from 'yjs';
+import { addShape } from '../lib/whiteboard';
 import { stubApi } from './stub-api';
 
 /**
@@ -33,6 +34,11 @@ function recorded() {
   }
   now += 200;
   src.getMap('meta').set('language', 'python3');
+  // the board is used at the very end (CP-10): a rectangle, then an arrow
+  now += 300;
+  addShape(src, { k: 'rect', c: 1, x: 100, y: 100, w: 200, h: 120 });
+  now += 300;
+  addShape(src, { k: 'arrow', c: 2, x1: 300, y1: 160, x2: 600, y2: 160 });
   const end = now + 500;
   const cks = new Map<number, Uint8Array>();
   const d = new Y.Doc({ gc: false });
@@ -361,5 +367,36 @@ test.describe("CP-06: the interviewer's replay", () => {
     const links = page.getByRole('link', { name: 'Replay' });
     await expect(links).toHaveCount(1); // only where the viewer was the interviewer
     await expect(links.first()).toHaveAttribute('href', `/r/${ROOM}/replay`);
+  });
+});
+
+test.describe('CP-10: the whiteboard in the replay', () => {
+  const board = (page: Page) => page.getByRole('region', { name: 'Replayed whiteboard' });
+  const drawn = (page: Page) => board(page).locator('g[data-shape-id]');
+
+  test('FR-PAD-15: the board appears in the replay when it was drawn, as it was at that moment, and is read-only', async ({
+    page,
+  }) => {
+    await open(page);
+    await page.locator('.monaco-editor .view-lines').first().waitFor({ timeout: 60_000 });
+    // at the start nothing had been drawn: no board section yet
+    await expect(board(page)).toHaveCount(0);
+    await position(page).focus();
+    await position(page).press('End');
+    await expect(board(page)).toBeVisible();
+    await expect(drawn(page)).toHaveCount(2);
+    expect(
+      await drawn(page).evaluateAll((els) => els.map((e) => e.getAttribute('data-kind'))),
+    ).toEqual(['rect', 'arrow']);
+    // back to the start: the board is empty again (the section stays so the page does not jump)
+    await position(page).press('Home');
+    await expect(drawn(page)).toHaveCount(0);
+    // read-only: no tools, nothing to select, the canvas is not focusable
+    await expect(page.getByRole('toolbar', { name: 'Whiteboard tools' })).toHaveCount(0);
+    await position(page).press('End');
+    await expect(drawn(page)).toHaveCount(2);
+    expect(await board(page).locator('svg[data-board]').getAttribute('tabindex')).toBeNull();
+    const results = await new AxeBuilder({ page }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
   });
 });

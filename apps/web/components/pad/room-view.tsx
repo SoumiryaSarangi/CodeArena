@@ -21,6 +21,7 @@ import { signInHref, useSession } from '@/lib/session';
 import { PresenceList, PresenceStyles } from './presence';
 import { NotesPanel } from './notes-panel';
 import { RunPanel } from './run-panel';
+import { Whiteboard } from './whiteboard';
 import { usePad } from './use-pad';
 
 const PadEditor = dynamic(() => import('./pad-editor'), {
@@ -332,6 +333,10 @@ function LiveRoom({ room }: { room: RoomView }) {
         <Tabs value={panel} onValueChange={setPanel} className="flex min-w-0 flex-col gap-3">
           <TabsList aria-label="Room panels">
             <TabsTrigger value="code">Code</TabsTrigger>
+            {/* UI_UX S13: the whiteboard is not offered on phones */}
+            <TabsTrigger value="board" className="max-md:hidden">
+              Whiteboard
+            </TabsTrigger>
             {interviewer ? (
               <TabsTrigger value="notes" title="Private: only you can see these">
                 <span className="inline-flex items-center gap-1">
@@ -377,6 +382,16 @@ function LiveRoom({ room }: { room: RoomView }) {
               hasProblem={!!room.problem}
             />
           </TabsContent>
+          {pad ? (
+            <TabsContent
+              value="board"
+              forceMount
+              hidden={panel !== 'board'}
+              className="max-md:hidden"
+            >
+              <Whiteboard doc={pad.doc} readOnly={observer} colorIndex={Math.max(0, at) % 8} />
+            </TabsContent>
+          ) : null}
           {interviewer ? (
             <TabsContent value="notes" forceMount hidden={panel !== 'notes'}>
               <NotesPanel roomId={room.id} />

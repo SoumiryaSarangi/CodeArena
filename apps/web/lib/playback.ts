@@ -1,4 +1,5 @@
 import * as Y from 'yjs';
+import { readShapes, type Shape } from './whiteboard';
 
 /** CP-06 (FR-PAD-10): replaying a room's document from its update log, in the browser. No DOM, no network of its own. */
 
@@ -52,6 +53,8 @@ export interface SliceSource {
 
 export interface Frame {
   text: string;
+  /** The whiteboard at that moment (CP-10); the same array while it has not changed. */
+  shapes: Shape[];
   language: string | null;
   /** The moment shown, epoch ms. */
   at: number;
@@ -74,6 +77,8 @@ export interface PlayerOptions {
  */
 export class Player {
   private doc = new Y.Doc({ gc: false });
+  private shapes: Shape[] = [];
+  private shapesDirty = true;
   private at: number;
   private seq = 0; // the last update applied
   private fetched = 0; // the last update fetched
@@ -86,6 +91,15 @@ export class Player {
 
   constructor(private readonly o: PlayerOptions) {
     this.at = o.startMs;
+    this.watchBoard(this.doc);
+  }
+
+  /** The board is read again only when it changed, not on every keystroke of the code. */
+  private watchBoard(doc: Y.Doc) {
+    this.shapesDirty = true;
+    doc.getArray('strokes').observeDeep(() => {
+      this.shapesDirty = true;
+    });
   }
 
   get position() {
@@ -93,8 +107,13 @@ export class Player {
   }
 
   private emit() {
+    if (this.shapesDirty) {
+      this.shapes = readShapes(this.doc);
+      this.shapesDirty = false;
+    }
     this.o.onFrame({
       text: this.doc.getText('code').toString(),
+      shapes: this.shapes,
       language: (this.doc.getMap('meta').get('language') as string | undefined) ?? null,
       at: this.at,
       playing: this.playing,
@@ -112,6 +131,7 @@ export class Player {
     for (const r of slice.records) Y.applyUpdate(doc, r.bytes);
     this.doc.destroy();
     this.doc = doc;
+    this.watchBoard(doc);
     this.at = at;
     this.seq = slice.toSeq;
     this.fetched = slice.toSeq;

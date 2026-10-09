@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 import { describe, expect, it } from 'vitest';
+import { addShape, clearBoard, deleteShape, moveShape } from '@/lib/whiteboard';
 import {
   CHUNK,
   IDLE_SKIP_MS,
@@ -295,5 +296,99 @@ describe('FR-PAD-10: a slice that arrives after the viewer jumped elsewhere', ()
     }
     expect(frames.at(-1)!.ended).toBe(true);
     expect(frames.at(-1)!.text).toBe(s.text()); // the whole session, including the first 200 characters
+  });
+});
+
+describe('FR-PAD-15: the whiteboard is part of the replay', () => {
+  /** Code typing and board work interleaved, one update each, a second apart. */
+  function boardSession() {
+    const src = new Y.Doc({ gc: false });
+    const log: Rec[] = [];
+    let now = START;
+    src.on('update', (u: Uint8Array) =>
+      log.push({ kind: KIND_UPDATE, seq: log.length + 1, ts: now, bytes: u }),
+    );
+    const at: Record<string, number> = {};
+    const step = (name: string, fn: () => void) => {
+      now += 1000;
+      at[name] = now;
+      fn();
+    };
+    let rect = '';
+    step('type', () => src.getText('code').insert(0, 'int main() {}'));
+    step('rect', () => {
+      rect = addShape(src, { k: 'rect', c: 1, x: 100, y: 100, w: 200, h: 100 })!;
+    });
+    step('pen', () => void addShape(src, { k: 'pen', c: 2, p: [10, 10, 60, 40, 90, 20] }));
+    step('move', () => void moveShape(src, rect, 50, 0));
+    step('type2', () => src.getText('code').insert(0, '// '));
+    step('erase', () => void deleteShape(src, rect));
+    step('arrow', () => void addShape(src, { k: 'arrow', c: 3, x1: 0, y1: 0, x2: 80, y2: 80 }));
+    step('clear', () => clearBoard(src));
+    const end = now + 1000;
+    return { log, cks: new Map<number, Uint8Array>(), end, at };
+  }
+
+  const play = async (s: ReturnType<typeof boardSession>, t: number) => {
+    const { source } = fakeSource(s as never);
+    const frames: Frame[] = [];
+    const player = new Player({
+      source,
+      startMs: START,
+      endMs: s.end,
+      lastSeq: s.log.length,
+      onFrame: (f) => frames.push(f),
+    });
+    await player.seek(t);
+    return { frames, player, last: () => frames.at(-1)! };
+  };
+
+  it('FR-PAD-15: a seek shows the board exactly as it was at that moment', async () => {
+    const s = boardSession();
+    const kinds = async (t: number) => (await play(s, t)).last().shapes.map((x) => x.k);
+    expect(await kinds(START)).toEqual([]);
+    expect(await kinds(s.at.type!)).toEqual([]);
+    expect(await kinds(s.at.rect!)).toEqual(['rect']);
+    expect(await kinds(s.at.pen!)).toEqual(['rect', 'pen']);
+    expect(await kinds(s.at.erase!)).toEqual(['pen']); // the rectangle was erased
+    expect(await kinds(s.at.arrow!)).toEqual(['pen', 'arrow']);
+    expect(await kinds(s.at.clear!)).toEqual([]);
+    expect(await kinds(s.end)).toEqual([]);
+  });
+
+  it('FR-PAD-15: a move is seen where it happened: the rectangle is at its old place before the move, the new one after', async () => {
+    const s = boardSession();
+    const x = async (t: number) => {
+      const r = (await play(s, t)).last().shapes.find((q) => q.k === 'rect');
+      return r?.k === 'rect' ? r.x : null;
+    };
+    expect(await x(s.at.pen!)).toBe(100);
+    expect(await x(s.at.move!)).toBe(150);
+  });
+
+  it('FR-PAD-15: playing forward adds shapes when their time comes, and typing code alone does not rebuild the board', async () => {
+    const s = boardSession();
+    const { source } = fakeSource(s as never);
+    const frames: Frame[] = [];
+    const player = new Player({
+      source,
+      startMs: START,
+      endMs: s.end,
+      lastSeq: s.log.length,
+      onFrame: (f) => frames.push(f),
+    });
+    await player.seek(START);
+    player.play(1);
+    for (let i = 0; i < 12; i++) await player.advance(1000);
+    expect(frames.at(-1)!.shapes).toEqual([]); // cleared at the end
+    const counts = frames.map((f) => f.shapes.length);
+    expect(Math.max(...counts)).toBe(2); // rectangle and pen, later pen and arrow
+    // while only the code changed (type2), the frame carries the very same array of shapes
+    const around = frames.filter((f) => f.text.startsWith('// ') && f.shapes.length === 2);
+    expect(around.length).toBeGreaterThan(0);
+    const same = frames.filter(
+      (f, i) => i > 0 && f.shapes.length > 0 && f.shapes === frames[i - 1]!.shapes,
+    );
+    expect(same.length).toBeGreaterThan(0);
   });
 });

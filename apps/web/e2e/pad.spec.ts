@@ -1295,3 +1295,229 @@ test.describe('CP-09: offline editing', () => {
     await ctx.close();
   });
 });
+
+test.describe('CP-10: whiteboard', () => {
+  const openBoard = async (p: Page) => {
+    await p.getByRole('tab', { name: 'Whiteboard' }).click();
+    await expect(p.getByRole('toolbar', { name: 'Whiteboard tools' })).toBeVisible();
+  };
+  const shapes = (p: Page) => p.locator('svg[data-board] g[data-shape-id]');
+  const kinds = async (p: Page) =>
+    shapes(p).evaluateAll((els) => els.map((e) => e.getAttribute('data-kind')));
+  /** A point on the board, in the page's pixels (the board is 1200 × 800 units, drawn to fit). */
+  const where = async (p: Page, bx: number, by: number) => {
+    const b = (await p.locator('svg[data-board]').boundingBox())!;
+    const scale = Math.min(b.width / 1200, b.height / 800);
+    return {
+      x: b.x + (b.width - 1200 * scale) / 2 + bx * scale,
+      y: b.y + (b.height - 800 * scale) / 2 + by * scale,
+    };
+  };
+  const tool = (p: Page, name: string) => p.getByRole('button', { name, exact: true }).click();
+
+  test('FR-PAD-15: a rectangle added with a button and a stroke drawn with the mouse reach the other person; erasing is shared too', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+    await openBoard(meera);
+    await openBoard(asha);
+
+    await meera.getByRole('button', { name: 'Add rectangle' }).click();
+    await expect.poll(() => kinds(asha)).toEqual(['rect']);
+
+    await tool(asha, 'Pen');
+    const a = await where(asha, 200, 600);
+    await asha.mouse.move(a.x, a.y);
+    await asha.mouse.down();
+    for (let i = 1; i <= 12; i++) {
+      const q = await where(asha, 200 + i * 30, 600 - Math.sin(i / 2) * 60);
+      await asha.mouse.move(q.x, q.y);
+    }
+    await asha.mouse.up();
+    await expect.poll(() => kinds(meera)).toEqual(['rect', 'pen']);
+    // everyone's list names the shapes
+    for (const p of [meera, asha]) {
+      const list = p.getByRole('region', { name: 'Shapes on the board' });
+      await expect(list).toContainText('Rectangle 1');
+      await expect(list).toContainText('Pen stroke 2');
+    }
+
+    // the eraser removes the rectangle for both: click on its edge (it is 240 × 140 around the middle)
+    await tool(asha, 'Eraser');
+    const edge = await where(asha, 480, 400);
+    await asha.mouse.click(edge.x, edge.y);
+    await expect.poll(() => kinds(meera)).toEqual(['pen']);
+    await expect.poll(() => kinds(asha)).toEqual(['pen']);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-15: everything has a way without dragging: the arrow keys and buttons move a shape, Delete removes it, the list selects it', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer');
+    await ready(meera);
+    await openBoard(meera);
+    await meera.getByRole('button', { name: 'Add rectangle' }).click();
+    await meera.getByRole('button', { name: 'Add arrow' }).click();
+    const rectX = () => meera.locator('g[data-kind="rect"] rect').first().getAttribute('x');
+    expect(await rectX()).toBe('480');
+
+    // choose it from the list (no pointer on the board), then move it with the buttons and with the keys
+    await meera
+      .getByRole('region', { name: 'Shapes on the board' })
+      .getByRole('button', { name: 'Rectangle 1' })
+      .click();
+    await meera.getByRole('button', { name: 'Move right' }).click(); // 40
+    await expect.poll(rectX).toBe('520');
+    await meera.getByRole('button', { name: 'Move up' }).click();
+    await meera.getByLabel('Whiteboard canvas').focus();
+    await meera.keyboard.press('ArrowLeft'); // 8
+    await meera.keyboard.press('ArrowLeft');
+    await meera.keyboard.press('Shift+ArrowLeft'); // 40
+    await expect.poll(rectX).toBe(String(520 - 8 - 8 - 40));
+    // Delete removes the selected shape
+    await meera.keyboard.press('Delete');
+    await expect.poll(() => kinds(meera)).toEqual(['arrow']);
+    await meera.getByRole('button', { name: 'Arrow 1' }).click();
+    await meera.getByRole('button', { name: 'Delete selected' }).click();
+    await expect.poll(() => kinds(meera)).toEqual([]);
+    await expect(meera.getByText('Nothing has been drawn yet.')).toBeVisible();
+    await ctx.close();
+  });
+
+  test('FR-PAD-15: a stroke and a rectangle can be drawn with the keyboard alone, and the other person sees them', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+    await openBoard(meera);
+    await openBoard(asha);
+
+    await tool(meera, 'Pen');
+    await meera.getByLabel('Whiteboard canvas').focus();
+    await meera.keyboard.press('Space'); // pen down in the middle
+    for (let i = 0; i < 6; i++) await meera.keyboard.press('Shift+ArrowRight');
+    for (let i = 0; i < 4; i++) await meera.keyboard.press('Shift+ArrowDown');
+    await meera.keyboard.press('Space'); // pen up
+    await expect.poll(() => kinds(asha)).toEqual(['pen']);
+
+    await tool(meera, 'Rectangle');
+    await meera.getByLabel('Whiteboard canvas').focus();
+    await meera.keyboard.press('Space'); // first corner
+    for (let i = 0; i < 5; i++) await meera.keyboard.press('Shift+ArrowLeft');
+    for (let i = 0; i < 3; i++) await meera.keyboard.press('Shift+ArrowUp');
+    await meera.keyboard.press('Space'); // opposite corner
+    await expect.poll(() => kinds(asha)).toEqual(['pen', 'rect']);
+    const w = await asha.locator('g[data-kind="rect"] rect').first().getAttribute('width');
+    expect(Number(w)).toBe(200);
+
+    // and the eraser works from the keyboard: the cursor is still at the rectangle's corner, which is also where the stroke ends
+    await tool(meera, 'Eraser');
+    await meera.getByLabel('Whiteboard canvas').focus();
+    await meera.keyboard.press('Space'); // the topmost shape under the cursor: the rectangle
+    await expect.poll(() => kinds(asha)).toEqual(['pen']);
+    await meera.keyboard.press('Space'); // then the stroke
+    await expect.poll(() => kinds(asha)).toEqual([]);
+    await meera.keyboard.press('Space');
+    await expect(meera.getByText('Nothing under the cursor.')).toBeVisible();
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-15: text goes where it is clicked or into the middle, is shown as plain text, and a clear needs confirming', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const asha = await enter(cb, 'asha', 'candidate');
+    await ready(meera);
+    await ready(asha);
+    await openBoard(meera);
+    await openBoard(asha);
+
+    await meera.getByLabel('Text to place').fill('O(n log n)');
+    await meera.getByRole('button', { name: 'Add text' }).click();
+    await expect(asha.locator('g[data-kind="text"] text')).toHaveText('O(n log n)');
+    // click placement
+    await tool(asha, 'Text');
+    await asha.getByLabel('Text to place').fill('<img src=x onerror="window.__pwned=1">');
+    const at = await where(asha, 300, 200);
+    await asha.mouse.click(at.x, at.y);
+    await expect(meera.locator('g[data-kind="text"] text').nth(1)).toHaveText(
+      '<img src=x onerror="window.__pwned=1">',
+    );
+    expect(
+      await meera.evaluate(() => (window as unknown as { __pwned?: number }).__pwned),
+    ).toBeUndefined();
+    expect(await meera.locator('svg[data-board] img').count()).toBe(0);
+    // an empty text asks for text instead of adding an empty shape
+    await asha.getByRole('button', { name: 'Add text' }).click();
+    await expect(asha.getByText('Type the text in the box first.')).toBeVisible();
+    expect(await kinds(asha)).toEqual(['text', 'text']);
+
+    await asha.getByRole('button', { name: 'Clear board' }).click();
+    const dialog = asha.getByRole('dialog', { name: 'Clear the whole board?' });
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    expect(await kinds(asha)).toEqual(['text', 'text']);
+    await asha.getByRole('button', { name: 'Clear board' }).click();
+    await asha.getByRole('dialog').getByRole('button', { name: 'Clear board' }).click();
+    await expect.poll(() => kinds(meera)).toEqual([]);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-15: an observer sees the board live but has no tools and cannot select', async ({
+    browser,
+  }) => {
+    const [ca, cb] = [await browser.newContext(), await browser.newContext()];
+    const meera = await enter(ca, 'meera', 'interviewer');
+    const ravi = await enter(cb, 'ravi', 'observer');
+    await ready(meera);
+    await ready(ravi);
+    await openBoard(meera);
+    await ravi.getByRole('tab', { name: 'Whiteboard' }).click();
+    await meera.getByRole('button', { name: 'Add rectangle' }).click();
+    await expect.poll(() => kinds(ravi)).toEqual(['rect']);
+    await expect(ravi.getByRole('toolbar', { name: 'Whiteboard tools' })).toHaveCount(0);
+    await expect(
+      ravi.getByText('Read-only board: you can see what is drawn but not draw on it.'),
+    ).toBeVisible();
+    await expect(ravi.getByRole('button', { name: 'Rectangle 1' })).toBeDisabled();
+    // clicking the board does nothing
+    const p = await where(ravi, 480, 400);
+    await ravi.mouse.click(p.x, p.y);
+    expect(await ravi.locator('svg[data-board] [data-selection]').count()).toBe(0);
+    await ca.close();
+    await cb.close();
+  });
+
+  test('FR-PAD-15: the whiteboard is not offered on a phone, and the tab is accessible on a desktop', async ({
+    browser,
+  }) => {
+    const phone = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const p = await enter(phone, 'meera', 'interviewer');
+    await ready(p);
+    await expect(p.getByRole('tab', { name: 'Whiteboard' })).toBeHidden();
+    await phone.close();
+
+    const ctx = await browser.newContext();
+    const meera = await enter(ctx, 'meera', 'interviewer');
+    await ready(meera);
+    await openBoard(meera);
+    await meera.getByRole('button', { name: 'Add rectangle' }).click();
+    await meera.getByLabel('Text to place').fill('hello');
+    await meera.getByRole('button', { name: 'Add text' }).click();
+    const results = await new AxeBuilder({ page: meera }).include('#main').analyze();
+    expect(results.violations).toEqual([]);
+    await ctx.close();
+  });
+});
