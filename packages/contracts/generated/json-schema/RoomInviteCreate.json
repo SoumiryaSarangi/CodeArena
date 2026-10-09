@@ -1,0 +1,18 @@
+{
+  "$id": "RoomInviteCreate.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "role": {
+      "enum": [
+        "candidate",
+        "observer"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "role"
+  ],
+  "type": "object"
+}

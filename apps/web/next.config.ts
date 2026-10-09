@@ -9,6 +9,10 @@ const config: NextConfig = {
   // The contracts package ships TypeScript source (no build step).
   transpilePackages: ['@codearena/contracts'],
   poweredByHeader: false,
+  // y-monaco must use the Monaco the editor already loaded, not bundle its own (see lib/monaco-global.ts).
+  turbopack: {
+    resolveAlias: { 'monaco-editor/esm/vs/editor/editor.api.js': './lib/monaco-global.ts' },
+  },
   async rewrites() {
     return [{ source: '/api/:path*', destination: `${apiProxy}/api/:path*` }];
   },

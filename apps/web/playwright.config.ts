@@ -10,5 +10,7 @@ export default defineConfig({
     url: 'http://localhost:3123/dev/ui',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // The pad spec (e2e/pad.spec.ts) runs a real collab server on this port.
+    env: { NEXT_PUBLIC_COLLAB_URL: `ws://127.0.0.1:${process.env.COLLAB_E2E_PORT ?? 1299}` },
   },
 });

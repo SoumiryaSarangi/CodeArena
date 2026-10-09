@@ -1,0 +1,114 @@
+{
+  "$id": "RoomView.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "durationMin": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "expiresAt": {
+      "type": "string"
+    },
+    "id": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "memberCount": {
+      "maximum": 9007199254740991,
+      "minimum": -9007199254740991,
+      "type": "integer"
+    },
+    "members": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "handle": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "interviewer",
+              "candidate",
+              "observer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "handle",
+          "role"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "problem": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "slug",
+            "title"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "role": {
+      "enum": [
+        "interviewer",
+        "candidate",
+        "observer"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "closed",
+        "archived"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "role",
+    "status",
+    "language",
+    "durationMin",
+    "problem",
+    "createdAt",
+    "expiresAt",
+    "memberCount",
+    "members"
+  ],
+  "type": "object"
+}

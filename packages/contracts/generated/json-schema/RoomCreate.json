@@ -1,0 +1,40 @@
+{
+  "$id": "RoomCreate.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "durationMin": {
+      "anyOf": [
+        {
+          "const": 30,
+          "type": "number"
+        },
+        {
+          "const": 45,
+          "type": "number"
+        },
+        {
+          "const": 60,
+          "type": "number"
+        },
+        {
+          "const": 90,
+          "type": "number"
+        }
+      ]
+    },
+    "language": {
+      "$ref": "Language.json"
+    },
+    "problemSlug": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "language",
+    "durationMin"
+  ],
+  "type": "object"
+}
