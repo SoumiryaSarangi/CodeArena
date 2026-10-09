@@ -35,6 +35,7 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]
+"src/plag/evalset/report.py" = ["E501"]  # long prose lines of the METRICS block
 
 [tool.mypy]
 strict = true
