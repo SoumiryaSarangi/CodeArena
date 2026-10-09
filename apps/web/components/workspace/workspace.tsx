@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { ConnectionPill } from '@/components/connection-pill';
+import { useSignals } from '@/lib/signals';
 import { useModLabel } from '@/components/shortcut-sheet';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -128,6 +129,8 @@ export function WorkspaceView({
   const { session } = useSession();
   const signedIn = session.status === 'authed';
   const hasHandle = session.status === 'authed' && !!session.me.handle;
+  // IN-01: in a contest only, for a signed-in contestant (the privacy page says what is reported).
+  const onPaste = useSignals(contest, !!contest && signedIn);
   const judging = useJudging({
     slug: problem.slug,
     contest,
@@ -288,6 +291,7 @@ export function WorkspaceView({
       submitting={judging.submitting}
       retryIn={judging.retryIn}
       hideActions={!wide}
+      onPaste={onPaste}
     />
   );
   const statement = <StatementPane problem={problem} onRunSample={runSample} canRun={signedIn} />;

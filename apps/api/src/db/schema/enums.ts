@@ -31,7 +31,13 @@ export const contestStatus = pgEnum('contest_status', [
 ]);
 export const reviewStatus = pgEnum('review_status', ['pending', 'ready', 'failed']);
 export const decisionKind = pgEnum('decision_kind', ['confirmed', 'dismissed', 'needs_more']);
-export const signalKind = pgEnum('signal_kind', ['paste', 'blur', 'focus', 'tab_hidden']);
+export const signalKind = pgEnum('signal_kind', [
+  'paste',
+  'blur',
+  'focus',
+  'tab_hidden',
+  'problem_open',
+]);
 export const roomStatus = pgEnum('room_status', ['open', 'closed', 'archived']);
 export const roomRole = pgEnum('room_role', ['interviewer', 'candidate', 'observer']);
 export const roomEventKind = pgEnum('room_event_kind', [

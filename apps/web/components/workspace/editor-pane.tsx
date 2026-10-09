@@ -34,6 +34,7 @@ export function EditorPane({
   submitting,
   retryIn,
   hideActions,
+  onPaste,
 }: {
   language: Language;
   onLanguage: (l: Language) => void;
@@ -52,6 +53,8 @@ export function EditorPane({
   retryIn: number;
   /** Narrow screens show Run and Submit in a fixed bar instead (UI_UX S05). */
   hideActions?: boolean;
+  /** Contest signals (IN-01): characters pasted into the editor. */
+  onPaste?: (chars: number) => void;
 }) {
   const mod = useModLabel();
   const info = languageInfo(language);
@@ -120,6 +123,7 @@ export function EditorPane({
           fontSize={fontSize}
           onRun={onRun}
           onSubmit={onSubmit}
+          onPaste={onPaste}
         />
       </div>
     </div>

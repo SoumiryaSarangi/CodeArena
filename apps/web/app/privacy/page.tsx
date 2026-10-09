@@ -56,6 +56,22 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
+      <LegalSection title="What is recorded during a contest">
+        <p>
+          While a contest runs and you are registered, the contest page reports four things for the
+          organisers&apos; fairness review: when you opened each problem, how many characters you
+          pasted into the editor when it is more than 50 (the size and the time, never the pasted
+          text), and when the window lost or regained focus. From your submissions it also works out
+          how long you took from opening a problem to your first accepted answer, and how much your
+          code style differs from your own earlier programs.
+        </p>
+        <p>
+          These are advisory hints shown to administrators next to similar submissions, clearly
+          labelled, and are never used to change a score or ranking. They are deleted 30 days after
+          the contest ends.
+        </p>
+      </LegalSection>
+
       <LegalSection title="Who can see it">
         <ul className="list-disc pl-5">
           <li>Everyone can see your handle and rating, and your place on a public board.</li>

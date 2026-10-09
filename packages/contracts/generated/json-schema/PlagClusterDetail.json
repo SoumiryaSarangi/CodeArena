@@ -152,27 +152,73 @@
       "items": {
         "additionalProperties": false,
         "properties": {
-          "at": {
-            "type": "string"
+          "focusLosses": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "handle": {
             "type": "string"
           },
-          "kind": {
-            "type": "string"
-          },
-          "size": {
+          "openedAt": {
             "type": [
-              "number",
+              "string",
               "null"
+            ]
+          },
+          "pastes": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "at": {
+                  "type": "string"
+                },
+                "size": {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "size",
+                "at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "styleShift": {
+            "anyOf": [
+              {
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeToAcMinutes": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
             ]
           }
         },
         "required": [
           "handle",
-          "kind",
-          "size",
-          "at"
+          "pastes",
+          "focusLosses",
+          "openedAt",
+          "timeToAcMinutes",
+          "styleShift"
         ],
         "type": "object"
       },

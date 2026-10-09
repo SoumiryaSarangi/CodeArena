@@ -29,6 +29,8 @@ export interface CodeEditorProps {
   onRun?: () => void;
   onSubmit?: () => void;
   readOnly?: boolean;
+  /** Characters just pasted into the editor (contest signals, IN-01); never the text. */
+  onPaste?: (chars: number) => void;
 }
 
 /**
@@ -47,16 +49,19 @@ export default function CodeEditor({
   onRun,
   onSubmit,
   readOnly,
+  onPaste,
 }: CodeEditorProps) {
   const [theme, setTheme] = useState<EditorTheme>('dark');
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const initial = useRef(initialValue);
   const run = useRef(onRun);
   const submit = useRef(onSubmit);
+  const pasted = useRef(onPaste);
   useEffect(() => {
     run.current = onRun;
     submit.current = onSubmit;
-  }, [onRun, onSubmit]);
+    pasted.current = onPaste;
+  }, [onRun, onSubmit, onPaste]);
 
   useEffect(() => {
     initial.current = initialValue;
@@ -87,6 +92,10 @@ export default function CodeEditor({
       beforeMount={defineThemes}
       onMount={(editor, monaco: typeof Monaco) => {
         editorRef.current = editor;
+        editor.onDidPaste((e) => {
+          const model = editor.getModel();
+          pasted.current?.(model ? model.getValueInRange(e.range).length : 0);
+        });
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => run.current?.());
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () =>
           submit.current?.(),

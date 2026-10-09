@@ -481,7 +481,7 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
       await makeUser(),
       await makeUser(),
     ];
-    const sa = await sub(c.id, a.id, P1, 'int main(){return 1;}');
+    const sa = await sub(c.id, a.id, P1, 'int main(){return 1;}', { verdict: 'AC' });
     const sb = await sub(c.id, b.id, P1, 'int main(){return 1;} // b');
     const sd = await sub(c.id, d.id, P1, 'int main(){return 1;} // d');
     const so = await sub(c.id, other.id, P1, 'int main(){return 2;}');
@@ -518,6 +518,14 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
     }
     await db.insert(editorSignals).values([
       { userId: a.id, contestId: c.id, problemId: v.problemId, kind: 'paste', size: 800 },
+      {
+        userId: a.id,
+        contestId: c.id,
+        problemId: v.problemId,
+        kind: 'problem_open',
+        at: new Date(Date.now() - 10 * 60_000),
+      },
+      { userId: a.id, contestId: c.id, problemId: v.problemId, kind: 'blur' },
       { userId: other.id, contestId: c.id, problemId: v.problemId, kind: 'paste', size: 5 },
     ]);
 
@@ -541,12 +549,25 @@ describe.skipIf(!ready)('PL-05: the plagiarism job API (needs the Compose Postgr
     expect(r.body.members.find((m: { handle: string }) => m.handle === a.handle)).toMatchObject({
       source: 'int main(){return 1;}',
       language: 'cpp17',
-      verdict: 'WA',
+      verdict: 'AC',
     });
     expect(r.body.pairs.map((p: { combined: number }) => p.combined)).toEqual([0.9, 0.7]);
-    expect(r.body.signals).toEqual([
-      expect.objectContaining({ handle: a.handle, kind: 'paste', size: 800 }),
-    ]);
+    expect(r.body.signals).toHaveLength(3); // one per member, whether or not anything was recorded
+    expect(r.body.signals.find((x: { handle: string }) => x.handle === a.handle)).toMatchObject({
+      pastes: [expect.objectContaining({ size: 800 })],
+      focusLosses: 1,
+      timeToAcMinutes: expect.any(Number),
+    });
+    const ttac = r.body.signals.find(
+      (x: { handle: string }) => x.handle === a.handle,
+    ).timeToAcMinutes;
+    expect(ttac).toBeGreaterThanOrEqual(9);
+    expect(ttac).toBeLessThanOrEqual(10);
+    expect(r.body.signals.find((x: { handle: string }) => x.handle === b.handle)).toMatchObject({
+      pastes: [],
+      timeToAcMinutes: null,
+      styleShift: null,
+    });
     expect(r.body.decisions).toEqual([]);
     expect(JSON.stringify(r.body)).not.toContain('example.test'); // no e-mail address anywhere
     clusterUnderReview = { id: cl!.id, runId: run!.id, subs: [sa, sb, sd] };

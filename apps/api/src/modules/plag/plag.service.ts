@@ -30,6 +30,7 @@ import {
   users,
 } from '../../db/schema';
 import { contestState } from '../contests/state';
+import { styleShift, timeToAcMinutes } from '../signals/derive';
 
 const tracer = trace.getTracer('api');
 const runsTotal = metrics
@@ -234,27 +235,7 @@ export class PlagService {
             ),
           )
           .orderBy(desc(plagPairs.combined), asc(plagPairs.subA), asc(plagPairs.subB));
-        const signals = await this.db
-          .select({
-            handle: users.handle,
-            kind: editorSignals.kind,
-            size: editorSignals.size,
-            at: editorSignals.at,
-          })
-          .from(editorSignals)
-          .innerJoin(users, eq(users.id, editorSignals.userId))
-          .where(
-            and(
-              eq(editorSignals.contestId, c.contestId),
-              eq(editorSignals.problemId, c.problemId),
-              inArray(
-                editorSignals.userId,
-                members.map((m) => m.userId),
-              ),
-            ),
-          )
-          .orderBy(asc(editorSignals.at))
-          .limit(500);
+        const signals = await this.memberSignals(c.contestId, c.problemId, members);
         const decisions = await this.db
           .select({
             id: reviewDecisions.id,
@@ -286,12 +267,7 @@ export class PlagService {
             source: m.source,
           })),
           pairs,
-          signals: signals.map((x) => ({
-            handle: x.handle ?? 'unknown',
-            kind: x.kind,
-            size: x.size,
-            at: x.at.toISOString(),
-          })),
+          signals,
           decisions: decisions.map((d) => ({
             id: d.id,
             decision: FROM_DB[d.decision],
@@ -304,6 +280,86 @@ export class PlagService {
         span.end();
       }
     });
+  }
+
+  /** IN-01: per member, what the browser reported plus two derived numbers. Advisory only. */
+  private async memberSignals(
+    contestId: string,
+    problemId: string,
+    members: {
+      submissionId: string;
+      userId: string;
+      handle: string | null;
+      language: string;
+      source: string;
+    }[],
+  ): Promise<PlagClusterDetail['signals']> {
+    const userIds = members.map((m) => m.userId);
+    const rows = await this.db
+      .select({
+        userId: editorSignals.userId,
+        kind: editorSignals.kind,
+        size: editorSignals.size,
+        at: editorSignals.at,
+      })
+      .from(editorSignals)
+      .where(
+        and(
+          eq(editorSignals.contestId, contestId),
+          eq(editorSignals.problemId, problemId),
+          inArray(editorSignals.userId, userIds),
+        ),
+      )
+      .orderBy(asc(editorSignals.at))
+      .limit(5000);
+    const firstAc = await this.db.execute<{ user_id: string; at: Date | string }>(sql`
+      select s.user_id, min(s.created_at) as at
+      from submissions s join problem_versions pv on pv.id = s.problem_version_id
+      where s.contest_id = ${contestId} and pv.problem_id = ${problemId} and s.verdict = 'AC'
+        and s.user_id in (${sql.join(
+          userIds.map((u) => sql`${u}`),
+          sql`, `,
+        )})
+      group by s.user_id`);
+    const acBy = new Map(
+      (
+        firstAc.rows ??
+        (firstAc as unknown as { rows: { user_id: string; at: Date | string }[] }).rows
+      ).map((r) => [r.user_id, new Date(r.at)]),
+    );
+    const out: PlagClusterDetail['signals'] = [];
+    for (const m of members) {
+      const mine = rows.filter((r) => r.userId === m.userId);
+      const opened = mine.find((r) => r.kind === 'problem_open')?.at ?? null;
+      // The person's own earlier programs in the same language, before this one, for the style comparison.
+      const history = await this.db
+        .select({ source: submissions.source })
+        .from(submissions)
+        .where(
+          and(
+            eq(submissions.userId, m.userId),
+            eq(submissions.language, m.language as (typeof submissions.$inferSelect)['language']),
+            sql`${submissions.id} <> ${m.submissionId}`,
+            sql`${submissions.createdAt} < (select created_at from submissions where id = ${m.submissionId})`,
+          ),
+        )
+        .orderBy(desc(submissions.createdAt))
+        .limit(20);
+      out.push({
+        handle: m.handle ?? 'unknown',
+        pastes: mine
+          .filter((r) => r.kind === 'paste')
+          .map((r) => ({ size: r.size ?? 0, at: r.at.toISOString() })),
+        focusLosses: mine.filter((r) => r.kind === 'blur' || r.kind === 'tab_hidden').length,
+        openedAt: opened ? opened.toISOString() : null,
+        timeToAcMinutes: timeToAcMinutes(opened, acBy.get(m.userId) ?? null),
+        styleShift: styleShift(
+          m.source,
+          history.map((h) => h.source),
+        ),
+      });
+    }
+    return out;
   }
 
   /** FR-PLAG-05: a decision with a note, in the audit log; it changes nothing else (no automatic penalty). */

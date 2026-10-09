@@ -1,0 +1,1 @@
+ALTER TYPE "public"."signal_kind" ADD VALUE 'problem_open';

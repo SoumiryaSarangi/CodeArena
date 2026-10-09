@@ -273,21 +273,39 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             Advisory only
           </span>
         </h2>
-        {detail.signals.length === 0 ? (
-          <p className="text-13 text-text-3">
-            No signals were recorded for these people on this problem. Signals are never evidence on
-            their own.
-          </p>
-        ) : (
-          <ul className="text-14">
+        <table className="w-full text-left text-14">
+          <thead className="text-13 text-text-2">
+            <tr>
+              <th className="py-1 pr-3 font-normal">Person</th>
+              <th className="py-1 pr-3 font-normal">Pastes over 50 characters</th>
+              <th className="py-1 pr-3 font-normal">Left the window</th>
+              <th className="py-1 pr-3 font-normal">Minutes to first accepted</th>
+              <th className="py-1 font-normal">Style change</th>
+            </tr>
+          </thead>
+          <tbody>
             {detail.signals.map((s) => (
-              <li key={`${s.handle}:${s.at}:${s.kind}`}>
-                @{s.handle}: {s.kind}
-                {s.size !== null ? ` (${s.size} characters)` : ''} · {formatWhen(s.at)}
-              </li>
+              <tr key={s.handle} className="border-t border-border-strong align-top">
+                <td className="py-1 pr-3">@{s.handle}</td>
+                <td className="py-1 pr-3">
+                  {s.pastes.length === 0
+                    ? 'none'
+                    : s.pastes.map((p) => `${p.size} characters at ${formatWhen(p.at)}`).join('; ')}
+                </td>
+                <td className="py-1 pr-3">
+                  {s.openedAt ? `${s.focusLosses} times` : 'not recorded'}
+                </td>
+                <td className="py-1 pr-3">{s.timeToAcMinutes ?? 'not available'}</td>
+                <td className="py-1">{styleText(s.styleShift)}</td>
+              </tr>
             ))}
-          </ul>
-        )}
+          </tbody>
+        </table>
+        <p className="text-13 text-text-3">
+          Reported by the contest page and worked out from the code. Many honest people paste their
+          own template or switch windows to read: these are never evidence on their own and never
+          change a score.
+        </p>
       </section>
 
       <DecisionBar
@@ -299,6 +317,14 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
       />
     </div>
   );
+}
+
+/** 0 to 1 divergence from the person's own earlier programs, in words first. */
+function styleText(x: number | null): string {
+  if (x === null) return 'not enough earlier code';
+  const word =
+    x < 0.1 ? 'like their earlier code' : x < 0.25 ? 'somewhat different' : 'very different';
+  return `${word} (${x.toFixed(2)})`;
 }
 
 function MemberSelect({

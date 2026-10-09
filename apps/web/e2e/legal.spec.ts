@@ -45,6 +45,8 @@ test('the privacy page says what is stored and how to ask for deletion', async (
   for (const text of [
     'name, e-mail address and',
     'Cookies',
+    'What is recorded during a contest',
+    'deleted 30 days after the contest ends',
     'Who can see it',
     'Deletion is not self-service yet',
   ])

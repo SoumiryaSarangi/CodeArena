@@ -173,14 +173,20 @@ export const PlagClusterDetail = z
         })
         .strict(),
     ),
-    /** Advisory only (SD-§13, IN-01): never evidence on its own. Empty until IN-01 records them. */
+    /** One entry per member. Advisory only (SD-§14, IN-01): never evidence on its own, never used for a score. */
     signals: z.array(
       z
         .object({
           handle: z.string(),
-          kind: z.string(),
-          size: z.number().nullable(),
-          at: z.string(),
+          /** Pastes above 50 characters on this problem. */
+          pastes: z.array(z.object({ size: z.number().int(), at: z.string() }).strict()),
+          /** Times the window lost focus or the tab was hidden on this problem. */
+          focusLosses: z.number().int(),
+          openedAt: z.string().nullable(),
+          /** Minutes from opening the problem to the first accepted submission; null if either is missing. */
+          timeToAcMinutes: z.number().int().nullable(),
+          /** 0 = writes like their earlier programs, 1 = nothing alike; null without enough earlier programs. */
+          styleShift: z.number().min(0).max(1).nullable(),
         })
         .strict(),
     ),

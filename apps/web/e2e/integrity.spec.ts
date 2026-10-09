@@ -51,7 +51,32 @@ function detail(decisions: object[] = [], status = 'open') {
       { subA: S1, subB: S2, fpScore: 0.91, embScore: 0.95, combined: 0.91 },
       { subA: S1, subB: S3, fpScore: 0.5, embScore: 0.6, combined: 0.55 },
     ],
-    signals: [{ handle: 'asha', kind: 'paste', size: 800, at: '2026-10-10T13:41:00Z' }],
+    signals: [
+      {
+        handle: 'asha',
+        pastes: [{ size: 800, at: '2026-10-10T13:41:00Z' }],
+        focusLosses: 3,
+        openedAt: '2026-10-10T13:35:00Z',
+        timeToAcMinutes: 28,
+        styleShift: 0.41,
+      },
+      {
+        handle: 'ben',
+        pastes: [],
+        focusLosses: 0,
+        openedAt: null,
+        timeToAcMinutes: null,
+        styleShift: null,
+      },
+      {
+        handle: 'chen',
+        pastes: [],
+        focusLosses: 1,
+        openedAt: '2026-10-10T13:50:00Z',
+        timeToAcMinutes: null,
+        styleShift: 0.05,
+      },
+    ],
     decisions,
   };
 }
@@ -113,7 +138,14 @@ test.describe('PL-04: plagiarism review (FR-PLAG-04, FR-PLAG-05)', () => {
     await expect(page.getByRole('cell', { name: '@asha and @ben' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '91%' }).first()).toBeVisible();
     await expect(page.getByText('Advisory only')).toBeVisible();
-    await expect(page.getByText('@asha: paste (800 characters)')).toBeVisible();
+    const signalRow = page.getByRole('row', { name: /@asha 800 characters/ });
+    await expect(signalRow).toContainText('3 times');
+    await expect(signalRow).toContainText('28');
+    await expect(signalRow).toContainText('very different (0.41)');
+    await expect(page.getByRole('row', { name: /@ben none/ })).toContainText(
+      'not enough earlier code',
+    );
+    await expect(page.getByText('never evidence on their own')).toBeVisible();
     await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 60_000 });
     // picking another pair changes what is compared
     await page
