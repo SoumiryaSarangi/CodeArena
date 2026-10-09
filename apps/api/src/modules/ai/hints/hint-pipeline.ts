@@ -40,6 +40,17 @@ export type PipelineResult =
       latencyMs: number;
     };
 
+/**
+ * The removal pass is shown its input inside a `<hint>` block and sometimes echoes the wrapper back (the AI-04 eval
+ * found a shipped hint that began with the literal tag). Models also fence the whole answer; both are removed.
+ */
+export function unwrap(text: string): string {
+  return text
+    .replace(/<\/?hint>/gi, '')
+    .replace(/^```(?:\w+)?\n([\s\S]*?)\n```$/, '$1')
+    .trim();
+}
+
 /** The sufficiency model answers JSON; anything unreadable counts as "sufficient" (the later steps and the filter still guard). */
 export function parseSufficiency(raw: string): { sufficient: boolean; nudge: string } {
   const body = raw.replace(/^```(?:json)?|```$/gm, '').trim();
@@ -119,7 +130,7 @@ export async function runHintPipeline(
       350,
     );
     if (attempt === 0) leak = !filterHint(main, ctx.level, avoidSet).ok;
-    const cleaned = await call('code_removal', CODE_REMOVAL.render({ hint: main }), 350);
+    const cleaned = unwrap(await call('code_removal', CODE_REMOVAL.render({ hint: main }), 350));
     // 4. deterministic filter
     const f = filterHint(cleaned, ctx.level, avoidSet);
     attempts.push({ main, cleaned, filterReasons: f.reasons });

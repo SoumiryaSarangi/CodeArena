@@ -412,6 +412,8 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-AI-10 | Every AI call shall log model, task, tokens, latency, and outcome. | P1 | AI-01 | T |
 | FR-AI-11 | Interview summaries (P2) shall be visible only to the interviewer. | P2 | CP-11 | T |
 
+*As built (AI-04):* FR-AI-09 is `pnpm eval:hints` (`build`, `run`, `sheet`, `report`; `apps/api/eval/hints/`): it writes the with-and-without-removal-pass leak rates, over-reveals, avoid-set terms, false refusals, tokens and latency to `docs/METRICS.md` per prompt version. FR-AI-03 now also rejects statement-like inline code (formulas) and FR-AI-02's nudge is always the fixed sentence (found by the eval).
+
 #### 3.2.12 Integrity (PLAG / SIG)
 
 | ID | Requirement | Pri | Trace | Ver |
