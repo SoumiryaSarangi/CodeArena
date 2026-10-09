@@ -47,7 +47,7 @@ init)
   mkdir -p "$APP_DIR/state"
 
   api_host="api.${api_ip//./-}.sslip.io"
-  pg="$(rand)" r_admin="$(rand)" r_api="$(rand)" r_judge="$(rand)"
+  pg="$(rand)" r_admin="$(rand)" r_api="$(rand)" r_judge="$(rand)" plag_token="$(rand)"
   s3_api_ak="api$(openssl rand -hex 8)" s3_api_sk="$(rand)"
   s3_judge_ak="judge$(openssl rand -hex 8)" s3_judge_sk="$(rand)"
 
@@ -91,6 +91,10 @@ OAUTH_GOOGLE_CLIENT_ID=not-configured
 OAUTH_GOOGLE_CLIENT_SECRET=not-configured
 OAUTH_GITHUB_CLIENT_ID=not-configured
 OAUTH_GITHUB_CLIENT_SECRET=not-configured
+
+# Plagiarism job (PL-05): the shared secret between the API and the plag job (header X-Service-Token). The job itself
+# stays off until it is started with `--profile plag`; an older install adds this with `init-env.sh ensure prod`.
+PLAG_SERVICE_TOKEN=$plag_token
 
 # Containers (Compose reads these for the services themselves)
 POSTGRES_PASSWORD=$pg

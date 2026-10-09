@@ -63,6 +63,11 @@ const schema = z.object({
   // Whether this instance reads the `ai:jobs` stream. Default on, except under NODE_ENV=test.
   AI_WORKER: z.enum(['on', 'off']).optional(),
 
+  // Plagiarism job (PL-05): the shared secret of the plag service. Unset: its endpoints answer 403 "not configured".
+  PLAG_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
+  /** A run that has been `running` this long without a result is taken over by the next claim (the job died). */
+  PLAG_STALE_MINUTES: z.coerce.number().int().min(1).default(30),
+
   // Auth (F-06). PEM keys may arrive as one line with literal "\n" (scripts/gen-keys.sh output).
   JWT_PRIVATE_KEY: pem.optional(),
   JWT_PUBLIC_KEY: pem.optional(),

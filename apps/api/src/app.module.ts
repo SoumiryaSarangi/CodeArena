@@ -9,6 +9,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContestsModule } from './modules/contests/contests.module';
 import { OpsModule } from './modules/ops/ops.module';
+import { PlagModule } from './modules/plag/plag.module';
 import { RatingsModule } from './modules/ratings/ratings.module';
 import { StatusModule } from './modules/status/status.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -55,6 +56,7 @@ export class AppModule {
         SubmissionsModule,
         ContestsModule,
         OpsModule,
+        PlagModule,
         RatingsModule,
         StatusModule,
         ProfileModule,

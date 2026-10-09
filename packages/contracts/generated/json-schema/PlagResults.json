@@ -1,0 +1,118 @@
+{
+  "$id": "PlagResults.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "params": {
+      "additionalProperties": {},
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "problems": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "clusters": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "maxScore": {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "submissionIds": {
+                  "items": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  },
+                  "minItems": 2,
+                  "type": "array"
+                }
+              },
+              "required": [
+                "submissionIds",
+                "maxScore"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "metrics": {
+            "additionalProperties": {},
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "pairs": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "combined": {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "embScore": {
+                  "maximum": 1,
+                  "minimum": -1,
+                  "type": "number"
+                },
+                "fpScore": {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "subA": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                },
+                "subB": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "subA",
+                "subB",
+                "fpScore",
+                "embScore",
+                "combined"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "problemId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "problemId",
+          "pairs",
+          "clusters"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "runId": {
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "runId",
+    "problems"
+  ],
+  "type": "object"
+}

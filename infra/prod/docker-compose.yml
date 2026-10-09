@@ -87,6 +87,26 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
+  # Plagiarism job (PL-05): polls the API for plagiarism runs (started from the ops console), scores them on CPU
+  # (tree-sitter fingerprints and UniXcoder embeddings) and posts the result. OFF by default: it needs its own image
+  # (`docker build apps/plag`, the model is baked in) and the service token in prod.env, and runs only when started:
+  # `PLAG_IMAGE=codearena-plag:<tag> docker compose --env-file prod.env --profile plag up -d plag`
+  # It has no database, Redis or storage access: the API is its only contact, with the service token.
+  plag:
+    <<: *restart
+    image: ${PLAG_IMAGE:?PLAG_IMAGE is the plag job image (see apps/plag/Dockerfile)}
+    profiles: ['plag']
+    environment:
+      PLAG_SERVICE_TOKEN: ${PLAG_SERVICE_TOKEN:?PLAG_SERVICE_TOKEN is in prod.env}
+    command: ['serve', '--api', 'http://api:4000']
+    read_only: true
+    tmpfs: ['/tmp']
+    # A run must not starve the API and the judge's Redis on the same VM.
+    cpus: 1.0
+    mem_limit: 2g
+    depends_on:
+      api: { condition: service_healthy }
+
   postgres:
     <<: *restart
     image: postgres:16

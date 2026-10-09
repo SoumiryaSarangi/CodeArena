@@ -60,7 +60,7 @@ def post_results(
     attempts: int = 3,
     sleep: Callable[[float], None] = time.sleep,
 ) -> int:
-    """POSTs the payload with the service token; retries network errors and 5xx, never a 4xx. Returns the status."""
+    """POSTs the payload with the service token in `X-Service-Token`; retries network errors and 5xx, never a 4xx."""
     url = f"{base_url.rstrip('/')}/api/admin/plag/runs/{run_id}/results"
     body = json.dumps(payload).encode()
     last = "no attempt"
@@ -69,7 +69,7 @@ def post_results(
             url,
             data=body,
             method="POST",
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+            headers={"Content-Type": "application/json", "X-Service-Token": token},
         )
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 (the API address is configuration)

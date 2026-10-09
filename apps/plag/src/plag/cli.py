@@ -23,6 +23,7 @@ from .combine import DEFAULT, Combiner
 from .embed import Embedder, TokenBagEmbedder, UniXcoderEmbedder
 from .payload import PostError, post_results, to_payload
 from .pipeline import Params, run_problem
+from .runner import Api, serve
 from .stage_a import Submission, Template
 
 
@@ -47,7 +48,27 @@ def main(argv: list[str] | None = None, embedder: Embedder | None = None) -> int
     run.add_argument("--combiner", type=Path, help="weights from the labelled-set fit (JSON); default: hand-set")
     run.add_argument("--post", metavar="API_URL", help="send the result to the API")
     run.add_argument("--token-env", default="PLAG_SERVICE_TOKEN", help="environment variable holding the token")
+    serve_p = sub.add_parser("serve", help="poll the API for plagiarism runs and score them")
+    serve_p.add_argument("--api", required=True, metavar="API_URL")
+    serve_p.add_argument("--interval", type=float, default=15.0)
+    serve_p.add_argument("--once", action="store_true", help="stop after the first empty poll")
+    serve_p.add_argument("--model", choices=["unixcoder", "token-bag"], default="unixcoder")
+    serve_p.add_argument("--combiner", type=Path)
+    serve_p.add_argument("--token-env", default="PLAG_SERVICE_TOKEN")
     args = ap.parse_args(argv)
+
+    if args.cmd == "serve":
+        token = os.environ.get(args.token_env)
+        if not token:
+            print(f"set {args.token_env} to the service token", file=sys.stderr)
+            return 2
+        comb = Combiner.from_json(args.combiner.read_text()) if args.combiner else DEFAULT
+        mdl: Embedder = embedder or (UniXcoderEmbedder() if args.model == "unixcoder" else TokenBagEmbedder())
+        n = serve(
+            Api(args.api, token), mdl, comb, interval=args.interval, once=args.once, log=lambda m: print(m, flush=True)
+        )
+        print(f"{n} run(s) handled")
+        return 0
 
     data = json.loads(args.input.read_text())
     run_id = str(data.get("runId", "local"))

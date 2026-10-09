@@ -34,6 +34,8 @@ T2="$(mktemp -d)"; APP_DIR="$T2/app" init >/dev/null 2>&1
 check "two runs give different secrets" "$([ "$first" != "$(grep '^POSTGRES_PASSWORD=' "$T2/app/prod.env" | cut -d= -f2-)" ] && echo 0 || echo 1)"
 check "JWT private key is a PEM written on one line" "$(grep -q "^JWT_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----" "$APP_DIR/prod.env" && ! grep -q '^-----' "$APP_DIR/prod.env" && echo 0 || echo 1)"
 
+check "the plagiarism job's service token is a secret of its own, and the judge never gets it (PL-05)" "$([ "$(pw PLAG_SERVICE_TOKEN | tr -d '\n' | wc -c)" = 48 ] && [ "$(pw PLAG_SERVICE_TOKEN)" != "$(pw POSTGRES_PASSWORD)" ] && ! grep -q PLAG "$APP_DIR/judge-worker.env" && echo 0 || echo 1)"
+
 echo "- the judge only gets what it may have (ADR-009)"
 keys="$(grep -v '^#' "$APP_DIR/judge-worker.env" | cut -d= -f1 | sort | tr '\n' ' ')"
 check "exact set of judge variables" "$([ "$keys" = "REDIS_URL S3_ACCESS_KEY S3_BUCKET S3_ENDPOINT S3_SECRET_KEY WORKER_CACHE_DIR WORKER_CONCURRENCY WORKER_CORES WORKER_LANES " ] && echo 0 || echo 1)"

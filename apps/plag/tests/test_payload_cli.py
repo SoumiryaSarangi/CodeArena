@@ -29,7 +29,12 @@ class Api:
             def do_POST(self) -> None:
                 body = self.rfile.read(int(self.headers["Content-Length"]))
                 outer.requests.append(
-                    {"path": self.path, "auth": self.headers.get("Authorization"), "body": json.loads(body)}
+                    {
+                        "path": self.path,
+                        "auth": self.headers.get("X-Service-Token"),
+                        "bearer": self.headers.get("Authorization"),
+                        "body": json.loads(body),
+                    }
                 )
                 code = outer.statuses[min(len(outer.requests) - 1, len(outer.statuses) - 1)]
                 self.send_response(code)
@@ -84,12 +89,12 @@ def test_payload_matches_the_api_columns():
 class TestPost:
     payload = {"runId": "r", "problems": []}
 
-    def test_sends_json_with_the_bearer_token_to_the_run_results_path(self):
+    def test_sends_json_with_the_service_token_to_the_run_results_path(self):
         with Api([200]) as api:
             assert post_results(api.url + "/", "r", "secret-token", self.payload) == 200
         req = api.requests[0]
         assert req["path"] == "/api/admin/plag/runs/r/results"
-        assert req["auth"] == "Bearer secret-token"
+        assert req["auth"] == "secret-token" and req["bearer"] is None  # a service token, never a user bearer
         assert req["body"] == self.payload
 
     def test_a_server_error_is_retried_a_refusal_is_not(self):
@@ -147,7 +152,7 @@ class TestCli:
             assert api.requests == []
             monkeypatch.setenv("PLAG_SERVICE_TOKEN", "tok-123")
             assert main([*args, "--post", api.url], embedder=TokenBagEmbedder()) == 0
-        assert api.requests[0]["auth"] == "Bearer tok-123"
+        assert api.requests[0]["auth"] == "tok-123"
         assert api.requests[0]["path"] == "/api/admin/plag/runs/run-9/results"
         assert "tok-123" not in capsys.readouterr().out
 

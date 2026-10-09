@@ -122,6 +122,36 @@ class Telemetry(unittest.TestCase):
         self.assertEqual(sorted(cfg["service"]["pipelines"]), ["metrics", "traces"])
 
 
+class PlagJob(unittest.TestCase):
+    """PL-05: the plagiarism job is opt-in, isolated, and has only the service token."""
+
+    def test_it_only_runs_when_asked_for(self):
+        self.assertEqual(services["plag"]["profiles"], ["plag"])  # a plain `up` never starts it
+
+    def test_it_gets_the_service_token_and_nothing_else_from_prod_env(self):
+        svc = services["plag"]
+        self.assertNotIn("env_file", svc)
+        self.assertEqual(sorted(svc["environment"]), ["PLAG_SERVICE_TOKEN"])
+        self.assertIn(":?", svc["environment"]["PLAG_SERVICE_TOKEN"])  # refuses to start without it
+
+    def test_it_reaches_the_api_only_and_publishes_nothing(self):
+        svc = services["plag"]
+        self.assertEqual(svc.get("ports", []), [])
+        self.assertEqual(svc["command"], ["serve", "--api", "http://api:4000"])
+        self.assertEqual(svc["depends_on"], {"api": {"condition": "service_healthy"}})
+
+    def test_it_is_locked_down_and_cannot_starve_the_api(self):
+        svc = services["plag"]
+        self.assertTrue(svc["read_only"])
+        self.assertEqual(svc["restart"], "unless-stopped")
+        self.assertLessEqual(float(svc["cpus"]), 1.0)
+        self.assertRegex(str(svc["mem_limit"]), r"^\d+[mg]$")
+        self.assertNotIn("volumes", svc)  # no host or data volumes
+
+    def test_the_image_is_chosen_by_the_operator_not_a_mutable_tag(self):
+        self.assertTrue(services["plag"]["image"].startswith("${PLAG_IMAGE:?"))
+
+
 class LoadTest(unittest.TestCase):
     """O-03: the load-test data tool exists on the server but never starts by itself."""
 
