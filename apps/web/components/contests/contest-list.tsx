@@ -5,10 +5,39 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
-import { formatSpan, formatWhen } from '@/lib/contest-time';
+import {
+  formatCountdown,
+  formatSpan,
+  formatWhen,
+  useNow,
+  useServerClock,
+} from '@/lib/contest-time';
 import { contestList, registerForContest } from '@/lib/contests';
 import { useSession } from '@/lib/session';
 import { StateLabel } from './state-label';
+
+/** The clock of one row: time to the start, or to the end while it runs (mono, from the server's clock). */
+function RowClock({ c }: { c: ContestSummary }) {
+  const offset = useServerClock(undefined);
+  const now = useNow(offset);
+  if (c.state === 'scheduled') {
+    const secs = Math.floor((Date.parse(c.startsAt) - now) / 1000);
+    return secs > 0 ? (
+      <span className="font-mono text-13 tabular-nums text-text-2">
+        starts in {formatCountdown(secs)}
+      </span>
+    ) : null;
+  }
+  if (c.state === 'running') {
+    const secs = Math.floor((Date.parse(c.endsAt) - now) / 1000);
+    return secs > 0 ? (
+      <span className="font-mono text-13 tabular-nums text-text-2">
+        ends in {formatCountdown(secs)}
+      </span>
+    ) : null;
+  }
+  return null;
+}
 
 /** S07: Running now, Upcoming, Past. */
 export function ContestListView() {
@@ -93,6 +122,7 @@ export function ContestListView() {
                       {c.problemCount} problems · {c.registeredCount} registered
                     </span>
                   </div>
+                  <RowClock c={c} />
                   <StateLabel state={c.state} />
                   {c.registered ? (
                     <span className="text-13 font-medium text-v-ac">Registered</span>
@@ -108,6 +138,13 @@ export function ContestListView() {
                         Register
                       </Button>
                     ) : null
+                  ) : null}
+                  {c.state !== 'scheduled' ? (
+                    <Button asChild size="sm" variant="ghost">
+                      <Link href={`/c/${c.slug}/board`} aria-label={`Standings of ${c.title}`}>
+                        Standings
+                      </Link>
+                    </Button>
                   ) : null}
                   {/* One filled action per row: Register, or Enter while it runs and you are in. */}
                   <Button

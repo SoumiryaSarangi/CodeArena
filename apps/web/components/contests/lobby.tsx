@@ -214,24 +214,24 @@ export function ContestLobby({ slug }: { slug: string }) {
         </p>
       ) : null}
 
-      <dl className="grid max-w-[44rem] grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14">
-        <dt className="text-text-2">Starts</dt>
+      <dl className="grid max-w-[44rem] grid-cols-1 gap-x-6 gap-y-0.5 text-14 sm:grid-cols-[auto_1fr] sm:gap-y-2">
+        <dt className="text-text-2 max-sm:mt-2">Starts</dt>
         <dd>{formatWhen(c.startsAt)}</dd>
-        <dt className="text-text-2">Ends</dt>
+        <dt className="text-text-2 max-sm:mt-2">Ends</dt>
         <dd>{formatWhen(c.endsAt)}</dd>
-        <dt className="text-text-2">Duration</dt>
+        <dt className="text-text-2 max-sm:mt-2">Duration</dt>
         <dd>{formatSpan(c.startsAt, c.endsAt)}</dd>
         {c.freezeAt ? (
           <>
-            <dt className="text-text-2">Scoreboard freeze</dt>
+            <dt className="text-text-2 max-sm:mt-2">Scoreboard freeze</dt>
             <dd>
-              {formatSpan(c.freezeAt, c.endsAt)} before the end ({formatWhen(c.freezeAt)})
+              {formatSpan(c.freezeAt, c.endsAt)} before the end, at {formatWhen(c.freezeAt)}
             </dd>
           </>
         ) : null}
-        <dt className="text-text-2">Problems</dt>
+        <dt className="text-text-2 max-sm:mt-2">Problems</dt>
         <dd>{c.problemCount}</dd>
-        <dt className="text-text-2">Registered</dt>
+        <dt className="text-text-2 max-sm:mt-2">Registered</dt>
         <dd>{c.registeredCount}</dd>
       </dl>
 

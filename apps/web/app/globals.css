@@ -96,6 +96,8 @@
   --animate-judging: judging 1.2s ease-in-out infinite;
   --animate-fill: fill var(--dur-fast) var(--ease-out);
   --animate-flash: flash 1.4s ease-out 1;
+  /* A board row whose rank changed: the same decay, shorter (round 2). */
+  --animate-rank-change: flash 700ms ease-out 1;
   --animate-pop-in: pop-in var(--dur-base) var(--ease-out);
   --animate-pop-out: pop-out var(--dur-fast) var(--ease-out) forwards;
   --animate-fade-in: fade-in var(--dur-base) var(--ease-out);
