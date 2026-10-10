@@ -20,14 +20,14 @@ Built as one monorepo by one person with an AI pair programmer, and measured: ev
 
 ## Screenshots and recordings
 
-Still images of the interface, taken by the repository's own harness (`DESIGN_SHOTS=1 pnpm --filter web exec playwright test e2e/design-shots.spec.ts`) against **stubbed API data**, so they show the design and not a live contest. The full set (both themes, 1280 and 390 px) is in [`docs/design/pilot/`](docs/design/pilot/); the audit that led to the redesign is [`docs/design/AUDIT.md`](docs/design/AUDIT.md).
+Still images of the interface, taken by the repository's own harness (`DESIGN_SHOTS=1 pnpm --filter web exec playwright test e2e/design-shots.spec.ts`) against **stubbed API data**, so they show the design and not a live contest. The full set (both themes, 1280 and 390 px) is in [`docs/design/round2/after/`](docs/design/round2/after/); the audit that led to the redesign is [`docs/design/AUDIT.md`](docs/design/AUDIT.md) and the second round is [`docs/design/ROUND2.md`](docs/design/ROUND2.md).
 
-|                                                                                 |                                                                                  |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| ![Landing page](docs/design/pilot/S01-landing-1280-dark.jpg)                    | ![Live scoreboard with your standing](docs/design/pilot/S10-board-1280-dark.jpg) |
-| The landing page                                                                | The scoreboard, with your standing                                               |
-| ![A submission and its journey](docs/design/pilot/S06-submission-1280-dark.jpg) | ![Contest operations](docs/design/pilot/S16-ops-1280-dark.jpg)                   |
-| A submission and the journey it took                                            | Contest operations: health first                                                 |
+|                                                                                        |                                                                                         |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| ![Landing page](docs/design/round2/after/S01-landing-1280-dark.jpg)                    | ![Live scoreboard with your standing](docs/design/round2/after/S10-board-1280-dark.jpg) |
+| The landing page                                                                       | The scoreboard, with your standing                                                      |
+| ![A submission and its journey](docs/design/round2/after/S06-submission-1280-dark.jpg) | ![Contest operations](docs/design/round2/after/S16-ops-1280-dark.jpg)                   |
+| A submission and the journey it took                                                   | Contest operations: health first                                                        |
 
 Recordings are not made yet. They are produced from the demo script (plan card W-02) and will live in `docs/media/`:
 

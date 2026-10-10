@@ -1,0 +1,160 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 134,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      32
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "14px",
+      10
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      35
+    ],
+    [
+      "500",
+      18
+    ],
+    [
+      "700",
+      2
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      40
+    ],
+    [
+      "GeistMono",
+      14
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(163, 169, 178)",
+      28
+    ],
+    [
+      "rgb(236, 236, 238)",
+      21
+    ],
+    [
+      "rgb(138, 144, 154)",
+      6
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      4
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      22
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 5,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 358,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "No",
+        "w": 18,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 34
+}

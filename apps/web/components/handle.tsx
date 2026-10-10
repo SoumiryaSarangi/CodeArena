@@ -37,12 +37,16 @@ export function Handle({
   announce?: boolean;
 }) {
   if (rating === undefined || rating === null || rating === UNRATED) {
-    return <span className={className}>{breakable(handle)}</span>;
+    return (
+      <bdi>
+        <span className={className}>{breakable(handle)}</span>
+      </bdi>
+    );
   }
   const tier = tierWord(rating);
   return (
     <span className={cn(TIER[tier], className)} title={`${tier} (${rating})`}>
-      {breakable(handle)}
+      <bdi>{breakable(handle)}</bdi>
       {announce ? <span className="sr-only">, {tier}</span> : null}
     </span>
   );

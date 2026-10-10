@@ -25,7 +25,9 @@ export function ScoreCell({ cell, flash }: { cell?: BoardCell; flash?: boolean }
           'bg-v-ac/14 text-v-ac light:bg-transparent light:ring-1 light:ring-inset light:ring-v-ac/40',
         !solved && cell.pending > 0 && 'ring-1 ring-inset ring-accent text-text',
         !solved && cell.pending === 0 && 'text-danger',
-        flash && 'motion-safe:animate-flash',
+        // the flash is movement; with reduced motion the changed cell is marked by a ring for the same moment instead
+        flash &&
+          'motion-safe:animate-flash motion-reduce:ring-1 motion-reduce:ring-inset motion-reduce:ring-accent',
       )}
     >
       <span aria-hidden className="inline-flex items-center gap-1">

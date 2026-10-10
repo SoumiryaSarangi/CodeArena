@@ -123,3 +123,20 @@ test('UI-18 S08: the details list is one column on a phone and the freeze line h
     await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
   ).toBeLessThanOrEqual(0);
 });
+
+test('UI-19: with reduced motion a new first solve is marked by a ring instead of the flash', async ({
+  browser,
+}) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await stubApi(page);
+  await stubContests(page, RUNNING);
+  await page.goto('/c/warm-up-1/board');
+  await streamOpen(page);
+  const bob = brow('u8', 'bob', { B: { acMinute: 3, first: true } });
+  await emit(page, 'board', 'board.diff', '9-0', diff(2, [bob]), 'contest:cid-1:board');
+  await expect(
+    page.getByRole('row', { name: /bob/ }).locator('.motion-reduce\\:ring-accent'),
+  ).toHaveCount(1);
+  await ctx.close();
+});

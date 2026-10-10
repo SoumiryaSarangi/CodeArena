@@ -215,6 +215,18 @@ Monospace 12 px label (AC, WA on test 3…) in a tinted box in the dark theme an
 
 `codearena` in Space Grotesk Bold (a 1 KB subset loaded only by this component): "code" in the blue, "arena" in the text colour, a thin blue caret bar. Solid colours from `--wordmark-*`. Anywhere else the name is plain text.
 
+### Submission wire
+
+Five 3 px segments that fill from the real submission events (queued, claimed, compiling, running) and settle in the verdict colour. Under Submit, on the phone action bar, on the home recent rows and on board rows (there read from the board's own diffs). Feedback only: the words that say the same thing are beside it.
+
+### Handle (tier)
+
+A handle in its rating tier's colour with the tier word in the tooltip and for screen readers; neutral at the starting 1400.
+
+### Landing
+
+The tagline, a framed judge window that lights the six steps of one submission once, a live strip of recent public practice verdicts (hidden when empty), proof as display numerals each with its run and date, the 500-run verdict mix, and a sample scoreboard marked as sample data.
+
 ### Navigation
 
 Left rail with an active marker bar plus weight (not tint alone); 56 px bottom bar with labels on phones.
@@ -228,6 +240,7 @@ Dialogs and drawers fade and move 4 px in 180 ms and out in 120 ms; the drawer s
 ### Do:
 
 - Give each view one ink-filled action and make the rest quiet.
+- Show what the product is doing (the wire, the live strip) with real events, and show nothing when there is nothing.
 - Say a number in words next to its display numeral (rating change, rank).
 - Use display sizes for what people watch together, and keep working screens dense.
 - Keep tertiary text at its floor value or darker; check any new surface against the tests.
