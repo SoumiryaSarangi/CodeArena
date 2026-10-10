@@ -4,6 +4,9 @@ For the owner. Use this when the project is finished but will not be shown for a
 money, keep what is free, and bring everything back in about ten minutes** when it is time to show it.
 It contains no secrets. It is not linked from the README on purpose.
 
+**If the credit is too low to pay for even a hibernated system, do not use this page: use
+[revive.md](revive.md), which deletes the Azure resources (cost zero) after saving everything, and rebuilds them later.**
+
 All commands run in WSL from the repository, after `az login` (and `gh auth login` for the GitHub steps).
 Names come from Terraform: resource group `rg-codearena-prod`, VMs `vm-codearena-prod-api` and
 `vm-codearena-prod-judge-0`, API address `40.83.75.34` (private `10.20.1.4`), judge private `10.20.2.4`,
