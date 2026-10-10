@@ -4,6 +4,9 @@ Measured numbers, not estimates. Sections are written by scripts (`scripts/metri
 test) and replaced when the same run is repeated, so edit the text around them, not inside the markers.
 Capacity maths and the predictions each result is compared with are in SYSTEM_DESIGN §2.3.
 
+**Final numbers in one table, with how to say each one:** [DEMO.md](DEMO.md) section 2. Contest-day numbers are
+not in this file until a contest report is run (see DEMO.md).
+
 ## Load test (O-03)
 
 <!-- load-summary -->

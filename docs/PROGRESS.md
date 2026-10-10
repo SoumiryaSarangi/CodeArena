@@ -1373,3 +1373,11 @@ Tests: UI-20 token-match test in `tests/design-system.test.ts` (36 pass); typech
 Decisions: SVG only (all current browsers); no .ico fallback, no gradients.
 Next: none. Ayush must: nothing (ships with SHIP BATCH).
 Model: S · Sonnet.
+
+## 2026-10-10 · W-02 · done
+Built: `docs/DEMO.md`: a 10-scene shot list (about 4 minutes, with what to do, say and show, what not to show, a cut list), one table of the final numbers with the sentence to use for each, and seven resume bullets; METRICS.md points to it.
+Tests: none (docs). Every number was checked against METRICS.md by reading the sections it comes from.
+Decisions: no contest-day numbers exist in METRICS.md yet (no contest report has been run), so bullet 1 has one bracket to fill or delete; nothing invented. Pad and plagiarism lines carry their caveats (one machine, AI-written solutions).
+Next: run the contest report, then fill the bracket. README GIFs and rewriting `docs/interview/answers.md` stay Ayush's.
+Ayush must: record the video from the shot list; run `tests/load/prod.sh contest-report <slug> FILE` for the contest numbers.
+Model: S · Sonnet.
