@@ -64,6 +64,16 @@ export function defineThemes(monaco: typeof Monaco) {
         // accent at 28% (dark) / 18% (light)
         'editor.selectionBackground': p.accent + (t === 'dark' ? '47' : '2E'),
         'editorCursor.foreground': p.accent,
+        // Monaco's own bracket colours (gold, orchid, blue) belong to no palette: brackets keep the text colour.
+        'editorBracketHighlight.foreground1': p.fg,
+        'editorBracketHighlight.foreground2': p.fg,
+        'editorBracketHighlight.foreground3': p.fg,
+        'editorBracketHighlight.foreground4': p.fg,
+        'editorBracketHighlight.foreground5': p.fg,
+        'editorBracketHighlight.foreground6': p.fg,
+        'editorBracketHighlight.unexpectedBracket.foreground': p.removed,
+        'editorBracketMatch.background': p.accent + (t === 'dark' ? '33' : '1F'),
+        'editorBracketMatch.border': p.accent + '99',
         // The suggestion list (ED-01): the editor's own background and text, the accent for the match and the selection.
         'editorSuggestWidget.background': p.bg,
         'editorSuggestWidget.foreground': p.fg,

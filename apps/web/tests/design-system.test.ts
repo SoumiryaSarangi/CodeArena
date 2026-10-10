@@ -121,3 +121,22 @@ describe('NFR-A11Y: contrast (WCAG 1.4.3 / 1.4.11)', () => {
     });
   }
 });
+
+describe('UI-11: editor theme', () => {
+  it('UI-11: Monaco bracket colours come from the palette, not its gold/orchid/blue defaults (AUDIT 17)', async () => {
+    const { defineThemes } = await import('@/lib/monaco-theme');
+    const themes: Record<string, { colors: Record<string, string> }> = {};
+    defineThemes({
+      editor: {
+        defineTheme: (n: string, t: { colors: Record<string, string> }) => (themes[n] = t),
+      },
+    } as never);
+    for (const name of ['ca-dark', 'ca-light']) {
+      const c = themes[name]!.colors;
+      for (let i = 1; i <= 6; i++)
+        expect(c[`editorBracketHighlight.foreground${i}`], `${name} bracket ${i}`).toBe(
+          c['editor.foreground'],
+        );
+    }
+  });
+});

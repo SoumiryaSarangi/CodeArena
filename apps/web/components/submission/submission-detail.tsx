@@ -10,7 +10,7 @@ import { VerdictBadge } from '@/components/verdict-badge';
 import { VerdictGrid } from '@/components/verdict-grid';
 import { ApiError, apiFetch } from '@/lib/api';
 import { saveDraft, saveLanguage } from '@/lib/drafts';
-import { formatMemKb } from '@/lib/format';
+import { formatDateTime, formatMemKb } from '@/lib/format';
 import { buildJourney } from '@/lib/journey';
 import { languageInfo } from '@/lib/languages';
 import {
@@ -137,8 +137,10 @@ function Detail({
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-3">
+        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+          Submission to {d.problemTitle}
+        </h1>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="sr-only">Submission to {d.problemTitle}</h1>
           {d.verdict ? (
             <>
               <VerdictBadge
@@ -189,7 +191,7 @@ function Detail({
                 title={new Date(d.createdAt).toISOString()}
                 className="text-text"
               >
-                {new Date(d.createdAt).toLocaleString()}
+                {formatDateTime(d.createdAt)}
               </time>
             </dd>
           </div>
@@ -197,7 +199,7 @@ function Detail({
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           <JourneyTimeline
             steps={steps}
             note={
@@ -208,7 +210,7 @@ function Detail({
           />
           {!finished ? (
             <section aria-label="Progress">
-              <h2 className="mb-2 text-16 font-semibold">Progress</h2>
+              <h2 className="mb-2 text-18 font-semibold">Progress</h2>
               <VerdictGrid tests={gridTests(live)} />
             </section>
           ) : null}
@@ -218,7 +220,7 @@ function Detail({
 
         <div className="flex min-w-0 flex-col gap-4">
           <section aria-label="Code" className="flex flex-col gap-2">
-            <h2 className="text-16 font-semibold">Code</h2>
+            <h2 className="text-18 font-semibold">Code</h2>
             <div className="h-96 overflow-hidden rounded-lg border border-border-strong">
               <CodeEditor
                 path={`submission/${d.id}.${d.language}`}
@@ -232,7 +234,7 @@ function Detail({
           </section>
           {d.verdict === 'CE' && d.compileLog ? (
             <section aria-label="Compiler output">
-              <h2 className="mb-2 text-16 font-semibold">Compiler output</h2>
+              <h2 className="mb-2 text-18 font-semibold">Compiler output</h2>
               <pre className="max-h-72 overflow-auto rounded-md border border-border bg-surface-2 p-3 font-mono text-13 whitespace-pre-wrap">
                 {d.compileLog}
               </pre>
@@ -247,8 +249,13 @@ function Detail({
 function TestTable({ d }: { d: SubmissionDetail }) {
   return (
     <section aria-label="Tests">
-      <h2 className="mb-2 text-16 font-semibold">Tests</h2>
-      <div className="overflow-x-auto rounded-lg border border-border-strong">
+      <h2 className="mb-2 text-18 font-semibold">Tests</h2>
+      <div
+        role="region"
+        tabIndex={0}
+        aria-label="Test results table"
+        className="overflow-x-auto rounded-lg border border-border-strong"
+      >
         <table className="w-full text-13">
           <caption className="sr-only">Result of each test</caption>
           <thead className="bg-surface-2 text-left text-text-2">
@@ -291,10 +298,10 @@ function TestTable({ d }: { d: SubmissionDetail }) {
                       <span className="ml-2 text-12 text-text-2">{t.checkerMsg}</span>
                     ) : null}
                   </td>
-                  <td className="px-3 text-right font-mono">
+                  <td className="whitespace-nowrap px-3 text-right font-mono">
                     {t.timeMs != null ? `${t.timeMs} ms` : '—'}
                   </td>
-                  <td className="px-3 text-right font-mono">
+                  <td className="whitespace-nowrap px-3 text-right font-mono">
                     {t.memKb != null ? formatMemKb(t.memKb) : '—'}
                   </td>
                 </tr>
@@ -310,7 +317,7 @@ function TestTable({ d }: { d: SubmissionDetail }) {
 function AdminExtras({ d }: { d: SubmissionDetail }) {
   return (
     <section aria-label="Admin details">
-      <h2 className="mb-2 text-16 font-semibold">Admin</h2>
+      <h2 className="mb-2 text-18 font-semibold">Admin</h2>
       <dl className="mb-2 flex gap-1 text-13">
         <dt className="text-text-2">Judge</dt>
         <dd className="font-mono">{d.journey.workerId ?? '—'}</dd>
@@ -335,7 +342,7 @@ function AdminExtras({ d }: { d: SubmissionDetail }) {
                 <td className="font-mono">{r.workerId ?? '—'}</td>
                 <td>{r.verdict ? <VerdictBadge verdict={r.verdict} /> : '—'}</td>
                 <td className="font-mono text-12">
-                  {r.finishedAt ? new Date(r.finishedAt).toLocaleString() : '—'}
+                  {r.finishedAt ? formatDateTime(r.finishedAt) : '—'}
                 </td>
               </tr>
             ))}

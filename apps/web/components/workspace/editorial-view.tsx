@@ -61,7 +61,7 @@ export function EditorialView({ slug }: { slug: string }) {
   if (state.s === 'none')
     return (
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
-        <h1 className="text-20 font-semibold tracking-[-0.01em]">Editorial</h1>
+        <h1 className="text-22 font-semibold tracking-[-0.01em]">Editorial</h1>
         <EmptyState message="There is no editorial for this problem yet. Editorials are published when the contest that used the problem is finalised." />
         <div>{back}</div>
       </div>
@@ -69,7 +69,7 @@ export function EditorialView({ slug }: { slug: string }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-20 font-semibold tracking-[-0.01em]">Editorial · {state.v.title}</h1>
+        <h1 className="text-22 font-semibold tracking-[-0.01em]">Editorial · {state.v.title}</h1>
         {back}
       </div>
       <Markdown source={state.v.editorialMd} className="text-14" />

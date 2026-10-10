@@ -93,7 +93,7 @@ export function Workspace({ slug }: { slug: string }) {
   if (state.s === 'missing') {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <h1 className="text-20 font-semibold">Problem not found</h1>
+        <h1 className="text-22 font-semibold">Problem not found</h1>
         <p className="text-14 text-text-2">There is no problem called “{slug}”.</p>
         <Button asChild variant="secondary">
           <Link href="/practice">Back to Practice</Link>
@@ -344,7 +344,7 @@ export function WorkspaceView({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        <h1 className="text-20 font-semibold tracking-[-0.01em]">
+        <h1 className="text-22 font-semibold tracking-[-0.01em]">
           {contest ? `${contest.label}. ${problem.title}` : problem.title}
         </h1>
         <ConnectionPill state={judging.connection} />
@@ -394,8 +394,9 @@ export function WorkspaceView({
               <div className="h-[60dvh]">{drawer}</div>
             </TabsContent>
           </Tabs>
-          <div className="h-14" aria-hidden />
-          <div className="fixed inset-x-0 bottom-12 z-20 flex gap-2 border-t border-border-strong bg-surface-1 p-2">
+          <div className="h-16" aria-hidden />
+          {/* Sits on top of the 56 px bottom navigation (h-14 in rail.tsx). */}
+          <div className="fixed inset-x-0 bottom-14 z-20 flex gap-2 border-t border-border-strong bg-surface-1 p-2">
             <Button
               className="flex-1"
               variant="secondary"

@@ -1,5 +1,6 @@
 import { Check, Circle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { formatDateTime } from '@/lib/format';
 import type { JourneyStep } from '@/lib/journey';
 
 /**
@@ -9,7 +10,7 @@ import type { JourneyStep } from '@/lib/journey';
 export function JourneyTimeline({ steps, note }: { steps: JourneyStep[]; note?: string }) {
   return (
     <section aria-label="Journey">
-      <h2 className="mb-2 text-16 font-semibold">Journey</h2>
+      <h2 className="mb-3 text-18 font-semibold">Journey</h2>
       <ol className="flex flex-col">
         {steps.map((s, i) => {
           const Icon = s.state === 'done' ? Check : s.state === 'failed' ? X : Circle;
@@ -48,7 +49,7 @@ export function JourneyTimeline({ steps, note }: { steps: JourneyStep[]; note?: 
                 {s.relative ? (
                   <time
                     dateTime={s.at}
-                    title={s.at ? new Date(s.at).toLocaleString() : undefined}
+                    title={s.at ? formatDateTime(s.at) : undefined}
                     className="ml-auto font-mono text-12 text-text-3"
                   >
                     {s.relative}

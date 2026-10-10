@@ -45,7 +45,7 @@ export const slugify = (s: string) =>
 function Heading({ level, children }: { level: 1 | 2 | 3 | 4; children?: ReactNode }) {
   const id = slugify(text(children));
   const Tag = `h${level}` as const;
-  const size = { 1: 'text-20', 2: 'text-16', 3: 'text-14', 4: 'text-14' }[level];
+  const size = { 1: 'text-22', 2: 'text-18', 3: 'text-16', 4: 'text-14' }[level];
   return (
     <Tag id={id || undefined} className={cn('group mt-5 font-semibold text-text', size)}>
       {children}

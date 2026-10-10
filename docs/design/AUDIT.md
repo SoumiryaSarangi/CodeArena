@@ -54,6 +54,7 @@ Every row has an owner; nothing is unowned.
 |---|---|---|
 | UI-09 (2026-10-10) | 2, 3, 6, 7 (scale), 8 (button), 9, 15 | Rail "clipped" (9) was a full-page capture artefact. |
 | UI-10 (2026-10-10) | 1, 5 (S03), 8 (S02), 12 (S04), 14, 19 | S01 landing built (own shell, evidence from METRICS.md); S03 wraps long handles and leads with the countdown; S04 shows Status and Title on phones with the rest under the title; signed-out shell has no rail. After-captures in `docs/design/pilot/`. Open for S01 to S04: row 6 CJK glyphs need a live check on a machine with CJK fonts. |
+| UI-11 (2026-10-10) | 7 (S05, S06), 12 (S05, S06), 13 (S06), 17 | S06 has a visible h1 (28) over 18 px sections; markdown headings in statements now 22/18/16; one date format (`10 Oct 2026, 10:00 IST`); test numbers never wrap; the Run/Submit bar sits above the 56 px bottom bar (it overlapped by 8 px after UI-09); Monaco bracket colours come from the palette. |
 
 ## Strengths to keep
 

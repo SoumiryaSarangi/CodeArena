@@ -1,0 +1,226 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1216,
+  "overflowX": false,
+  "elements": 216,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "16.94px",
+      30
+    ],
+    [
+      "13px",
+      21
+    ],
+    [
+      "12px",
+      15
+    ],
+    [
+      "14px",
+      11
+    ],
+    [
+      "18px",
+      6
+    ],
+    [
+      "16px",
+      2
+    ],
+    [
+      "13.552px",
+      2
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      66
+    ],
+    [
+      "500",
+      12
+    ],
+    [
+      "600",
+      10
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      47
+    ],
+    [
+      "math",
+      15
+    ],
+    [
+      "KaTeX_Main",
+      11
+    ],
+    [
+      "GeistMono",
+      9
+    ],
+    [
+      "KaTeX_Math",
+      6
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      51
+    ],
+    [
+      "rgb(163, 169, 178)",
+      24
+    ],
+    [
+      "rgb(138, 144, 154)",
+      11
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(11, 12, 14)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      7
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      2
+    ],
+    [
+      "rgb(35, 39, 45)",
+      2
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      20
+    ],
+    [
+      "4px",
+      2
+    ],
+    [
+      "8px",
+      2
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Input#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Output#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Notes#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Samples",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Sample 1",
+      "size": "13px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Sample 2",
+      "size": "13px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 6,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      }
+    ]
+  },
+  "interactive": 31
+}

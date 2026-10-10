@@ -16,3 +16,14 @@ export const formatMs = (ms: number) => `${ms.toLocaleString('en-US')} ms`;
 export function formatMemKb(kb: number): string {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
 }
+
+/** One date format for submissions and runs: `10 Oct 2026, 10:00 IST` in the viewer's own zone. */
+export const formatDateTime = (iso: string) =>
+  new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(new Date(iso));
