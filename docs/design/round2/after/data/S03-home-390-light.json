@@ -1,0 +1,229 @@
+{
+  "url": "/home",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 948,
+  "overflowX": false,
+  "elements": 465,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      17
+    ],
+    [
+      "14px",
+      5
+    ],
+    [
+      "18px",
+      4
+    ],
+    [
+      "13px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      21
+    ],
+    [
+      "500",
+      6
+    ],
+    [
+      "600",
+      5
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      28
+    ],
+    [
+      "GeistMono",
+      4
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      13
+    ],
+    [
+      "rgb(75, 82, 96)",
+      12
+    ],
+    [
+      "rgb(99, 106, 117)",
+      6
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgb(200, 30, 30)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      4
+    ],
+    [
+      "color(srgb 1 1 1 / 0.82)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(20, 22, 26)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ],
+    [
+      "8px",
+      4
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "4px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.534923 0.179573 0.093921 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Welcome back, riya_k",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Next contest",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Continue practising",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Recent submissions",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your activity",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 7,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "CodeArena Warm-up #1",
+        "w": 154,
+        "h": 18
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 156,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Fractional Loot",
+        "w": 96,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 156,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 22
+}

@@ -85,6 +85,12 @@ Verdicts: RE 11 · TLE 44 · WA 108 · AC 337
 <!--data {"label":"judges=2 (B2s_v2)","judges":2,"accepted":500,"submissions":500,"judged":500,"queueWaitP50":0.0029890000000000003,"queueWaitP95":0.5088921499999988,"ttvP50":0.38339100000000004,"ttvP95":2.0752273499999987,"drainSeconds":2.24075,"throughput":3.9964192083892836,"mean":{"cpp17":0.4435317220543807,"python3":0.9172130177514793},"scaleSeconds":null} -->
 <!-- /load:judges=2-B2s_v2- -->
 
+## Sandbox attack suite (counted 2026-10-10)
+
+- **28 attack programs** live in `tests/attack-suite/cases` (one folder each: fork bomb, memory and disk bombs, symlink and `/proc` reads, network, ptrace, mount, chroot escape, and others). The count is `ls tests/attack-suite/cases | wc -l`.
+- They run against a real judge VM in the **nightly-attack** workflow; the normal CI run skips them on runners without cgroup v2 (so "every night" is accurate and "in CI" is not). The last nightly run before this entry passed (GitHub Actions run 38011970057, 2026-10-10): every program was contained.
+- This is a count of programs and a pass/fail, not a timing; nothing here is a performance claim.
+
 ## Failure drills (O-06)
 
 Each drill judges a real contest of fake users, injects one fault and waits until every accepted

@@ -34,9 +34,9 @@ export function DialogContent({
         onEscapeKeyDown={dismissible ? undefined : (e) => e.preventDefault()}
         onInteractOutside={dismissible ? undefined : (e) => e.preventDefault()}
         className={cn(
-          'fixed z-50 border border-border-strong bg-surface-1 shadow-[var(--shadow-overlay)]',
+          'glass fixed z-50 border border-border-strong shadow-[var(--shadow-overlay)]',
           variant === 'drawer'
-            ? 'inset-y-0 right-0 w-full max-w-[420px] overflow-y-auto p-6 data-[state=closed]:animate-slide-out data-[state=open]:animate-slide-in'
+            ? 'inset-y-0 right-0 w-full max-w-[420px] overflow-y-auto p-6 max-md:data-[state=closed]:animate-sheet-out max-md:data-[state=open]:animate-sheet-in md:data-[state=closed]:animate-slide-out md:data-[state=open]:animate-slide-in'
             : 'left-1/2 top-1/2 w-[calc(100%-32px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in',
           className,
         )}

@@ -44,3 +44,17 @@ export function contrast(theme: Theme, fg: string, bg: string): number {
   const [a, b] = [luminance(resolve(t, fg)), luminance(resolve(t, bg))];
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
+
+const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const hexOf = (c: number[]) =>
+  `#${c.map((x) => Math.round(x).toString(16).padStart(2, '0')).join('')}`;
+
+/** Contrast of `fg` text on a badge whose background is `fg` at `alpha` over a surface (the dark-theme verdict badges). */
+export function contrastOnTint(theme: Theme, fg: string, surface: string, alpha: number): number {
+  const t = themeTokens(theme);
+  const f = rgb(resolve(t, fg));
+  const s = rgb(resolve(t, surface));
+  const tint = hexOf(f.map((x, i) => x * alpha + s[i]! * (1 - alpha)));
+  const [a, b] = [luminance(resolve(t, fg)), luminance(tint)];
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}

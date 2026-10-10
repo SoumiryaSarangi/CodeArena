@@ -65,7 +65,7 @@ export function Rail() {
     <nav
       aria-label="Main"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-30 flex h-14 justify-around border-t border-border-strong bg-surface-1',
+        'glass fixed inset-x-0 bottom-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] justify-around border-t border-border-strong pb-[env(safe-area-inset-bottom)] md:pb-0',
         'md:inset-y-0 md:left-0 md:right-auto md:top-12 md:h-auto md:w-14 md:flex-col md:justify-start md:gap-1 md:border-r md:border-t-0 md:p-2',
         'xl:w-48',
       )}

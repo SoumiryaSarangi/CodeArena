@@ -40,7 +40,7 @@ export function CommandPalette({
         <D.Overlay className="fixed inset-0 z-40 bg-bg/70" />
         <D.Content
           aria-label="Command palette"
-          className="fixed left-1/2 top-[15vh] z-50 w-[calc(100%-32px)] max-w-lg -translate-x-1/2 overflow-hidden rounded-lg border border-border-strong bg-surface-1 shadow-[var(--shadow-overlay)]"
+          className="fixed left-1/2 top-[15vh] z-50 w-[calc(100%-32px)] max-w-lg -translate-x-1/2 glass overflow-hidden rounded-lg border border-border-strong shadow-[var(--shadow-overlay)]"
         >
           <D.Title className="sr-only">Command palette</D.Title>
           <D.Description className="sr-only">

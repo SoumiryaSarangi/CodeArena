@@ -3,7 +3,9 @@ import * as T from '@radix-ui/react-tooltip';
 import type { ReactNode } from 'react';
 
 export const TooltipProvider = ({ children }: { children: ReactNode }) => (
-  <T.Provider delayDuration={400}>{children}</T.Provider>
+  <T.Provider delayDuration={400} skipDelayDuration={300}>
+    {children}
+  </T.Provider>
 );
 
 /** Shows on hover and keyboard focus after 400 ms (UI_UX §7). */

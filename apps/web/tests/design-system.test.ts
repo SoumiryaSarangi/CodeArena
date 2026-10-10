@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { contrast, ownTokens, themeTokens, type Theme } from './tokens';
+import { contrast, contrastOnTint, ownTokens, themeTokens, type Theme } from './tokens';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
@@ -40,10 +40,11 @@ describe('F-07: design tokens', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('F-07: light overrides every literal dark token (only var() aliases may be inherited)', () => {
+  it('F-07: light overrides every literal dark token (only values derived with var() may be inherited)', () => {
     const light = ownTokens('light');
     const missing = Object.entries(ownTokens('dark'))
-      .filter(([k, v]) => !v.startsWith('var(') && !k.startsWith('shadow') && !(k in light))
+      // derived values (var(...) inside) follow each theme by themselves; shadow and the blur radius are not colours
+      .filter(([k, v]) => !v.includes('var(') && !/^(shadow|glass-blur)/.test(k) && !(k in light))
       .map(([k]) => k);
     expect(missing).toEqual([]);
     expect(Object.keys(light).filter((k) => !(k in ownTokens('dark')))).toEqual([]);
@@ -207,5 +208,79 @@ describe('UI-14: UI_UX.md and the code agree', () => {
       expect(globals).toContain(`--radius-${name}: ${px}px`);
       expect(doc).toContain(`--radius-${name} ${px}px`);
     }
+  });
+});
+
+describe('UI-15: round 2 tokens, wordmark and motion', () => {
+  const read = (p: string) => readFileSync(join(root, p), 'utf8');
+  const TIERS = ['newcomer', 'pupil', 'specialist', 'expert', 'master'];
+
+  for (const theme of THEMES) {
+    it(`UI-15: ${theme} wordmark colours reach 4.5:1 on the top bar (surface-1)`, () => {
+      for (const t of ['wordmark-code', 'wordmark-arena', 'wordmark-caret'])
+        expect(contrast(theme, t, 'surface-1'), t).toBeGreaterThanOrEqual(4.5);
+    });
+    it(`UI-15: ${theme} tier and difficulty colours reach 4.5:1 on every surface`, () => {
+      for (const t of [...TIERS.map((n) => `tier-${n}`), 'diff-easy', 'diff-medium', 'diff-hard'])
+        for (const bg of ['bg', 'surface-1', 'surface-2', 'surface-3'])
+          expect(contrast(theme, t, bg), `${t} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+
+  it('UI-15: dark verdict badges (text on its own 14% tint) reach 4.5:1 on every surface, the pending one included', () => {
+    for (const v of ['pending', 'ac', 'wa', 'tle', 'mle', 're', 'ce', 'ole'])
+      for (const bg of ['surface-1', 'surface-2', 'surface-3'])
+        expect(
+          contrastOnTint('dark', `v-${v}`, bg, 0.14),
+          `v-${v} on ${bg}`,
+        ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('UI-15: the wordmark font is loaded only by the top bar, is tiny, and the name keeps its spelling and accessible name', () => {
+    const users = sources(root)
+      .filter((f) => /\.(tsx?)$/.test(f) && readFileSync(f, 'utf8').includes('wordmark.woff2'))
+      .map((f) => relative(root, f));
+    expect(users).toEqual(['components/shell/top-bar.tsx']);
+    expect(statSync(join(root, 'app/fonts/wordmark.woff2')).size).toBeLessThan(5 * 1024);
+    const bar = read('components/shell/top-bar.tsx');
+    expect(bar).toContain('aria-label="codearena"');
+    expect(bar).toMatch(/>\s*code\s*</);
+    expect(bar).toMatch(/>\s*arena\s*</);
+  });
+
+  it('UI-15: the button transition names real CSS properties and presses with `scale`', () => {
+    const button = read('components/ui/button.tsx');
+    expect(button).not.toContain('transition-[colors');
+    expect(button).toContain('transition-[color,background-color,border-color,scale]');
+    expect(button).toContain('active:scale-[0.97]');
+  });
+
+  it('UI-15: frosted chrome falls back to opaque without backdrop-filter or with reduced transparency', () => {
+    const css = read('app/globals.css');
+    expect(css).toMatch(/@supports \(backdrop-filter: blur\(1px\)\)\s*{\s*\.glass/);
+    expect(css).toMatch(
+      /prefers-reduced-transparency: reduce\)\s*{\s*\.glass[^}]*backdrop-filter: none/,
+    );
+    // never on the editor, board or tables
+    for (const f of [
+      'components/code-editor.tsx',
+      'components/contests/scoreboard.tsx',
+      'components/data-table.tsx',
+    ])
+      expect(read(f), f).not.toMatch(/\bglass\b|backdrop-/);
+  });
+
+  it('UI-15: reduced motion keeps a short fade for overlays instead of removing all feedback', () => {
+    const css = read('app/globals.css');
+    expect(css).toMatch(
+      /prefers-reduced-motion: reduce\)\s*{\s*\.animate-pop-in[\s\S]*animation-duration: 100ms/,
+    );
+  });
+
+  it('UI-15: the viewport colours the browser bar from the tokens, and no hex literal is in the layout', () => {
+    const layout = read('app/layout.tsx');
+    expect(layout).toContain("tokenValue('surface-1', 'dark')");
+    expect(layout).toContain("tokenValue('surface-1', 'light')");
+    expect(layout).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 });
