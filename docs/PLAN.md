@@ -859,6 +859,26 @@ Dry-run bug fixes first (from U7.2 issues), then:
 - Build: update `docs/UI_UX.md` (§5.1 tokens, screens, "As built" notes), `docs/design/DIRECTION.md` and the README screenshots; confirm UI_UX and the code agree.
 - Accept: no token or screen in UI_UX.md differs from the code.
 
+#### UI-15 · Round 2: review of the built UI, direction delta, top-bar wordmark, foundation changes (fonts, colours, materials, shared components, shell) · **P**
+- Build: capture the built UI with the existing harness into `docs/design/round2/before/`; run the design skills on it (critique, audit, review-animations, find-animation-opportunities, apple-design, emil-design-eng, mobile-native, break-ui, taste on leetcode.com/problemset/, codeforces.com/contests and linear.app); write `docs/design/ROUND2.md` (what stays, what changes, ranked per screen with owning card, fonts, colours, materials, motion, wordmark, twist, dependencies) and a line at the top of DIRECTION.md. Apply the top-bar wordmark twist (font and colour only in `Wordmark()`, subset font, tokens, contrast tests) and the foundation-level changes; add `scripts/sync-ui-ux.mjs` so UI_UX's token and type blocks are generated, not hand-edited.
+- Accept: gate green (lint, typecheck, unit incl. drift tests, full e2e with axe in both themes, detector 0 findings); before/after of the top bar and two screens; ROUND2.md read by Ayush.
+
+#### UI-16 · Landing S01, round 2 · **P**
+- Build: the landing page per ROUND2.md (interest, materials, imagery, any twist that needs no new API; a twist that needs one waits for Ayush's yes). Only real numbers from `docs/METRICS.md`; no gradients.
+- Accept: gate green; before/after at 1280 and 390.
+
+#### UI-17 · Round 2 screens S02–S06 · **S**
+- Build: ROUND2.md's list for S02 to S06; before/after at 1280 and 390 in the PR.
+- Accept: gate green for the touched screens.
+
+#### UI-18 · Round 2 screens S07–S12 · **S**
+- Build: ROUND2.md's list for S07 to S12; before/after at 1280 and 390.
+- Accept: gate green for the touched screens.
+
+#### UI-19 · Round 2 screens S13–S18, then sync docs and README screenshots · **S**
+- Build: ROUND2.md's list for S13 to S18; then sync `docs/UI_UX.md` (run the sync script), `apps/web/DESIGN.md`, `docs/design/DIRECTION.md` "As built" and the README screenshots. Unblocks the W-02 demo footage.
+- Accept: gate green; UI_UX, DESIGN.md and the code agree (drift tests).
+
 #### AI-03 · Post-contest review · **S**
 - Build: reviews of each participant's final submission per attempted problem (complexity, missed edge cases, intended-approach comparison, readability), **generated on demand when opened plus a paced background job within the daily budget** (SD-§12.3); review page UI (S11) with ready / generating / queued states.
 
