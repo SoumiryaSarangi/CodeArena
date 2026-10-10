@@ -458,13 +458,17 @@ docker run --rm -v codearena_s3data:/data -v /tmp:/in alpine sh -c 'rm -rf /data
 $DC start s3
 sleep 15
 
+# bring the database structure up to the version of the code (the archive may be older than the code:
+# a new table added after the archive was made would otherwise be missing and sign-in would fail)
+$DC run --rm migrate && echo DATABASE UP TO DATE
+
 # start the services again
 $DC start api collab1 collab2
 rm -f /tmp/postgres.dump /tmp/s3data.tgz
 exit
 ```
 
-You must see `DATABASE RESTORED` and `TEST DATA RESTORED`. If `pg_restore` printed an error, go to Part 3, "The
+You must see `DATABASE RESTORED`, `DATABASE UP TO DATE` and `TEST DATA RESTORED`. If `pg_restore` printed an error, go to Part 3, "The
 database restore failed".
 
 **c) Prove the numbers match** (back on your laptop):

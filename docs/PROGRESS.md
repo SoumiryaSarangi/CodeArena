@@ -1442,3 +1442,9 @@ Tests: API `setter-grants.test.ts` 7 (listed address signs up later and becomes 
 Decisions: a separate table instead of a role column on `admin_grants`, so the working admin flow is untouched; the setter inputs and buttons have their own labels so existing admin locators stay unambiguous. Not in this card: showing a setter badge elsewhere in the UI; letting a setter see which problems are theirs beyond the existing screens.
 Ayush must: after the next deploy the migration runs by itself; then Admin → Admins → Setters is available to you (the owner).
 Model: S · Sonnet.
+
+## 2026-10-10 · W-05b · done
+Checked whether the revive guide still covers everything built after it (UI-23 banner and demo e-mail, UI-24 setters). The banner was already covered (steps 1.7b, 2.13, 2.19). **A gap was found for UI-24:** the restore replaces the whole database with the archive, so an archive made from an older schema would leave the new `setter_grants` table missing while the newer code is running, and sign-in (which now reads that table) would fail. Fixed in revive.md 2.15 b: after the restore, `docker compose run --rm migrate` brings the structure up to the code's version (the same step the deploy runs; harmless when nothing is missing), with its own success line, `DATABASE UP TO DATE`. The export script needs no change (the dump contains whatever tables exist).
+Rule for later cards: any migration added after an archive is made is applied by that step; nothing else in the guide depends on the schema.
+Ayush must: prefer to run `SHIP BATCH` (which deploys migration 0015) before making the archive, so the archive already has the table; the step above covers the other order.
+Model: S · Sonnet.
