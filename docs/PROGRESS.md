@@ -1397,3 +1397,10 @@ Next: none. Ayush must: nothing. Model: S · Sonnet.
 Changed at Ayush's request: the lobby has one button again, "Add to calendar", and it now does what "Add to Google Calendar" did (opens the prefilled event in a new tab). The .ics download, its helper (`icsFile`) and its test are removed. Apple and Outlook users have no download now; they can copy the event from Google or add it by hand.
 Tests: the Google link test now finds the link by "Add to calendar"; contests spec 21 pass; typecheck, lint.
 Model: S · Sonnet.
+
+## 2026-10-10 · W-03 · done
+Built: README rewritten to the usual open-source layout: centred title, one-line pitch, CI / CodeQL / nightly-attack badges, contents list, overview, features, screenshots (round 2, including a phone view), architecture diagram and the submission walk-through, tech stack, measured results (the stale "Tests (2026-10-09)" row removed; the p50 0.4 s added), security, getting started (OWNER_EMAIL mentioned), development commands, repository layout, deployment and operations, documentation index, status, contributing, licence. The "recordings are not made yet" list was dropped (DEMO.md has the shot list).
+Tests: none (docs); every `docs/` link in the README exists; prettier clean.
+Decisions: no licence chosen for Ayush: the README says all rights are reserved until a LICENSE file is added. Vulnerability reporting says to email the maintainer; a `SECURITY.md` was not created.
+Seen while checking: `apps/collab` suite had 1 failing test once under load and passed on rerun (86/86); not investigated.
+Ayush must: choose a licence (MIT is the usual one for a portfolio project) and tell me to add it. Model: S · Sonnet.
