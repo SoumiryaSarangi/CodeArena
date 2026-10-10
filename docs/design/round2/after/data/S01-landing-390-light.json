@@ -4,56 +4,56 @@
     "w": 390,
     "h": 844
   },
-  "pageHeight": 2136,
+  "pageHeight": 3348,
   "overflowX": false,
-  "elements": 80,
+  "elements": 238,
   "gradients": 0,
   "fontSizes": [
     [
       "14px",
-      16
+      52
+    ],
+    [
+      "13px",
+      39
     ],
     [
       "12px",
       10
     ],
     [
-      "18px",
+      "16px",
       7
     ],
     [
-      "13px",
-      4
+      "40px",
+      5
     ],
     [
       "22px",
-      3
+      4
     ],
     [
-      "16px",
-      2
+      "18px",
+      3
     ],
     [
       "20px",
       2
-    ],
-    [
-      "40px",
-      1
     ]
   ],
   "fontWeights": [
     [
       "400",
-      24
+      80
     ],
     [
       "500",
-      12
+      27
     ],
     [
       "600",
-      7
+      13
     ],
     [
       "700",
@@ -63,11 +63,11 @@
   "fontFamilies": [
     [
       "GeistSans",
-      36
+      60
     ],
     [
       "GeistMono",
-      7
+      60
     ],
     [
       "wordmarkFont",
@@ -77,15 +77,23 @@
   "textColours": [
     [
       "rgb(20, 22, 26)",
-      20
+      59
+    ],
+    [
+      "rgb(75, 82, 96)",
+      33
     ],
     [
       "rgb(99, 106, 117)",
       13
     ],
     [
-      "rgb(75, 82, 96)",
-      10
+      "rgb(20, 108, 53)",
+      11
+    ],
+    [
+      "rgb(200, 30, 30)",
+      3
     ],
     [
       "rgb(47, 73, 217)",
@@ -93,50 +101,91 @@
     ],
     [
       "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgb(160, 74, 6)",
       1
     ]
   ],
   "backgrounds": [
     [
+      "rgb(20, 22, 26)",
+      3
+    ],
+    [
       "rgb(255, 255, 255)",
-      6
+      3
+    ],
+    [
+      "rgb(20, 108, 53)",
+      3
     ],
     [
       "color(srgb 1 1 1 / 0.82)",
-      1
+      2
     ],
     [
-      "rgb(47, 73, 217)",
-      1
+      "rgb(200, 30, 30)",
+      2
     ],
     [
-      "rgb(242, 243, 245)",
-      1
+      "rgb(160, 74, 6)",
+      2
     ],
     [
-      "rgb(20, 22, 26)",
-      1
+      "rgb(184, 59, 11)",
+      2
     ],
     [
-      "rgb(228, 230, 234)",
-      1
+      "rgb(234, 236, 239)",
+      2
     ]
   ],
   "radii": [
     [
+      "4px",
+      14
+    ],
+    [
       "6px",
+      8
+    ],
+    [
+      "3.35544e+07px",
       7
+    ],
+    [
+      "2px",
+      4
+    ],
+    [
+      "8px",
+      3
     ],
     [
       "1px",
       1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.468158 -0.102692 0.0578288 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      5
     ],
     [
-      "8px",
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.534923 0.179573 0.093921 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.51055 0.0858364 0.101336 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(47, 73, 217) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
       1
     ]
   ],
-  "shadows": [],
   "headings": [
     {
       "tag": "h1",
@@ -146,13 +195,31 @@
     },
     {
       "tag": "h2",
-      "text": "You can watch your code being judged",
+      "text": "Live from practicethe last 3 verdicts",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Measured, with the run behind each number",
       "size": "22px",
       "weight": "600"
     },
     {
       "tag": "h2",
-      "text": "Measured, with the run behind each number",
+      "text": "What 500 submissions looked like",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "One judge machine against two",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "A contest scoreboard, as it looks",
       "size": "22px",
       "weight": "600"
     },
@@ -222,5 +289,5 @@
       }
     ]
   },
-  "interactive": 15
+  "interactive": 16
 }

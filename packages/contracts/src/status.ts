@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Lane } from './enums';
+import { Lane, Verdict } from './enums';
 
 /** The public status page (O-02, SRS GET /api/status, UI_UX S18). */
 
@@ -36,3 +36,29 @@ export const PlatformStatus = z
   .strict()
   .meta({ id: 'PlatformStatus' });
 export type PlatformStatus = z.infer<typeof PlatformStatus>;
+
+/**
+ * GET /api/status/verdicts: the landing page's live strip (UI-16). The last few finished PRACTICE
+ * verdicts on PUBLIC problems and nothing else: no handle, no ids, no code. Contest and private
+ * activity never appears, so it cannot reveal what is being solved during a contest or a freeze.
+ */
+export const PublicVerdicts = z
+  .object({
+    items: z
+      .array(
+        z
+          .object({
+            language: z.string(),
+            problemTitle: z.string(),
+            verdict: Verdict,
+            timeMs: z.number().int().nullable(),
+            /** When it was judged. */
+            at: z.string(),
+          })
+          .strict(),
+      )
+      .max(10),
+  })
+  .strict()
+  .meta({ id: 'PublicVerdicts' });
+export type PublicVerdicts = z.infer<typeof PublicVerdicts>;

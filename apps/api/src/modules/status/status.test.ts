@@ -294,4 +294,58 @@ describe.skipIf(!ready)('O-02: public status (needs the Compose Postgres, Redis 
     expect(s.totals.submissionsJudged).toBe(before.totals.submissionsJudged + 2);
     expect(s.totals.contestsHosted).toBeGreaterThanOrEqual(1);
   });
+
+  it('UI-16: the landing strip lists only finished practice verdicts on public problems, anonymised, newest first, at most 10, cached for 5 s', async () => {
+    const u = await makeUser();
+    const pub = await versionOf(P1);
+    const hidden = await versionOf(P2);
+    await db.update(problems).set({ visibility: 'public' }).where(eq(problems.slug, P1));
+    const base = Date.now() + 3_600_000; // after the verdicts earlier tests left, so these are the newest
+    const row = (over: Partial<typeof submissions.$inferInsert> & { at: number }) => {
+      const { at, ...rest } = over;
+      return db.insert(submissions).values({
+        userId: u.id,
+        problemVersionId: pub,
+        language: 'cpp17',
+        source: 'secret source',
+        sourceBytes: 13,
+        lane: 'practice',
+        status: 'done',
+        verdict: 'AC',
+        timeMs: 41,
+        createdAt: new Date(base + at - 1000),
+        judgedAt: new Date(base + at),
+        ...rest,
+      });
+    };
+    // none of these may appear
+    await row({ at: 1, verdict: 'SE' });
+    await row({ at: 2, status: 'queued', verdict: null, judgedAt: null });
+    await row({ at: 3, problemVersionId: hidden }); // a contest-visibility problem
+    await row({ at: 4, disqualified: true });
+    await row({ at: 5, lane: 'contest', contestId: c.id });
+    // twelve that may: the newest ten are returned
+    for (let i = 0; i < 12; i++) await row({ at: 100 + i, timeMs: 10 + i });
+    const r = await app.get(StatusService).recentVerdicts(Date.now() + 60_000 * ++tick);
+    expect(r.items).toHaveLength(10);
+    expect(r.items.map((i) => i.timeMs)).toEqual([21, 20, 19, 18, 17, 16, 15, 14, 13, 12]);
+    expect(Object.keys(r.items[0]!).sort()).toEqual([
+      'at',
+      'language',
+      'problemTitle',
+      'timeMs',
+      'verdict',
+    ]);
+    expect(JSON.stringify(r)).not.toMatch(new RegExp(`${u.id}|example\\.test|secret source`));
+    // served from the cache for 5 s, even though a newer verdict now exists
+    const again = await app.get(StatusService).recentVerdicts(Date.now() + 60_000 * tick + 1000);
+    await row({ at: 500, timeMs: 99 });
+    expect(await app.get(StatusService).recentVerdicts(Date.now() + 60_000 * tick + 2000)).toBe(
+      again,
+    );
+    // and it is public, with the same browser cache as /status
+    const http = await call('get', '/status/verdicts'); // no token
+    expect(http.status).toBe(200);
+    expect(http.headers['cache-control']).toBe('public, max-age=5');
+  });
 });

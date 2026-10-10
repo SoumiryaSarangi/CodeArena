@@ -1,4 +1,4 @@
-import type { ComponentState, Lane, PlatformStatus } from '@codearena/contracts';
+import type { ComponentState, Lane, PlatformStatus, PublicVerdicts } from '@codearena/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { metrics, trace } from '@opentelemetry/api';
 import { sql } from 'drizzle-orm';
@@ -40,6 +40,7 @@ const within = async (ms: number, fn: () => Promise<unknown>): Promise<boolean> 
 @Injectable()
 export class StatusService {
   private cached: { at: number; value: PlatformStatus } | null = null;
+  private cachedVerdicts: { at: number; value: PublicVerdicts } | null = null;
   private inflight: Promise<PlatformStatus> | null = null;
 
   constructor(
@@ -59,6 +60,55 @@ export class StatusService {
     const value = await this.inflight;
     this.cached = { at: now, value };
     reads.add(1, { cache: 'miss' });
+    return value;
+  }
+
+  /**
+   * The landing page's live strip: the last 10 finished practice verdicts on public problems, anonymised
+   * (language, title, verdict, time, when). Cached for 5 s like the status read. Contest, private and
+   * system-error rows never appear.
+   */
+  async recentVerdicts(now = Date.now()): Promise<PublicVerdicts> {
+    if (this.cachedVerdicts && now - this.cachedVerdicts.at < STATUS_CACHE_MS) {
+      reads.add(1, { cache: 'hit', what: 'verdicts' });
+      return this.cachedVerdicts.value;
+    }
+    const value = await tracer.startActiveSpan('status.verdicts', async (span) => {
+      try {
+        const res = await this.db.execute<{
+          language: string;
+          title: string;
+          verdict: PublicVerdicts['items'][number]['verdict'];
+          time_ms: number | null;
+          judged_at: Date;
+        }>(sql`
+          select s.language, p.title, s.verdict, s.time_ms, s.judged_at
+          from submissions s
+          join problem_versions pv on pv.id = s.problem_version_id
+          join problems p on p.id = pv.problem_id
+          where s.lane = 'practice' and s.contest_id is null and s.status = 'done'
+            and s.verdict is not null and s.verdict <> 'SE' and not s.disqualified
+            and s.judged_at is not null and p.visibility = 'public'
+          order by s.judged_at desc
+          limit 10
+        `);
+        return {
+          items: res.rows.map((r) => ({
+            language: r.language,
+            problemTitle: r.title,
+            verdict: r.verdict,
+            timeMs: r.time_ms === null ? null : Number(r.time_ms),
+            at: new Date(r.judged_at).toISOString(),
+          })),
+        };
+      } catch {
+        return { items: [] };
+      } finally {
+        span.end();
+      }
+    });
+    this.cachedVerdicts = { at: now, value };
+    reads.add(1, { cache: 'miss', what: 'verdicts' });
     return value;
   }
 

@@ -353,3 +353,19 @@ nav a {
     font-size: var(--text-16);
   }
 }
+
+/* The landing hero's judge window (UI-16): each step is dimmed until its turn, then lit, once. The end state is
+   the plain one, so without animation (or with reduced motion) every step is simply lit. */
+.step-on {
+  animation: step-on 320ms var(--ease-out) both;
+}
+@keyframes step-on {
+  from {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-on {
+    animation-delay: 0s !important;
+  }
+}

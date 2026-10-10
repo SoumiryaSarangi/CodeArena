@@ -864,15 +864,15 @@ Dry-run bug fixes first (from U7.2 issues), then:
 - Accept: gate green (lint, typecheck, unit incl. drift tests, full e2e with axe in both themes, detector 0 findings); before/after of the top bar and two screens; ROUND2.md read by Ayush.
 
 #### UI-16 · Landing S01, round 2 · **P**
-- Build: the landing page per ROUND2.md (interest, materials, imagery, any twist that needs no new API; a twist that needs one waits for Ayush's yes). Only real numbers from `docs/METRICS.md`; no gradients.
+- Build: the landing page per ROUND2.md: a hero that plays one real-timed verdict journey, the live verdict ticker (`GET /api/status/verdicts`, approved by Ayush 2026-10-10), the proof as numerals, the 500-run verdict mix, a framed sample board. Only real numbers from `docs/METRICS.md`; no gradients.
 - Accept: gate green; before/after at 1280 and 390.
 
 #### UI-17 · Round 2 screens S02–S06 · **S**
-- Build: ROUND2.md's list for S02 to S06; before/after at 1280 and 390 in the PR.
+- Build: ROUND2.md's list for S02 to S06, **including "the wire"** (a thin segmented line under the Submit button on S05 and on the S03 Recent submissions rows, driven by the real submission events and settling into the verdict colour; approved by Ayush 2026-10-10); tier-coloured handles; before/after at 1280 and 390 in the PR.
 - Accept: gate green for the touched screens.
 
 #### UI-18 · Round 2 screens S07–S12 · **S**
-- Build: ROUND2.md's list for S07 to S12; before/after at 1280 and 390.
+- Build: ROUND2.md's list for S07 to S12, **including "the wire" on the board rows** (S10; needs a per-row live subscription: capped, none when the tab is hidden; approved by Ayush 2026-10-10); tier-coloured handles; before/after at 1280 and 390.
 - Accept: gate green for the touched screens.
 
 #### UI-19 · Round 2 screens S13–S18, then sync docs and README screenshots · **S**
