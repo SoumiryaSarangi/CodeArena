@@ -1,5 +1,6 @@
 import type {
   AdminGrantList,
+  SetterGrantList,
   AdminProblemDetail,
   AdminProblemList,
   StatementPatch,
@@ -85,5 +86,17 @@ export const addAdminGrant = (email: string) =>
 
 export const removeAdminGrant = (email: string) =>
   apiFetch<void>('DELETE', `/admin/admins/${encodeURIComponent(email)}`, undefined, {
+    auth: 'required',
+  });
+
+/** FR-AUTH-15..17: the owner's list of addresses that become setters (problem authors) when they sign in. */
+export const setterGrants = (signal?: AbortSignal) =>
+  apiFetch<SetterGrantList>('GET', '/admin/setters', undefined, { auth: 'required', signal });
+
+export const addSetterGrant = (email: string) =>
+  apiFetch<void>('POST', '/admin/setters', { email }, { auth: 'required' });
+
+export const removeSetterGrant = (email: string) =>
+  apiFetch<void>('DELETE', `/admin/setters/${encodeURIComponent(email)}`, undefined, {
     auth: 'required',
   });

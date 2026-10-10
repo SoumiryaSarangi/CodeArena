@@ -118,6 +118,8 @@ ssh codearena@<api> "cd /opt/codearena && echo 'OWNER_EMAIL=soumiryasarangi@gmai
 
 Unset, nobody is owner and the page answers 403. The address is not a secret. The deploy applies the `admin_grants` migration before it switches the API over. Until the owner has set this, the only way to make an admin is `UPDATE users SET role='admin' WHERE email='…'` on the database.
 
+**Setters** (problem authors: they upload and validate their own problems and read their tests, nothing else) are chosen on the same page, **Admin → Admins → Setters**, by the owner only: type the address, Add setter. Whoever signs in with a listed address is a setter (an existing ordinary account becomes one at once); an admin is never lowered. Removing the address returns a setter to an ordinary user. Every change is in the audit log (`setter.add`, `setter.remove`). No database command is needed any more.
+
 ## Rules that keep this safe
 
 - **Migrations must be additive** (add columns/tables, never drop or rename in the same release): a rollback keeps the new schema, so the previous release has to work on it. Do a destructive change in two releases.

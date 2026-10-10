@@ -6,7 +6,7 @@ import type { Logger } from 'pino';
 import { ProblemError } from '../../common/problem';
 import { CONFIG, type Config } from '../../config/config';
 import { DB, type Db } from '../../db/db.module';
-import { adminGrants, users } from '../../db/schema';
+import { adminGrants, setterGrants, users } from '../../db/schema';
 import { LOGGER } from '../../telemetry/logger';
 
 const tracer = trace.getTracer('api');
@@ -113,8 +113,16 @@ export class AdminGrantsService {
             .where(eq(adminGrants.email, email))
             .returning({ email: adminGrants.email });
           if (gone.length === 0) throw new ProblemError('not-found', 'That address is not listed.');
-          // Back to an ordinary account (never below `user`, and never touching the owner).
-          await tx.update(users).set({ role: 'user' }).where(eq(users.email, email));
+          // Back to an ordinary account, or to a setter when the address is also on the setter list
+          // (never below `user`, and never touching the owner).
+          const [alsoSetter] = await tx
+            .select({ email: setterGrants.email })
+            .from(setterGrants)
+            .where(eq(setterGrants.email, email));
+          await tx
+            .update(users)
+            .set({ role: alsoSetter ? 'setter' : 'user' })
+            .where(eq(users.email, email));
         });
         actions.add(1, { action: 'remove' });
         this.log.info({ event: 'admin.grant.remove', by: userId, email }, 'admin address removed');

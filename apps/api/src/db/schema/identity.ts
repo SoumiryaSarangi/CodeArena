@@ -53,3 +53,10 @@ export const adminGrants = pgTable('admin_grants', {
   grantedBy: uuid('granted_by').references(() => users.id),
   createdAt: createdAt(),
 });
+
+/** FR-AUTH-15: addresses that become setters (problem authors) at sign-in, managed by the owner. Like admin_grants, not a foreign key: the person may not have signed up yet. */
+export const setterGrants = pgTable('setter_grants', {
+  email: citext('email').primaryKey(),
+  grantedBy: uuid('granted_by').references(() => users.id),
+  createdAt: createdAt(),
+});

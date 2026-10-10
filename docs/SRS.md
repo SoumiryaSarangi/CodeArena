@@ -277,6 +277,9 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-AUTH-12 | The account whose verified email equals the server setting `OWNER_EMAIL`, and every account whose verified email is on the owner's admin list, shall have the admin role from sign-in on; sign-in shall never lower a role. | P1 | UI-OWN | T |
 | FR-AUTH-13 | Only the owner shall list, add or remove admin addresses; the owner's own address shall not be listable or removable; `Me` shall say `isOwner`. | P1 | UI-OWN | T |
 | FR-AUTH-14 | Adding an address shall promote an existing account with it at once; removing it shall return that account to `user` at once. | P1 | UI-OWN | T |
+| FR-AUTH-15 | The owner shall be able to list addresses that become `setter` (problem author) at sign-in; sign-in shall never lower a role, and an admin shall never be made a setter by the list. | P2 | UI-24 | T |
+| FR-AUTH-16 | Adding a setter address shall promote an existing `user` account with it at once and leave an admin or setter as it is; removing it shall return a `setter` to `user` at once and leave an admin an admin; removing an address from the admin list shall return the account to `setter` when it is also on the setter list. | P2 | UI-24 | T |
+| FR-AUTH-17 | Only the owner shall list, add or remove setter addresses (others get 403), the owner's own address shall not be listable, at most 50 addresses shall be listed, and every add and remove shall be written to the audit log. | P2 | UI-24 | T |
 
 #### 3.2.2 Problems and packages (PROB)
 

@@ -21,11 +21,11 @@ describe.skipIf(!reachable)('F-04: database schema', () => {
 
   afterAll(() => drop());
 
-  it('F-04: migrations apply from empty and create every §6.2 table (+ validation_items, UI-04; + admin_grants, FR-AUTH-12)', async () => {
+  it('F-04: migrations apply from empty and create every §6.2 table (+ validation_items, UI-04; + admin_grants, FR-AUTH-12; + setter_grants, FR-AUTH-15)', async () => {
     const rows = await db.execute<{ n: string }>(
       sql`select count(*)::text as n from information_schema.tables where table_schema = 'public'`,
     );
-    expect(Number(rows.rows[0]!.n)).toBe(39);
+    expect(Number(rows.rows[0]!.n)).toBe(40);
   });
 
   it('F-04: seed runs and is idempotent', async () => {

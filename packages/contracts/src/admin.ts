@@ -206,3 +206,25 @@ export const AdminGrantList = z
   .strict()
   .meta({ id: 'AdminGrantList' });
 export type AdminGrantList = z.infer<typeof AdminGrantList>;
+
+/** FR-AUTH-15..17: addresses the owner has made setters (problem authors). */
+export const SetterGrantList = z
+  .object({
+    /** The owner's address (the server's OWNER_EMAIL): always admin, cannot be listed as a setter. */
+    owner: z.string(),
+    grants: z.array(
+      z
+        .object({
+          email: z.string(),
+          grantedBy: z.string().nullable(),
+          createdAt: iso,
+          /** An account with this address exists (so it is a setter now, unless it is admin); false = waiting for their first sign-in. */
+          signedUp: z.boolean(),
+        })
+        .strict(),
+    ),
+    max: z.number().int(),
+  })
+  .strict()
+  .meta({ id: 'SetterGrantList' });
+export type SetterGrantList = z.infer<typeof SetterGrantList>;

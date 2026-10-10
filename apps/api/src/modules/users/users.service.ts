@@ -10,7 +10,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
 import { CONFIG, type Config } from '../../config/config';
 import { DB, type Db } from '../../db/db.module';
-import { adminGrants, oauthAccounts, users } from '../../db/schema';
+import { adminGrants, oauthAccounts, setterGrants, users } from '../../db/schema';
 
 export interface OAuthProfile {
   provider: 'google' | 'github';
@@ -108,6 +108,20 @@ export class UsersService {
           [user] = await tx
             .update(users)
             .set({ role: 'admin' })
+            .where(eq(users.id, user.id))
+            .returning();
+        }
+      }
+      // FR-AUTH-15: a listed setter address is a setter from sign-in on (never lowers an admin).
+      if (user?.role === 'user') {
+        const [listed] = await tx
+          .select({ email: setterGrants.email })
+          .from(setterGrants)
+          .where(eq(setterGrants.email, user.email));
+        if (listed) {
+          [user] = await tx
+            .update(users)
+            .set({ role: 'setter' })
             .where(eq(users.id, user.id))
             .returning();
         }
