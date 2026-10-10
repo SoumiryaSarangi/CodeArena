@@ -1,0 +1,228 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1017,
+  "overflowX": false,
+  "elements": 235,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      38
+    ],
+    [
+      "11.375px",
+      31
+    ],
+    [
+      "10.5px",
+      17
+    ],
+    [
+      "12.25px",
+      8
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      74
+    ],
+    [
+      "500",
+      15
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      53
+    ],
+    [
+      "GeistSans",
+      41
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      37
+    ],
+    [
+      "rgb(161, 167, 176)",
+      21
+    ],
+    [
+      "rgb(133, 140, 151)",
+      10
+    ],
+    [
+      "rgb(220, 220, 220)",
+      8
+    ],
+    [
+      "rgb(180, 169, 255)",
+      6
+    ],
+    [
+      "rgb(34, 197, 94)",
+      4
+    ],
+    [
+      "rgb(255, 215, 0)",
+      4
+    ],
+    [
+      "rgb(139, 127, 255)",
+      2
+    ]
+  ],
+  "backgrounds": [
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      4
+    ],
+    [
+      "rgb(47, 52, 60)",
+      4
+    ],
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      10
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ],
+    [
+      "4px",
+      4
+    ],
+    [
+      "10px",
+      2
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to Two Numbers, One Total",
+      "size": "14px",
+      "weight": "400"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "14px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Resubmit in editor",
+        "w": 128,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 126,
+        "h": 14
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 20
+}

@@ -1,0 +1,182 @@
+{
+  "url": "/practice",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 163,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      39
+    ],
+    [
+      "10.5px",
+      22
+    ],
+    [
+      "12.25px",
+      3
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      52
+    ],
+    [
+      "500",
+      11
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      54
+    ],
+    [
+      "GeistMono",
+      12
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      28
+    ],
+    [
+      "rgb(232, 234, 237)",
+      21
+    ],
+    [
+      "rgb(133, 140, 151)",
+      15
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(30, 34, 40)",
+      12
+    ],
+    [
+      "rgb(17, 19, 23)",
+      7
+    ],
+    [
+      "rgb(23, 26, 31)",
+      3
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "4px",
+      12
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Practice",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 23,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 196,
+        "h": 28
+      },
+      {
+        "tag": "select",
+        "text": "Any800900100011001200130014001",
+        "w": 68,
+        "h": 28
+      },
+      {
+        "tag": "select",
+        "text": "Any800900100011001200130014001",
+        "w": 71,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 30
+}

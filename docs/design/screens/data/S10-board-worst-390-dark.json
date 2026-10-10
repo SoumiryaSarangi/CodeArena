@@ -1,0 +1,187 @@
+{
+  "url": "/c/warm-up-1/board",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 924,
+  "overflowX": false,
+  "elements": 2201,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      994
+    ],
+    [
+      "11.375px",
+      254
+    ],
+    [
+      "10.5px",
+      9
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      1090
+    ],
+    [
+      "500",
+      166
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      853
+    ],
+    [
+      "GeistSans",
+      406
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      619
+    ],
+    [
+      "rgb(133, 140, 151)",
+      382
+    ],
+    [
+      "rgb(34, 197, 94)",
+      234
+    ],
+    [
+      "rgb(161, 167, 176)",
+      21
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      312
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      115
+    ],
+    [
+      "rgb(23, 26, 31)",
+      5
+    ]
+  ],
+  "radii": [
+    [
+      "4px",
+      117
+    ],
+    [
+      "6px",
+      13
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(139, 127, 255) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 14,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "李小龍_Алексей_مرحبا",
+        "w": 105,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Clarifications",
+        "w": 105,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Contest page",
+        "w": 89,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Jump to me",
+        "w": 82,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 20
+}

@@ -1,0 +1,216 @@
+{
+  "url": "/status",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 2049,
+  "overflowX": false,
+  "elements": 249,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      31
+    ],
+    [
+      "11.375px",
+      28
+    ],
+    [
+      "10.5px",
+      28
+    ],
+    [
+      "14px",
+      11
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "10px",
+      3
+    ],
+    [
+      "11px",
+      2
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      70
+    ],
+    [
+      "500",
+      35
+    ],
+    [
+      "600",
+      8
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      92
+    ],
+    [
+      "GeistMono",
+      21
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      64
+    ],
+    [
+      "rgb(161, 167, 176)",
+      32
+    ],
+    [
+      "rgb(133, 140, 151)",
+      11
+    ],
+    [
+      "rgb(34, 197, 94)",
+      5
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      3
+    ],
+    [
+      "rgb(23, 26, 31)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Status",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Health",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "How judging works",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Architecture",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Security",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Load test",
+      "size": "14px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 11,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Sign in",
+        "w": 53,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Nightly runs on GitHub",
+        "w": 279,
+        "h": 19
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 31,
+        "h": 14
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 38,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 17
+}

@@ -1,0 +1,196 @@
+{
+  "url": "/contests",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 87,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      14
+    ],
+    [
+      "10.5px",
+      9
+    ],
+    [
+      "12.25px",
+      5
+    ],
+    [
+      "14px",
+      4
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "500",
+      16
+    ],
+    [
+      "400",
+      14
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      31
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(15, 17, 20)",
+      13
+    ],
+    [
+      "rgb(75, 82, 96)",
+      10
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(21, 128, 61)",
+      2
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(244, 245, 247)",
+      5
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Contests",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Running now",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Upcoming",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Past",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 19,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Live Now Cup",
+        "w": 144,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Register",
+        "w": 61,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Enter",
+        "w": 46,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 25
+}

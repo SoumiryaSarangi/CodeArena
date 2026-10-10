@@ -1,0 +1,233 @@
+{
+  "url": "/r/b2cd9215-63cd-47ac-8e4a-789be49f4b2c/replay",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 173,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      21
+    ],
+    [
+      "12.25px",
+      20
+    ],
+    [
+      "11.375px",
+      11
+    ],
+    [
+      "10.5px",
+      7
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      46
+    ],
+    [
+      "500",
+      11
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      32
+    ],
+    [
+      "GeistMono",
+      28
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(15, 17, 20)",
+      19
+    ],
+    [
+      "rgb(75, 82, 96)",
+      15
+    ],
+    [
+      "rgb(99, 106, 117)",
+      9
+    ],
+    [
+      "rgb(79, 63, 214)",
+      4
+    ],
+    [
+      "rgb(4, 49, 250)",
+      4
+    ],
+    [
+      "rgb(255, 255, 255)",
+      3
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(91, 75, 224)",
+      5
+    ],
+    [
+      "rgb(244, 245, 247)",
+      3
+    ],
+    [
+      "rgb(99, 106, 117)",
+      3
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(236, 238, 241)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      22
+    ],
+    [
+      "4px",
+      5
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(211, 211, 211) 1px 0px 0px 0px inset",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill: replay",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your notes",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "AI summary",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "What happened",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 33,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 34
+}

@@ -1,0 +1,206 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 155,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      37
+    ],
+    [
+      "10.5px",
+      15
+    ],
+    [
+      "12.25px",
+      14
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      50
+    ],
+    [
+      "500",
+      15
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      49
+    ],
+    [
+      "GeistMono",
+      19
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      23
+    ],
+    [
+      "rgb(232, 234, 237)",
+      21
+    ],
+    [
+      "rgb(133, 140, 151)",
+      17
+    ],
+    [
+      "rgb(34, 197, 94)",
+      3
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(10, 11, 13)",
+      1
+    ],
+    [
+      "rgb(245, 158, 11)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      3
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "oklab(0.768595 0.0561344 0.154817 / 0.14)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      11
+    ],
+    [
+      "4px",
+      5
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 362,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Validate",
+        "w": 66,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 25
+}

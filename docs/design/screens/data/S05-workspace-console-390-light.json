@@ -1,0 +1,174 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 86,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      11
+    ],
+    [
+      "10.5px",
+      9
+    ],
+    [
+      "11.375px",
+      6
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      20
+    ],
+    [
+      "500",
+      5
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      26
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      14
+    ],
+    [
+      "rgb(15, 17, 20)",
+      7
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      4
+    ],
+    [
+      "rgb(244, 245, 247)",
+      3
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "17.5px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Run with this input",
+        "w": 121,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Run all samples",
+        "w": 99,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 29
+}

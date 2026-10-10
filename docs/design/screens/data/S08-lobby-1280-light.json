@@ -1,0 +1,196 @@
+{
+  "url": "/c/warm-up-1",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 98,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      26
+    ],
+    [
+      "11.375px",
+      6
+    ],
+    [
+      "10.5px",
+      6
+    ],
+    [
+      "14px",
+      3
+    ],
+    [
+      "21px",
+      1
+    ],
+    [
+      "42px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      32
+    ],
+    [
+      "500",
+      8
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      39
+    ],
+    [
+      "GeistMono",
+      4
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      24
+    ],
+    [
+      "rgb(15, 17, 20)",
+      13
+    ],
+    [
+      "rgb(99, 106, 117)",
+      4
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(244, 245, 247)",
+      1
+    ],
+    [
+      "rgb(236, 238, 241)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      11
+    ],
+    [
+      "4px",
+      1
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Rules",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 19,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 19
+}

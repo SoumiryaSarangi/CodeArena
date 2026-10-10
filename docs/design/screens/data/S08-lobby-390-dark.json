@@ -1,0 +1,180 @@
+{
+  "url": "/c/warm-up-1",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 98,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      21
+    ],
+    [
+      "10.5px",
+      9
+    ],
+    [
+      "11.375px",
+      5
+    ],
+    [
+      "14px",
+      3
+    ],
+    [
+      "21px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      31
+    ],
+    [
+      "500",
+      6
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      37
+    ],
+    [
+      "GeistMono",
+      3
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      22
+    ],
+    [
+      "rgb(232, 234, 237)",
+      12
+    ],
+    [
+      "rgb(133, 140, 151)",
+      4
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgb(23, 26, 31)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      11
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Rules",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Clarifications",
+        "w": 105,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Add to calendar",
+        "w": 132,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 19
+}

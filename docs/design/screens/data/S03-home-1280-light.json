@@ -1,0 +1,223 @@
+{
+  "url": "/home",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 469,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "10.5px",
+      14
+    ],
+    [
+      "12.25px",
+      11
+    ],
+    [
+      "14px",
+      5
+    ],
+    [
+      "11.375px",
+      5
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      23
+    ],
+    [
+      "500",
+      10
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      30
+    ],
+    [
+      "GeistMono",
+      6
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      14
+    ],
+    [
+      "rgb(15, 17, 20)",
+      13
+    ],
+    [
+      "rgb(99, 106, 117)",
+      6
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgb(220, 38, 38)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      6
+    ],
+    [
+      "rgb(244, 245, 247)",
+      2
+    ],
+    [
+      "rgb(236, 238, 241)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "4px",
+      2
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.577107 0.191166 0.0987778 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Welcome back, riya_k",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Next contest",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Continue practising",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Recent submissions",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Your activity",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 22,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 22
+}

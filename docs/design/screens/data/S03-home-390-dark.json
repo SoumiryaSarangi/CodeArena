@@ -1,0 +1,210 @@
+{
+  "url": "/home",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 469,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "10.5px",
+      17
+    ],
+    [
+      "12.25px",
+      6
+    ],
+    [
+      "14px",
+      5
+    ],
+    [
+      "11.375px",
+      4
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      22
+    ],
+    [
+      "500",
+      8
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      28
+    ],
+    [
+      "GeistMono",
+      5
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      12
+    ],
+    [
+      "rgb(161, 167, 176)",
+      12
+    ],
+    [
+      "rgb(133, 140, 151)",
+      6
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(10, 11, 13)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      6
+    ],
+    [
+      "rgb(23, 26, 31)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "4px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Welcome back, riya_k",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Next contest",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Continue practising",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Recent submissions",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Your activity",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 16,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "CodeArena Warm-up #1",
+        "w": 134,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "Register",
+        "w": 61,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 137,
+        "h": 18
+      }
+    ]
+  },
+  "interactive": 22
+}

@@ -1,0 +1,225 @@
+{
+  "url": "/r/b2cd9215-63cd-47ac-8e4a-789be49f4b2c/replay",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1060,
+  "overflowX": false,
+  "elements": 173,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      21
+    ],
+    [
+      "12.25px",
+      15
+    ],
+    [
+      "11.375px",
+      10
+    ],
+    [
+      "10.5px",
+      10
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      45
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      30
+    ],
+    [
+      "GeistMono",
+      27
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      18
+    ],
+    [
+      "rgb(161, 167, 176)",
+      13
+    ],
+    [
+      "rgb(133, 140, 151)",
+      9
+    ],
+    [
+      "rgb(180, 169, 255)",
+      4
+    ],
+    [
+      "rgb(255, 215, 0)",
+      4
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(139, 127, 255)",
+      5
+    ],
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(133, 140, 151)",
+      3
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      22
+    ],
+    [
+      "4px",
+      4
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(64, 64, 64) 1px 0px 0px 0px inset",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill: replay",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your notes",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "AI summary",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "What happened",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 27,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Your rooms",
+        "w": 61,
+        "h": 18
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 13,
+        "h": 13
+      },
+      {
+        "tag": "button",
+        "text": "Write the summary",
+        "w": 118,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 34
+}

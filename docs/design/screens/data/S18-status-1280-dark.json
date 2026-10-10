@@ -1,0 +1,228 @@
+{
+  "url": "/status",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 1708,
+  "overflowX": false,
+  "elements": 253,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      36
+    ],
+    [
+      "11.375px",
+      29
+    ],
+    [
+      "10.5px",
+      25
+    ],
+    [
+      "14px",
+      11
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "10px",
+      3
+    ],
+    [
+      "11px",
+      2
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      71
+    ],
+    [
+      "500",
+      37
+    ],
+    [
+      "600",
+      8
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      94
+    ],
+    [
+      "GeistMono",
+      22
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      65
+    ],
+    [
+      "rgb(161, 167, 176)",
+      34
+    ],
+    [
+      "rgb(133, 140, 151)",
+      11
+    ],
+    [
+      "rgb(34, 197, 94)",
+      5
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      3
+    ],
+    [
+      "rgb(23, 26, 31)",
+      2
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ],
+    [
+      "3.35544e+07px",
+      6
+    ],
+    [
+      "4px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Status",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Health",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "How judging works",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Architecture",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Security",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Load test",
+      "size": "14px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 17,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Sign in",
+        "w": 53,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Contests",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 17
+}

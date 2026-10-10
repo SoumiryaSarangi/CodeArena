@@ -1,0 +1,260 @@
+{
+  "url": "/c/warm-up-1/results",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1197,
+  "overflowX": false,
+  "elements": 135,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      27
+    ],
+    [
+      "10.5px",
+      17
+    ],
+    [
+      "11.375px",
+      15
+    ],
+    [
+      "14px",
+      8
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      31
+    ],
+    [
+      "600",
+      20
+    ],
+    [
+      "500",
+      16
+    ],
+    [
+      "700",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      58
+    ],
+    [
+      "GeistMono",
+      10
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      28
+    ],
+    [
+      "rgb(161, 167, 176)",
+      20
+    ],
+    [
+      "rgb(133, 140, 151)",
+      17
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgb(23, 26, 31)",
+      2
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "10px",
+      3
+    ],
+    [
+      "4px",
+      2
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Results · CodeArena Warm-up #1",
+      "size": "17.5px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your problems",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "A. Two Numbers, One TotalACEditorialUpsolve",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "B. Fractional LootWAon test 4EditorialUpsolve",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "12.25px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 28,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Final standings",
+        "w": 99,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Editorial",
+        "w": 59,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Upsolve",
+        "w": 58,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 34
+}

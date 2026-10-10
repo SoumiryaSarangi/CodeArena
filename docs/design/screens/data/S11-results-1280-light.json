@@ -1,0 +1,273 @@
+{
+  "url": "/c/warm-up-1/results",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 1045,
+  "overflowX": false,
+  "elements": 135,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      32
+    ],
+    [
+      "11.375px",
+      16
+    ],
+    [
+      "10.5px",
+      14
+    ],
+    [
+      "14px",
+      8
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      32
+    ],
+    [
+      "600",
+      20
+    ],
+    [
+      "500",
+      18
+    ],
+    [
+      "700",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      60
+    ],
+    [
+      "GeistMono",
+      11
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(15, 17, 20)",
+      29
+    ],
+    [
+      "rgb(75, 82, 96)",
+      22
+    ],
+    [
+      "rgb(99, 106, 117)",
+      17
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ],
+    [
+      "rgb(220, 38, 38)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(244, 245, 247)",
+      2
+    ],
+    [
+      "rgb(236, 238, 241)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "4px",
+      3
+    ],
+    [
+      "10px",
+      3
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.527295 -0.11879 0.0684128 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.577107 0.191166 0.0987778 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Results · CodeArena Warm-up #1",
+      "size": "17.5px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your problems",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "A. Two Numbers, One TotalACEditorialUpsolve",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "B. Fractional LootWAon test 4EditorialUpsolve",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "12.25px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "12.25px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 34,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 34
+}

@@ -1,0 +1,232 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 2687,
+  "overflowX": false,
+  "elements": 810,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      203
+    ],
+    [
+      "14px",
+      188
+    ],
+    [
+      "10.5px",
+      73
+    ],
+    [
+      "12.25px",
+      13
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      398
+    ],
+    [
+      "500",
+      74
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      432
+    ],
+    [
+      "GeistSans",
+      45
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      290
+    ],
+    [
+      "rgb(34, 197, 94)",
+      59
+    ],
+    [
+      "rgb(220, 220, 220)",
+      36
+    ],
+    [
+      "rgb(161, 167, 176)",
+      26
+    ],
+    [
+      "rgb(133, 140, 151)",
+      26
+    ],
+    [
+      "rgb(180, 169, 255)",
+      18
+    ],
+    [
+      "rgb(251, 191, 36)",
+      18
+    ],
+    [
+      "rgb(139, 127, 255)",
+      2
+    ]
+  ],
+  "backgrounds": [
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      59
+    ],
+    [
+      "rgb(47, 52, 60)",
+      4
+    ],
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      3
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "4px",
+      62
+    ],
+    [
+      "6px",
+      10
+    ],
+    [
+      "3.35544e+07px",
+      6
+    ],
+    [
+      "10px",
+      2
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to A problem title that is far too long",
+      "size": "14px",
+      "weight": "400"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "14px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 19,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

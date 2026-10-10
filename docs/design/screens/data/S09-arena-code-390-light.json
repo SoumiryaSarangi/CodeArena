@@ -1,0 +1,203 @@
+{
+  "url": "/c/warm-up-1/A",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 844,
+  "overflowX": false,
+  "elements": 148,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      27
+    ],
+    [
+      "11.375px",
+      10
+    ],
+    [
+      "12.25px",
+      9
+    ],
+    [
+      "17.5px",
+      1
+    ],
+    [
+      "10.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      36
+    ],
+    [
+      "500",
+      11
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      29
+    ],
+    [
+      "GeistSans",
+      19
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      14
+    ],
+    [
+      "rgb(15, 17, 20)",
+      11
+    ],
+    [
+      "rgb(79, 63, 214)",
+      7
+    ],
+    [
+      "rgb(99, 106, 117)",
+      6
+    ],
+    [
+      "rgb(4, 49, 250)",
+      4
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      7
+    ],
+    [
+      "rgb(91, 75, 224)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(236, 238, 241)",
+      1
+    ],
+    [
+      "rgb(244, 245, 247)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(211, 211, 211) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "A. Chai Bill",
+      "size": "17.5px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "A✓ 2✓Problem A, solved, solved",
+        "w": 59,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "B… 1✓Problem B, attempted, sol",
+        "w": 52,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Previous",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Next",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Clarifications",
+        "w": 105,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Show menu",
+        "w": 78,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Board",
+        "w": 46,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Contest",
+        "w": 59,
+        "h": 25
+      },
+      {
+        "tag": "select",
+        "text": "C++17C++20CPython 3Java 21Java",
+        "w": 149,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 21
+}

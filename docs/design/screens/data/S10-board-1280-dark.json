@@ -1,0 +1,199 @@
+{
+  "url": "/c/warm-up-1/board",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 156,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      31
+    ],
+    [
+      "11.375px",
+      31
+    ],
+    [
+      "10.5px",
+      6
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      48
+    ],
+    [
+      "500",
+      19
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      36
+    ],
+    [
+      "GeistMono",
+      34
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      24
+    ],
+    [
+      "rgb(161, 167, 176)",
+      23
+    ],
+    [
+      "rgb(34, 197, 94)",
+      10
+    ],
+    [
+      "rgb(133, 140, 151)",
+      10
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      14
+    ],
+    [
+      "rgb(23, 26, 31)",
+      5
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      3
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ],
+    [
+      "4px",
+      6
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(139, 127, 255) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 20,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

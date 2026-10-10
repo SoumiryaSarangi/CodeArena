@@ -1,0 +1,226 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1390,
+  "overflowX": false,
+  "elements": 205,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      31
+    ],
+    [
+      "12.25px",
+      16
+    ],
+    [
+      "10.5px",
+      10
+    ],
+    [
+      "11.375px",
+      4
+    ],
+    [
+      "17.5px",
+      2
+    ],
+    [
+      "14.8225px",
+      2
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      52
+    ],
+    [
+      "600",
+      11
+    ],
+    [
+      "500",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      36
+    ],
+    [
+      "GeistMono",
+      28
+    ],
+    [
+      "math",
+      1
+    ],
+    [
+      "KaTeX_Math",
+      1
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(99, 106, 117)",
+      24
+    ],
+    [
+      "rgb(15, 17, 20)",
+      20
+    ],
+    [
+      "rgb(75, 82, 96)",
+      15
+    ],
+    [
+      "rgb(79, 63, 214)",
+      4
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(244, 245, 247)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h1",
+      "text": "Hop Distances#",
+      "size": "17.5px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Input#",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Output#",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Notes#",
+      "size": "14px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 17,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 362,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Save as a new version",
+        "w": 150,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      }
+    ]
+  },
+  "interactive": 30
+}

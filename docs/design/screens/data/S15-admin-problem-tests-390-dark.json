@@ -1,0 +1,170 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 133,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      32
+    ],
+    [
+      "12.25px",
+      12
+    ],
+    [
+      "10.5px",
+      10
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      37
+    ],
+    [
+      "500",
+      16
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      40
+    ],
+    [
+      "GeistMono",
+      16
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      28
+    ],
+    [
+      "rgb(232, 234, 237)",
+      21
+    ],
+    [
+      "rgb(133, 140, 151)",
+      6
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 31)",
+      4
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      19
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 22,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 362,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Download all (tests.tar)",
+        "w": 158,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "text": "No",
+        "w": 15,
+        "h": 18
+      }
+    ]
+  },
+  "interactive": 34
+}

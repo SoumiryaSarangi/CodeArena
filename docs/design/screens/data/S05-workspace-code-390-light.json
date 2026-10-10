@@ -1,0 +1,195 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 168,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      26
+    ],
+    [
+      "10.5px",
+      10
+    ],
+    [
+      "12.25px",
+      7
+    ],
+    [
+      "11.375px",
+      3
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      41
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      28
+    ],
+    [
+      "GeistSans",
+      19
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      11
+    ],
+    [
+      "rgb(99, 106, 117)",
+      10
+    ],
+    [
+      "rgb(15, 17, 20)",
+      8
+    ],
+    [
+      "rgb(79, 63, 214)",
+      7
+    ],
+    [
+      "rgb(4, 49, 250)",
+      4
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      8
+    ],
+    [
+      "rgb(244, 245, 247)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(211, 211, 211) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "17.5px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 15,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "select",
+        "text": "C++17C++20CPython 3Java 21Java",
+        "w": 149,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 29
+}

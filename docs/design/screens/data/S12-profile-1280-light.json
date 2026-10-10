@@ -1,0 +1,230 @@
+{
+  "url": "/u/riya_k",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 917,
+  "overflowX": false,
+  "elements": 533,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12.25px",
+      32
+    ],
+    [
+      "10.5px",
+      12
+    ],
+    [
+      "14px",
+      9
+    ],
+    [
+      "11.375px",
+      7
+    ],
+    [
+      "11px",
+      3
+    ],
+    [
+      "17.5px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      47
+    ],
+    [
+      "500",
+      14
+    ],
+    [
+      "600",
+      4
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      41
+    ],
+    [
+      "GeistMono",
+      24
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(15, 17, 20)",
+      39
+    ],
+    [
+      "rgb(75, 82, 96)",
+      17
+    ],
+    [
+      "rgb(99, 106, 117)",
+      8
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(236, 238, 241)",
+      7
+    ],
+    [
+      "rgb(91, 75, 224)",
+      5
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(244, 245, 247)",
+      2
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "4px",
+      12
+    ],
+    [
+      "6px",
+      9
+    ],
+    [
+      "3.35544e+07px",
+      2
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "riya_k",
+      "size": "21px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Rating graph",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Activity",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Solved (7)",
+      "size": "14px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "By difficulty",
+      "size": "11.375px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "By tag (top 10)",
+      "size": "11.375px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Contest history",
+      "size": "14px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 20,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

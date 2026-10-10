@@ -1,0 +1,219 @@
+{
+  "url": "/r/63f22ece-8657-4db0-80d2-9287465ddc6f",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 929,
+  "overflowX": false,
+  "elements": 159,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      20
+    ],
+    [
+      "11.375px",
+      12
+    ],
+    [
+      "10.5px",
+      10
+    ],
+    [
+      "12.25px",
+      9
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      38
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "600",
+      4
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      30
+    ],
+    [
+      "GeistMono",
+      21
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(15, 17, 20)",
+      15
+    ],
+    [
+      "rgb(75, 82, 96)",
+      11
+    ],
+    [
+      "rgb(99, 106, 117)",
+      9
+    ],
+    [
+      "rgb(79, 63, 214)",
+      4
+    ],
+    [
+      "rgb(4, 49, 250)",
+      4
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      7
+    ],
+    [
+      "rgb(244, 245, 247)",
+      5
+    ],
+    [
+      "rgba(0, 100, 0, 0.1)",
+      2
+    ],
+    [
+      "rgb(91, 75, 224)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(37, 99, 235)",
+      1
+    ],
+    [
+      "rgb(220, 38, 38)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      21
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(147, 147, 147) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Shapes",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Chai Bill",
+      "size": "12.25px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 19,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "select",
+        "text": "C++17C++20CPython 3Java 21Java",
+        "w": 149,
+        "h": 28
+      },
+      {
+        "tag": "button",
+        "text": "Suggestions: on",
+        "w": 105,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Copy candidate link",
+        "w": 123,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 47
+}

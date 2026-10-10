@@ -1,0 +1,174 @@
+{
+  "url": "/onboarding",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 880,
+  "overflowX": false,
+  "elements": 65,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "10.5px",
+      9
+    ],
+    [
+      "11.375px",
+      5
+    ],
+    [
+      "12.25px",
+      3
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      14
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      17
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      9
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(15, 17, 20)",
+      3
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      4
+    ],
+    [
+      "rgb(244, 245, 247)",
+      1
+    ],
+    [
+      "rgb(91, 75, 224)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      12
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Choose your handle",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 13,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Choose a handle",
+        "w": 89,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 336,
+        "h": 28
+      },
+      {
+        "tag": "select",
+        "text": "C++17C++20CPython 3Java 21Java",
+        "w": 336,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 27,
+        "h": 14
+      }
+    ]
+  },
+  "interactive": 20
+}

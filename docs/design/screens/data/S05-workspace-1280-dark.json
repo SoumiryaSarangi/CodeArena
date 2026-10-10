@@ -1,0 +1,279 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 807,
+  "overflowX": false,
+  "elements": 352,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      33
+    ],
+    [
+      "14.8225px",
+      30
+    ],
+    [
+      "11.375px",
+      27
+    ],
+    [
+      "10.5px",
+      20
+    ],
+    [
+      "12.25px",
+      17
+    ],
+    [
+      "11.858px",
+      2
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      103
+    ],
+    [
+      "500",
+      17
+    ],
+    [
+      "600",
+      10
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      56
+    ],
+    [
+      "GeistMono",
+      42
+    ],
+    [
+      "math",
+      15
+    ],
+    [
+      "KaTeX_Main",
+      11
+    ],
+    [
+      "KaTeX_Math",
+      6
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      56
+    ],
+    [
+      "rgb(161, 167, 176)",
+      37
+    ],
+    [
+      "rgb(133, 140, 151)",
+      19
+    ],
+    [
+      "rgb(180, 169, 255)",
+      7
+    ],
+    [
+      "rgb(255, 215, 0)",
+      4
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(10, 11, 13)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      9
+    ],
+    [
+      "rgb(30, 34, 40)",
+      9
+    ],
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(35, 39, 46)",
+      2
+    ],
+    [
+      "rgb(47, 52, 60)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      24
+    ],
+    [
+      "4px",
+      9
+    ],
+    [
+      "10px",
+      3
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(64, 64, 64) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "17.5px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Input#",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Output#",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Notes#",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Samples",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Sample 1",
+      "size": "11.375px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "Sample 2",
+      "size": "11.375px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 34,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 40
+}

@@ -1,0 +1,227 @@
+{
+  "url": "/r/68c45e2e-2a90-409f-a1f7-5e92e7561487",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 808,
+  "overflowX": false,
+  "elements": 168,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      20
+    ],
+    [
+      "12.25px",
+      15
+    ],
+    [
+      "11.375px",
+      13
+    ],
+    [
+      "10.5px",
+      7
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      40
+    ],
+    [
+      "500",
+      11
+    ],
+    [
+      "600",
+      4
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      33
+    ],
+    [
+      "GeistMono",
+      22
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(232, 234, 237)",
+      16
+    ],
+    [
+      "rgb(161, 167, 176)",
+      14
+    ],
+    [
+      "rgb(133, 140, 151)",
+      9
+    ],
+    [
+      "rgb(180, 169, 255)",
+      4
+    ],
+    [
+      "rgb(255, 215, 0)",
+      4
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 31)",
+      5
+    ],
+    [
+      "rgb(17, 19, 23)",
+      4
+    ],
+    [
+      "rgb(10, 11, 13)",
+      3
+    ],
+    [
+      "rgba(0, 100, 0, 0.1)",
+      2
+    ],
+    [
+      "rgb(139, 127, 255)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      21
+    ],
+    [
+      "3.35544e+07px",
+      2
+    ],
+    [
+      "4px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(112, 112, 112) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill",
+      "size": "14px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Shapes",
+      "size": "12.25px",
+      "weight": "500"
+    },
+    {
+      "tag": "h2",
+      "text": "Chai Bill",
+      "size": "12.25px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 25,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 47
+}

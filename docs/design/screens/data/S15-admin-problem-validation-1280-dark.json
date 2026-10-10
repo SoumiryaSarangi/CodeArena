@@ -1,0 +1,218 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 159,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      38
+    ],
+    [
+      "12.25px",
+      20
+    ],
+    [
+      "10.5px",
+      11
+    ],
+    [
+      "14px",
+      1
+    ],
+    [
+      "21px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      51
+    ],
+    [
+      "500",
+      17
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      51
+    ],
+    [
+      "GeistMono",
+      20
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      25
+    ],
+    [
+      "rgb(232, 234, 237)",
+      22
+    ],
+    [
+      "rgb(133, 140, 151)",
+      17
+    ],
+    [
+      "rgb(34, 197, 94)",
+      3
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "rgb(10, 11, 13)",
+      1
+    ],
+    [
+      "rgb(245, 158, 11)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 31)",
+      3
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      3
+    ],
+    [
+      "rgb(17, 19, 23)",
+      2
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ],
+    [
+      "oklab(0.768595 0.0561344 0.154817 / 0.14)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      11
+    ],
+    [
+      "4px",
+      6
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "21px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 20,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 70,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "SearchCtrl K",
+        "w": 124,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 91,
+        "h": 14
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 25,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 32,
+        "h": 18
+      },
+      {
+        "tag": "button",
+        "text": "Sign out",
+        "w": 60,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Home",
+        "w": 153,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Practice",
+        "w": 153,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 25
+}

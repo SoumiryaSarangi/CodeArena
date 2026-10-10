@@ -1,0 +1,174 @@
+{
+  "url": "/c/warm-up-1/A",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 844,
+  "overflowX": false,
+  "elements": 65,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "11.375px",
+      13
+    ],
+    [
+      "12.25px",
+      12
+    ],
+    [
+      "14px",
+      2
+    ],
+    [
+      "17.5px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      14
+    ],
+    [
+      "500",
+      13
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      25
+    ],
+    [
+      "GeistMono",
+      3
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(161, 167, 176)",
+      16
+    ],
+    [
+      "rgb(232, 234, 237)",
+      10
+    ],
+    [
+      "rgb(133, 140, 151)",
+      1
+    ],
+    [
+      "rgb(10, 11, 13)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 23)",
+      3
+    ],
+    [
+      "rgb(23, 26, 31)",
+      2
+    ],
+    [
+      "rgb(30, 34, 40)",
+      1
+    ],
+    [
+      "rgb(139, 127, 255)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ],
+    [
+      "10px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "A. Chai Bill",
+      "size": "17.5px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 11,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "A✓ 2✓Problem A, solved, solved",
+        "w": 59,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "B… 1✓Problem B, attempted, sol",
+        "w": 52,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Previous",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Next",
+        "w": 28,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Clarifications",
+        "w": 105,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Show menu",
+        "w": 78,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Board",
+        "w": 46,
+        "h": 25
+      },
+      {
+        "tag": "a",
+        "text": "Contest",
+        "w": 59,
+        "h": 25
+      },
+      {
+        "tag": "button",
+        "text": "Run with this input",
+        "w": 121,
+        "h": 25
+      }
+    ]
+  },
+  "interactive": 20
+}

@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T23:46:58Z",
+  "title": "Design System: CodeArena",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Signal Violet",
+        "canonical": "#8b7fff",
+        "tonalRamp": [
+          "#5b4be0",
+          "#4f3fd6",
+          "#8b7fff",
+          "#9d93ff",
+          "#a99fff"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0a0b0d",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#111317",
+          "#171a1f",
+          "#1e2228"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Cool Grey Text",
+        "canonical": "#e8eaed",
+        "tonalRamp": [
+          "#858c97",
+          "#a1a7b0",
+          "#e8eaed"
+        ]
+      },
+      "verdict-accepted": {
+        "role": "semantic",
+        "displayName": "Accepted Green",
+        "canonical": "#22c55e",
+        "tonalRamp": [
+          "#15803d",
+          "#22c55e"
+        ]
+      },
+      "verdict-wrong-answer": {
+        "role": "semantic",
+        "displayName": "Wrong Answer Red",
+        "canonical": "#f87171",
+        "tonalRamp": [
+          "#dc2626",
+          "#f87171"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Defined at 3rem (42 px rendered) but not used on everyday screens."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles, 1.5rem (21 px rendered), semibold: the largest text on most screens."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text and controls: 0.875rem, 12.25 px rendered (root font size is 14 px)."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Verdicts, times, counters, the wordmark: 0.75rem, 10.5 px rendered."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 8px 24px rgb(0 0 0 / 0.35)",
+        "purpose": "Dialogs, drawers and popovers (dark); 0 8px 24px rgb(15 17 20 / 0.12) in light."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-fast",
+        "value": "120ms",
+        "purpose": "Colour transitions on controls; the fill of a test cell."
+      },
+      {
+        "name": "dur-base",
+        "value": "180ms",
+        "purpose": "Default state change."
+      },
+      {
+        "name": "dur-slow",
+        "value": "350ms",
+        "purpose": "Larger changes."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Default easing."
+      },
+      {
+        "name": "judging",
+        "value": "opacity 0.5 to 1, 1.2s ease-in-out, infinite",
+        "purpose": "Pending verdict pulse."
+      },
+      {
+        "name": "flash",
+        "value": "accent at 45% fading to transparent over 1.4s",
+        "purpose": "A changed board row."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action on a screen.",
+      "html": "<button class=\"ds-btn-primary\">Submit</button>",
+      "css": ".ds-btn-primary{background:#8b7fff;color:#0a0b0d;height:32px;padding:0 12px;border:0;border-radius:6px;font:500 14px/20px system-ui;transition:background 120ms}.ds-btn-primary:hover{background:#9d93ff}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default button.",
+      "html": "<button class=\"ds-btn-secondary\">Run</button>",
+      "css": ".ds-btn-secondary{background:#171a1f;color:#e8eaed;height:32px;padding:0 12px;border:1px solid #5a626e;border-radius:6px;font:500 14px/20px system-ui}.ds-btn-secondary:hover{background:#1e2228}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Single-line field with a label above.",
+      "html": "<label class=\"ds-l\">Handle<input class=\"ds-in\" value=\"riya_k\"></label>",
+      "css": ".ds-l{display:flex;flex-direction:column;gap:4px;color:#a1a7b0;font:13px/20px system-ui}.ds-in{height:32px;padding:0 12px;background:#111317;color:#e8eaed;border:1px solid #5a626e;border-radius:6px;font:14px system-ui}"
+    },
+    {
+      "name": "Verdict Badge",
+      "kind": "chip",
+      "refersTo": "verdict-badge",
+      "description": "Monospace verdict label; never colour alone.",
+      "html": "<span class=\"ds-v\">AC</span>",
+      "css": ".ds-v{display:inline-flex;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.14);color:#22c55e;font:500 12px/16px ui-monospace,monospace}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "Incumbent look recorded 2026-10-09 before the redesign: dark-first, flat grey layered surfaces, one violet accent, small dense type, monospace for numbers and verdicts. Consistent but generic, with no signature element and no large-scale hierarchy.",
+    "keyCharacteristics": [
+      "Dark first with light parity, contrast-checked",
+      "One violet accent",
+      "Semantic verdict colours always with a text label",
+      "Flat surfaces, one overlay shadow",
+      "12.25 px body type (14 px root, rem scale), 32 px controls",
+      "No gradients"
+    ],
+    "rules": [
+      {
+        "name": "The Tokens-Only Rule",
+        "body": "Raw colours live in tokens.css and the Monaco theme only.",
+        "section": "colors"
+      },
+      {
+        "name": "The Label Rule",
+        "body": "A verdict is never colour alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "No shadow at rest; only overlays float.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use only token colours",
+      "Do keep a text label on every verdict",
+      "Do keep keyboard access and the visible focus ring",
+      "Do respect prefers-reduced-motion"
+    ],
+    "donts": [
+      "Don't use gradients",
+      "Don't use hard-coded hex outside token files",
+      "Don't convey meaning by colour alone"
+    ]
+  }
+}
