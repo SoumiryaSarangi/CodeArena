@@ -236,12 +236,12 @@ body {
 }
 .scrubber::-webkit-slider-runnable-track {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--border-control);
 }
 .scrubber::-moz-range-track {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--border-control);
 }
 .scrubber::-webkit-slider-thumb {

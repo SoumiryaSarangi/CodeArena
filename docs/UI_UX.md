@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Doc** | `docs/UI_UX.md` · v1.0 · 30 Sep 2026 |
+| **Doc** | `docs/UI_UX.md` · v1.1 · 10 Oct 2026 (§4, §5, §6, §7 buttons, §14 and §8.1 rewritten to match the redesign UI-09 to UI-13; the screens' behaviour in §8 is unchanged) |
 | **Supersedes** | PLAN §7 for design details (PLAN §7 remains the summary) |
 | **Companion docs** | `PRD.md` · `SRS.md` · `SYSTEM_DESIGN.md` |
 
-> **For Claude Code:** implement tokens exactly as in §5 (`apps/web/app/tokens.css`). Build components from §7 before screens. Screen specs are `S01–S18`. Every UI PR must pass the checklist in §17.
+> **For Claude Code:** implement tokens exactly as in §5 (`apps/web/app/tokens.css`; a test compares §5.1 and §5.2 with the code, so edit both together). The direction behind them is `docs/design/DIRECTION.md`; the record of what was found before it is `docs/design/AUDIT.md`. Build components from §7 before screens. Screen specs are `S01–S18`. Every UI PR must pass the checklist in §17.
 
 ---
 
@@ -80,6 +80,9 @@ Overall: SUS ≥ 75 (PRD M6).
 | `2xl` | ≥ 1536 | Content max-width 1440 for reading pages; workspace uses full width |
 
 - Grid: 4 px base; page gutter 16 px (mobile) / 24 px (desktop).
+- **Two densities** (DIRECTION.md): *Stage* screens (landing, lobby, board, results, status) use roomy spacing, display numerals and a centred column up to 1120 px (`components/shell/page-width.tsx`: `Stage`); *Workbench* screens (practice, workspace, pad, admin) stay dense and use the full width up to 1440 px (`Workbench`).
+- Touch: every control has a 44 px hit area under 768 px or on a coarse pointer (`.hit-44` in `globals.css`: a pseudo-element, no visual change); tabs and menu items are 44 px tall there.
+- Signed-out visitors on `/` and `/signin` get a bare shell: wordmark, system dot, theme, Sign in; no rail and no command palette.
 - Reading width: statements and docs max 72ch.
 - Sticky elements (top bar 48 px, contest bar 40 px) → set `scroll-padding-top: 96px` so focused elements are never hidden (WCAG 2.4.11).
 
@@ -89,70 +92,95 @@ Overall: SUS ≥ 75 (PRD M6).
 
 ### 5.1 Colour tokens (contrast-checked; ratios vs `--bg` / `--surface-1`)
 
+The values below are `apps/web/app/tokens.css`, copied by script and compared by `tests/design-system.test.ts` (UI-14). Blue (`--accent`) is the brand colour: wordmark caret, focus ring, links, selection, rank-1 and live states. **Primary actions are ink on paper** (`--primary`: light fill with dark text in the dark theme, dark fill with white text in the light theme), one per view.
+
 ```css
 :root, [data-theme="dark"] {
-  --bg:#0A0B0D; --surface-1:#111317; --surface-2:#171A1F; --surface-3:#1E2228;
-  --border:#23272E;          /* decorative hairlines only */
-  --border-strong:#2F343C;   /* dividers between regions */
-  --border-control:#5A626E;  /* inputs, checkboxes: 3.2:1 on bg (WCAG 1.4.11) */
-  --text:#E8EAED;            /* 16.3:1 */
-  --text-2:#A1A7B0;          /*  8.1:1 */
-  --text-3:#858C97;          /*  5.8:1 — never lighter; old #6B7280 failed (4.1:1) */
-  --accent:#8B7FFF;          /*  6.2:1 — old #7C6CFF was 4.8:1 on surface-1 */
-  --accent-hover:#9D93FF; --accent-fg:#0A0B0D; /* text on accent 6.2:1 */
-  --focus:#A99FFF;
-  --v-ac:#22C55E;  --v-wa:#F87171;  --v-tle:#F59E0B; --v-mle:#F472B6;
-  --v-re:#F97316;  --v-ce:#94A3B8;  --v-ole:#14B8A6; --v-se:var(--text); --v-pending:var(--accent);
-  --danger:#F87171; --warning:#F59E0B; --success:#22C55E; --info:#60A5FA;
+  --presence-0:#60A5FA; --presence-1:#F472B6; --presence-2:#34D399; --presence-3:#FBBF24;
+  --presence-4:#A78BFA; --presence-5:#FB923C; --presence-6:#22D3EE; --presence-7:#F87171;
+  --presence-fg:#0B0C0E; --bg:#0B0C0E; --surface-1:#111316; --surface-2:#171A1E; --surface-3:#1E2227;
+  --border:#23272D; --border-strong:#2F343B; --border-control:#5A626E; --text:#ECECEE;
+  --text-2:#A3A9B2; --text-3:#8A909A; --accent:#6D8BFF; --accent-hover:#8199FF; --accent-fg:#0B0C0E;
+  --focus:#8EA4FF; --primary:#ECECEE; --primary-hover:#D0D3D8; --primary-fg:#0B0C0E;
+  --v-ac:#22C55E; --v-wa:#F87171; --v-tle:#F59E0B; --v-mle:#F472B6; --v-re:#F97316;
+  --v-ce:#94A3B8; --v-ole:#14B8A6; --v-se:var(--text); --v-pending:var(--accent);
+  --danger:#F87171; --warning:#F59E0B; --success:#22C55E; --info:#60A5FA; --shadow-overlay:0 8px 24px rgb(0 0 0 / 0.35);
 }
 [data-theme="light"] {
-  --bg:#FAFAFB; --surface-1:#FFFFFF; --surface-2:#F4F5F7; --surface-3:#ECEEF1;
-  --border:#E3E5E8; --border-strong:#D0D4DA; --border-control:#8A919C; /* 3.1:1 */
-  --text:#0F1114; --text-2:#4B5260; --text-3:#636A75;   /* 18.1 / 7.5 / 5.2:1 */
-  --accent:#5B4BE0; --accent-hover:#4F3FD6; --accent-fg:#FFFFFF; --focus:#5B4BE0;  /* 5.7:1; white on accent 6.0:1 */
-  --v-ac:#15803D; --v-wa:#DC2626; --v-tle:#B45309; --v-mle:#BE185D;
-  --v-re:#C2410C; --v-ce:#475569; --v-ole:#0F766E;     /* all ≥ 4.6:1 on bg and surface-1 */
-  --danger:#DC2626; --warning:#B45309; --success:#15803D; --info:#2563EB;
+  --presence-0:#2563EB; --presence-1:#DB2777; --presence-2:#059669; --presence-3:#D97706;
+  --presence-4:#7C3AED; --presence-5:#EA580C; --presence-6:#0891B2; --presence-7:#DC2626;
+  --presence-fg:#FFFFFF; --bg:#FAFAFA; --surface-1:#FFFFFF; --surface-2:#F2F3F5; --surface-3:#EAECEF;
+  --border:#E4E6EA; --border-strong:#D0D4DA; --border-control:#8A919C; --text:#14161A;
+  --text-2:#4B5260; --text-3:#636A75; --accent:#2F49D9; --accent-hover:#2539B8; --accent-fg:#FFFFFF;
+  --focus:#2F49D9; --primary:#14161A; --primary-hover:#2C2F36; --primary-fg:#FFFFFF;
+  --v-ac:#146C35; --v-wa:#C81E1E; --v-tle:#A04A06; --v-mle:#BE185D; --v-re:#B83B0B;
+  --v-ce:#475569; --v-ole:#0F766E; --danger:#C81E1E; --warning:#A04A06; --success:#146C35;
+  --info:#2563EB; --shadow-overlay:0 8px 24px rgb(15 17 20 / 0.12);
 }
 ```
 
+| Pair | Dark | Light |
+|---|---|---|
+| `--text` on `--bg` | 16.6:1 | 17.4:1 |
+| `--text-2` on `--bg` | 8.3:1 | 7.5:1 |
+| `--text-3` on `--bg` / `--surface-3` | 6.1:1 / 5.0:1 | 5.2:1 / 4.6:1 (never lighter) |
+| `--accent` on `--bg` | 6.3:1 | 6.5:1 |
+| `--primary-fg` on `--primary` | 16.6:1 | 18.1:1 |
+| `--border-control` on `--bg` | 3.2:1 | 3.0:1 |
+| verdict colours on `--surface-3` (the thinnest case) | ≥ 6.7:1 | ≥ 4.6:1 |
+
 Rules:
-- Verdict **text** colours are only used on `--bg` or `--surface-1`/`--surface-2`. Badge background = `color-mix(in srgb, var(--v-x) 14%, transparent)` in the **dark** theme. In the **light** theme the verdict colours are only ~4.6:1 on `--bg`, so a tint would drop the label below 4.5:1 (measured with axe, F-07): light badges have no tint and use a 1 px inset ring in the verdict colour at 40% instead.
+- Verdict **text** colours are only used on `--bg` or `--surface-1`/`--surface-2`. Badge background = `color-mix(in srgb, var(--v-x) 14%, transparent)` in the **dark** theme. In the **light** theme the verdict colours are 4.8 to 7:1 on `--bg` and at least 4.6:1 on `--surface-3`, so a tint would drop the label below 4.5:1 (measured with axe, F-07): light badges have no tint and use a 1 px inset ring in the verdict colour at 40% instead.
 - Default theme follows `prefers-color-scheme`; user choice stored in localStorage and applied before paint (no flash).
 - Never use colour alone: verdicts always show the two/three-letter label; board cells use ✓ / +n / ?n glyphs.
 
-**Presence colours** (cursors, avatars; 8, assigned by server): `#60A5FA #F472B6 #34D399 #FBBF24 #A78BFA #FB923C #22D3EE #F87171` (dark); light theme uses 600-level equivalents `#2563EB #DB2777 #059669 #D97706 #7C3AED #EA580C #0891B2 #DC2626`. Cursor labels: text `#0A0B0D` on dark palette, `#FFFFFF` on light palette.
+**Presence colours** (cursors, avatars; 8, assigned by server): `#60A5FA #F472B6 #34D399 #FBBF24 #A78BFA #FB923C #22D3EE #F87171` (dark); light theme uses 600-level equivalents `#2563EB #DB2777 #059669 #D97706 #7C3AED #EA580C #0891B2 #DC2626`. Cursor labels: text `--presence-fg` (`#0B0C0E` on the dark palette, `#FFFFFF` on the light one).
 
-**Chart palette:** single series = `--accent`; comparisons add `--text-2`; heatmap = 5 steps of `--accent` at 12/30/50/75/100% over `--surface-2`; colour-blind safe because steps differ in lightness.
+**Chart palette:** single series = `--accent`; comparisons add `--text-2`; heatmap = 5 steps of `--accent` at 12/30/50/75/100% over `--surface-2`; the rating graph is a plain SVG that measures its box so its labels keep their size on a phone; colour-blind safe because steps differ in lightness.
 
 ### 5.2 Typography
 
-Fonts: **Geist Sans** (UI), **Geist Mono** (code, numbers, timers, verdict labels, handles in tables). `font-variant-numeric: tabular-nums` on every changing number.
+Fonts: **Geist Sans** (UI), **Geist Mono** (code, numbers, timers, verdict labels, handles in tables), with system CJK, Arabic and emoji faces after them so handles in any script render. `font-variant-numeric: tabular-nums` on every changing number. The root font size is the browser's own (**16 px**, `font-size: 100%`), so zoom and user font settings work; every size below is that size in `rem`.
 
 | Token | Size / line-height | Weight | Use |
 |---|---|---|---|
-| `--fs-12` | 12 / 16 | 500 | Meta, table secondary, badges |
-| `--fs-13` | 13 / 20 | 400 | Dense tables, console |
-| `--fs-14` | 14 / 20 | 400 | App body (default) |
-| `--fs-16` | 16 / 27 (1.7) | 400 | Problem statements, docs |
-| `--fs-20` | 20 / 28 | 600 | Section titles |
-| `--fs-24` | 24 / 32 | 600 | Page titles |
-| `--fs-32` | 32 / 40 | 600 | Countdown, big numbers |
-| `--fs-48` | 48 / 52 | 600 | Landing hero, lobby countdown |
+| `--text-12` | 12 / 16 | 500 | Meta, badges: **the floor**, nothing smaller except digits inside badges |
+| `--text-13` | 13 / 20 | 400 | Dense tables, console, captions |
+| `--text-14` | 14 / 20 | 400 | App body (default) |
+| `--text-16` | 16 / 27 | 400 | Problem statements, docs, h3 in statements |
+| `--text-18` | 18 / 26 | 600 | h2 on workbench screens, h3 on stage screens |
+| `--text-20` | 20 / 28 | 600 | Legacy section titles |
+| `--text-22` | 22 / 28 | 600 | h2 on stage screens; page title of the workspace and the pad |
+| `--text-24` | 24 / 32 | 600 | Legacy |
+| `--text-28` | 28 / 36 | 600 | h1 (one per screen) |
+| `--text-32` | 32 / 40 | 600 | Big numbers on phones |
+| `--text-40` | 40 / 44 | 600 | Display numerals: rank, rating change, countdown on phones |
+| `--text-48` | 48 / 52 | 600 | Display numerals, wider screens |
+| `--text-56` | 56 / 56 | 600 | Reserved |
+| `--text-72` | 72 / 72 | 600 | Landing hero, lobby countdown from 640 px |
 
-Letter-spacing −0.01em for ≥ 20 px. Uppercase only for 11–12 px micro-labels with +0.04em tracking.
+Heading ladder: **h1 28 · h2 22 (stage) or 18 (workbench) · h3 18 or 16**, at least 1.2× between levels. Letter-spacing −0.01em for ≥ 20 px and **−0.02em on display sizes** (`.display`, which also sets tabular numerals). Weights 400 / 500 / 600 only. Uppercase only for 11–12 px micro-labels with +0.04em tracking.
 
 ### 5.3 Spacing, radii, borders, elevation
 
 - Spacing scale: 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64.
-- Radii: `--radius-sm 4px` (badges, cells) · `--radius 6px` (buttons, inputs, cards) · `--radius-lg 10px` (dialogs, panels).
-- Borders: 1 px. Elevation is expressed by surface steps (`surface-1 → 2 → 3`); only dialogs and popovers get a shadow: `0 8px 24px rgb(0 0 0 / .35)` (dark) / `rgb(15 17 20 / .12)` (light).
+- Radii: `--radius-sm 4px` (badges, cells) · `--radius-md 6px` (buttons, inputs) · `--radius-lg 8px` (dialogs, panels, cards) · `9999px` for status pills and the scrubber handle · `2px` only for the remote-cursor flag (§5.6).
+- Borders: 1 px. Elevation is expressed by surface steps (`surface-1 → 2 → 3`); only dialogs and popovers get a shadow (`--shadow-overlay`). **No gradients anywhere**: not in our CSS, and Monaco's diff hatch is switched off (`globals.css`).
 
 ### 5.4 Iconography
 lucide, 16 px (20 px in empty states), stroke 1.5, `currentColor`. Icon-only buttons need `aria-label` and a tooltip.
 
 ### 5.5 Brand
-Wordmark `codearena` in Geist Mono 600 + accent caret `▍`. The caret blinks (1 s steps) only on the landing hero; static elsewhere; static under reduced motion. Favicon: caret on `--bg`.
+Wordmark `codearena` in Geist Mono 600 + blue accent caret `▍`. The caret is static everywhere (it never blinked as built). Favicon: caret on `--bg`.
+
+### 5.6 Documented exceptions
+
+Where a literal outside the tokens is deliberate (found by the detector in the UI-08 audit, row 22):
+
+- **Remote-cursor name label** (`components/pad/presence.tsx`): `border-radius: 2px`. It is CSS injected into Monaco for a 12 px flag; a 4 px radius would round it into a pill.
+- **Monaco's own sizes**: the diff viewer renders its text at 13 px, KaTeX sets its own sizes, and the editor font size is a user setting (default 14 px). These are third-party surfaces, not our type scale.
+- **SVG figures** use `text-12` (on the scale) in user units; the rating graph measures its box, and the architecture diagram keeps a 48 rem minimum width and scrolls, so their labels never render below 12 px.
+- **The root font size** is `100%` and the `html` rule is the only place the type system touches the browser default.
 
 ---
 
@@ -165,7 +193,7 @@ Wordmark `codearena` in Geist Mono 600 + accent caret `▍`. The caret blinks (1
 | `--dur-slow` | 350 ms | Leaderboard row moves (spring: stiffness 500, damping 40) |
 | `--ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
 
-What animates: verdict grid square fill (scale 0.8→1, 120 ms) · leaderboard FLIP reorder · first-solve cell flash (single 600 ms background pulse) · resolver reveal (cell flip 250 ms) · judging pulse (opacity 0.5↔1, 1.2 s, only while judging) · toasts slide 8 px.
+What animates: dialog and drawer enter and exit (opacity and 4 px, 180 ms in, 120 ms out; the drawer slides 16 px) · pressed buttons (scale 0.98, 120 ms) · tab underline colour · verdict grid square fill (scale 0.8→1, 120 ms) · leaderboard FLIP reorder · first-solve cell flash (single 600 ms background pulse) · resolver reveal (cell flip 250 ms) · judging pulse (opacity 0.5↔1, 1.2 s, only while judging) · toasts slide 8 px.
 `prefers-reduced-motion: reduce` → all transforms off, reorders are instant, pulse replaced by a static "judging…" label.
 
 ---
@@ -176,12 +204,12 @@ Build with shadcn/ui primitives (Radix) restyled to tokens. Every component docu
 
 | Component | Key specs |
 |---|---|
-| **Button** | Variants: primary (accent bg, accent-fg), secondary (surface-2, border-control), ghost, danger. Sizes 28/32/40 px height (min target 24×24 always met). Loading replaces label with spinner + keeps width. |
-| **IconButton** | 28 px square; tooltip on hover/focus after 400 ms; `aria-label` required. |
-| **Input / Textarea / Select** | 32 px; `--border-control`; focus ring 2 px `--focus` + 2 px offset; error text below in `--danger` with icon; `aria-invalid`, `aria-describedby`. |
+| **Button** | Variants: **primary (ink on paper: `--primary` / `--primary-fg`)**, accent (blue fill, rare brand moments, never beside a primary), secondary (surface-2, border-control), ghost, danger; a disabled button is flat surface-3 with text-3, never half-transparent. Sizes 32/36/40 px height, with a 44 px hit area under 768 px or on touch. Loading replaces label with spinner + keeps width. |
+| **IconButton** | 32 px square (44 px hit area on phones); tooltip on hover/focus after 400 ms; `aria-label` required. |
+| **Input / Textarea / Select** | 36 px (44 px under 768 px); `--border-control`; focus ring 2 px `--focus` + 2 px offset; error text below in `--danger` with icon; `aria-invalid`, `aria-describedby`. |
 | **Kbd** | Mono 12 px, surface-3, 1 px border; used in tooltips and shortcut sheet. |
-| **Tabs** | Underline style (2 px accent); arrow keys move focus; `role=tablist`. |
-| **DataTable** | Dense 36 px rows; sticky header; sortable headers with `aria-sort`; row hover surface-2; keyboard row navigation (↑↓, Enter opens); virtualised > 200 rows. |
+| **Tabs** | Underline style (2 px `--primary`, medium weight when active; 44 px tall under 768 px); arrow keys move focus; `role=tablist`. |
+| **DataTable** | Dense 36 px rows (44 px on the board); columns can be hidden on phones (`hideOnPhone`) when the first cell carries what matters; sticky header; sortable headers with `aria-sort`; row hover surface-2; keyboard row navigation (↑↓, Enter opens); virtualised > 200 rows. |
 | **VerdictBadge** | Mono 12 px label (AC/WA/…) + optional "on test 7"; tinted bg; `title` has full name; pending variant pulses. |
 | **VerdictGrid** | One 12×12 px square per test (gap 3 px, wraps); states: pending (surface-3 outline), running (accent pulse), verdict colour; hover/focus → tooltip "Test 7 · WA · 31 ms · 2.1 MB"; the whole grid has `role=list`; a visually hidden live region announces "Test 7 wrong answer" only for the final verdict (not every test, to avoid noise). |
 | **QueueStatus** | "#4 in queue · ETA ~6 s" mono; updates ≤ 2 s; switches to "Judging on judge-2 · 7/30". |
@@ -200,7 +228,7 @@ Build with shadcn/ui primitives (Radix) restyled to tokens. Every component docu
 | **PresenceAvatars** | Up to 4 circles 24 px with presence colour ring; role icon; overflow "+2". |
 | **RemoteCursor** | 2 px caret in presence colour + name flag (12 px) that fades to 40% after 2 s idle. |
 | **PlaybackScrubber** | Track with event markers (▲ run, ● verdict, ◆ language, ○ join/leave); keyboard: ←/→ 5 s, Shift+←/→ 30 s, Home/End, Space play/pause; `role=slider` with `aria-valuetext="12:40 of 45:00"`. |
-| **StatTile** | Label (12 px, text-3) + value (24 px mono) + optional delta; used on landing, ops, status. |
+| **StatTile** | Label (12 px, text-3) + value (16 to 24 px mono; 40 px display on Stage screens) + optional delta; used on landing, ops, status. |
 | **Heatmap** | 53×7 squares 11 px; tooltip "3 submissions on 4 Oct"; table fallback for screen readers. |
 | **RatingChart** | Recharts line, accent, points with tooltip (contest, rank, delta); axes text-3. |
 | **ClusterGraph** | Force-directed (small), nodes = users, edge thickness = score; table view toggle (default for keyboard/screen reader users). |
@@ -339,6 +367,31 @@ Each screen lists: purpose · layout · content · interactions · states · res
 
 - *As built (O-02):* `/status` (public, no sign-in) re-reads `GET /api/status` every 5 s. It shows a headline in words (All systems operational / Some systems are degraded / Judging is down), then a row per component (API, Database, Judging queue, Judges, Live updates, Interview pad) each with an icon, a state word (Operational, Degraded, Down, Not released) and one sentence of detail, then tiles for verdict time p50/p95 over 15 minutes, submissions judged and contests hosted, and the queue depth per lane. Below: "How judging works" in five steps, the architecture as an SVG with a text alternative, the security section (28 nightly attack programs, with the live GitHub Actions badge of the last run, because the nightly run happens on GitHub and the API does not hold its result), and the load test, which says "Not measured yet" until O-03 fills it. If the status call fails the page says "Status unavailable". The top bar's system dot now follows the same data (every 30 s): Systems normal / Degraded performance / Judging is down / Status unknown, always with the word, and links to `/status`.
 
+### 8.1 As built (UI-09 to UI-13)
+
+What the redesign changed on each screen; the behaviour specified above did not change. Evidence: `docs/design/AUDIT.md` (rows) and the captures in `docs/design/pilot/`.
+
+| Screen | As built |
+|---|---|
+| S01 | No longer an empty page: tagline as a 72 px heading, one action (sign in, or "Open your home"), the six steps a submission takes, four evidence statements each traced to `docs/METRICS.md`, three short paragraphs. Bare shell for signed-out visitors. |
+| S02 | Provider buttons stay equal secondary choices (no primary); "Let's go" has a clear disabled state. |
+| S03 | The next contest leads, with a display countdown and a filled action; long handles and titles wrap or truncate. |
+| S04 | On phones the table keeps Status and Title; difficulty and acceptance sit under the title. |
+| S05 | The phone Run/Submit bar sits above the 56 px bottom bar (at the screen edge when the contest is in full view). Page title 22 px, statement headings 22/18/16. |
+| S06 | Visible h1 "Submission to …", 18 px sections, one date format (`10 Oct 2026, 10:00 IST`), numbers never wrap, the test table scrolls inside a labelled region. |
+| S07 | One filled action per row: Register when you are not in; Enter filled only while it runs and you are registered. |
+| S08 | Centred 1120 px column, display countdown (72 px from 640 px), the second time zone shows only the time when the day matches. |
+| S09 | Phone action bar at the screen edge in full view. |
+| S10 | "Your standing" strip with a display rank, 44 px rows, your row marked by a bar as well as a tint, a visible freeze notice, narrower sticky columns on phones, long handles truncated. |
+| S11 | Rank and rating change as display numerals, the change also said in words, one next step, heading ladder 28/22/18. |
+| S12 | Two columns from 1024 px; rating as a display numeral; the graph measures its box. |
+| S13 | Page title 22 px, invite links grouped, End room behind a divider (still confirmed). |
+| S14 | Scrubber with a 44 px hit area; heading ladder 28/18. |
+| S15 | The statement preview shows the statement's title as an h2, so the page has one h1. |
+| S16 | Opens with a health banner; actions in three labelled rows (Extend by · Repair results · After the end); jargon explained where it appears. |
+| S17 | Monaco's diff hatch off (no gradients on screen); "1 time / 3 times"; selects width-limited. |
+| S18 | Diagram labels on the type scale; the diagram scrolls instead of shrinking; section headings 22 px. |
+
 ---
 
 ## §9. Key flows (with error branches)
@@ -412,7 +465,7 @@ Run (not "test" or "execute") · Submit · Verdict · Test (never "test case" in
 | 2.4.3 Focus order | Logical DOM order; dialogs trap and restore focus |
 | 2.4.7 / 2.4.11 Focus visible, not obscured | 2 px `--focus` ring with offset; `scroll-padding-top` for sticky bars |
 | 2.5.7 Dragging movements | Resizable panels via keyboard/buttons; scrubber via keys and click; upload via button; whiteboard move via arrow keys |
-| 2.5.8 Target size (minimum) | Controls ≥ 24×24 px; board cells 40×32 px |
+| 2.5.8 Target size (minimum) | Controls ≥ 24×24 px (32 px desktop buttons, 44 px hit area on touch); board cells 40×44 px |
 | 3.2.6 Consistent help | "Rules" and "Status" links in the same footer position everywhere |
 | 3.3.1 / 3.3.3 Errors | Inline, specific, with suggestions |
 | 3.3.7 Redundant entry | Language preference and handle prefilled everywhere |
@@ -427,7 +480,7 @@ Testing: axe-core in Playwright on every screen (0 serious/critical), manual key
 - ≥ 1024 px: full workspace, board, ops, pad.
 - 768–1023 px: workspace tabs; board scrolls horizontally within its container with sticky rank/handle.
 - < 768 px: practice, statements, board viewing, profiles, status fully supported; coding is possible but not optimised; pad whiteboard hidden.
-- Touch: targets ≥ 32 px on touch devices (`@media (pointer: coarse)`).
+- Touch: a 44 px hit area on touch devices and under 768 px (`@media (pointer: coarse)` and `.hit-44`).
 
 ---
 
@@ -454,18 +507,24 @@ macOS shows ⌘ where Ctrl is listed.
 
 ## §14. Monaco theme (from tokens)
 
+Monaco takes literal colours, so `apps/web/lib/monaco-theme.ts` is the one other file allowed to hold hex values (F-07).
+
 | Token | Dark | Light |
 |---|---|---|
-| editor.background | `#0A0B0D` | `#FFFFFF` |
-| editor.foreground | `#E8EAED` | `#0F1114` |
-| lineNumber / active | `#858C97` / `#E8EAED` | `#636A75` / `#0F1114` |
+| editor.background | `#0B0C0E` | `#FFFFFF` |
+| editor.foreground | `#ECECEE` | `#14161A` |
+| lineNumber / active | `#8A909A` / `#ECECEE` | `#636A75` / `#14161A` |
 | selection | accent 28% | accent 18% |
-| keyword | `#B4A9FF` | `#4F3FD6` |
+| keyword | `#D2A8FF` | `#7C3AED` |
 | string | `#86EFAC` | `#15803D` |
 | number | `#FBBF24` | `#B45309` |
-| comment | `#858C97` italic | `#636A75` italic |
+| comment | `#8A909A` italic | `#636A75` italic |
 | function | `#93C5FD` | `#1D4ED8` |
 | type | `#67E8F9` | `#0E7490` |
+| bracket pairs 1 to 6 | editor foreground | editor foreground |
+| unexpected bracket | `#F87171` | `#C81E1E` |
+
+Bracket-pair colours are set to the text colour because Monaco's defaults (gold, orchid, blue) belong to no palette.
 
 Remote selection colours come from presence colours at 25% opacity.
 

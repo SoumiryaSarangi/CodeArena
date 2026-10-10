@@ -1,6 +1,6 @@
 # Design direction: "Match Day" (proposal, UI-08)
 
-Status: **approved by Ayush on 2026-10-10** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
+Status: **approved by Ayush on 2026-10-10 and built in UI-09 to UI-13; see "As built" at the end** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
 
 ## The decision in one paragraph
 
@@ -67,3 +67,22 @@ Gradients, glows, blurred backdrops, illustrations, mascots, a logo (a wordmark 
 2. Ink-on-paper primary buttons: **yes.**
 3. Root font size 16 px: **yes** (left to the builder's judgement; accepted).
 4. Stage and Workbench density split: **yes.**
+
+## As built (UI-14, 2026-10-10)
+
+What shipped against what this document proposed. The values are in `apps/web/app/tokens.css`; `docs/UI_UX.md` §5 and §8.1 are the reference and a test keeps them equal to the code.
+
+| Proposed | Built |
+|---|---|
+| Blue replaces violet | Yes: `#6d8bff` dark, `#2f49d9` light. |
+| Ink-on-paper primary buttons | Yes (`--primary`); blue kept as a separate, rare `accent` button variant. |
+| Root font 16 px, ladder 28 / 22 / 18, display 40 to 72 | Yes; 12 px is the floor, SVG labels included. |
+| Radii 4 and 8 | 4 / 6 / 8: controls stayed at 6 (reads better on a 36 px control; 78 call sites untouched). |
+| Stage and Workbench densities | Yes: display numerals, 44 px rows and a centred 1120 px column on lobby, board, results and status; dense elsewhere. `Stage` and `Workbench` wrappers exist in `components/shell/page-width.tsx`, but screens set their own max widths, so the wrappers are not yet used. |
+| Motion: dialog enter and exit, pressed state, tab indicator | Dialog/drawer animation and the pressed state; the tab underline changes colour rather than sliding. |
+| Hairline figures (`@lucasmarkes/hairline`) in five places | **Not built.** No dependency was added; the rating graph, the journey list and the architecture diagram are plain SVG and lists. A candidate for a later card. |
+| No gradients | Held, including Monaco's diff hatch (switched off in `globals.css`). |
+| Touch targets | A 44 px hit area on touch and under 768 px (`hit-44`), plus 44 px tabs and menu items. |
+| Light-theme contrast margin | Light verdict colours darkened (AC, TLE, RE) to at least 4.6:1 on the darkest light surface, checked by a test. |
+
+Things the redesign added that this document did not propose: a bare shell for signed-out visitors, a health banner and risk-grouped actions on the ops console, a "Your standing" strip on the board, the rating change said in words with one next step on results, and scroll regions that are `position: relative` so hidden text cannot widen the page.

@@ -6,14 +6,13 @@
     "colorMeta": {
       "primary": {
         "role": "primary",
-        "displayName": "Signal Violet",
-        "canonical": "#6d8bff",
+        "displayName": "Ink on Paper",
+        "canonical": "#ececee",
         "tonalRamp": [
-          "#2f49d9",
-          "#4f3fd6",
-          "#6d8bff",
-          "#8199ff",
-          "#8ea4ff"
+          "#14161a",
+          "#2c2f36",
+          "#d0d3d8",
+          "#ececee"
         ]
       },
       "ink": {
@@ -54,6 +53,18 @@
           "#dc2626",
           "#f87171"
         ]
+      },
+      "accent": {
+        "role": "accent",
+        "displayName": "Signal Blue",
+        "canonical": "#6d8bff",
+        "tonalRamp": [
+          "#2539b8",
+          "#2f49d9",
+          "#6d8bff",
+          "#8199ff",
+          "#8ea4ff"
+        ]
       }
     },
     "typographyMeta": {
@@ -67,7 +78,7 @@
       },
       "body": {
         "displayName": "Body",
-        "purpose": "All running text and controls: 0.875rem, 12.25 px rendered (root font size is 14 px)."
+        "purpose": "All running text and controls: 0.875rem = 14 px (root font size is 16 px)."
       },
       "mono": {
         "displayName": "Mono",
@@ -137,9 +148,9 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The main action on a screen.",
+      "description": "The one main action of a view: ink on paper.",
       "html": "<button class=\"ds-btn-primary\">Submit</button>",
-      "css": ".ds-btn-primary{background:#6d8bff;color:#0b0c0e;height:32px;padding:0 12px;border:0;border-radius:6px;font:500 14px/20px system-ui;transition:background 120ms}.ds-btn-primary:hover{background:#8199ff}"
+      "css": ".ds-btn-primary{background:#ececee;color:#0b0c0e;height:36px;padding:0 12px;border:0;border-radius:6px;font:500 14px/20px system-ui;transition:background 120ms}.ds-btn-primary:hover{background:#d0d3d8}"
     },
     {
       "name": "Secondary Button",
@@ -147,7 +158,7 @@
       "refersTo": "button-secondary",
       "description": "Default button.",
       "html": "<button class=\"ds-btn-secondary\">Run</button>",
-      "css": ".ds-btn-secondary{background:#171a1e;color:#ececee;height:32px;padding:0 12px;border:1px solid #5a626e;border-radius:6px;font:500 14px/20px system-ui}.ds-btn-secondary:hover{background:#1e2227}"
+      "css": ".ds-btn-secondary{background:#171a1e;color:#ececee;height:36px;padding:0 12px;border:1px solid #5a626e;border-radius:6px;font:500 14px/20px system-ui}.ds-btn-secondary:hover{background:#1e2227}"
     },
     {
       "name": "Text Input",
@@ -155,7 +166,7 @@
       "refersTo": "input",
       "description": "Single-line field with a label above.",
       "html": "<label class=\"ds-l\">Handle<input class=\"ds-in\" value=\"riya_k\"></label>",
-      "css": ".ds-l{display:flex;flex-direction:column;gap:4px;color:#a3a9b2;font:13px/20px system-ui}.ds-in{height:32px;padding:0 12px;background:#111316;color:#ececee;border:1px solid #5a626e;border-radius:6px;font:14px system-ui}"
+      "css": ".ds-l{display:flex;flex-direction:column;gap:4px;color:#a3a9b2;font:13px/20px system-ui}.ds-in{height:36px;padding:0 12px;background:#111316;color:#ececee;border:1px solid #5a626e;border-radius:6px;font:14px system-ui}"
     },
     {
       "name": "Verdict Badge",
@@ -167,15 +178,15 @@
     }
   ],
   "narrative": {
-    "northStar": "The Instrument Panel",
-    "overview": "Incumbent look recorded 2026-10-09 before the redesign: dark-first, flat grey layered surfaces, one violet accent, small dense type, monospace for numbers and verdicts. Consistent but generic, with no signature element and no large-scale hierarchy.",
+    "northStar": "Match Day",
+    "overview": "Match Day (2026-10-10, UI-14): type does the work, colour means state, and the screens people watch together are big. Neutral surfaces, ink-on-paper primary action, blue identity colour, flat with hairlines, no gradients; Stage and Workbench densities share one system.",
     "keyCharacteristics": [
-      "Dark first with light parity, contrast-checked",
-      "One violet accent",
-      "Semantic verdict colours always with a text label",
-      "Flat surfaces, one overlay shadow",
-      "12.25 px body type (14 px root, rem scale), 32 px controls",
-      "No gradients"
+      "Dark-first with full light parity, contrast checked in tests",
+      "Ink on paper for the one primary action; blue for identity only",
+      "Verdict colours with text labels",
+      "Flat: tone and hairlines, one overlay shadow, no gradients",
+      "16 px root; body 14, floor 12, h1 28, display 40 to 72",
+      "44 px hit areas on touch"
     ],
     "rules": [
       {
@@ -189,8 +200,18 @@
         "section": "colors"
       },
       {
+        "name": "The One Filled Button Rule",
+        "body": "A view or row has one ink-filled action; blue is identity, never a button beside it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Twelve Floor Rule",
+        "body": "Nothing renders below 12 px; SVG labels are on the scale too.",
+        "section": "typography"
+      },
+      {
         "name": "The Flat-By-Default Rule",
-        "body": "No shadow at rest; only overlays float.",
+        "body": "No shadow at rest; only overlays float. No gradients or glows.",
         "section": "elevation"
       }
     ],
@@ -198,12 +219,17 @@
       "Do use only token colours",
       "Do keep a text label on every verdict",
       "Do keep keyboard access and the visible focus ring",
-      "Do respect prefers-reduced-motion"
+      "Do respect prefers-reduced-motion",
+      "Do give each view one ink-filled action",
+      "Do say a number in words next to its display numeral",
+      "Do keep long handles and titles inside the page (wrap, truncate, or scroll in a labelled box)"
     ],
     "donts": [
       "Don't use gradients",
       "Don't use hard-coded hex outside token files",
-      "Don't convey meaning by colour alone"
+      "Don't convey meaning by colour alone",
+      "Don't fill with blue or put a blue button beside an ink one",
+      "Don't use a size below 12 px"
     ]
   }
 }

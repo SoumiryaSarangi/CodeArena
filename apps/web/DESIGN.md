@@ -66,6 +66,8 @@ rounded:
   sm: '4px'
   md: '6px'
   lg: '8px'
+  full: '9999px'
+  cursor-flag: '2px'
 spacing:
   base: '4px'
 components:
@@ -111,135 +113,125 @@ components:
 
 # Design System: CodeArena
 
-> **Status: UI-09 (2026-10-10) updated the front matter above (colours, type ladder, radius, control height) to the new foundation of `docs/design/DIRECTION.md`. The prose below still describes the incumbent look recorded on 2026-10-09, and UI-14 rewrites it to match what was built.** Where they disagree, the front matter and `app/tokens.css` win. Original note:
->
-> **The incumbent look, recorded on 2026-10-09 before the redesign.** On the same day Ayush decided the current UI looks amateur and that the design skills decide the replacement (only "no gradients" stays). This file describes what is built so the audit (UI-08) and the redesign (UI-09 to UI-13) start from facts. UI-09 replaces the tokens, UI-14 rewrites this file to match what was built. Language marked _(inferred)_ was not confirmed by Ayush; the rest comes from the code or from `docs/UI_UX.md`.
+> **Status: written 2026-10-10 (UI-14) to match what UI-09 to UI-13 built.** It supersedes the record of the incumbent look made on 2026-10-09. The numbers live in `app/tokens.css` and `app/globals.css`, the full reference is `docs/UI_UX.md` §5, the reasoning is `docs/design/DIRECTION.md`, and what was wrong before is `docs/design/AUDIT.md`. Where this file and the code disagree, the code wins.
 
 ## Overview
 
-**Creative North Star: "The Instrument Panel"** (the name `docs/PLAN.md` §7.1 gave the intended direction; the look it describes was built, whether it achieves it is what UI-08 judges).
+**Creative North Star: "Match Day"** (DIRECTION.md). Type does the work, colour means state, and the screens people watch together are allowed to be big.
 
-The intent was a calm, dense, precise tool, closer to a developer instrument than a consumer app: dark first with a full light theme, hairline borders, monospace for numbers and verdicts, colour reserved for meaning (verdicts, live state, one violet accent), and motion only to show that something changed. Today that comes out as a near-black canvas with grey layered surfaces, one violet accent and very small type: because the root font size is 14 px and every size is in `rem`, body text renders at **12.25 px**, labels at 10.5 to 11.4 px and the largest page heading at 21 px (measured on all screens, `docs/design/screens/data`). _(inferred)_ It reads as consistent but generic: every screen shares the same flat grey cards and small controls, there is no signature element, no wordmark beyond the text "codearena▍" in the top bar, and no hierarchy of scale (the largest everyday heading is 24 px).
+The product is a judge and contest platform for a campus, so the interface is an instrument first and a brand second: calm neutral surfaces, hairline borders, monospace numerals, and colour only where it carries meaning (verdicts, live state, focus). Two densities share one system. **Stage** screens (landing, lobby, board, results, status) are roomy, centred in a 1120 px column and use display numerals (rank, rating change, countdown at 40 to 72 px). **Workbench** screens (practice, editor, pad, admin) stay dense and use the full width.
 
 **Key Characteristics:**
 
-- Dark-first, light theme parity, both contrast-checked (WCAG AA); theme follows the system.
-- One accent (violet), used for primary actions, active tab underline, focus, selection and the "judging" state.
+- Dark-first with full light-theme parity, both contrast-checked in tests (WCAG AA); the theme follows the system.
+- **Ink on paper for the one primary action** of a view (light fill and dark text in dark mode, the reverse in light mode). Blue is the identity colour: wordmark caret, focus ring, links, selection, live states. It is never used to fill large areas.
 - Verdict colours are semantic and always paired with a text label.
-- Flat surfaces: depth through tonal layers and 1 px borders; a single overlay shadow.
-- Small and dense: root font size 14 px with a `rem` scale, so body text is 12.25 px; controls 28/32/40 px tall.
-- No gradients (the one rule Ayush keeps). Colours exist only as tokens: the default Tailwind palette is removed (`@theme inline { --color-*: initial }`).
+- Flat: depth through tonal layers and 1 px hairlines; one overlay shadow for dialogs and menus. **No gradients**, including Monaco's diff hatch (switched off).
+- Root font size is the browser's 16 px; body 14, meta floor 12, headings 28 / 22 / 18, display 40 to 72.
+- 44 px hit areas on touch and under 768 px, with no change to how small controls look.
+- Colours exist only as tokens (`@theme inline { --color-*: initial }` removes the default palette); `monaco-theme.ts` is the one other file with hex values.
 
 ## Colors
 
-A near-black ink canvas with three grey surface steps, a cool-grey text ramp, one violet accent, and a semantic verdict palette. Values below are the dark theme; the light theme mirrors every token (`apps/web/app/tokens.css`).
+Neutral first: a near-black canvas (`#0b0c0e`) with three surface steps in the dark theme, a warm-white (`#fafafa`) canvas with white panels in the light theme. Values are in `tokens.css`.
 
-### Primary
+### Primary (ink) and accent (blue)
 
-- **Signal Violet** (#8b7fff dark / #5b4be0 light): primary buttons, active tab underline, selection (35%), the "judging" pulse, the live flash on board rows, the cursor mark in the wordmark. Hover #9d93ff / #4f3fd6. Focus ring #a99fff / #5b4be0, 2 px with 2 px offset.
+- **Primary** (`--primary`, `#ececee` dark / `#14161a` light): filled primary buttons and the active tab underline. One per view.
+- **Accent blue** (`--accent`, `#6d8bff` dark / `#2f49d9` light): the wordmark caret, focus ring, links, text selection, the "judging" pulse and live flash, rank 1 and chart lines. 6.3:1 and 6.5:1 on the canvas.
 
 ### Neutral
 
-- **Ink** (#0a0b0d dark / #fafafb light): page background and the text colour on the accent.
-- **Surface 1, 2, 3** (#111317, #171a1f, #1e2228 dark / #ffffff, #f4f5f7, #eceef1 light): top bar and inputs, cards and secondary buttons, hover and raised.
-- **Hairline** (#23272e / #e3e5e8): decorative lines only. **Divider** (#2f343c / #d0d4da): borders between regions. **Control edge** (#5a626e / #8a919c): inputs and checkboxes, 3.2:1 on the background (WCAG 1.4.11).
-- **Text, secondary, tertiary** (#e8eaed, #a1a7b0, #858c97 dark / #0f1114, #4b5260, #636a75 light). The tertiary value is "never lighter" (contrast floor).
+Surface 1, 2, 3 are the top bar and inputs, cards and secondary buttons, hover and raised. `--border` is decorative only; `--border-strong` divides regions; `--border-control` (3.2:1 / 3.0:1) outlines inputs. Text, secondary and tertiary text reach 16.6, 8.3 and 6.1:1 on the dark canvas; the tertiary value is the floor and "never lighter".
 
 ### Verdicts and status
 
-- Accepted #22c55e, Wrong answer #f87171, Time limit #f59e0b, Memory limit #f472b6, Runtime error #f97316, Compile error #94a3b8, Output limit #14b8a6, System error = text colour, Pending = accent. Danger #f87171, Warning #f59e0b, Success #22c55e, Info #60a5fa. Light theme uses darker equivalents for contrast.
-- **Presence colours** (eight, #60a5fa #f472b6 #34d399 #fbbf24 #a78bfa #fb923c #22d3ee #f87171): the author colours of cursors and whiteboard shapes in an interview room, assigned by the server as an index.
+AC green, WA red, TLE amber, MLE pink, RE orange, CE slate, OLE teal, SE the text colour. In the light theme they are darkened (AC `#146c35`, TLE `#a04a06`, RE `#b83b0b`) so they stay at least 4.6:1 on the darkest light surface; a test checks every verdict colour on surface 2 and 3 in both themes.
 
 ### Named Rules
 
-**The Tokens-Only Rule.** Raw colours live in `tokens.css` and `lib/monaco-theme.ts` (Monaco cannot read CSS variables) and nowhere else; UI code uses token classes.
-**The Label Rule.** A verdict is never colour alone: it carries its text (AC, WA, TLE, …) in a monospace badge.
+- **Colour means something.** Verdicts, live state, focus, and the one blue. Everything else is neutral.
+- **Never colour alone.** Every verdict has its letters; board cells use ✓, +n and ?n; your row has a bar as well as a tint.
+- **One filled button.** A view or row has one ink-filled action; the others are secondary or ghost.
 
 ## Typography
 
-**Display, Body and Label Font:** Geist Sans (with ui-sans-serif, system-ui). **Mono Font:** Geist Mono (verdicts, numbers, code, the wordmark).
-
-**Character:** neutral and technical, one family in a narrow band of small sizes; the personality is carried by monospace numerals, not by the sans. The band is narrow (10.5 to 21 px for nearly everything), which is why screens read as flat.
+**Geist Sans** for the interface, **Geist Mono** for code, numbers, timers, verdict labels and handles, with system CJK, Arabic and emoji faces after them. Tabular numerals wherever a number can change.
 
 ### Hierarchy
 
-The scale is defined in `rem` and the root font size is 14 px, so every size renders at 0.875 of its nominal value. Both are given: token name, rendered size.
-
-- **Display** (600, `text-48` = 3rem, rendered **42 px** / 45.5 px): defined but not used on everyday screens.
-- **Headline** (600, `text-24` = 1.5rem, rendered **21 px** / 28 px, tracking −0.01em): page titles; this is the largest text on almost every screen.
-- **Title** (600, `text-20` = 1.25rem, rendered **17.5 px** / 24.5 px): section titles on some screens (results, workspace titles).
-- **Body** (400, `text-14` = 0.875rem, rendered **12.25 px** / 17.5 px): running text, controls and table cells: about a third of all text on screen.
-- **Label** (500, `text-13` = 0.8125rem, rendered **11.4 px** / 17.5 px) and **caption** (`text-12` = 0.75rem, rendered **10.5 px** / 14 px): form labels, secondary text, badges, chips; together about 45% of all text on screen.
-- **Mono** (500, `text-12`, rendered 10.5 px): verdict badges, times, counters; tabular numerals via `.tabular`. `text-16` (1rem) renders at 14 px and `text-32` (2rem) at 28 px.
-
-Measured share of text by rendered size across the 28 desktop dark captures: 12.25 px 31%, 11.4 px 29%, 14 px 16%, 10.5 px 15%, everything larger under 5%.
+| Role      | Size / line height                                     | Use                                                                 |
+| --------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
+| Display   | 40 to 72 px, weight 600, tracking −0.02em              | rank, rating change, countdown, landing heading                     |
+| h1        | 28 / 36, 600                                           | page title, one per screen (22 px in the workspace and pad headers) |
+| h2        | 22 / 28 on Stage screens, 18 / 26 on Workbench screens | sections                                                            |
+| h3        | 18 or 16                                               | sub-sections, problem cards                                         |
+| Statement | 16 / 27                                                | problem statements and prose                                        |
+| Body      | 14 / 20                                                | the interface                                                       |
+| Dense     | 13 / 20                                                | tables, console, captions                                           |
+| Meta      | 12 / 16, 500                                           | badges, labels: the floor                                           |
 
 ### Named Rules
 
-**The Mono-For-Numbers Rule** _(inferred from usage)_. Anything the user compares (ranks, penalties, times, memory, verdicts) is monospace and tabular.
+- **12 is the floor.** Nothing renders smaller; SVG labels are on the scale too.
+- **One h1 per screen, 1.2× between levels.**
 
 ## Layout
 
-An app shell: a sticky 48 px top bar (wordmark, search with ⌘K, status dot linking to the status page, account) with a 1 px divider, the main navigation, which is a fixed 48 px bottom tab bar on phones (icon over a 12 px label), a 56 px icon-only left rail from 768 px and a 192 px rail with labels from 1280 px, and content in a centred column (max 1440 px, 16 px side padding, 24 px from 768 px) below. The workspace (S05) is a resizable split of statement and editor. Tailwind's default breakpoints (640, 768, 1024, 1280) apply; screens are verified at 1280 px and 390 px. Spacing uses Tailwind's 4 px steps with no custom scale; `scroll-padding-top` is 96 px so sticky bars never hide a focused element. Coarse pointers get a 32 px minimum target. Content is dense: cards and tables with 12 to 16 px padding. Screens fully supported on phones: practice, statements, board viewing, profiles, status; coding on a phone is possible but not optimised; the interview whiteboard is hidden below 768 px.
+App shell: a sticky 48 px top bar, a rail (56 px bottom bar on phones, 56 px icon rail from 768 px, 192 px rail with labels from 1280 px) and content up to 1440 px with 16 / 24 px gutters. Stage screens centre a 1120 px column; Workbench screens use the full width. Signed-out visitors on `/` and `/signin` get a bare shell (wordmark, system dot, theme, Sign in). Tables scroll inside their own labelled, focusable box; the page itself never scrolls sideways.
 
 ## Elevation & Depth
 
-Flat by default. Depth is tonal (background < surface 1 < surface 2 < surface 3) plus 1 px borders; there are no shadows on cards or buttons. One overlay shadow exists for dialogs, drawers and menus.
-
-### Shadow Vocabulary
-
-- **Overlay** (`box-shadow: 0 8px 24px rgb(0 0 0 / 0.35)` dark, `0 8px 24px rgb(15 17 20 / 0.12)` light): dialogs, drawers, popovers.
+Flat by default. Dialogs, drawers, menus and tooltips use `--shadow-overlay` (`0 8px 24px` at 35% black in dark, 12% in light) and a 1 px strong border.
 
 ### Named Rules
 
-**The Flat-By-Default Rule.** Surfaces carry no shadow at rest; only overlays float.
+- **Tone, not shadow.** Raise by surface step. Only things that float get a shadow.
+- **No gradients, no glows, no blur as decoration.**
 
 ## Shapes
 
-Modest rounding: 4 px for badges, 6 px for controls, 10 px for cards and dialogs. 1 px borders do the structural work; no clipping or distinctive silhouettes. Icons come from Lucide at 16 px.
+Radii 4 px (badges, cells), 6 px (buttons, inputs), 8 px (panels, cards, dialogs), pills only for status. Borders 1 px.
 
 ## Components
 
 ### Buttons
 
-- **Shape:** 6 px radius; heights 28 / 32 / 40 px; padding 8 / 12 / 16 px; text weight 500 at `text-14` (12.25 px rendered; `text-13`, 11.4 px, at small).
-- **Primary:** Signal Violet fill, ink text; hover to the lighter violet. **Secondary** (default): surface 2 with a control-edge border; hover surface 3. **Ghost:** secondary text, surface 2 on hover. **Danger:** red fill, ink text, hover 90% opacity.
-- **States:** colour transition 120 ms; disabled 50% opacity; `loading` keeps the width and shows a spinner (kept in the accessibility tree).
+Heights 32 / 36 / 40 px, radius 6 px, weight 500, a 44 px hit area on touch. **Primary** is ink on paper; **accent** is a blue fill for a rare brand moment (never beside a primary); **secondary** is surface 2 with a control-edge border; **ghost** is text only; **danger** is the danger colour. Pressed scales to 0.98; disabled is flat surface 3 with tertiary text (never half-transparent). Loading keeps the width.
 
 ### Inputs / Fields
 
-- **Style:** 32 px high, surface 1 fill, control-edge border, 6 px radius, 12 px padding; label above in 13 px secondary text.
-- **Focus:** the global 2 px violet outline with offset. **Error:** border turns danger with an icon and message below.
+36 px (44 px under 768 px), control-edge border, 2 px focus ring in the focus colour with a 2 px offset, errors in words with an icon below.
 
 ### Tabs
 
-- Text tabs with a 2 px underline in the accent on the active one, 1 px divider underneath, 16 px gaps; inactive text secondary, hover primary.
+Underline style: a 2 px primary underline and medium weight on the active tab; 44 px tall under 768 px.
 
 ### Verdict Badge (signature component)
 
-- Monospace 12 px label in a 4 px rounded box (the verdict colour at 14% as a tint on dark; a 1 px ring at 40% on light, because tinted labels fall below 4.5:1 there); failing test shown as "on test N"; `pending` pulses ("judging…"). Used in tables, the submission grid and the live board.
+Monospace 12 px label (AC, WA on test 3…) in a tinted box in the dark theme and a 1 px ring in the light theme; pending pulses.
 
 ### Navigation
 
-- Top bar and rail as in Layout (bottom tab bar on phones, side rail from 768 px); items are an icon with a label (hidden between 768 and 1279 px), the active one on surface 2; a command palette (⌘K) and a shortcut sheet.
+Left rail with an active marker bar plus weight (not tint alone); 56 px bottom bar with labels on phones.
 
 ### Overlays
 
-- Radix dialog and drawer: 10 px radius (dialog) or full-height 420 px drawer, surface 1, 1 px divider border, overlay shadow, focus trapped, Esc closes.
+Dialogs and drawers fade and move 4 px in 180 ms and out in 120 ms; the drawer slides 16 px. All motion is off under reduced motion.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** use only token colours; add a new colour to `tokens.css` for both themes.
-- **Do** keep a text label on every verdict and every status.
-- **Do** make every control keyboard-accessible with the visible 2 px focus ring, and keep targets at least 32 px on coarse pointers.
-- **Do** respect `prefers-reduced-motion` (animations collapse to 0.001 ms) and keep motion functional: the judging pulse (1.2 s), the fill of a test cell (120 ms), the 1.4 s flash on a changed board row.
-- **Do** keep screens working at 390 px without page-level horizontal scroll.
+- Give each view one ink-filled action and make the rest quiet.
+- Say a number in words next to its display numeral (rating change, rank).
+- Use display sizes for what people watch together, and keep working screens dense.
+- Keep tertiary text at its floor value or darker; check any new surface against the tests.
+- Measure SVG figures to their box so labels keep their size on a phone.
 
 ### Don't:
 
-- **Don't** use gradients anywhere (Ayush's standing rule).
-- **Don't** use the default Tailwind palette or hard-coded hex values outside the token files.
-- **Don't** convey meaning by colour alone, or make a drag the only way to do something.
-- **Don't** add decorative animation. _(inferred from the incumbent system; the redesign may revisit motion under the design skills.)_
+- Add a gradient, glow or pattern, including third-party ones (Monaco's hatch is overridden).
+- Fill with blue, or put a blue button next to an ink one.
+- Use a size below 12 px, or colour as the only signal.
+- Let a long handle, title or table widen the page: wrap, truncate with the full value in `title`, or scroll inside a labelled box.

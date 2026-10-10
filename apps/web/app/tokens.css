@@ -75,16 +75,16 @@
   --primary: #14161a;
   --primary-hover: #2c2f36;
   --primary-fg: #ffffff;
-  --v-ac: #15803d;
+  --v-ac: #146c35;
   --v-wa: #c81e1e;
-  --v-tle: #b45309;
+  --v-tle: #a04a06;
   --v-mle: #be185d;
-  --v-re: #c2410c;
+  --v-re: #b83b0b;
   --v-ce: #475569;
   --v-ole: #0f766e;
   --danger: #c81e1e;
-  --warning: #b45309;
-  --success: #15803d;
+  --warning: #a04a06;
+  --success: #146c35;
   --info: #2563eb;
   --shadow-overlay: 0 8px 24px rgb(15 17 20 / 0.12);
 }

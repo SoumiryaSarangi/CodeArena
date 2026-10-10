@@ -114,8 +114,13 @@ describe('NFR-A11Y: contrast (WCAG 1.4.3 / 1.4.11)', () => {
       expect(contrast(theme, 'primary-fg', 'primary-hover')).toBeGreaterThanOrEqual(4.5);
     });
 
-    it(`NFR-A11Y: ${theme} secondary text reaches 4.5:1 on every raised surface`, () => {
-      for (const fg of ['text', 'text-2', 'text-3'])
+    it(`NFR-A11Y: ${theme} secondary text and verdict colours reach 4.5:1 on every raised surface`, () => {
+      for (const fg of [
+        'text',
+        'text-2',
+        'text-3',
+        ...['ac', 'wa', 'tle', 'mle', 're', 'ce', 'ole'].map((v) => `v-${v}`),
+      ])
         for (const bg of ['surface-2', 'surface-3'])
           expect(contrast(theme, fg, bg), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
     });
@@ -150,5 +155,57 @@ describe('UI-13: no gradients on screen, and a usable scrubber', () => {
   });
   it('UI-13: the replay scrubber has a 44 px tall hit area (AUDIT 18)', () => {
     expect(/\.scrubber\s*{[^}]*height:\s*2\.75rem/.test(globals)).toBe(true);
+  });
+});
+
+describe('UI-14: UI_UX.md and the code agree', () => {
+  const doc = readFileSync(join(root, '../../docs/UI_UX.md'), 'utf8');
+  const globals = readFileSync(join(root, 'app/globals.css'), 'utf8');
+
+  /** `--name:value;` pairs of one theme block of the §5.1 code fence. */
+  const docTokens = (theme: 'dark' | 'light') => {
+    const fence = /### 5\.1[\s\S]*?```css\n([\s\S]*?)```/.exec(doc)![1]!;
+    const at = fence.indexOf(theme === 'dark' ? '[data-theme="dark"] {' : '[data-theme="light"] {');
+    const end = theme === 'dark' ? fence.indexOf('[data-theme="light"]') : fence.length;
+    const body = fence.slice(fence.indexOf('{', at) + 1, end);
+    return Object.fromEntries(
+      [...body.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim().toLowerCase()]),
+    );
+  };
+  const codeTokens = (theme: Theme) =>
+    Object.fromEntries(
+      Object.entries(ownTokens(theme))
+        .filter(([k]) => !/^(dur|ease)-/.test(k))
+        .map(([k, v]) => [k, v.toLowerCase()]),
+    );
+
+  for (const theme of THEMES)
+    it(`UI-14: §5.1 lists exactly the ${theme} tokens of tokens.css, with the same values`, () => {
+      expect(docTokens(theme)).toEqual(codeTokens(theme));
+    });
+
+  it('UI-14: §5.2 lists every type token of globals.css with its size and line height in px', () => {
+    const rows = [...doc.matchAll(/\| `--text-(\d+)` \| (\d+) \/ (\d+) \|/g)].map((m) => [
+      m[1]!,
+      Number(m[2]),
+      Number(m[3]),
+    ]);
+    const code = [
+      ...globals.matchAll(
+        /--text-(\d+):\s*([\d.]+)rem;\s*--text-\d+--line-height:\s*([\d.]+)rem;/g,
+      ),
+    ].map((m) => [m[1]!, Math.round(Number(m[2]) * 16), Math.round(Number(m[3]) * 16)]);
+    expect(rows).toEqual(code);
+  });
+
+  it('UI-14: §5.3 states the radii of globals.css', () => {
+    for (const [name, px] of [
+      ['sm', 4],
+      ['md', 6],
+      ['lg', 8],
+    ] as const) {
+      expect(globals).toContain(`--radius-${name}: ${px}px`);
+      expect(doc).toContain(`--radius-${name} ${px}px`);
+    }
   });
 });
