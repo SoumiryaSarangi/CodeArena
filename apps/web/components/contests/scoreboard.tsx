@@ -10,11 +10,13 @@ import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectionPill } from '@/components/connection-pill';
+import { Handle } from '@/components/handle';
+import { SubmissionWire } from '@/components/submission-wire';
 import { useImmersive } from '@/components/shell/app-shell';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
-import { applyDiff } from '@/lib/board';
+import { applyDiff, rowActivity, type RowActivity } from '@/lib/board';
 import { formatWhen, useNow, useServerClock } from '@/lib/contest-time';
 import { boardSnapshot, contestDetail, contestResults } from '@/lib/contests';
 import { cn } from '@/lib/cn';
@@ -25,7 +27,9 @@ import { ScoreCell } from './score-cell';
 
 /** UI_UX §7: tables of more than this many rows are windowed (fixed 36 px rows). */
 const WINDOW_AFTER = 200;
-const ROW_H = 44;
+const ROW_H = 36;
+/** The wire on a board row shows at most this many rows at once, and only while the tab is visible. */
+const MAX_WIRES = 10;
 const OVERSCAN = 12;
 const VIEW_ROWS = 18;
 
@@ -51,6 +55,8 @@ export function Scoreboard({ slug }: { slug: string }) {
   const [conn, setConn] = useState<ConnectionState>('connecting');
   const [attempt, setAttempt] = useState(0);
   const [flash, setFlash] = useState<Set<string>>(new Set());
+  const [rankFlash, setRankFlash] = useState<Set<string>>(new Set());
+  const [wires, setWires] = useState<Record<string, RowActivity>>({});
   const [announce, setAnnounce] = useState('');
   const [scrollTop, setScrollTop] = useState(0);
   const scroller = useRef<HTMLDivElement>(null);
@@ -125,6 +131,37 @@ export function Scoreboard({ slug }: { slug: string }) {
           setAnnounce(`You moved to rank ${mineNow.rank}`);
         }
         setBoard(out.board);
+        if (!document.hidden) {
+          // The wire on a row, from what the diff changed; a settled one fades after 6 s.
+          const acts = rowActivity(cur, out.board);
+          if (acts.size > 0) {
+            setWires((w) => {
+              const next = { ...w, ...Object.fromEntries(acts) };
+              return Object.fromEntries(Object.entries(next).slice(-MAX_WIRES));
+            });
+            for (const [id, a] of acts)
+              if (a !== 'judging')
+                setTimeout(
+                  () =>
+                    setWires((w) => {
+                      if (w[id] !== a) return w;
+                      return Object.fromEntries(Object.entries(w).filter(([k]) => k !== id));
+                    }),
+                  6000,
+                );
+          }
+          const moved = out.board.rows
+            .filter((r) => {
+              const was = cur.rows.find((x) => x.userId === r.userId);
+              return was !== undefined && was.rank !== r.rank;
+            })
+            .slice(0, MAX_WIRES)
+            .map((r) => r.userId);
+          if (moved.length > 0) {
+            setRankFlash(new Set(moved));
+            setTimeout(() => setRankFlash(new Set()), 1600);
+          }
+        }
         if (out.newFirsts.length > 0) {
           setFlash(new Set(out.newFirsts));
           setTimeout(() => setFlash(new Set()), 1600);
@@ -278,7 +315,7 @@ export function Scoreboard({ slug }: { slug: string }) {
           aria-label="Scoreboard, scrollable"
         >
           <table
-            className="w-full border-separate border-spacing-0 text-14 md:text-16"
+            className="w-full border-separate border-spacing-0 text-14"
             aria-rowcount={rows.length + 1}
           >
             <caption className="sr-only">
@@ -295,10 +332,14 @@ export function Scoreboard({ slug }: { slug: string }) {
                 >
                   Handle
                 </th>
-                <th scope="col" className={cn(TH, 'text-right')}>
+                <th scope="col" className={cn(TH, 'whitespace-nowrap text-right md:hidden')}>
+                  <span aria-hidden>Solved · pen.</span>
+                  <span className="sr-only">Solved · penalty</span>
+                </th>
+                <th scope="col" className={cn(TH, 'text-right max-md:hidden')}>
                   Solved
                 </th>
-                <th scope="col" className={cn(TH, 'text-right')}>
+                <th scope="col" className={cn(TH, 'text-right max-md:hidden')}>
                   Penalty
                 </th>
                 {ratingBy ? (
@@ -325,6 +366,7 @@ export function Scoreboard({ slug }: { slug: string }) {
               ) : null}
               {visible.map((r, k) => {
                 const mine = r.userId === myId;
+                const act = wires[r.userId];
                 return (
                   <motion.tr
                     key={r.userId}
@@ -334,7 +376,8 @@ export function Scoreboard({ slug }: { slug: string }) {
                     data-me={mine ? '' : undefined}
                     tabIndex={mine ? -1 : undefined}
                     style={windowed ? { height: ROW_H } : undefined}
-                    className={cn('group', mine && 'bg-surface-2')}
+                    // Your own row stays in view at the top or bottom edge of the scroll box (Codeforces' pinned row).
+                    className={cn('group', mine && 'sticky bottom-0 top-9 z-[2] bg-surface-2')}
                   >
                     <td
                       className={cn(
@@ -343,9 +386,17 @@ export function Scoreboard({ slug }: { slug: string }) {
                         mine
                           ? 'bg-surface-2 font-semibold shadow-[inset_3px_0_0_var(--primary)]'
                           : 'bg-surface-1',
+                        rankFlash.has(r.userId) && 'motion-safe:animate-rank-change',
                       )}
                     >
-                      {r.rank}
+                      <span
+                        data-podium={r.rank <= 3 ? r.rank : undefined}
+                        className={cn(
+                          r.rank <= 3 && 'rounded-sm bg-surface-3 px-1.5 font-semibold',
+                        )}
+                      >
+                        {r.rank}
+                      </span>
                     </td>
                     <th
                       scope="row"
@@ -359,14 +410,34 @@ export function Scoreboard({ slug }: { slug: string }) {
                         className="inline-block max-w-[7rem] truncate align-bottom md:max-w-[16rem]"
                         title={r.handle}
                       >
-                        {r.handle}
+                        <Handle handle={r.handle} rating={ratingBy?.get(r.userId)?.newRating} />
                       </span>
                       {mine ? (
-                        <span className="ml-1 font-sans font-normal text-text-2">(you)</span>
+                        <span className="ml-1 whitespace-nowrap font-sans font-normal text-text-2">
+                          (you)
+                        </span>
+                      ) : null}
+                      {act ? (
+                        <SubmissionWire
+                          className="mt-1 max-w-24"
+                          verdict={act === 'judging' ? null : act}
+                        />
                       ) : null}
                     </th>
-                    <td className={cn(TD, 'text-right font-mono tabular-nums')}>{r.solved}</td>
-                    <td className={cn(TD, 'text-right font-mono tabular-nums')}>{r.penalty}</td>
+                    <td
+                      className={cn(
+                        TD,
+                        'whitespace-nowrap text-right font-mono tabular-nums md:hidden',
+                      )}
+                    >
+                      {r.solved} · {r.penalty}
+                    </td>
+                    <td className={cn(TD, 'text-right font-mono tabular-nums max-md:hidden')}>
+                      {r.solved}
+                    </td>
+                    <td className={cn(TD, 'text-right font-mono tabular-nums max-md:hidden')}>
+                      {r.penalty}
+                    </td>
                     {ratingBy ? (
                       <td className={cn(TD, 'text-right font-mono tabular-nums')}>
                         <RatingDelta change={ratingBy.get(r.userId)} />
@@ -420,4 +491,4 @@ function RatingDelta({
 
 const TH =
   'sticky top-0 z-[2] border-b border-border-strong bg-surface-1 px-3 py-2 text-13 font-medium text-text-2 first:z-[3] [&:nth-child(2)]:z-[3]';
-const TD = 'h-11 border-b border-border-strong/60 px-3 align-middle';
+const TD = 'h-9 border-b border-border-strong/60 px-3 align-middle';

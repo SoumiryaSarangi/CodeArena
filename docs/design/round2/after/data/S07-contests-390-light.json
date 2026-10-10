@@ -1,0 +1,194 @@
+{
+  "url": "/contests",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1691,
+  "overflowX": false,
+  "elements": 91,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      18
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "16px",
+      4
+    ],
+    [
+      "22px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "500",
+      16
+    ],
+    [
+      "400",
+      15
+    ],
+    [
+      "600",
+      4
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      33
+    ],
+    [
+      "wordmarkFont",
+      2
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      17
+    ],
+    [
+      "rgb(20, 22, 26)",
+      10
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(20, 108, 53)",
+      2
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      3
+    ],
+    [
+      "color(srgb 1 1 1 / 0.82)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgb(20, 22, 26)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      19
+    ],
+    [
+      "8px",
+      3
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Contests",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Running now",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Upcoming",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Past",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 5,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Live Now Cup",
+        "w": 25,
+        "h": 162
+      },
+      {
+        "tag": "a",
+        "text": "Old One",
+        "w": 20,
+        "h": 108
+      }
+    ]
+  },
+  "interactive": 27
+}

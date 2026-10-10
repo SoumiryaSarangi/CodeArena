@@ -1,6 +1,6 @@
 import type { BoardCell, BoardDiffData, BoardRow, BoardSnapshot } from '@codearena/contracts';
 import { describe, expect, it } from 'vitest';
-import { applyDiff, describeCell, rankRows } from '../lib/board';
+import { applyDiff, describeCell, rankRows, rowActivity } from '../lib/board';
 
 const cell = (over: Partial<BoardCell> = {}): BoardCell => ({
   attempts: 0,
@@ -116,5 +116,47 @@ describe('C-03: patching the board with diffs (FR-BOARD-04)', () => {
     );
     expect(describeCell(cell({ attempts: 1, pending: 2 }))).toBe('1 rejected attempt, 2 pending');
     expect(describeCell(cell())).toBe('Not attempted');
+  });
+});
+
+describe('UI-18: the wire on a board row is read from what a diff changed', () => {
+  const snap = (rows: BoardRow[]): BoardSnapshot =>
+    ({
+      contestId: 'c',
+      serverNow: '',
+      version: 1,
+      frozen: false,
+      problems: [],
+      rows,
+    }) as BoardSnapshot;
+  const r = (id: string, cells: Record<string, BoardCell>): BoardRow => ({
+    ...row(id, id, 0, cells),
+    rank: 1,
+  });
+  const before = snap([
+    r('a', { A: cell() }),
+    r('b', { A: cell({ pending: 1 }) }),
+    r('c', { A: cell({ attempts: 1 }) }),
+  ]);
+
+  it('UI-18: a new pending attempt is judging, a new solve is AC, one more rejected attempt is WA, the rest are absent', () => {
+    const after = snap([
+      r('a', { A: cell({ pending: 1 }) }), // sent something
+      r('b', { A: cell({ acMinute: 12 }) }), // the pending one came back accepted
+      r('c', { A: cell({ attempts: 2 }) }), // another wrong answer
+      r('d', { A: cell() }), // not in `before`: nothing to compare with
+    ]);
+    const acts = rowActivity(before, after);
+    expect(Object.fromEntries(acts)).toEqual({ a: 'judging', b: 'AC', c: 'WA' });
+  });
+
+  it('UI-18: rows that did not change have no wire', () => {
+    expect(rowActivity(before, before).size).toBe(0);
+  });
+
+  it('UI-18: a solve wins over a pending attempt on another problem of the same row', () => {
+    const b2 = snap([r('a', { A: cell(), B: cell() })]);
+    const a2 = snap([r('a', { A: cell({ pending: 1 }), B: cell({ acMinute: 30 }) })]);
+    expect(rowActivity(b2, a2).get('a')).toBe('AC');
   });
 });

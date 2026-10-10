@@ -6,6 +6,8 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
 import { ratingHistory } from '@/lib/contests';
 import { profileSummary, tierWord } from '@/lib/profile';
+import { Handle } from '@/components/handle';
+import { Button } from '@/components/ui/button';
 import { ActivityHeatmap } from './activity-heatmap';
 import { RatingGraph } from './rating-graph';
 
@@ -47,7 +49,7 @@ export function Profile({ handle }: { handle: string }) {
         <Avatar handle={prof.handle} url={prof.avatarUrl} />
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="font-mono text-28 font-semibold [overflow-wrap:anywhere]">
-            {data.handle}
+            <Handle handle={data.handle} rating={data.rating} announce={false} />
           </h1>
           <p className="flex flex-wrap items-baseline gap-x-2 text-16">
             Rating <span className="display font-mono text-40 font-semibold">{data.rating}</span>
@@ -147,6 +149,7 @@ export function Profile({ handle }: { handle: string }) {
               <BarList
                 label="By tag (top 10)"
                 rows={prof.solved.byTag.map((t) => ({ name: t.tag, count: t.count }))}
+                limit={10}
               />
             </div>
           )}
@@ -179,15 +182,26 @@ function Avatar({ handle, url }: { handle: string; url: string | null }) {
 }
 
 /** A list with a bar behind each count; the number is always written, the bar only repeats it. */
-function BarList({ label, rows }: { label: string; rows: { name: string; count: number }[] }) {
-  const max = Math.max(1, ...rows.map((r) => r.count));
+function BarList({
+  label,
+  rows: all,
+  limit,
+}: {
+  label: string;
+  rows: { name: string; count: number }[];
+  /** Show this many, the rest behind "Show all" (a long list must not push the page down). */
+  limit?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const rows = limit && !open ? all.slice(0, limit) : all;
+  const max = Math.max(1, ...all.map((r) => r.count));
   return (
     <div className="flex flex-col gap-1.5">
       <h3 className="text-13 font-medium text-text-2">{label}</h3>
       <ul aria-label={label} className="flex flex-col gap-1">
         {rows.map((r) => (
           <li key={r.name} className="flex items-center gap-3 text-14">
-            <span className="w-28 shrink-0 truncate" title={r.name}>
+            <span className="line-clamp-2 w-36 shrink-0 [overflow-wrap:anywhere]" title={r.name}>
               {r.name}
             </span>
             <span className="h-2 flex-1 rounded-sm bg-surface-3" aria-hidden>
@@ -200,6 +214,11 @@ function BarList({ label, rows }: { label: string; rows: { name: string; count: 
           </li>
         ))}
       </ul>
+      {limit && all.length > limit ? (
+        <Button variant="ghost" size="sm" className="self-start" onClick={() => setOpen((o) => !o)}>
+          {open ? `Show the top ${limit}` : `Show all ${all.length}`}
+        </Button>
+      ) : null}
     </div>
   );
 }

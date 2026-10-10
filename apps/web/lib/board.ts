@@ -100,3 +100,32 @@ export function describeCell(c: {
   if (c.pending > 0) parts.push(`${c.pending} pending`);
   return parts.length > 0 ? parts.join(', ') : 'Not attempted';
 }
+
+/** What a row just did, read from two snapshots: a new pending attempt, a solve, or a rejected attempt. */
+export type RowActivity = 'judging' | 'AC' | 'WA';
+
+/**
+ * The wire on a board row (UI-18) is driven by the board's own events: when a diff changes a row, what changed
+ * says what its owner's latest submission is doing. A new pending attempt is `judging`; a cell that became
+ * solved is `AC`; one more rejected attempt is `WA`. Rows that did not change are not in the result.
+ */
+export function rowActivity(before: BoardSnapshot, after: BoardSnapshot): Map<string, RowActivity> {
+  const old = new Map(before.rows.map((r) => [r.userId, r]));
+  const out = new Map<string, RowActivity>();
+  for (const row of after.rows) {
+    const prev = old.get(row.userId);
+    if (!prev) continue;
+    let act: RowActivity | null = null;
+    for (const [label, c] of Object.entries(row.cells)) {
+      const p = prev.cells[label];
+      const wasPending = p?.pending ?? 0;
+      const wasAttempts = p?.attempts ?? 0;
+      const wasSolved = p?.acMinute != null;
+      if (c.acMinute !== null && !wasSolved) act = 'AC';
+      else if (c.pending > wasPending && act !== 'AC') act = 'judging';
+      else if (c.attempts > wasAttempts && c.acMinute === null && act === null) act = 'WA';
+    }
+    if (act) out.set(row.userId, act);
+  }
+  return out;
+}

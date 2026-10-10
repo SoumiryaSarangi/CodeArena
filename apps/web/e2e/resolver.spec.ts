@@ -93,15 +93,15 @@ test.describe('C-06: resolver ceremony (FR-BOARD-06)', () => {
     await page.getByRole('button', { name: /Skip to final/ }).click();
     await expect(status(page)).toHaveText('Final standings.');
     const read = (p: Page) =>
-      p
-        .locator('tbody tr')
-        .evaluateAll((trs) =>
-          trs.map((tr) =>
-            [...tr.querySelectorAll('th,td')]
-              .map((c) => (c.textContent ?? '').replace('(you)', '').trim())
-              .join('|'),
-          ),
-        );
+      p.locator('tbody tr').evaluateAll((trs) =>
+        trs.map((tr) =>
+          [...tr.querySelectorAll('th,td')]
+            // what a person sees: the phone-only merged column of the live board is not displayed here (UI-18)
+            .filter((c) => getComputedStyle(c).display !== 'none')
+            .map((c) => (c.textContent ?? '').replace('(you)', '').trim())
+            .join('|'),
+        ),
+      );
     const resolved = await read(page);
     const board = await context.newPage();
     await stubApi(board, { role: 'admin' });
