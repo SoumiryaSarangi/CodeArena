@@ -1,0 +1,257 @@
+{
+  "url": "/r/db6dcc0f-e2b6-4c00-a420-408ff1e23114/replay",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 885,
+  "overflowX": false,
+  "elements": 182,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      35
+    ],
+    [
+      "13px",
+      11
+    ],
+    [
+      "12px",
+      7
+    ],
+    [
+      "18px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      46
+    ],
+    [
+      "500",
+      8
+    ],
+    [
+      "600",
+      4
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      32
+    ],
+    [
+      "GeistMono",
+      26
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      23
+    ],
+    [
+      "rgb(163, 169, 178)",
+      15
+    ],
+    [
+      "rgb(138, 144, 154)",
+      9
+    ],
+    [
+      "rgb(210, 168, 255)",
+      4
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgba(138, 144, 154, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(109, 139, 255)",
+      3
+    ],
+    [
+      "rgb(23, 26, 30)",
+      3
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgb(236, 236, 238)",
+      3
+    ],
+    [
+      "rgb(138, 144, 154)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      26
+    ],
+    [
+      "4px",
+      5
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(64, 64, 64) 1px 0px 0px 0px inset",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill: replay",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your notes",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "AI summary",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "What happened",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 18,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 36,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Your rooms",
+        "w": 64,
+        "h": 20
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 13,
+        "h": 13
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 6,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 6,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 6,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "",
+        "w": 6,
+        "h": 16
+      }
+    ]
+  },
+  "interactive": 34
+}

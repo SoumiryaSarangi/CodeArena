@@ -1,0 +1,206 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 142,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      33
+    ],
+    [
+      "14px",
+      16
+    ],
+    [
+      "12px",
+      6
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      36
+    ],
+    [
+      "500",
+      20
+    ],
+    [
+      "700",
+      2
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      42
+    ],
+    [
+      "GeistMono",
+      15
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(163, 169, 178)",
+      30
+    ],
+    [
+      "rgb(236, 236, 238)",
+      22
+    ],
+    [
+      "rgb(138, 144, 154)",
+      6
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      4
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      23
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "4px",
+      1
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 10,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 1040,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "No",
+        "w": 18,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 34
+}

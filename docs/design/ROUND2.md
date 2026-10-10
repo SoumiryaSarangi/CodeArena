@@ -1,6 +1,6 @@
 # Round 2: raising the built UI (UI-15, proposal for UI-16 to UI-19)
 
-Status: **written 2026-10-10 as part of UI-15.** Round 2 supersedes `docs/design/DIRECTION.md` where they differ. Nothing here needs a new API unless it says so. Evidence: 112 captures of the built UI (`docs/design/round2/before/`), three read-only reviews (a design critique, a measured-evidence audit with the Impeccable detector, and motion / mobile / worst-case lenses from `review-animations`, `find-animation-opportunities`, `mobile-native` and `break-ui`), the `apple-design` and `emil-design-eng` lenses, and `docs/design-refs/`.
+Status: **written 2026-10-10 as part of UI-15; built in UI-15 to UI-19 (see "As built" at the end).** Round 2 supersedes `docs/design/DIRECTION.md` where they differ. Nothing here needs a new API unless it says so. Evidence: 112 captures of the built UI (`docs/design/round2/before/`), three read-only reviews (a design critique, a measured-evidence audit with the Impeccable detector, and motion / mobile / worst-case lenses from `review-animations`, `find-animation-opportunities`, `mobile-native` and `break-ui`), the `apple-design` and `emil-design-eng` lenses, and `docs/design-refs/`.
 
 ## In plain words
 
@@ -100,3 +100,27 @@ The wordmark; tier and wordmark tokens; the pending-badge contrast; the button t
 ## What I could not measure
 
 LeetCode and Codeforces answer automated browsers with a bot check, so they were **skipped without any workaround** (`docs/design-refs/README.md`). Their density and feel come from your brief and from the reviews of our own screens. Touch behaviour (safe areas, keyboard overlap, zoom) needs a real phone; the code-verifiable parts are done.
+
+## As built (UI-19, 2026-10-10)
+
+What shipped against what this document proposed. The values are in `apps/web/app/tokens.css` and `globals.css`; `docs/UI_UX.md` §5 and §8.1 are the reference and tests keep them equal to the code.
+
+| Proposed | Built | Card |
+|---|---|---|
+| Wordmark twist, top bar only | Yes: Space Grotesk Bold subset (about 1 KB), "code" blue, "arena" ink, a thin blue caret bar, accessible name "codearena". | UI-15 |
+| Tier colours and difficulty colours | Yes: tokens, `Handle` component, difficulty words in tone on S04; tier colour on the top bar, S03, S12 and on a **final** board. **Not on a live board** (its rows carry no rating). | UI-15, 17, 18 |
+| Frosted floating chrome | Yes (`.glass`): top bar, phone bottom bar, dialogs, drawers, the palette; opaque fallback; never on editor, board, tables. liquid-glass-js **not adopted**. | UI-15 |
+| Working press feedback, stronger ease-out, sheet drawer, gentler reduced motion | Yes. The button's old colour transition was invalid CSS and now works. | UI-15 |
+| Mobile-native basics | Yes (viewport, theme-color from tokens, safe areas, tap highlight, overscroll, 16 px inputs on touch). A real phone is still needed to confirm. | UI-15 |
+| Landing: the product shown working | Yes: the judge window, the live verdict ticker (`GET /api/status/verdicts`), proof numerals, the 500-run verdict mix, a sample scoreboard. | UI-16 |
+| "The wire" | Yes: under Submit on S05 and the phone bar (real events), on the S03 recent rows (settled state), on S10 rows (read from board diffs, capped, paused with the tab). | UI-17, 18 |
+| S05 editor status strip | Yes, with one short phase word (the Tests tab keeps the full line). | UI-17 |
+| Denser S04, S07, S10 | S07: a clock and a Standings link per row. S10: 36 px rows, podium marks, your row pinned, phone merged column. **S04 tag chips and tighter rows not done** (the dropdown filters; rows were already 36 px). | UI-17, 18 |
+| Worst-case fixes | S03, S06 (collapsed passed tests, numbers), S08, S12 (top 10 tags, breakable handles), S17 (bidi-safe truncated handles, two columns hidden on phones, diff height from the code). | UI-17 to 19 |
+| Reduced motion keeps feedback | Overlays fade in 100 ms; a changed first-solve cell gets a ring instead of the flash. | UI-15, 19 |
+| First-run help on S02 | Yes: "After you sign in". | UI-17 |
+| Type range: Stage body at 16, one size per heading level | **Not done**: the heading ladder is unchanged from round 1 (28 / 22 / 18) and Stage body text stays at 14. A candidate for a later card. | none |
+| Hairline figures | **Not built** (no dependency was ever added in round 1 or round 2). | none |
+| S17 phone tables as stacked cards | Not done: stacked cards would drop the table semantics; instead two columns are hidden on phones and the table scrolls in a labelled region. | UI-19 |
+
+Open after round 2: S14 replay marker buttons are 6 px wide (a hit-area problem I judged worse to fix by overlapping neighbours), the heading anchors "#" are small targets, and the live-board tier colour needs a rating field on board rows (a contract change).

@@ -265,4 +265,25 @@ test.describe('PL-04: plagiarism review (FR-PLAG-04, FR-PLAG-05)', () => {
     const results = await new AxeBuilder({ page }).include('#main').analyze();
     expect(results.violations).toEqual([]);
   });
+
+  test('UI-19: handles are isolated for right-to-left text and cut short with the full name in a tooltip, a paste says its size and time with the full date in a tooltip, and the diff box follows the code', async ({
+    page,
+  }) => {
+    await setup(page);
+    await page.goto(`/admin/integrity/${RUN}`);
+    await expect(page.getByRole('heading', { name: 'chai-bill: 3 submissions' })).toBeVisible();
+    const handle = page.getByRole('cell', { name: '@asha', exact: true }).locator('bdi').first();
+    await expect(handle).toHaveAttribute('title', 'asha');
+    const paste = page.getByRole('row', { name: /@asha 800 characters/ }).locator('span[title]');
+    await expect(paste).toContainText(/^800 characters at \d{2}:\d{2}$/);
+    expect(await paste.getAttribute('title')).toMatch(/IST/); // the full date and both zones
+    // two short sources do not get the old 384 px box
+    await expect(page.locator('.monaco-diff-editor').first()).toBeVisible({ timeout: 60_000 });
+    const box = await page
+      .locator('.monaco-diff-editor')
+      .first()
+      .evaluate((e) => e.parentElement!.parentElement!.getBoundingClientRect().height);
+    expect(box).toBeLessThan(300);
+    expect(box).toBeGreaterThanOrEqual(100);
+  });
 });

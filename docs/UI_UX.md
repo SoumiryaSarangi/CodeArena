@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Doc** | `docs/UI_UX.md` · v1.1 · 10 Oct 2026 (§4, §5, §6, §7 buttons, §14 and §8.1 rewritten to match the redesign UI-09 to UI-13; the screens' behaviour in §8 is unchanged) |
+| **Doc** | `docs/UI_UX.md` · v1.2 · 10 Oct 2026 (§4, §5, §6, §7, §14 and §8.1 rewritten to match the redesign, rounds 1 and 2: UI-09 to UI-19; the screens' behaviour in §8 is unchanged, except S01's live strip) |
 | **Supersedes** | PLAN §7 for design details (PLAN §7 remains the summary) |
 | **Companion docs** | `PRD.md` · `SRS.md` · `SYSTEM_DESIGN.md` |
 
@@ -400,7 +400,7 @@ What the redesign changed on each screen; the behaviour specified above did not 
 | S14 | Scrubber with a 44 px hit area; heading ladder 28/18. |
 | S15 | The statement preview shows the statement's title as an h2, so the page has one h1. |
 | S16 | Opens with a health banner; actions in three labelled rows (Extend by · Repair results · After the end); jargon explained where it appears. |
-| S17 | Monaco's diff hatch off (no gradients on screen); "1 time / 3 times"; selects width-limited. |
+| S17 | Monaco's diff hatch off (no gradients on screen); "1 time / 3 times"; selects width-limited; handles are bidi-isolated (`<bdi>`) and cut short with the full name in a tooltip; a paste says its size and the time with the full date in a tooltip; on phones the submissions table drops Language and Submitted; the diff box's height follows the longer source (within bounds) instead of a fixed 384 px. |
 | S18 | Diagram labels on the type scale; the diagram scrolls instead of shrinking; section headings 22 px. |
 
 ---

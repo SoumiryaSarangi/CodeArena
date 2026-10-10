@@ -161,26 +161,30 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
           role="region"
           tabIndex={0}
           aria-label="Submissions table"
-          className="relative relative overflow-x-auto"
+          className="relative overflow-x-auto"
         >
           <table className="w-full text-left text-14">
             <thead className="text-13 text-text-2">
               <tr>
                 <th className="py-1 pr-3 font-normal">Person</th>
-                <th className="py-1 pr-3 font-normal">Language</th>
+                <th className="py-1 pr-3 font-normal max-sm:hidden">Language</th>
                 <th className="py-1 pr-3 font-normal">Verdict</th>
-                <th className="py-1 font-normal">Submitted</th>
+                <th className="py-1 font-normal max-sm:hidden">Submitted</th>
               </tr>
             </thead>
             <tbody>
               {detail.members.map((m) => (
                 <tr key={m.submissionId} className="border-t border-border-strong">
-                  <td className="py-1 pr-3">@{m.handle}</td>
                   <td className="py-1 pr-3">
+                    <bdi className="block max-w-[10rem] truncate" title={m.handle}>
+                      @{m.handle}
+                    </bdi>
+                  </td>
+                  <td className="py-1 pr-3 max-sm:hidden">
                     {isLanguage(m.language) ? languageInfo(m.language).label : m.language}
                   </td>
                   <td className="py-1 pr-3">{m.verdict ?? 'not judged'}</td>
-                  <td className="py-1 text-text-2">{formatWhen(m.submittedAt)}</td>
+                  <td className="py-1 text-text-2 max-sm:hidden">{formatWhen(m.submittedAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -199,7 +203,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             role="region"
             tabIndex={0}
             aria-label="Pair scores table"
-            className="relative relative overflow-x-auto"
+            className="relative overflow-x-auto"
           >
             <table className="w-full text-left text-14">
               <thead className="text-13 text-text-2">
@@ -260,7 +264,13 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             <MemberSelect value={rightId} onChange={setRightId} members={detail.members} />
           </label>
         </div>
-        <div className="h-96 overflow-hidden rounded-md border border-border-strong">
+        <div
+          // two lines of code do not need a 380 px box: the height follows the longer side, within bounds
+          style={{
+            height: `clamp(7.5rem, ${Math.max(left?.source.split('\n').length ?? 0, right?.source.split('\n').length ?? 0) * 19 + 24}px, 60dvh)`,
+          }}
+          className="overflow-hidden rounded-md border border-border-strong"
+        >
           {left && right ? (
             <DiffViewer
               left={left.source}
@@ -291,7 +301,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
           role="region"
           tabIndex={0}
           aria-label="Editor signals table"
-          className="relative relative overflow-x-auto"
+          className="relative overflow-x-auto"
         >
           <table className="w-full text-left text-14">
             <thead className="text-13 text-text-2">
@@ -307,13 +317,25 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             <tbody>
               {detail.signals.map((s) => (
                 <tr key={s.handle} className="border-t border-border-strong align-top">
-                  <td className="py-1 pr-3">@{s.handle}</td>
+                  <td className="py-1 pr-3">
+                    <bdi className="block max-w-[10rem] truncate" title={s.handle}>
+                      @{s.handle}
+                    </bdi>
+                  </td>
                   <td className="py-1 pr-3">
                     {s.pastes.length === 0
                       ? 'none'
-                      : s.pastes
-                          .map((p) => `${p.size} characters at ${formatWhen(p.at)}`)
-                          .join('; ')}
+                      : s.pastes.map((p, i) => (
+                          <span key={`${p.at}-${i}`} title={formatWhen(p.at)}>
+                            {i > 0 ? '; ' : ''}
+                            {p.size} characters at{' '}
+                            {new Intl.DateTimeFormat('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false,
+                            }).format(new Date(p.at))}
+                          </span>
+                        ))}
                   </td>
                   <td className="py-1 pr-3">
                     {s.openedAt

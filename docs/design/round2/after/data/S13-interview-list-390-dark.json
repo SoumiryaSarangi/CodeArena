@@ -1,0 +1,180 @@
+{
+  "url": "/interview",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 91,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      9
+    ],
+    [
+      "14px",
+      8
+    ],
+    [
+      "13px",
+      7
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "18px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      20
+    ],
+    [
+      "500",
+      5
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      28
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(163, 169, 178)",
+      13
+    ],
+    [
+      "rgb(236, 236, 238)",
+      8
+    ],
+    [
+      "rgb(138, 144, 154)",
+      6
+    ],
+    [
+      "rgb(109, 139, 255)",
+      2
+    ],
+    [
+      "rgb(11, 12, 14)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Interview rooms",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "New room",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your rooms",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 5,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 36,
+        "h": 20
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 13,
+        "h": 13
+      },
+      {
+        "tag": "a",
+        "text": "Chai Bill",
+        "w": 55,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 23
+}

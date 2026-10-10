@@ -1,0 +1,190 @@
+{
+  "url": "/status",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 2744,
+  "overflowX": false,
+  "elements": 249,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      42
+    ],
+    [
+      "14px",
+      29
+    ],
+    [
+      "13px",
+      28
+    ],
+    [
+      "16px",
+      6
+    ],
+    [
+      "22px",
+      5
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      70
+    ],
+    [
+      "500",
+      35
+    ],
+    [
+      "600",
+      6
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      92
+    ],
+    [
+      "GeistMono",
+      19
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      64
+    ],
+    [
+      "rgb(163, 169, 178)",
+      32
+    ],
+    [
+      "rgb(138, 144, 154)",
+      11
+    ],
+    [
+      "rgb(34, 197, 94)",
+      5
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(17, 19, 22)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Status",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Health",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "How judging works",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Architecture",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Security",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Load test",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Nightly runs on GitHub",
+        "w": 292,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 17
+}

@@ -1,0 +1,242 @@
+{
+  "url": "/admin/integrity/33333333-3333-4333-8333-333333333333",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1810,
+  "overflowX": false,
+  "elements": 293,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      52
+    ],
+    [
+      "14px",
+      39
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "18px",
+      5
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      93
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "600",
+      6
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      84
+    ],
+    [
+      "GeistMono",
+      24
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      56
+    ],
+    [
+      "rgb(163, 169, 178)",
+      30
+    ],
+    [
+      "rgb(138, 144, 154)",
+      12
+    ],
+    [
+      "rgb(210, 168, 255)",
+      4
+    ],
+    [
+      "rgba(138, 144, 154, 0.4)",
+      2
+    ],
+    [
+      "rgb(251, 191, 36)",
+      2
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      7
+    ],
+    [
+      "rgb(11, 12, 14)",
+      6
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      5
+    ],
+    [
+      "rgb(109, 139, 255)",
+      3
+    ],
+    [
+      "rgb(17, 19, 22)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgba(248, 113, 113, 0.04)",
+      2
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      27
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "4px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Similar submissions",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "chai-bill: 3 submissions",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Pairs, most similar first",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code side by side",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Editor signalsAdvisory only",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Decision: Not reviewed",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 7,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Problems",
+        "w": 84,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Contests",
+        "w": 81,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Integrity",
+        "w": 76,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "All checks",
+        "w": 61,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 33
+}
