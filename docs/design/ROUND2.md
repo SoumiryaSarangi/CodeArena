@@ -107,7 +107,7 @@ What shipped against what this document proposed. The values are in `apps/web/ap
 
 | Proposed | Built | Card |
 |---|---|---|
-| Wordmark twist, top bar only | Yes: Space Grotesk Bold subset (about 1 KB), "code" blue, "arena" ink, a thin blue caret bar, accessible name "codearena". | UI-15 |
+| Wordmark twist, top bar only | Yes: Space Grotesk Bold subset (about 1 KB), "code" blue, "arena" ink, a thin blue caret bar, accessible name "codearena" (replaced by the Lanes mark in UI-25, see the end of this file). | UI-15 |
 | Tier colours and difficulty colours | Yes: tokens, `Handle` component, difficulty words in tone on S04; tier colour on the top bar, S03, S12 and on a **final** board. **Not on a live board** (its rows carry no rating). | UI-15, 17, 18 |
 | Frosted floating chrome | Yes (`.glass`): top bar, phone bottom bar, dialogs, drawers, the palette; opaque fallback; never on editor, board, tables. liquid-glass-js **not adopted**. | UI-15 |
 | Working press feedback, stronger ease-out, sheet drawer, gentler reduced motion | Yes. The button's old colour transition was invalid CSS and now works. | UI-15 |
@@ -124,3 +124,14 @@ What shipped against what this document proposed. The values are in `apps/web/ap
 | S17 phone tables as stacked cards | Not done: stacked cards would drop the table semantics; instead two columns are hidden on phones and the table scrolls in a labelled region. | UI-19 |
 
 Open after round 2: S14 replay marker buttons are 6 px wide (a hit-area problem I judged worse to fix by overlapping neighbours), the heading anchors "#" are small targets, and the live-board tier colour needs a rating field on board rows (a contract change).
+
+
+## Logo (UI-25, after round 2)
+
+The owner asked for a less common logo. Five marks and one text-only option were drawn and compared in the real top bar
+(`docs/design/logo/sheet.png`). Chosen: the **Lanes** mark beside the wordmark in the top bar (an arena track seen from
+above: an open outer lane, an inner lane, and an accent dot leaving through the gap; the old caret bar was dropped
+because the dot now carries the accent), and the **ca** monogram as the favicon (`apps/web/app/icon.svg`: an open c and
+an a whose stem is the accent, on a rounded tile that is the surface colour with a hairline border, so it reads on light
+and dark browser tabs). The mark is never used in both places. The text-only "Open o" and the Box, Ring and Arch marks stay
+in `docs/design/logo/` as alternatives. Token `--wordmark-caret` became `--wordmark-dot`.

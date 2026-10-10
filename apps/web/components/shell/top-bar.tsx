@@ -13,9 +13,11 @@ import { demoPaused } from '@/lib/server-state';
 import { usePlatformStatus } from '@/lib/status';
 
 /**
- * The name in the top bar, and only here (UI-15, round 2): Space Grotesk Bold (SIL OFL) cut down to the nine
- * letters of the name (about 1 KB, `scripts/subset-wordmark.sh`), "code" in the blue, "arena" in the text
- * colour, a thin caret bar in the blue. Solid colours from tokens. Everywhere else the name is plain text.
+ * The name in the top bar, and only here (UI-15, UI-25): the Lanes mark (an arena track seen from above, an outer
+ * lane that is open and an inner one, with a dot leaving through the gap: a submission on its way to the judge),
+ * then Space Grotesk Bold (SIL OFL) cut down to the nine letters of the name (about 1 KB,
+ * `scripts/subset-wordmark.sh`), "code" in the blue and "arena" in the text colour. Solid colours from tokens, no
+ * gradient. Everywhere else the name is plain text.
  */
 const wordmarkFont = localFont({
   src: '../../app/fonts/wordmark.woff2',
@@ -25,20 +27,55 @@ const wordmarkFont = localFont({
   fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
 });
 
+/** The Lanes mark on a 32 grid. Drawn once here; `apps/web/app/icon.svg` is the favicon (the "ca" monogram). */
+function LanesMark() {
+  return (
+    <svg viewBox="0 0 32 32" className="size-6 shrink-0" aria-hidden>
+      <rect
+        x="3.2"
+        y="7.2"
+        width="25.6"
+        height="17.6"
+        rx="8.8"
+        fill="none"
+        strokeWidth="2.4"
+        pathLength="100"
+        strokeDasharray="88 12"
+        strokeDashoffset="63"
+        strokeLinecap="round"
+        className="stroke-wordmark-arena"
+      />
+      <rect
+        x="8.4"
+        y="11.6"
+        width="15.2"
+        height="8.8"
+        rx="4.4"
+        fill="none"
+        strokeWidth="2.4"
+        className="stroke-wordmark-arena"
+      />
+      <circle cx="28.8" cy="16" r="2.6" className="fill-wordmark-dot" />
+    </svg>
+  );
+}
+
 export function Wordmark() {
   return (
     <Link
       href="/"
       aria-label="codearena"
-      className={`hit-44 inline-flex items-center text-20 leading-none tracking-[-0.01em] ${wordmarkFont.className}`}
+      className={`hit-44 inline-flex items-center gap-2 text-20 leading-none tracking-[-0.01em] ${wordmarkFont.className}`}
     >
-      <span aria-hidden className="text-wordmark-code">
-        code
+      <LanesMark />
+      <span className="inline-flex items-center">
+        <span aria-hidden className="text-wordmark-code">
+          code
+        </span>
+        <span aria-hidden className="text-wordmark-arena">
+          arena
+        </span>
       </span>
-      <span aria-hidden className="text-wordmark-arena">
-        arena
-      </span>
-      <span aria-hidden className="ml-0.5 h-[1em] w-[0.12em] rounded-[1px] bg-wordmark-caret" />
     </Link>
   );
 }

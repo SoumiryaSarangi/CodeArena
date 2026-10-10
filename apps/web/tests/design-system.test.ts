@@ -217,7 +217,7 @@ describe('UI-15: round 2 tokens, wordmark and motion', () => {
 
   for (const theme of THEMES) {
     it(`UI-15: ${theme} wordmark colours reach 4.5:1 on the top bar (surface-1)`, () => {
-      for (const t of ['wordmark-code', 'wordmark-arena', 'wordmark-caret'])
+      for (const t of ['wordmark-code', 'wordmark-arena', 'wordmark-dot'])
         expect(contrast(theme, t, 'surface-1'), t).toBeGreaterThanOrEqual(4.5);
     });
     it(`UI-15: ${theme} tier and difficulty colours reach 4.5:1 on every surface`, () => {

@@ -54,10 +54,10 @@
   --diff-easy: var(--success);
   --diff-medium: var(--warning);
   --diff-hard: var(--danger);
-  /* The wordmark in the top bar only: two solid colours and a caret bar. */
+  /* The wordmark in the top bar only: two solid colours for the letters and an accent dot in the Lanes mark. */
   --wordmark-code: var(--accent);
   --wordmark-arena: var(--text);
-  --wordmark-caret: var(--accent);
+  --wordmark-dot: var(--accent);
   /* Frosted floating chrome (palette, dialogs, drawers, toasts, bars): live backdrop blur, never on the editor or the board. */
   --glass: color-mix(in srgb, var(--surface-1) 82%, transparent);
   --glass-blur: 14px;
