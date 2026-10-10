@@ -1429,3 +1429,9 @@ Tests: unit +4 (`tests/server-notice.test.tsx`: wording and links of both notice
 Decisions: a flag for the exact paused wording plus an automatic fallback, so an accidental outage never claims to be a deliberate pause; the paused flag is build-time, so it needs a Vercel redeploy to switch on and off (written in revive.md). Not done: disabling the sign-in buttons while paused (they lead to an error page; the bar explains).
 IMPORTANT order for Ayush: the bar only exists on the live site after `SHIP BATCH` pushes and deploys it; only then set `NEXT_PUBLIC_DEMO_PAUSED=true` on Vercel, redeploy, check the bar, and only then tear down (revive.md 1.7b, 1.8).
 Model: S · Sonnet.
+
+## 2026-10-10 · UI-23b · done
+Added to the paused notice, at Ayush's request: "Want a live demo sooner? Email me (soumiryasarangi@gmail.com)." The link is a `mailto:` with the subject "CodeArena live demo request" and a short prefilled body (name or company, preferred date); the address is also visible as selectable text. Only the paused wording has it; the "Can't reach the server" notice does not (it may be an accident).
+Tests: unit +2 (the offer, link, address and subject; the unreachable notice has none): 6/6 in the file; axe, no horizontal scroll and a look at screenshots in both themes at 1280 and 390 px with the paused flag on (temporary spec, not kept: the flag is a build-time setting). Typecheck, lint, prettier.
+Note: a request means a rebuild (2 to 3 hours, about US$2 a day while it runs): answer case by case; nothing on the page promises a date.
+Model: S · Sonnet.

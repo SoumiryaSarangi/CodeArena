@@ -4,6 +4,13 @@ import { CirclePause, CloudOff } from 'lucide-react';
 import { demoPaused, useServerState } from '@/lib/server-state';
 
 export const REPO_URL = 'https://github.com/SoumiryaSarangi/CodeArena';
+export const OWNER_MAIL = 'soumiryasarangi@gmail.com';
+export const DEMO_REQUEST_HREF = `mailto:${OWNER_MAIL}?${new URLSearchParams({
+  subject: 'CodeArena live demo request',
+  body: "Hi Ayush,\n\nI'd like to see CodeArena live.\n\nName / company:\nPreferred date:\n",
+})
+  .toString()
+  .replace(/\+/g, '%20')}`;
 
 export const NOTICE_COPY = {
   paused: {
@@ -29,6 +36,11 @@ export function ServerNoticeBar({ mode }: { mode: keyof typeof NOTICE_COPY }) {
           {mode === 'paused' ? (
             <>
               {' '}
+              <span className="font-medium text-text">Want a live demo sooner?</span>{' '}
+              <a href={DEMO_REQUEST_HREF} className="text-accent underline">
+                Email me
+              </a>{' '}
+              (<span className="select-all">{OWNER_MAIL}</span>).{' '}
               <Link href="/status#how" className="text-accent underline">
                 How it works
               </Link>
