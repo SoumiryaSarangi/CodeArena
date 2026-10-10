@@ -1,4 +1,5 @@
 import type {
+  AdminGrantList,
   AdminProblemDetail,
   AdminProblemList,
   StatementPatch,
@@ -74,3 +75,15 @@ export async function downloadTests(versionId: string, file: string | 'tests.tar
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+/** FR-AUTH-12..14: the owner's list of addresses that become admin when they sign in. */
+export const adminGrants = (signal?: AbortSignal) =>
+  apiFetch<AdminGrantList>('GET', '/admin/admins', undefined, { auth: 'required', signal });
+
+export const addAdminGrant = (email: string) =>
+  apiFetch<void>('POST', '/admin/admins', { email }, { auth: 'required' });
+
+export const removeAdminGrant = (email: string) =>
+  apiFetch<void>('DELETE', `/admin/admins/${encodeURIComponent(email)}`, undefined, {
+    auth: 'required',
+  });

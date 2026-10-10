@@ -8,8 +8,9 @@ import {
 } from '@codearena/contracts';
 import { and, eq, sql } from 'drizzle-orm';
 import { ProblemError } from '../../common/problem';
+import { CONFIG, type Config } from '../../config/config';
 import { DB, type Db } from '../../db/db.module';
-import { oauthAccounts, users } from '../../db/schema';
+import { adminGrants, oauthAccounts, users } from '../../db/schema';
 
 export interface OAuthProfile {
   provider: 'google' | 'github';
@@ -29,7 +30,7 @@ const isUniqueViolation = (e: unknown, constraint: string) => {
   return cause?.code === '23505' && cause.constraint === constraint;
 };
 
-const toMe = (u: typeof users.$inferSelect): Me => ({
+const toMe = (u: typeof users.$inferSelect, isOwner: boolean): Me => ({
   id: u.id,
   handle: u.handle,
   name: u.name,
@@ -38,11 +39,25 @@ const toMe = (u: typeof users.$inferSelect): Me => ({
   role: u.role,
   rating: u.rating,
   defaultLanguage: (u.defaultLanguage as Me['defaultLanguage']) ?? null,
+  isOwner,
 });
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    @Inject(CONFIG) private readonly config: Config,
+  ) {}
+
+  /** FR-AUTH-12: the server's OWNER_EMAIL account (case-insensitive). Unset: nobody is owner. */
+  isOwnerEmail(email: string): boolean {
+    const owner = this.config.OWNER_EMAIL;
+    return !!owner && owner.toLowerCase() === email.toLowerCase();
+  }
+
+  private meOf(u: typeof users.$inferSelect): Me {
+    return toMe(u, this.isOwnerEmail(u.email));
+  }
 
   /**
    * Login: existing provider identity → its user; else a user with the same (verified) email gets
@@ -80,14 +95,31 @@ export class UsersService {
           .onConflictDoNothing();
       }
       if (user.deletedAt) throw new ProblemError('forbidden', 'This account has been deleted');
-      return user;
+      // FR-AUTH-12: the owner and every listed address are admin from sign-in on. This only ever
+      // raises a role; removing a grant lowers it (AdminGrantsService).
+      if (user.role !== 'admin') {
+        const [granted] = this.isOwnerEmail(user.email)
+          ? [true]
+          : await tx
+              .select({ email: adminGrants.email })
+              .from(adminGrants)
+              .where(eq(adminGrants.email, user.email));
+        if (granted) {
+          [user] = await tx
+            .update(users)
+            .set({ role: 'admin' })
+            .where(eq(users.id, user.id))
+            .returning();
+        }
+      }
+      return user!;
     });
   }
 
   async me(userId: string): Promise<Me> {
     const [u] = await this.db.select().from(users).where(eq(users.id, userId));
     if (!u || u.deletedAt) throw new ProblemError('unauthorized');
-    return toMe(u);
+    return this.meOf(u);
   }
 
   async hasHandle(userId: string): Promise<boolean> {
@@ -127,7 +159,7 @@ export class UsersService {
         .where(and(eq(users.id, userId), sql`${users.deletedAt} is null`))
         .returning();
       if (!u) throw new ProblemError('unauthorized');
-      return toMe(u);
+      return this.meOf(u);
     } catch (e) {
       if (isUniqueViolation(e, 'users_handle_unique'))
         throw new ProblemError('handle-taken', 'That handle is taken');

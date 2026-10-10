@@ -46,3 +46,10 @@ export const refreshTokens = pgTable(
   },
   (t) => [index().on(t.userId), index().on(t.familyId)],
 );
+
+/** FR-AUTH-12: addresses that become admin at sign-in (managed by the owner). Not a foreign key to users: the person may not have signed up yet. */
+export const adminGrants = pgTable('admin_grants', {
+  email: citext('email').primaryKey(),
+  grantedBy: uuid('granted_by').references(() => users.id),
+  createdAt: createdAt(),
+});

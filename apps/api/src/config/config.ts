@@ -65,6 +65,8 @@ const schema = z.object({
 
   // Plagiarism job (PL-05): the shared secret of the plag service. Unset: its endpoints answer 403 "not configured".
   PLAG_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
+  // FR-AUTH-12: the owner's (verified) sign-in address. That account is always admin and alone manages admin grants. Unset: nobody is owner.
+  OWNER_EMAIL: z.string().email().optional(),
   // Collab server (CP-01): its own shared secret for the internal authorize call. Unset: that endpoint answers 403.
   COLLAB_SERVICE_TOKEN: z.union([z.string().min(32), z.literal('not-configured')]).optional(),
   /**

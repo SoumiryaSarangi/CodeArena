@@ -108,6 +108,16 @@ back to; do the drill after a second deploy.)
 - **Add or remove judges:** `scripts/scale-judges.sh up 1` / `down 1` / `to 1` (at most 2 judges: Azure for Students allows 6 vCPUs per region) (runbook: `docs/runbooks/contest-day.md`). It runs Terraform, waits for the new VMs, locks them down, authorises the deploy key, updates `JUDGE_HOSTS` / `JUDGE_HOST_KEYS` and installs the worker. Do it hours before a contest: while it runs the judge firewall is open.
 - **During a contest:** freeze deploys (`gh variable set DEPLOY_ENABLED --body false`) and switch the nightly attack run off the same way.
 
+## Who is admin
+
+The owner is the account whose verified sign-in address equals `OWNER_EMAIL`; it is always admin and alone sees **Admin → Admins**, where it lists the addresses that become admin when they sign in (FR-AUTH-12 to FR-AUTH-14). Set it once, then deploy (or just restart the API):
+
+```
+ssh codearena@<api> "cd /opt/codearena && echo 'OWNER_EMAIL=soumiryasarangi@gmail.com' >> prod.env && docker compose --env-file prod.env up -d api"
+```
+
+Unset, nobody is owner and the page answers 403. The address is not a secret. The deploy applies the `admin_grants` migration before it switches the API over. Until the owner has set this, the only way to make an admin is `UPDATE users SET role='admin' WHERE email='…'` on the database.
+
 ## Rules that keep this safe
 
 - **Migrations must be additive** (add columns/tables, never drop or rename in the same release): a rollback keeps the new schema, so the previous release has to work on it. Do a destructive change in two releases.

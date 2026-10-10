@@ -14,6 +14,8 @@ export function AdminNav() {
       ? [
           { href: '/admin/contests', label: 'Contests' },
           { href: '/admin/integrity', label: 'Integrity' },
+          // only the owner (the server's OWNER_EMAIL account) manages who is admin
+          ...(session.me.isOwner ? [{ href: '/admin/admins', label: 'Admins' }] : []),
         ]
       : []),
   ];

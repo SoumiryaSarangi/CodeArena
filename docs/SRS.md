@@ -274,6 +274,9 @@ Google & GitHub OAuth (PKCE); Groq and Gemini HTTP APIs (OpenAI-compatible for G
 | FR-AUTH-09 | Role checks (user/setter/admin) shall be enforced server-side on every protected endpoint. | P0 | F-05 | T |
 | FR-AUTH-10 | Account deletion shall anonymise the handle in standings and delete personal data and code within 7 days. | P1 | US-1.4 | T |
 | FR-AUTH-11 | Realtime tickets shall be random (≥ 128 bits), single-use, valid 60 s, bound to user and scopes. | P0 | F-06 | T |
+| FR-AUTH-12 | The account whose verified email equals the server setting `OWNER_EMAIL`, and every account whose verified email is on the owner's admin list, shall have the admin role from sign-in on; sign-in shall never lower a role. | P1 | UI-OWN | T |
+| FR-AUTH-13 | Only the owner shall list, add or remove admin addresses; the owner's own address shall not be listable or removable; `Me` shall say `isOwner`. | P1 | UI-OWN | T |
+| FR-AUTH-14 | Adding an address shall promote an existing account with it at once; removing it shall return that account to `user` at once. | P1 | UI-OWN | T |
 
 #### 3.2.2 Problems and packages (PROB)
 

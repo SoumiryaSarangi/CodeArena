@@ -178,3 +178,31 @@ export const ValidationRun = z
   .strict()
   .meta({ id: 'ValidationRun' });
 export type ValidationRun = z.infer<typeof ValidationRun>;
+
+/** FR-AUTH-12..14: addresses the owner has made admins. They become admin when they sign in with that address. */
+export const AdminGrantAdd = z
+  .object({ email: z.string().trim().toLowerCase().email().max(254) })
+  .strict()
+  .meta({ id: 'AdminGrantAdd' });
+export type AdminGrantAdd = z.infer<typeof AdminGrantAdd>;
+
+export const AdminGrantList = z
+  .object({
+    /** The owner's address (the server's OWNER_EMAIL): always admin, cannot be listed or removed. */
+    owner: z.string(),
+    grants: z.array(
+      z
+        .object({
+          email: z.string(),
+          grantedBy: z.string().nullable(),
+          createdAt: iso,
+          /** An account with this address exists (so it is admin now); false = waiting for their first sign-in. */
+          signedUp: z.boolean(),
+        })
+        .strict(),
+    ),
+    max: z.number().int(),
+  })
+  .strict()
+  .meta({ id: 'AdminGrantList' });
+export type AdminGrantList = z.infer<typeof AdminGrantList>;

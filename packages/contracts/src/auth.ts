@@ -56,6 +56,8 @@ export const Me = z
     role: Role,
     rating: z.number().int(),
     defaultLanguage: Language.nullable(),
+    /** The server's OWNER_EMAIL account: the only one that manages admin grants (FR-AUTH-13). */
+    isOwner: z.boolean(),
   })
   .strict()
   .meta({ id: 'Me' });

@@ -57,6 +57,8 @@ export interface StubOptions {
   };
   /** The signed-in user's role (default user). */
   role?: 'user' | 'setter' | 'admin';
+  /** The server's OWNER_EMAIL account (FR-AUTH-13): sees the Admins tab. */
+  owner?: boolean;
   /** Taken handles for the availability check. */
   takenHandles?: string[];
   /** Handles that look free but are taken by the time you save (a race): saving answers 409. */
@@ -273,6 +275,7 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
       role: o.role ?? 'user',
       rating: 1400,
       defaultLanguage: 'cpp17',
+      isOwner: o.owner === true,
     });
   });
   await page.route('**/api/handles/*/available', (r) => {
