@@ -1404,3 +1404,7 @@ Tests: none (docs); every `docs/` link in the README exists; prettier clean.
 Decisions: no licence chosen for Ayush: the README says all rights are reserved until a LICENSE file is added. Vulnerability reporting says to email the maintainer; a `SECURITY.md` was not created.
 Seen while checking: `apps/collab` suite had 1 failing test once under load and passed on rerun (86/86); not investigated.
 Ayush must: choose a licence (MIT is the usual one for a portfolio project) and tell me to add it. Model: S · Sonnet.
+
+## 2026-10-10 · W-03b · done
+Changed at Ayush's request after checking how well-known READMEs are built (short gateways: one hero image, features, quick start, links out for depth, e.g. Grafana's): the README is now about 150 lines instead of 215. One hero image (the live board, 860 px wide); the phone screenshot and the four-image gallery are gone (all captures stay linked in docs/design/round2/after/). Features became a bullet list, the measured table is six one-line rows, security is one paragraph with links, development is a short command block. No licence chosen and no SECURITY.md (still Ayush's decision). All `docs/` links checked.
+Model: S · Sonnet.
