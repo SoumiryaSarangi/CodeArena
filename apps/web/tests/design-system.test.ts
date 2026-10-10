@@ -284,3 +284,13 @@ describe('UI-15: round 2 tokens, wordmark and motion', () => {
     expect(layout).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 });
+
+describe('UI-20: favicon', () => {
+  it('UI-20: app/icon.svg exists and uses the accent and surface tokens of both themes', () => {
+    const svg = readFileSync(join(root, 'app/icon.svg'), 'utf8').toLowerCase();
+    for (const theme of THEMES) {
+      const t = themeTokens(theme);
+      for (const name of ['surface-1', 'accent']) expect(svg).toContain(t[name]!.toLowerCase());
+    }
+  });
+});

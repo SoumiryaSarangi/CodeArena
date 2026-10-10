@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <style>
+    .bg { fill: #111316 }
+    .mark { stroke: #6d8bff }
+    .bar { fill: #6d8bff }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #ffffff; stroke: #d9dce1; stroke-width: 1 }
+      .mark { stroke: #2f49d9 }
+      .bar { fill: #2f49d9 }
+    }
+  </style>
+  <rect class="bg" x="0.5" y="0.5" width="31" height="31" rx="7"/>
+  <path class="mark" d="M9 10.5 16 16 9 21.5" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="bar" x="18" y="20" width="6" height="3" rx="1"/>
+</svg>

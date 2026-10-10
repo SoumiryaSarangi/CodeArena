@@ -1366,3 +1366,10 @@ Ayush approved all four DIRECTION.md questions (blue, ink-on-paper primary, root
 **Tests:** `src/db/client.test.ts` (2): the pool has an error listener, an emitted idle error reaches the handler and does not throw, and the default also listens; both fail without the fix (checked) and pass with it. Gate: typecheck and lint clean, db tests 7/7; full API suite 517/518 with the workers capped at 6: the one failure (`NFR-SEC-06` tickets limited to 30 per minute) passes alone (29/29 in the file) and is a timing flake of a per-minute window under load, unrelated.
 **Ayush must:** say whether to push this (a one-commit PR against `main` is the usual way). Until then CI on `main` can still hit the same flake now and then.
 **Model:** S · sonnet.
+
+## 2026-10-10 · UI-20 · done
+Built: `apps/web/app/icon.svg` (Next serves it as the favicon): rounded square with the wordmark's caret and bar in the accent, dark and light via `prefers-color-scheme`. There was no icon before, so `/favicon.ico` returned the 404 page.
+Tests: UI-20 token-match test in `tests/design-system.test.ts` (36 pass); typecheck, lint.
+Decisions: SVG only (all current browsers); no .ico fallback, no gradients.
+Next: none. Ayush must: nothing (ships with SHIP BATCH).
+Model: S · Sonnet.
