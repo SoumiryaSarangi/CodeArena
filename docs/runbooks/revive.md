@@ -134,7 +134,22 @@ Tick every line:
 - [ ] The passphrase is in your password manager and you tested it by running `verify` with it.
 - [ ] `problems-private/` is copied somewhere safe.
 - [ ] You looked at the **Credits** page in the Azure portal and know the date it expires.
+- [ ] The "CodeArena is paused." bar shows on the live website (step 1.7b).
 - [ ] You are certain you do not need anything else from the server: this step cannot be undone.
+
+### 1.7b Put the "paused" notice on the website
+
+So visitors see a clear reason instead of error messages. This needs the notice code to be live first (it is part of
+the batch that is pushed with `SHIP BATCH`; check that the push and deploy are done). Then in the browser:
+**vercel.com** → your CodeArena project → **Settings** → **Environment Variables** → **Add**:
+
+- Name: `NEXT_PUBLIC_DEMO_PAUSED`
+- Value: `true`
+- Environment: Production only
+
+Save, then **Deployments** → the newest one → three dots → **Redeploy** (untick "Use existing Build Cache"). When it is
+Ready, open the site: a bar under the top bar must say **"CodeArena is paused."** (The servers are still running at
+this point; the notice is shown because the setting says so.) Check the Status page says **Paused**.
 
 ### 1.8 Delete the Azure resources
 
@@ -380,7 +395,7 @@ echo "NEXT_PUBLIC_COLLAB_URL     = wss://$NEWHOST/collab"
 ```
 
 Then in the browser: **vercel.com** → your CodeArena project → **Settings** → **Environment Variables**. For each of the
-three names above, click the three dots → **Edit** → paste the new value → **Save** (keep "Production" ticked). Do not
+three names above, click the three dots → **Edit** → paste the new value → **Save** (keep "Production" ticked). **Delete the variable `NEXT_PUBLIC_DEMO_PAUSED`** (the "paused" notice from step 1.7b): three dots → **Delete**. Do not
 change any other variable. Then **Deployments** → the newest one → three dots → **Redeploy** (untick "Use existing Build
 Cache"). Wait until it says **Ready** (about 2 minutes). The addresses are baked in when the site is built, so the
 redeploy is not optional.
@@ -488,6 +503,7 @@ board and check it shows the results you expect.
 
 | Check                                                   | How                                                                                           | Expected                                         |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| The "paused" bar is gone                                 | open `$WEB` in a private window                                                               | no bar under the top bar; top bar dot says Systems normal |
 | API ready                                               | `curl -s https://$NEWHOST/api/health/ready`                                                   | `"status":"ok"`                                  |
 | Public status page                                      | open `$WEB/status`                                                                            | overall ok, **1 judge reporting**, pad **2 servers answering** |
 | Website talks to the new server                         | open `$WEB` and `$WEB/practice`                                                               | problems are listed (20 public ones)             |
@@ -578,6 +594,7 @@ You lose the old users, submissions and contests, but the **code, the 20 public 
 | Docker volumes | `codearena_pgdata` (database), `codearena_s3data` (test data) |
 | GitHub variables the pipeline needs | `DEPLOY_ENABLED`, `API_HOST`, `API_HOST_KEY`, `JUDGE_HOSTS`, `JUDGE_HOST_KEYS`, `COLLAB_ENABLED`, `PLAG_ENABLED`; secret `DEPLOY_SSH_KEY` |
 | Vercel variables that contain the server address | `API_PROXY_URL`, `NEXT_PUBLIC_REALTIME_URL`, `NEXT_PUBLIC_COLLAB_URL` |
+| Vercel variable that shows the paused notice (set while torn down, deleted after the rebuild) | `NEXT_PUBLIC_DEMO_PAUSED=true` |
 
 More detail on each piece: [infra/terraform/README.md](../../infra/terraform/README.md),
 [infra/prod/README.md](../../infra/prod/README.md), [backup-restore.md](backup-restore.md),

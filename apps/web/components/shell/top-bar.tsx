@@ -9,6 +9,7 @@ import { useModLabel } from '../shortcut-sheet';
 import { Handle } from '../handle';
 import { signInHref, useSession } from '@/lib/session';
 import { usePathname } from 'next/navigation';
+import { demoPaused } from '@/lib/server-state';
 import { usePlatformStatus } from '@/lib/status';
 
 /**
@@ -47,12 +48,19 @@ const DOT = {
   degraded: { word: 'Degraded performance', dot: 'bg-warning' },
   down: { word: 'Judging is down', dot: 'bg-danger' },
   unknown: { word: 'Status unknown', dot: 'bg-text-3' },
+  paused: { word: 'Paused', dot: 'bg-warning' },
 } as const;
 
 /** The system dot of UI_UX §S01: the word beside it, never colour alone; links to the status page. */
 function SystemDot() {
   const s = usePlatformStatus(30_000);
-  const d = s === null ? null : s === 'error' ? DOT.unknown : DOT[s.overall];
+  const d = demoPaused()
+    ? DOT.paused
+    : s === null
+      ? null
+      : s === 'error'
+        ? DOT.unknown
+        : DOT[s.overall];
   return (
     <Link
       href="/status"

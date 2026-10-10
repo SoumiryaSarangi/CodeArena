@@ -1,8 +1,9 @@
 'use client';
 import type { PlatformStatus } from '@codearena/contracts';
-import { AlertTriangle, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CirclePause, Clock, XCircle } from 'lucide-react';
 import { ErrorState, Skeleton } from '@/components/ui/states';
 import { cn } from '@/lib/cn';
+import { demoPaused } from '@/lib/server-state';
 import { usePlatformStatus } from '@/lib/status';
 import { Architecture } from './architecture';
 
@@ -151,12 +152,25 @@ export function StatusPage() {
         {s === null ? (
           <Skeleton className="h-64 w-full" />
         ) : s === 'error' ? (
-          <div role="status" className="flex flex-col gap-3">
-            <p className="flex items-center gap-2 text-16 font-medium text-danger">
-              <XCircle className="size-5" aria-hidden /> Status unavailable
-            </p>
-            <ErrorState message="The status service did not answer. If other pages work, this is probably short; if nothing loads, the API is down." />
-          </div>
+          demoPaused() ? (
+            <div role="status" className="flex flex-col gap-2">
+              <p className="flex items-center gap-2 text-16 font-medium">
+                <CirclePause className="size-5 text-warning" aria-hidden /> Paused
+              </p>
+              <p className="text-14 text-text-2">
+                The servers are switched off between showcases to save cloud credits, so judging,
+                contests and sign-in are unavailable until the next showcase. The data is saved and
+                will be restored. The explanation below of how it works still applies.
+              </p>
+            </div>
+          ) : (
+            <div role="status" className="flex flex-col gap-3">
+              <p className="flex items-center gap-2 text-16 font-medium text-danger">
+                <XCircle className="size-5" aria-hidden /> Status unavailable
+              </p>
+              <ErrorState message="The status service did not answer. If other pages work, this is probably short; if nothing loads, the API is down." />
+            </div>
+          )
         ) : (
           <Live s={s} />
         )}

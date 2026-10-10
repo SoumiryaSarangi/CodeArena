@@ -18,6 +18,7 @@ import { CommandPalette } from '../command-palette';
 import { ShortcutSheet } from '../shortcut-sheet';
 import { TooltipProvider } from '../ui/tooltip';
 import { Rail } from './rail';
+import { ServerNotice } from './server-notice';
 import { TopBar } from './top-bar';
 
 const ImmersiveSetter = createContext<(on: boolean, lock: boolean) => void>(() => undefined);
@@ -92,6 +93,7 @@ function Frame({ children }: { children: ReactNode }) {
                 : 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-14 xl:pl-48'
             }
           >
+            {immersive ? null : <ServerNotice />}
             <main
               id="main"
               className={cn(
