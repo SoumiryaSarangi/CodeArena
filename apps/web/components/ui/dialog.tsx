@@ -29,21 +29,21 @@ export function DialogContent({
 }: PanelProps) {
   return (
     <D.Portal>
-      <D.Overlay className="fixed inset-0 z-40 bg-bg/70" />
+      <D.Overlay className="fixed inset-0 z-40 bg-bg/70 data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
       <D.Content
         onEscapeKeyDown={dismissible ? undefined : (e) => e.preventDefault()}
         onInteractOutside={dismissible ? undefined : (e) => e.preventDefault()}
         className={cn(
           'fixed z-50 border border-border-strong bg-surface-1 shadow-[var(--shadow-overlay)]',
           variant === 'drawer'
-            ? 'inset-y-0 right-0 w-full max-w-[420px] overflow-y-auto p-6'
-            : 'left-1/2 top-1/2 w-[calc(100%-32px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg p-6',
+            ? 'inset-y-0 right-0 w-full max-w-[420px] overflow-y-auto p-6 data-[state=closed]:animate-slide-out data-[state=open]:animate-slide-in'
+            : 'left-1/2 top-1/2 w-[calc(100%-32px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 data-[state=closed]:animate-pop-out data-[state=open]:animate-pop-in',
           className,
         )}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <D.Title className="text-20 font-semibold tracking-[-0.01em]">{title}</D.Title>
+            <D.Title className="text-22 font-semibold tracking-[-0.01em]">{title}</D.Title>
             {description ? (
               <D.Description className="mt-1 text-14 text-text-2">{description}</D.Description>
             ) : null}
@@ -51,7 +51,7 @@ export function DialogContent({
           {dismissible ? (
             <D.Close
               aria-label="Close"
-              className="inline-flex size-7 items-center justify-center rounded-md text-text-2 hover:bg-surface-2 hover:text-text"
+              className="hit-44 inline-flex size-8 items-center justify-center rounded-md text-text-2 hover:bg-surface-2 hover:text-text"
             >
               <X className="size-4" aria-hidden />
             </D.Close>

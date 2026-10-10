@@ -5,16 +5,22 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
 const button = cva(
-  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors duration-[var(--dur-fast)] disabled:pointer-events-none disabled:opacity-50',
+  'hit-44 inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-[colors,transform] duration-[var(--dur-fast)] active:scale-[0.98] disabled:pointer-events-none disabled:active:scale-100',
   {
     variants: {
       variant: {
-        primary: 'bg-accent text-accent-fg hover:bg-accent-hover',
-        secondary: 'border border-border-control bg-surface-2 text-text hover:bg-surface-3',
-        ghost: 'text-text-2 hover:bg-surface-2 hover:text-text',
-        danger: 'bg-danger text-bg hover:opacity-90',
+        /** Ink on paper: the one primary action of a view. */
+        primary:
+          'bg-primary text-primary-fg hover:bg-primary-hover disabled:bg-surface-3 disabled:text-text-3',
+        /** Blue fill, for a rare brand moment (never next to a primary). */
+        accent:
+          'bg-accent text-accent-fg hover:bg-accent-hover disabled:bg-surface-3 disabled:text-text-3',
+        secondary:
+          'border border-border-control bg-surface-2 text-text hover:bg-surface-3 disabled:text-text-3',
+        ghost: 'text-text-2 hover:bg-surface-2 hover:text-text disabled:text-text-3',
+        danger: 'bg-danger text-bg hover:opacity-90 disabled:bg-surface-3 disabled:text-text-3',
       },
-      size: { sm: 'h-7 px-2 text-13', md: 'h-8 px-3 text-14', lg: 'h-10 px-4 text-14' },
+      size: { sm: 'h-8 px-2.5 text-13', md: 'h-9 px-3 text-14', lg: 'h-10 px-4 text-14' },
     },
     defaultVariants: { variant: 'secondary', size: 'md' },
   },
@@ -61,7 +67,7 @@ export function Button({
   );
 }
 
-/** 28 px square; `label` is required and becomes both the accessible name and the tooltip. */
+/** 32 px square (44 px hit area on phones); `label` is required and becomes both the accessible name and the tooltip. */
 export function IconButton({
   label,
   className,
@@ -73,7 +79,7 @@ export function IconButton({
       variant="ghost"
       aria-label={label}
       title={label}
-      className={cn('size-7 p-0', className)}
+      className={cn('size-8 p-0', className)}
       {...props}
     >
       {children}

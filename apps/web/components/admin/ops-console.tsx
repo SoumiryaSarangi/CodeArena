@@ -132,7 +132,7 @@ export function OpsConsole({
         </p>
       ) : null}
 
-      <div className="overflow-x-auto">
+      <div role="region" tabIndex={0} aria-label="Judge workers table" className="overflow-x-auto">
         <table className="w-full text-14">
           <caption className="sr-only">Judge workers</caption>
           <thead>

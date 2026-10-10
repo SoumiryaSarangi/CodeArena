@@ -1,4 +1,5 @@
-/* Design tokens: docs/UI_UX.md §5.1 (contrast-checked). The only file that may contain raw colours. */
+/* Design tokens: docs/design/DIRECTION.md ("Match Day", approved 2026-10-10), contrast-checked by tests/design-system.test.ts.
+   The only file that may contain raw colours. */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
@@ -11,21 +12,25 @@
   --presence-5: #fb923c;
   --presence-6: #22d3ee;
   --presence-7: #f87171;
-  --presence-fg: #0a0b0d;
-  --bg: #0a0b0d;
-  --surface-1: #111317;
-  --surface-2: #171a1f;
-  --surface-3: #1e2228;
-  --border: #23272e; /* decorative hairlines only */
-  --border-strong: #2f343c; /* dividers between regions */
+  --presence-fg: #0b0c0e;
+  --bg: #0b0c0e;
+  --surface-1: #111316;
+  --surface-2: #171a1e;
+  --surface-3: #1e2227;
+  --border: #23272d; /* decorative hairlines only */
+  --border-strong: #2f343b; /* dividers between regions */
   --border-control: #5a626e; /* inputs, checkboxes: 3.2:1 on bg (WCAG 1.4.11) */
-  --text: #e8eaed;
-  --text-2: #a1a7b0;
-  --text-3: #858c97; /* never lighter */
-  --accent: #8b7fff;
-  --accent-hover: #9d93ff;
-  --accent-fg: #0a0b0d;
-  --focus: #a99fff;
+  --text: #ececee;
+  --text-2: #a3a9b2;
+  --text-3: #8a909a; /* never lighter */
+  --accent: #6d8bff;
+  --accent-hover: #8199ff;
+  --accent-fg: #0b0c0e;
+  --focus: #8ea4ff;
+  /* Ink on paper: the one primary action of a view. Blue is for identity, not for buttons. */
+  --primary: #ececee;
+  --primary-hover: #d0d3d8;
+  --primary-fg: #0b0c0e;
   --v-ac: #22c55e;
   --v-wa: #f87171;
   --v-tle: #f59e0b;
@@ -53,28 +58,31 @@
   --presence-6: #0891b2;
   --presence-7: #dc2626;
   --presence-fg: #ffffff;
-  --bg: #fafafb;
+  --bg: #fafafa;
   --surface-1: #ffffff;
-  --surface-2: #f4f5f7;
-  --surface-3: #eceef1;
-  --border: #e3e5e8;
+  --surface-2: #f2f3f5;
+  --surface-3: #eaecef;
+  --border: #e4e6ea;
   --border-strong: #d0d4da;
   --border-control: #8a919c;
-  --text: #0f1114;
+  --text: #14161a;
   --text-2: #4b5260;
   --text-3: #636a75;
-  --accent: #5b4be0;
-  --accent-hover: #4f3fd6;
+  --accent: #2f49d9;
+  --accent-hover: #2539b8;
   --accent-fg: #ffffff;
-  --focus: #5b4be0;
+  --focus: #2f49d9;
+  --primary: #14161a;
+  --primary-hover: #2c2f36;
+  --primary-fg: #ffffff;
   --v-ac: #15803d;
-  --v-wa: #dc2626;
+  --v-wa: #c81e1e;
   --v-tle: #b45309;
   --v-mle: #be185d;
   --v-re: #c2410c;
   --v-ce: #475569;
   --v-ole: #0f766e;
-  --danger: #dc2626;
+  --danger: #c81e1e;
   --warning: #b45309;
   --success: #15803d;
   --info: #2563eb;

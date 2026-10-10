@@ -58,6 +58,24 @@ describe('F-07: design tokens', () => {
   });
 });
 
+describe('UI-09: type foundation', () => {
+  const globals = readFileSync(join(root, 'app/globals.css'), 'utf8');
+  it('UI-09: the root font size is the browser default, not a fixed px value', () => {
+    expect(/html\s*{[^}]*font-size:\s*100%/.test(globals)).toBe(true);
+  });
+  it('UI-09: the heading ladder steps up by at least 1.25 (h3 18, h2 22, h1 28)', () => {
+    const size = (n: number) =>
+      Number(new RegExp(`--text-${n}:\\s*([\\d.]+)rem`).exec(globals)![1]) * 16;
+    expect([size(18), size(22), size(28)]).toEqual([18, 22, 28]);
+    expect(size(22) / size(18)).toBeGreaterThan(1.2);
+    expect(size(28) / size(22)).toBeGreaterThan(1.25);
+    expect(size(40)).toBeGreaterThanOrEqual(40);
+  });
+  it('UI-09: type never goes below the 12 px floor in the scale', () => {
+    expect(Number(/--text-12:\s*([\d.]+)rem/.exec(globals)![1]) * 16).toBe(12);
+  });
+});
+
 describe('NFR-A11Y: contrast (WCAG 1.4.3 / 1.4.11)', () => {
   const surfaces = ['bg', 'surface-1'];
   for (const theme of THEMES) {
@@ -89,6 +107,17 @@ describe('NFR-A11Y: contrast (WCAG 1.4.3 / 1.4.11)', () => {
 
     it(`NFR-A11Y: ${theme} accent button text reaches 4.5:1`, () => {
       expect(contrast(theme, 'accent-fg', 'accent')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`NFR-A11Y: ${theme} primary (ink) button text reaches 4.5:1, also on hover`, () => {
+      expect(contrast(theme, 'primary-fg', 'primary')).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(theme, 'primary-fg', 'primary-hover')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`NFR-A11Y: ${theme} secondary text reaches 4.5:1 on every raised surface`, () => {
+      for (const fg of ['text', 'text-2', 'text-3'])
+        for (const bg of ['surface-2', 'surface-3'])
+          expect(contrast(theme, fg, bg), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

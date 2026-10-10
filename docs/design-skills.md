@@ -68,3 +68,7 @@ Approved by Ayush for the redesign (each one actually added is also listed in it
 | --- | --- | --- |
 | `@lucasmarkes/hairline` | thin-line figures (via `hairline-create`) | _not added yet_ |
 | any library recommended by `pick-ui-library` | as recommended | _none added yet_ |
+
+### `pick-ui-library` verdict at UI-09 (2026-10-10)
+
+Run against the foundation work. Its rule: use a listed library that is already installed; flag a competitor but do not churn it. The project already uses **Sonner** (toasts, listed) and **motion** (listed); it uses **Radix** for dialog, tabs, tooltip and slot, where the list prefers **base-ui**. Verdict: **flag, do not migrate** (no user-visible gain, 8 components and their tests would change); revisit only if a Radix limitation blocks a card. Nothing was added in UI-09.

@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TooltipProvider>
           <a
             href="#main"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-accent focus:px-3 focus:py-2 focus:text-accent-fg"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-fg"
           >
             Skip to content
           </a>
@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Rail />
             </>
           )}
-          <div className={immersive ? undefined : 'pb-12 md:pb-0 md:pl-14 xl:pl-48'}>
+          <div className={immersive ? undefined : 'pb-14 md:pb-0 md:pl-14 xl:pl-48'}>
             <main
               id="main"
               className={cn(
@@ -63,17 +63,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             </main>
             {/* Same footer position everywhere (WCAG 3.2.6). */}
             {immersive ? null : (
-              <footer className="flex gap-4 border-t border-border px-4 py-3 text-12 text-text-3 md:px-6">
-                <Link href="/rules" className="hover:text-text">
+              <footer className="flex gap-1 border-t border-border px-2 py-1 text-12 text-text-3 md:px-4">
+                <Link href="/rules" className="rounded-md px-2 py-2.5 hover:text-text md:py-1.5">
                   Rules
                 </Link>
-                <Link href="/status" className="hover:text-text">
+                <Link href="/status" className="rounded-md px-2 py-2.5 hover:text-text md:py-1.5">
                   Status
                 </Link>
-                <Link href="/privacy" className="hover:text-text">
+                <Link href="/privacy" className="rounded-md px-2 py-2.5 hover:text-text md:py-1.5">
                   Privacy
                 </Link>
-                <Link href="/terms" className="hover:text-text">
+                <Link href="/terms" className="rounded-md px-2 py-2.5 hover:text-text md:py-1.5">
                   Terms
                 </Link>
               </footer>

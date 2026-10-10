@@ -30,7 +30,7 @@ export function Rail() {
     <nav
       aria-label="Main"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-30 flex h-12 justify-around border-t border-border-strong bg-surface-1',
+        'fixed inset-x-0 bottom-0 z-30 flex h-14 justify-around border-t border-border-strong bg-surface-1',
         'md:inset-y-0 md:left-0 md:right-auto md:top-12 md:h-auto md:w-14 md:flex-col md:justify-start md:gap-1 md:border-r md:border-t-0 md:p-2',
         'xl:w-48',
       )}
@@ -45,9 +45,10 @@ export function Rail() {
             aria-current={active ? 'page' : undefined}
             aria-label={label}
             className={cn(
-              'flex min-w-12 flex-col items-center justify-center gap-0.5 rounded-md text-12 text-text-2 hover:bg-surface-2 hover:text-text',
-              'md:h-8 md:flex-row md:justify-center md:gap-3 md:text-14 xl:justify-start xl:px-2',
-              active && 'bg-surface-2 text-text',
+              'relative flex min-w-12 flex-col items-center justify-center gap-0.5 rounded-md text-12 text-text-2 transition-colors duration-[var(--dur-fast)] hover:bg-surface-2 hover:text-text',
+              'md:h-9 md:flex-row md:justify-center md:gap-3 md:text-14 xl:justify-start xl:px-2',
+              active &&
+                'bg-surface-2 font-medium text-text before:absolute before:inset-x-3 before:top-0 before:h-0.5 before:rounded-full before:bg-primary md:before:inset-x-auto md:before:inset-y-2 md:before:-left-2 md:before:h-auto md:before:w-0.5 xl:before:-left-2',
             )}
           >
             <Icon className="size-4 shrink-0" aria-hidden />

@@ -21,7 +21,9 @@ import { brow, stubContests } from './stub-contests';
  * It changes no product code.
  */
 const ON = process.env.DESIGN_SHOTS === '1';
-const OUT = resolve(__dirname, '../../../docs/design/screens');
+const OUT = resolve(
+  process.env.DESIGN_SHOTS_OUT ?? resolve(__dirname, '../../../docs/design/screens'),
+);
 const DATA = `${OUT}/data`;
 const SIZES = [
   { width: 1280, height: 800 },

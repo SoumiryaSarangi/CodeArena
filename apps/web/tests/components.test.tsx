@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { timerTone } from '@/components/timer';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { VerdictGrid, type GridTest } from '@/components/verdict-grid';
-import { Button } from '@/components/ui/button';
+import { Button, IconButton } from '@/components/ui/button';
 import { EmptyState, ErrorState } from '@/components/ui/states';
 import { formatDuration, formatMemKb } from '@/lib/format';
 import { VERDICTS, verdictTitle } from '@/lib/verdicts';
@@ -99,7 +99,19 @@ describe('F-07: class merging', () => {
   });
 
   it('F-07: primary and danger buttons keep their foreground colour', () => {
-    expect(renderToStaticMarkup(<Button variant="primary">x</Button>)).toContain('text-accent-fg');
+    expect(renderToStaticMarkup(<Button variant="primary">x</Button>)).toContain('text-primary-fg');
+    expect(renderToStaticMarkup(<Button variant="accent">x</Button>)).toContain('text-accent-fg');
     expect(renderToStaticMarkup(<Button variant="danger">x</Button>)).toContain('text-bg');
+  });
+
+  it('UI-09: the primary button is ink on paper, not the accent', () => {
+    const html = renderToStaticMarkup(<Button variant="primary">x</Button>);
+    expect(html).toContain('bg-primary');
+    expect(html).not.toContain('bg-accent');
+  });
+
+  it('UI-09: small buttons and icon buttons carry a 44 px hit area on touch (AUDIT 2)', () => {
+    expect(renderToStaticMarkup(<Button size="sm">x</Button>)).toContain('hit-44');
+    expect(renderToStaticMarkup(<IconButton label="Close">x</IconButton>)).toContain('hit-44');
   });
 });

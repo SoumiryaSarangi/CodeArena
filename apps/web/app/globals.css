@@ -21,6 +21,9 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
   --color-focus: var(--focus);
   --color-v-ac: var(--v-ac);
   --color-v-wa: var(--v-wa);
@@ -36,8 +39,13 @@
   --color-success: var(--success);
   --color-info: var(--info);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* After Geist: system faces that carry CJK, Arabic, Cyrillic and emoji, so handles never show boxes. */
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, 'Noto Sans', 'Noto Sans CJK SC',
+    'Hiragino Sans', 'PingFang SC', 'Microsoft YaHei', 'Segoe UI Emoji', 'Apple Color Emoji',
+    'Noto Color Emoji', sans-serif;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, 'Noto Sans Mono CJK SC', 'Noto Sans Mono', monospace;
 
   --text-12: 0.75rem;
   --text-12--line-height: 1rem;
@@ -47,22 +55,41 @@
   --text-14--line-height: 1.25rem;
   --text-16: 1rem;
   --text-16--line-height: 1.6875rem;
+  /* Ladder (DIRECTION.md): h3 18, h2 22, h1 28, then display sizes for Stage numerals. */
+  --text-18: 1.125rem;
+  --text-18--line-height: 1.625rem;
   --text-20: 1.25rem;
   --text-20--line-height: 1.75rem;
+  --text-22: 1.375rem;
+  --text-22--line-height: 1.75rem;
   --text-24: 1.5rem;
   --text-24--line-height: 2rem;
+  --text-28: 1.75rem;
+  --text-28--line-height: 2.25rem;
   --text-32: 2rem;
   --text-32--line-height: 2.5rem;
+  --text-40: 2.5rem;
+  --text-40--line-height: 2.75rem;
   --text-48: 3rem;
   --text-48--line-height: 3.25rem;
+  --text-56: 3.5rem;
+  --text-56--line-height: 3.5rem;
+  --text-72: 4.5rem;
+  --text-72--line-height: 4.5rem;
 
   --radius-sm: 4px;
   --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-lg: 8px;
 
   --animate-judging: judging 1.2s ease-in-out infinite;
   --animate-fill: fill var(--dur-fast) cubic-bezier(0.2, 0, 0, 1);
   --animate-flash: flash 1.4s ease-out 1;
+  --animate-pop-in: pop-in var(--dur-base) var(--ease-out);
+  --animate-pop-out: pop-out var(--dur-fast) var(--ease-out) forwards;
+  --animate-fade-in: fade-in var(--dur-base) var(--ease-out);
+  --animate-fade-out: fade-out var(--dur-fast) var(--ease-out) forwards;
+  --animate-slide-in: slide-in var(--dur-base) var(--ease-out);
+  --animate-slide-out: slide-out var(--dur-fast) var(--ease-out) forwards;
 
   @keyframes judging {
     0%,
@@ -81,6 +108,40 @@
       background-color: transparent;
     }
   }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98); /* composes with the centring `translate` utility */
+    }
+  }
+  @keyframes pop-out {
+    to {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98); /* composes with the centring `translate` utility */
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes slide-in {
+    from {
+      transform: translateX(16px);
+      opacity: 0;
+    }
+  }
+  @keyframes slide-out {
+    to {
+      transform: translateX(16px);
+      opacity: 0;
+    }
+  }
   @keyframes fill {
     from {
       transform: scale(0.8);
@@ -95,8 +156,8 @@ html {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.43;
+  font-size: 100%; /* the browser's own 16 px: zoom and user font settings work */
+  line-height: 1.5;
   scroll-padding-top: 96px; /* sticky bars never hide a focused element (WCAG 2.4.11) */
   -webkit-font-smoothing: antialiased;
 }
@@ -129,11 +190,31 @@ body {
   }
 }
 
+/* 44 px targets on touch (WCAG 2.5.8 asks 24; we ask for the comfortable size). Inline links are excluded. */
 @media (pointer: coarse) {
-  button,
   [role='tab'],
-  [role='menuitem'],
-  a {
-    min-height: 32px;
+  [role='menuitem'] {
+    min-height: 44px;
   }
+}
+
+/* A 44 px hit area around a smaller control on phones and touch, with no visual change. */
+@utility hit-44 {
+  position: relative;
+  @media (max-width: 47.99rem), (pointer: coarse) {
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+.display {
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }

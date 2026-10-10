@@ -157,28 +157,30 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
         <h2 id="members-h" className="text-16 font-medium">
           {detail.problemSlug}: {detail.members.length} submissions
         </h2>
-        <table className="w-full text-left text-14">
-          <thead className="text-13 text-text-2">
-            <tr>
-              <th className="py-1 pr-3 font-normal">Person</th>
-              <th className="py-1 pr-3 font-normal">Language</th>
-              <th className="py-1 pr-3 font-normal">Verdict</th>
-              <th className="py-1 font-normal">Submitted</th>
-            </tr>
-          </thead>
-          <tbody>
-            {detail.members.map((m) => (
-              <tr key={m.submissionId} className="border-t border-border-strong">
-                <td className="py-1 pr-3">@{m.handle}</td>
-                <td className="py-1 pr-3">
-                  {isLanguage(m.language) ? languageInfo(m.language).label : m.language}
-                </td>
-                <td className="py-1 pr-3">{m.verdict ?? 'not judged'}</td>
-                <td className="py-1 text-text-2">{formatWhen(m.submittedAt)}</td>
+        <div role="region" tabIndex={0} aria-label="Submissions table" className="overflow-x-auto">
+          <table className="w-full text-left text-14">
+            <thead className="text-13 text-text-2">
+              <tr>
+                <th className="py-1 pr-3 font-normal">Person</th>
+                <th className="py-1 pr-3 font-normal">Language</th>
+                <th className="py-1 pr-3 font-normal">Verdict</th>
+                <th className="py-1 font-normal">Submitted</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {detail.members.map((m) => (
+                <tr key={m.submissionId} className="border-t border-border-strong">
+                  <td className="py-1 pr-3">@{m.handle}</td>
+                  <td className="py-1 pr-3">
+                    {isLanguage(m.language) ? languageInfo(m.language).label : m.language}
+                  </td>
+                  <td className="py-1 pr-3">{m.verdict ?? 'not judged'}</td>
+                  <td className="py-1 text-text-2">{formatWhen(m.submittedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section aria-labelledby="pairs-h" className="flex flex-col gap-2">
@@ -188,47 +190,54 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
         {detail.pairs.length === 0 ? (
           <p className="text-13 text-text-3">No pair scores were stored for this group.</p>
         ) : (
-          <table className="w-full text-left text-14">
-            <thead className="text-13 text-text-2">
-              <tr>
-                <th className="py-1 pr-3 font-normal">Pair</th>
-                <th className="py-1 pr-3 font-normal">Shared code</th>
-                <th className="py-1 pr-3 font-normal">Structure</th>
-                <th className="py-1 pr-3 font-normal">Combined</th>
-                <th className="py-1 font-normal">
-                  <span className="sr-only">Compare</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {detail.pairs.map((p) => {
-                const on = p.subA === leftId && p.subB === rightId;
-                return (
-                  <tr key={`${p.subA}:${p.subB}`} className="border-t border-border-strong">
-                    <td className="py-1 pr-3">
-                      @{byId.get(p.subA)?.handle} and @{byId.get(p.subB)?.handle}
-                    </td>
-                    <td className="py-1 pr-3">{percent(p.fpScore)}</td>
-                    <td className="py-1 pr-3">{percent(p.embScore)}</td>
-                    <td className="py-1 pr-3 font-medium">{percent(p.combined)}</td>
-                    <td className="py-1">
-                      <Button
-                        size="sm"
-                        aria-pressed={on}
-                        variant={on ? 'primary' : 'secondary'}
-                        onClick={() => {
-                          setLeftId(p.subA);
-                          setRightId(p.subB);
-                        }}
-                      >
-                        {on ? 'Showing' : 'Compare'}
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div
+            role="region"
+            tabIndex={0}
+            aria-label="Pair scores table"
+            className="overflow-x-auto"
+          >
+            <table className="w-full text-left text-14">
+              <thead className="text-13 text-text-2">
+                <tr>
+                  <th className="py-1 pr-3 font-normal">Pair</th>
+                  <th className="py-1 pr-3 font-normal">Shared code</th>
+                  <th className="py-1 pr-3 font-normal">Structure</th>
+                  <th className="py-1 pr-3 font-normal">Combined</th>
+                  <th className="py-1 font-normal">
+                    <span className="sr-only">Compare</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {detail.pairs.map((p) => {
+                  const on = p.subA === leftId && p.subB === rightId;
+                  return (
+                    <tr key={`${p.subA}:${p.subB}`} className="border-t border-border-strong">
+                      <td className="py-1 pr-3">
+                        @{byId.get(p.subA)?.handle} and @{byId.get(p.subB)?.handle}
+                      </td>
+                      <td className="py-1 pr-3">{percent(p.fpScore)}</td>
+                      <td className="py-1 pr-3">{percent(p.embScore)}</td>
+                      <td className="py-1 pr-3 font-medium">{percent(p.combined)}</td>
+                      <td className="py-1">
+                        <Button
+                          size="sm"
+                          aria-pressed={on}
+                          variant={on ? 'primary' : 'secondary'}
+                          onClick={() => {
+                            setLeftId(p.subA);
+                            setRightId(p.subB);
+                          }}
+                        >
+                          {on ? 'Showing' : 'Compare'}
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
@@ -273,42 +282,51 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             Advisory only
           </span>
         </h2>
-        <table className="w-full text-left text-14">
-          <thead className="text-13 text-text-2">
-            <tr>
-              <th className="py-1 pr-3 font-normal">Person</th>
-              <th className="py-1 pr-3 font-normal">Pastes over 50 characters</th>
-              <th className="py-1 pr-3 font-normal">Left the window</th>
-              <th className="py-1 pr-3 font-normal">Minutes to first accepted</th>
-              <th className="py-1 pr-3 font-normal">Style change</th>
-              <th className="py-1 font-normal">Canary name in code</th>
-            </tr>
-          </thead>
-          <tbody>
-            {detail.signals.map((s) => (
-              <tr key={s.handle} className="border-t border-border-strong align-top">
-                <td className="py-1 pr-3">@{s.handle}</td>
-                <td className="py-1 pr-3">
-                  {s.pastes.length === 0
-                    ? 'none'
-                    : s.pastes.map((p) => `${p.size} characters at ${formatWhen(p.at)}`).join('; ')}
-                </td>
-                <td className="py-1 pr-3">
-                  {s.openedAt ? `${s.focusLosses} times` : 'not recorded'}
-                </td>
-                <td className="py-1 pr-3">{s.timeToAcMinutes ?? 'not available'}</td>
-                <td className="py-1 pr-3">{styleText(s.styleShift)}</td>
-                <td className="py-1">
-                  {s.canary === null
-                    ? 'not set for this problem'
-                    : s.canary
-                      ? 'present (weak signal)'
-                      : 'absent'}
-                </td>
+        <div
+          role="region"
+          tabIndex={0}
+          aria-label="Editor signals table"
+          className="overflow-x-auto"
+        >
+          <table className="w-full text-left text-14">
+            <thead className="text-13 text-text-2">
+              <tr>
+                <th className="py-1 pr-3 font-normal">Person</th>
+                <th className="py-1 pr-3 font-normal">Pastes over 50 characters</th>
+                <th className="py-1 pr-3 font-normal">Left the window</th>
+                <th className="py-1 pr-3 font-normal">Minutes to first accepted</th>
+                <th className="py-1 pr-3 font-normal">Style change</th>
+                <th className="py-1 font-normal">Canary name in code</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {detail.signals.map((s) => (
+                <tr key={s.handle} className="border-t border-border-strong align-top">
+                  <td className="py-1 pr-3">@{s.handle}</td>
+                  <td className="py-1 pr-3">
+                    {s.pastes.length === 0
+                      ? 'none'
+                      : s.pastes
+                          .map((p) => `${p.size} characters at ${formatWhen(p.at)}`)
+                          .join('; ')}
+                  </td>
+                  <td className="py-1 pr-3">
+                    {s.openedAt ? `${s.focusLosses} times` : 'not recorded'}
+                  </td>
+                  <td className="py-1 pr-3">{s.timeToAcMinutes ?? 'not available'}</td>
+                  <td className="py-1 pr-3">{styleText(s.styleShift)}</td>
+                  <td className="py-1">
+                    {s.canary === null
+                      ? 'not set for this problem'
+                      : s.canary
+                        ? 'present (weak signal)'
+                        : 'absent'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p className="text-13 text-text-3">
           Reported by the contest page and worked out from the code. Many honest people paste their
           own template or switch windows to read: these are never evidence on their own and never

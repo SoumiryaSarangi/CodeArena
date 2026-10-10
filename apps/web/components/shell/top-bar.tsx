@@ -11,7 +11,7 @@ import { usePlatformStatus } from '@/lib/status';
 
 export function Wordmark() {
   return (
-    <Link href="/" className="font-mono text-14 font-semibold text-text">
+    <Link href="/" className="hit-44 font-mono text-14 font-semibold text-text">
       codearena<span className="text-accent">▍</span>
     </Link>
   );
@@ -31,7 +31,7 @@ function SystemDot() {
   return (
     <Link
       href="/status"
-      className="hidden items-center gap-1.5 text-12 text-text-2 hover:text-text sm:inline-flex"
+      className="hit-44 hidden items-center gap-1.5 text-12 text-text-2 hover:text-text sm:inline-flex"
     >
       <span className={`size-2 rounded-full ${d?.dot ?? 'bg-text-3'}`} aria-hidden />
       {d?.word ?? 'Checking status'}
@@ -44,7 +44,7 @@ function SystemDot() {
 function Account() {
   const { session, signOut } = useSession();
   const path = usePathname();
-  if (session.status === 'loading') return <span className="h-7 w-16" aria-hidden />;
+  if (session.status === 'loading') return <span className="h-8 w-16" aria-hidden />;
   if (session.status === 'guest') {
     return (
       <Button asChild variant="secondary" size="sm">
@@ -54,7 +54,7 @@ function Account() {
   }
   return (
     <span className="flex items-center gap-2">
-      <Link href="/onboarding" className="text-13 text-text-2 hover:text-text">
+      <Link href="/onboarding" className="hit-44 text-13 text-text-2 hover:text-text">
         {session.me.handle ?? 'Choose a handle'}
       </Link>
       <Button variant="ghost" size="sm" onClick={() => void signOut()}>

@@ -2,20 +2,22 @@
 name: CodeArena
 description: The place your campus codes together. Practise, compete and interview on a judge you can trust.
 colors:
-  primary: '#8b7fff'
-  primary-hover: '#9d93ff'
-  on-primary: '#0a0b0d'
-  focus-ring: '#a99fff'
-  ink: '#0a0b0d'
-  surface-1: '#111317'
-  surface-2: '#171a1f'
-  surface-3: '#1e2228'
-  hairline: '#23272e'
-  divider: '#2f343c'
+  primary: '#ececee'
+  primary-hover: '#d0d3d8'
+  on-primary: '#0b0c0e'
+  accent: '#6d8bff'
+  accent-hover: '#8199ff'
+  focus-ring: '#8ea4ff'
+  ink: '#0b0c0e'
+  surface-1: '#111316'
+  surface-2: '#171a1e'
+  surface-3: '#1e2227'
+  hairline: '#23272d'
+  divider: '#2f343b'
   control-edge: '#5a626e'
-  text: '#e8eaed'
-  text-secondary: '#a1a7b0'
-  text-tertiary: '#858c97'
+  text: '#ececee'
+  text-secondary: '#a3a9b2'
+  text-tertiary: '#8a909a'
   verdict-accepted: '#22c55e'
   verdict-wrong-answer: '#f87171'
   verdict-time-limit: '#f59e0b'
@@ -30,18 +32,19 @@ colors:
 typography:
   display:
     fontFamily: 'Geist Sans, ui-sans-serif, system-ui, sans-serif'
-    fontSize: '3rem'
+    fontSize: '2.5rem'
     fontWeight: 600
-    lineHeight: '3.25rem'
+    lineHeight: '2.75rem'
+    letterSpacing: '-0.02em'
   headline:
     fontFamily: 'Geist Sans, ui-sans-serif, system-ui, sans-serif'
-    fontSize: '1.5rem'
+    fontSize: '1.75rem'
     fontWeight: 600
-    lineHeight: '2rem'
+    lineHeight: '2.25rem'
     letterSpacing: '-0.01em'
   title:
     fontFamily: 'Geist Sans, ui-sans-serif, system-ui, sans-serif'
-    fontSize: '1.25rem'
+    fontSize: '1.375rem'
     fontWeight: 600
     lineHeight: '1.75rem'
   body:
@@ -62,7 +65,7 @@ typography:
 rounded:
   sm: '4px'
   md: '6px'
-  lg: '10px'
+  lg: '8px'
 spacing:
   base: '4px'
 components:
@@ -70,7 +73,7 @@ components:
     backgroundColor: '{colors.primary}'
     textColor: '{colors.on-primary}'
     rounded: '{rounded.md}'
-    height: '32px'
+    height: '36px'
     padding: '0 12px'
   button-primary-hover:
     backgroundColor: '{colors.primary-hover}'
@@ -78,26 +81,26 @@ components:
     backgroundColor: '{colors.surface-2}'
     textColor: '{colors.text}'
     rounded: '{rounded.md}'
-    height: '32px'
+    height: '36px'
     padding: '0 12px'
   button-secondary-hover:
     backgroundColor: '{colors.surface-3}'
   button-ghost:
     textColor: '{colors.text-secondary}'
     rounded: '{rounded.md}'
-    height: '32px'
+    height: '36px'
     padding: '0 12px'
   button-danger:
     backgroundColor: '{colors.danger}'
     textColor: '{colors.ink}'
     rounded: '{rounded.md}'
-    height: '32px'
+    height: '36px'
     padding: '0 12px'
   input:
     backgroundColor: '{colors.surface-1}'
     textColor: '{colors.text}'
     rounded: '{rounded.md}'
-    height: '32px'
+    height: '36px'
     padding: '0 12px'
   verdict-badge:
     textColor: '{colors.verdict-accepted}'
@@ -108,7 +111,9 @@ components:
 
 # Design System: CodeArena
 
-> **Status of this file: the incumbent look, recorded on 2026-10-09 before the redesign.** On the same day Ayush decided the current UI looks amateur and that the design skills decide the replacement (only "no gradients" stays). This file describes what is built so the audit (UI-08) and the redesign (UI-09 to UI-13) start from facts. UI-09 replaces the tokens, UI-14 rewrites this file to match what was built. Language marked _(inferred)_ was not confirmed by Ayush; the rest comes from the code or from `docs/UI_UX.md`.
+> **Status: UI-09 (2026-10-10) updated the front matter above (colours, type ladder, radius, control height) to the new foundation of `docs/design/DIRECTION.md`. The prose below still describes the incumbent look recorded on 2026-10-09, and UI-14 rewrites it to match what was built.** Where they disagree, the front matter and `app/tokens.css` win. Original note:
+>
+> **The incumbent look, recorded on 2026-10-09 before the redesign.** On the same day Ayush decided the current UI looks amateur and that the design skills decide the replacement (only "no gradients" stays). This file describes what is built so the audit (UI-08) and the redesign (UI-09 to UI-13) start from facts. UI-09 replaces the tokens, UI-14 rewrites this file to match what was built. Language marked _(inferred)_ was not confirmed by Ayush; the rest comes from the code or from `docs/UI_UX.md`.
 
 ## Overview
 

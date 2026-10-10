@@ -1,0 +1,118 @@
+{
+  "url": "/",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 54,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      9
+    ],
+    [
+      "14px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "13px",
+      1
+    ],
+    [
+      "24px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      10
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      12
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      5
+    ],
+    [
+      "rgb(20, 22, 26)",
+      4
+    ],
+    [
+      "rgb(99, 106, 117)",
+      4
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena",
+      "size": "24px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 2,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 16
+}

@@ -15,8 +15,8 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof T.Tri
   return (
     <T.Trigger
       className={cn(
-        '-mb-px border-b-2 border-transparent px-1 py-2 text-14 text-text-2 transition-colors hover:text-text',
-        'data-[state=active]:border-accent data-[state=active]:text-text',
+        '-mb-px border-b-2 border-transparent px-1 py-2 text-14 text-text-2 transition-colors duration-[var(--dur-base)] hover:text-text max-md:min-h-11',
+        'data-[state=active]:border-primary data-[state=active]:font-medium data-[state=active]:text-text',
         className,
       )}
       {...props}

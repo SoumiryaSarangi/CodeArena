@@ -7,34 +7,34 @@
       "primary": {
         "role": "primary",
         "displayName": "Signal Violet",
-        "canonical": "#8b7fff",
+        "canonical": "#6d8bff",
         "tonalRamp": [
-          "#5b4be0",
+          "#2f49d9",
           "#4f3fd6",
-          "#8b7fff",
-          "#9d93ff",
-          "#a99fff"
+          "#6d8bff",
+          "#8199ff",
+          "#8ea4ff"
         ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Ink",
-        "canonical": "#0a0b0d",
+        "canonical": "#0b0c0e",
         "tonalRamp": [
-          "#0a0b0d",
-          "#111317",
-          "#171a1f",
-          "#1e2228"
+          "#0b0c0e",
+          "#111316",
+          "#171a1e",
+          "#1e2227"
         ]
       },
       "text": {
         "role": "neutral",
         "displayName": "Cool Grey Text",
-        "canonical": "#e8eaed",
+        "canonical": "#ececee",
         "tonalRamp": [
-          "#858c97",
-          "#a1a7b0",
-          "#e8eaed"
+          "#8a909a",
+          "#a3a9b2",
+          "#ececee"
         ]
       },
       "verdict-accepted": {
@@ -139,7 +139,7 @@
       "refersTo": "button-primary",
       "description": "The main action on a screen.",
       "html": "<button class=\"ds-btn-primary\">Submit</button>",
-      "css": ".ds-btn-primary{background:#8b7fff;color:#0a0b0d;height:32px;padding:0 12px;border:0;border-radius:6px;font:500 14px/20px system-ui;transition:background 120ms}.ds-btn-primary:hover{background:#9d93ff}"
+      "css": ".ds-btn-primary{background:#6d8bff;color:#0b0c0e;height:32px;padding:0 12px;border:0;border-radius:6px;font:500 14px/20px system-ui;transition:background 120ms}.ds-btn-primary:hover{background:#8199ff}"
     },
     {
       "name": "Secondary Button",
@@ -147,7 +147,7 @@
       "refersTo": "button-secondary",
       "description": "Default button.",
       "html": "<button class=\"ds-btn-secondary\">Run</button>",
-      "css": ".ds-btn-secondary{background:#171a1f;color:#e8eaed;height:32px;padding:0 12px;border:1px solid #5a626e;border-radius:6px;font:500 14px/20px system-ui}.ds-btn-secondary:hover{background:#1e2228}"
+      "css": ".ds-btn-secondary{background:#171a1e;color:#ececee;height:32px;padding:0 12px;border:1px solid #5a626e;border-radius:6px;font:500 14px/20px system-ui}.ds-btn-secondary:hover{background:#1e2227}"
     },
     {
       "name": "Text Input",
@@ -155,7 +155,7 @@
       "refersTo": "input",
       "description": "Single-line field with a label above.",
       "html": "<label class=\"ds-l\">Handle<input class=\"ds-in\" value=\"riya_k\"></label>",
-      "css": ".ds-l{display:flex;flex-direction:column;gap:4px;color:#a1a7b0;font:13px/20px system-ui}.ds-in{height:32px;padding:0 12px;background:#111317;color:#e8eaed;border:1px solid #5a626e;border-radius:6px;font:14px system-ui}"
+      "css": ".ds-l{display:flex;flex-direction:column;gap:4px;color:#a3a9b2;font:13px/20px system-ui}.ds-in{height:32px;padding:0 12px;background:#111316;color:#ececee;border:1px solid #5a626e;border-radius:6px;font:14px system-ui}"
     },
     {
       "name": "Verdict Badge",
