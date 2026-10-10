@@ -6,9 +6,13 @@
   },
   "pageHeight": 800,
   "overflowX": false,
-  "elements": 28,
+  "elements": 39,
   "gradients": 0,
   "fontSizes": [
+    [
+      "14px",
+      9
+    ],
     [
       "12px",
       5
@@ -22,26 +26,26 @@
       2
     ],
     [
-      "14px",
-      2
-    ],
-    [
       "16px",
       1
     ],
     [
       "28px",
       1
+    ],
+    [
+      "18px",
+      1
     ]
   ],
   "fontWeights": [
     [
       "400",
-      9
+      12
     ],
     [
       "500",
-      3
+      7
     ],
     [
       "700",
@@ -49,13 +53,13 @@
     ],
     [
       "600",
-      1
+      2
     ]
   ],
   "fontFamilies": [
     [
       "GeistSans",
-      13
+      21
     ],
     [
       "wordmarkFont",
@@ -65,19 +69,19 @@
   "textColours": [
     [
       "rgb(20, 22, 26)",
-      6
+      11
     ],
     [
       "rgb(99, 106, 117)",
       5
     ],
     [
-      "rgb(47, 73, 217)",
-      3
+      "rgb(75, 82, 96)",
+      4
     ],
     [
-      "rgb(75, 82, 96)",
-      1
+      "rgb(47, 73, 217)",
+      3
     ]
   ],
   "backgrounds": [
@@ -118,6 +122,12 @@
       "tag": "h1",
       "text": "Sign in",
       "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "After you sign in",
+      "size": "18px",
       "weight": "600"
     }
   ],

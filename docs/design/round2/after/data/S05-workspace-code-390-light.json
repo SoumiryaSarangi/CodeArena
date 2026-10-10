@@ -6,7 +6,7 @@
   },
   "pageHeight": 897,
   "overflowX": false,
-  "elements": 167,
+  "elements": 171,
   "gradients": 0,
   "fontSizes": [
     [
@@ -15,7 +15,7 @@
     ],
     [
       "12px",
-      10
+      12
     ],
     [
       "13px",
@@ -37,7 +37,7 @@
   "fontWeights": [
     [
       "400",
-      40
+      42
     ],
     [
       "500",
@@ -55,7 +55,7 @@
   "fontFamilies": [
     [
       "GeistMono",
-      26
+      28
     ],
     [
       "GeistSans",
@@ -68,12 +68,12 @@
   ],
   "textColours": [
     [
-      "rgb(20, 22, 26)",
-      12
+      "rgb(75, 82, 96)",
+      13
     ],
     [
-      "rgb(75, 82, 96)",
-      11
+      "rgb(20, 22, 26)",
+      12
     ],
     [
       "rgb(99, 106, 117)",
@@ -107,7 +107,7 @@
     ],
     [
       "color(srgb 1 1 1 / 0.82)",
-      2
+      3
     ],
     [
       "rgb(47, 73, 217)",

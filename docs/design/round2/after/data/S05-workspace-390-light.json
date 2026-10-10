@@ -6,7 +6,7 @@
   },
   "pageHeight": 1216,
   "overflowX": false,
-  "elements": 214,
+  "elements": 215,
   "gradients": 0,
   "fontSizes": [
     [
@@ -111,11 +111,11 @@
   "backgrounds": [
     [
       "rgb(255, 255, 255)",
-      5
+      4
     ],
     [
       "color(srgb 1 1 1 / 0.82)",
-      2
+      3
     ],
     [
       "rgb(242, 243, 245)",

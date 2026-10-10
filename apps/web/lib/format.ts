@@ -14,6 +14,7 @@ export function formatDuration(totalSeconds: number, short = false): string {
 export const formatMs = (ms: number) => `${ms.toLocaleString('en-US')} ms`;
 
 export function formatMemKb(kb: number): string {
+  if (kb >= 1024 * 1024) return `${(kb / 1024 / 1024).toFixed(1)} GB`;
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
 }
 

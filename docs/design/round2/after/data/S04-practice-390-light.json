@@ -1,0 +1,200 @@
+{
+  "url": "/practice",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 126,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      23
+    ],
+    [
+      "13px",
+      21
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "14px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      37
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "700",
+      2
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      42
+    ],
+    [
+      "GeistMono",
+      5
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(99, 106, 117)",
+      18
+    ],
+    [
+      "rgb(75, 82, 96)",
+      13
+    ],
+    [
+      "rgb(20, 22, 26)",
+      11
+    ],
+    [
+      "rgb(20, 108, 53)",
+      3
+    ],
+    [
+      "rgb(160, 74, 6)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(200, 30, 30)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(242, 243, 245)",
+      3
+    ],
+    [
+      "color(srgb 1 1 1 / 0.82)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ],
+    [
+      "1px",
+      1
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Practice",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 9,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "Title",
+        "w": 26,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Peak Reading",
+        "w": 84,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 148,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Maze Runner",
+        "w": 81,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Hop Distances",
+        "w": 88,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Spell Fixer",
+        "w": 64,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 30
+}

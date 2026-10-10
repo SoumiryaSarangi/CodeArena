@@ -3,6 +3,8 @@ import type { HomeSummary, ProfileSummary, SubmissionSummary } from '@codearena/
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityHeatmap } from '@/components/profile/activity-heatmap';
+import { Handle } from '@/components/handle';
+import { SubmissionWire } from '@/components/submission-wire';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import { VerdictBadge } from '@/components/verdict-badge';
@@ -126,7 +128,8 @@ export function HomeView() {
   return (
     <div className="mx-auto flex w-full min-w-0 max-w-[1120px] flex-col gap-4">
       <h1 className="break-words text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
-        Welcome back{handle ? `, ${handle}` : ''}
+        Welcome back{handle ? ', ' : ''}
+        {handle ? <Handle handle={handle} rating={me?.rating} /> : null}
       </h1>
 
       {home.warmUps.length > 0 ? (
@@ -183,11 +186,18 @@ export function HomeView() {
             <ul aria-label="Recent problems" className="flex flex-col gap-1.5">
               {home.continuePracticing.map((p) => (
                 <li key={p.slug} className="flex items-center gap-3 text-14">
-                  <Link href={`/p/${p.slug}`} className="min-w-0 break-words underline">
+                  <Link
+                    href={`/p/${p.slug}`}
+                    title={p.title}
+                    className="min-w-0 truncate underline"
+                  >
                     {p.title}
                   </Link>
-                  <span className="ml-auto shrink-0 whitespace-nowrap text-12 text-text-2">
-                    {p.solved ? 'Solved' : 'Not solved yet'}
+                  <span
+                    className={`ml-auto shrink-0 text-14 ${p.solved ? 'text-v-ac' : 'text-text-3'}`}
+                  >
+                    <span aria-hidden>{p.solved ? '✓' : '·'}</span>
+                    <span className="sr-only">{p.solved ? 'Solved' : 'Not solved yet'}</span>
                   </span>
                 </li>
               ))}
@@ -202,23 +212,26 @@ export function HomeView() {
         ) : (
           <ul aria-label="Recent submissions" className="flex flex-col gap-1.5">
             {recent.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-14">
-                <Link href={`/p/${s.problemSlug}`} className="min-w-0 break-words underline">
-                  {s.problemTitle}
-                </Link>
-                <VerdictBadge
-                  verdict={s.verdict ?? 'pending'}
-                  {...(s.failedTest ? { test: s.failedTest } : {})}
-                />
-                <span className="font-mono text-12 text-text-3">{s.language}</span>
-                <time className="ml-auto text-12 text-text-3" dateTime={s.createdAt}>
-                  {new Date(s.createdAt).toLocaleString('en-GB', {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
+              <li key={s.id} className="flex flex-col gap-1.5 text-14">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <Link href={`/p/${s.problemSlug}`} className="min-w-0 break-words underline">
+                    {s.problemTitle}
+                  </Link>
+                  <VerdictBadge
+                    verdict={s.verdict ?? 'pending'}
+                    {...(s.failedTest ? { test: s.failedTest } : {})}
+                  />
+                  <span className="font-mono text-12 text-text-3">{s.language}</span>
+                  <time className="ml-auto text-12 text-text-3" dateTime={s.createdAt}>
+                    {new Date(s.createdAt).toLocaleString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </time>
+                </div>
+                <SubmissionWire verdict={s.verdict} />
               </li>
             ))}
           </ul>

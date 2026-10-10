@@ -1,0 +1,255 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 239,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      42
+    ],
+    [
+      "13px",
+      32
+    ],
+    [
+      "12px",
+      14
+    ],
+    [
+      "16px",
+      3
+    ],
+    [
+      "18px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      74
+    ],
+    [
+      "500",
+      17
+    ],
+    [
+      "600",
+      4
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      52
+    ],
+    [
+      "GeistSans",
+      43
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      42
+    ],
+    [
+      "rgb(75, 82, 96)",
+      23
+    ],
+    [
+      "rgb(99, 106, 117)",
+      10
+    ],
+    [
+      "rgb(0, 0, 0)",
+      8
+    ],
+    [
+      "rgb(124, 58, 237)",
+      6
+    ],
+    [
+      "rgb(20, 108, 53)",
+      4
+    ],
+    [
+      "rgb(47, 73, 217)",
+      2
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(208, 212, 218)",
+      4
+    ],
+    [
+      "rgb(242, 243, 245)",
+      3
+    ],
+    [
+      "rgb(255, 255, 255)",
+      3
+    ],
+    [
+      "color(srgb 1 1 1 / 0.82)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(234, 236, 239)",
+      1
+    ],
+    [
+      "rgb(20, 108, 53)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "3.35544e+07px",
+      6
+    ],
+    [
+      "4px",
+      5
+    ],
+    [
+      "8px",
+      2
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.468158 -0.102692 0.0578288 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      4
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to Two Numbers, One Total",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 9,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 143,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

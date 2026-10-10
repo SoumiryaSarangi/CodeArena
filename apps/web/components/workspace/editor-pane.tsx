@@ -7,6 +7,9 @@ import { Kbd } from '@/components/ui/kbd';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/states';
 import { useModLabel } from '@/components/shortcut-sheet';
+import { SubmissionWire } from '@/components/submission-wire';
+import { VerdictBadge } from '@/components/verdict-badge';
+import type { LiveSubmission } from '@/lib/live-submission';
 import { LANGUAGES, isLanguage, languageInfo } from '@/lib/languages';
 
 // Monaco loads after the statement has painted (UI_UX §15), with a skeleton of the same size.
@@ -18,6 +21,15 @@ const CodeEditor = dynamic(() => import('@/components/code-editor'), {
 export const FONT_SIZES = [12, 13, 14, 16, 18, 20];
 
 /** Right side of S05: toolbar over the editor. */
+/** One word for the strip; the full queue line (position, judge, tests done) is in the Tests tab. */
+const PHASE_WORD: Record<LiveSubmission['phase'], string> = {
+  queued: 'In the queue',
+  claimed: 'Being judged',
+  compiling: 'Compiling',
+  running: 'Running the tests',
+  done: 'Done',
+};
+
 export function EditorPane({
   language,
   onLanguage,
@@ -32,6 +44,7 @@ export function EditorPane({
   onSubmit,
   running,
   submitting,
+  live,
   retryIn,
   hideActions,
   onPaste,
@@ -51,6 +64,8 @@ export function EditorPane({
   onSubmit: () => void;
   running: boolean;
   submitting: boolean;
+  /** The submission being followed (the wire and the strip under the editor show it). */
+  live?: LiveSubmission | null;
   retryIn: number;
   /** Narrow screens show Run and Submit in a fixed bar instead (UI_UX S05). */
   hideActions?: boolean;
@@ -67,7 +82,7 @@ export function EditorPane({
       <div
         role="toolbar"
         aria-label="Editor"
-        className="flex flex-wrap items-end gap-2 border-b border-border-strong bg-surface-1 px-3 py-2"
+        className="relative flex flex-wrap items-end gap-2 border-b border-border-strong bg-surface-1 px-3 py-2"
       >
         <Select
           label="Language"
@@ -114,6 +129,13 @@ export function EditorPane({
             {retryIn > 0 ? null : <Kbd>{mod} ⇧ ↵</Kbd>}
           </Button>
         </div>
+        {live || submitting ? (
+          <SubmissionWire
+            live={live}
+            submitting={submitting}
+            className="absolute inset-x-0 -bottom-px"
+          />
+        ) : null}
       </div>
       <div className="min-h-0 flex-1">
         <CodeEditor
@@ -129,6 +151,29 @@ export function EditorPane({
           onPaste={onPaste}
           suggestions={suggestions}
         />
+      </div>
+      {/* The editor's status strip: what is being edited, and the judging of the last submit in one line.
+          The Tests tab already announces the same thing, so this one is not read out twice. */}
+      <div
+        aria-hidden
+        className="flex items-center gap-3 border-t border-border bg-surface-1 px-3 py-1.5 text-12 text-text-2"
+      >
+        <span className="font-mono">{info.label}</span>
+        <span className="font-mono">{fontSize} px</span>
+        <span className="ml-auto flex items-center gap-2">
+          {live?.verdict ? (
+            <>
+              <VerdictBadge verdict={live.verdict} test={live.failedTest ?? undefined} />
+              {live.timeMs != null ? (
+                <span className="font-mono tabular-nums">{live.timeMs} ms</span>
+              ) : null}
+            </>
+          ) : live ? (
+            <span>{PHASE_WORD[live.phase]}</span>
+          ) : submitting ? (
+            <span>Submitting…</span>
+          ) : null}
+        </span>
       </div>
     </div>
   );

@@ -50,6 +50,8 @@ test('UI-11 S06: 60 tests with long values keep numbers on one line and the page
   const { state } = await stubApi(page);
   state.details.D1 = detail(60);
   await page.goto('/s/D1');
+  // 60 tests with one wrong: the passed ones are collapsed until asked for (UI-17)
+  await page.getByRole('button', { name: 'Show all 60 tests' }).click();
   await expect(page.getByRole('row')).toHaveCount(61);
   const wrapping = await page
     .locator('td.font-mono.text-right')

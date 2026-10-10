@@ -1,0 +1,210 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1590,
+  "overflowX": false,
+  "elements": 485,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      206
+    ],
+    [
+      "13px",
+      27
+    ],
+    [
+      "12px",
+      17
+    ],
+    [
+      "16px",
+      4
+    ],
+    [
+      "18px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      240
+    ],
+    [
+      "500",
+      14
+    ],
+    [
+      "600",
+      4
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      213
+    ],
+    [
+      "GeistSans",
+      45
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      122
+    ],
+    [
+      "rgb(220, 220, 220)",
+      40
+    ],
+    [
+      "rgb(138, 144, 154)",
+      28
+    ],
+    [
+      "rgb(163, 169, 178)",
+      26
+    ],
+    [
+      "rgb(210, 168, 255)",
+      20
+    ],
+    [
+      "rgb(251, 191, 36)",
+      20
+    ],
+    [
+      "rgb(109, 139, 255)",
+      2
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(47, 52, 59)",
+      4
+    ],
+    [
+      "rgb(23, 26, 30)",
+      3
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      3
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ],
+    [
+      "4px",
+      2
+    ],
+    [
+      "8px",
+      2
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to A problem title that is far too long",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 21
+}
