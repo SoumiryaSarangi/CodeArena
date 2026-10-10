@@ -14,9 +14,13 @@ const isTyping = (el: EventTarget | null) =>
 const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta']);
 
 /** ⌘K / Ctrl+K, `?`, `/` (focus search) and the `g` navigation sequences (UI_UX §13). Ignored while typing. */
-export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () => void }) {
+export function useGlobalShortcuts(
+  handlers: { palette: () => void; sheet: () => void },
+  enabled = true,
+) {
   const router = useRouter();
   useEffect(() => {
+    if (!enabled) return;
     let armedAt = 0;
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -48,5 +52,5 @@ export function useGlobalShortcuts(handlers: { palette: () => void; sheet: () =>
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [handlers, router]);
+  }, [handlers, router, enabled]);
 }

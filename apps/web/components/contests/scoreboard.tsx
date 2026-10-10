@@ -10,6 +10,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectionPill } from '@/components/connection-pill';
+import { useImmersive } from '@/components/shell/app-shell';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
@@ -58,6 +59,16 @@ export function Scoreboard({ slug }: { slug: string }) {
 
   const me = session.status === 'authed' ? session.me : null;
   const admin = me?.role === 'admin';
+  // During someone's own running exam the board is the only other page they may see: no app menu,
+  // no search, no link to the rest of the contest, a way back to the problems.
+  const inExam =
+    !!contest?.exam &&
+    contest.exam.finishedAt === null &&
+    contest.state === 'running' &&
+    !!me &&
+    me.role !== 'admin' &&
+    me.role !== 'setter';
+  useImmersive(inExam, inExam);
   const offset = useServerClock(board?.serverNow);
   const now = useNow(offset);
 
@@ -202,9 +213,17 @@ export function Scoreboard({ slug }: { slug: string }) {
             labels={(board?.problems ?? []).map((p) => p.label)}
             canAsk={contest.state === 'running'}
           />
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`/c/${slug}`}>Contest page</Link>
-          </Button>
+          {inExam ? (
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/c/${slug}/${board?.problems[0]?.label ?? 'A'}`}>
+                Back to the problems
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/c/${slug}`}>Contest page</Link>
+            </Button>
+          )}
           {admin && (contest.state === 'ended' || contest.state === 'finalized') ? (
             <Button asChild variant="secondary" size="sm">
               <Link href={`/c/${slug}/board?present=1`}>Present resolver</Link>

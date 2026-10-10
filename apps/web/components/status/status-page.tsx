@@ -15,7 +15,7 @@ const STATE = {
   ok: { word: 'Operational', Icon: CheckCircle2, cls: 'text-success' },
   degraded: { word: 'Degraded', Icon: AlertTriangle, cls: 'text-warning' },
   down: { word: 'Down', Icon: XCircle, cls: 'text-danger' },
-  planned: { word: 'Not released', Icon: Clock, cls: 'text-text-3' },
+  planned: { word: 'Not set up', Icon: Clock, cls: 'text-text-3' },
 } as const;
 
 const HEADLINE = {

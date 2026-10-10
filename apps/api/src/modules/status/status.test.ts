@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { readdirSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import type { INestApplication } from '@nestjs/common';
@@ -153,6 +154,30 @@ describe.skipIf(!ready)('O-02: public status (needs the Compose Postgres, Redis 
   const fresh = () => app.get(StatusService).get(Date.now() + 60_000 * ++tick);
   const find = (s: { components: { id: string }[] }, id: string) =>
     s.components.find((c) => c.id === id) as unknown as { state: string; detail: string };
+
+  it('O-02: the interview pad is up when the collab servers answer, degraded when some do not, down when none do, planned when none is configured', async () => {
+    const server = createServer((_req, res) => res.writeHead(200).end('ok'));
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    const live = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+    const dead = 'http://127.0.0.1:9';
+    const service = (url?: string) =>
+      new StatusService(db, redis, prefix, { ...config, COLLAB_URL: url } as typeof config);
+    try {
+      expect(find(await service().get(), 'pad')).toMatchObject({ state: 'planned' });
+      expect(find(await service(live).get(), 'pad')).toMatchObject({ state: 'ok' });
+      expect(find(await service(`${live} ${dead}`).get(), 'pad')).toMatchObject({
+        state: 'degraded',
+        detail: '1 of 2 servers answering',
+      });
+      const down = await service(dead).get();
+      expect(find(down, 'pad')).toMatchObject({ state: 'down' });
+      // judging is the core: a dead pad degrades an otherwise healthy platform, never takes it down
+      const withPad = (await service(live).get()).overall;
+      expect(down.overall).toBe(withPad === 'ok' ? 'degraded' : withPad);
+    } finally {
+      await new Promise((r) => server.close(r));
+    }
+  });
 
   it('O-02: anyone can read it, it is cached for 5 s, and it says what each part is doing', async () => {
     const r = await call('get', '/status'); // no token

@@ -49,6 +49,43 @@ test.describe('C-10: exam mode (FR-EXAM-01..05)', () => {
     await expect(page.getByRole('button', { name: 'Finish test' })).toBeVisible();
   });
 
+  test('FR-EXAM-06: during a test only Clarifications and Board are offered: no Show menu, no Contest link, no app menu, no search', async ({
+    page,
+  }) => {
+    await examArena(page);
+    await start(page);
+    await expect(page.getByRole('button', { name: 'Show menu' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Full view' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Contest', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Board' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Clarifications/ })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+    // the search palette and the g-then-letter navigation are off too
+    await page.keyboard.press('Control+k');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.locator('body').click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press('g');
+    await page.keyboard.press('h');
+    await expect(page).toHaveURL(/\/c\/warm-up-1\/A$/);
+  });
+
+  test('FR-EXAM-06: the board in a test shows the board and a way back to the problems, nothing else of the app', async ({
+    page,
+  }) => {
+    await examArena(page);
+    await start(page);
+    await page.getByRole('link', { name: 'Board' }).click();
+    await expect(page.getByRole('table')).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Contest page' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Open command palette' })).toHaveCount(0);
+    await page.getByRole('link', { name: 'Back to the problems' }).click();
+    await expect(page).toHaveURL(/\/c\/warm-up-1\/A$/);
+    // coming back is like a reload: the gate asks to start again (the strikes are the server's)
+    await start(page);
+    await expect(page.getByRole('button', { name: 'Finish test' })).toBeVisible();
+  });
+
   test('FR-EXAM-01: a normal contest has no gate and no Finish button', async ({ page }) => {
     await examArena(page, { ...EXAM, exam: false });
     await expect(page.getByRole('heading', { level: 1, name: 'A. Chai Bill' })).toBeVisible();

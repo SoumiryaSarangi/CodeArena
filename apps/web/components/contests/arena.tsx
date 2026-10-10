@@ -91,11 +91,14 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
 
   const endsAt = contest ? Date.parse(contest.endsAt) : Infinity;
   const running = contest?.state === 'running' && now < endsAt;
-  useImmersive(running && full);
   // Exam mode (C-10): contestants only, while the contest runs.
   const examActive =
     !!contest?.exam && running && !!me && me.role !== 'admin' && me.role !== 'setter';
   const exam = useExam(slug, contest?.exam, examActive);
+  // In an exam the full view is the only view: no menu to bring back, no search, no keyboard
+  // navigation, until the test is finished. Other contests keep the Full view / Show menu toggle.
+  const inExam = examActive && exam.state.phase !== 'finished';
+  useImmersive(running && (full || examActive), inExam);
   // "Contest over": once, when the clock passes the end while this page is open.
   const wasRunning = useRef(false);
   useEffect(() => {
@@ -247,7 +250,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
           {examActive ? (
             <FinishTestButton onFinish={exam.finish} busy={exam.busy} error={exam.error} />
           ) : null}
-          {running ? (
+          {running && !examActive ? (
             <Button variant="ghost" size="sm" onClick={() => setFull((f) => !f)}>
               {full ? 'Show menu' : 'Full view'}
             </Button>
@@ -255,9 +258,11 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
           <Button asChild variant="ghost" size="sm">
             <Link href={`/c/${slug}/board`}>Board</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`/c/${slug}`}>Contest</Link>
-          </Button>
+          {examActive ? null : (
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/c/${slug}`}>Contest</Link>
+            </Button>
+          )}
           {contest && running ? (
             <span className="flex items-center gap-2 text-13 text-text-2">
               Time left
@@ -289,7 +294,7 @@ export function ContestArena({ slug, label }: { slug: string; label: string }) {
         contest={{ slug, label }}
         canary={problem.v.canaryText}
         suggestions={contest?.rules.suggestions ?? true}
-        navHidden={running && full}
+        navHidden={running && (full || examActive)}
         onVerdict={() => refresh(600)}
       />
 
