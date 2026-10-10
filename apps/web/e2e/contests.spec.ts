@@ -101,6 +101,24 @@ test.describe('C-01: contest lobby (S08)', () => {
     expect(text).toContain('SUMMARY:CodeArena Warm-up #1');
   });
 
+  test('Add to Google Calendar opens a prefilled event in a new tab, with no account data', async ({
+    page,
+  }) => {
+    await stubApi(page);
+    await stubContests(page);
+    await page.goto('/c/warm-up-1');
+    const link = page.getByRole('link', { name: 'Add to Google Calendar' });
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', /noopener/);
+    const url = new URL((await link.getAttribute('href'))!);
+    expect(url.origin + url.pathname).toBe('https://calendar.google.com/calendar/render');
+    expect(url.searchParams.get('action')).toBe('TEMPLATE');
+    expect(url.searchParams.get('text')).toBe('CodeArena Warm-up #1');
+    expect(url.searchParams.get('dates')).toMatch(/^\d{8}T\d{6}Z\/\d{8}T\d{6}Z$/);
+    expect(url.searchParams.get('details')).toContain('/c/warm-up-1');
+    expect(url.search).not.toMatch(/@/); // no email or other account data
+  });
+
   test('US-4.2: at the start the lobby opens without a reload and announces it', async ({
     page,
   }) => {

@@ -12,6 +12,7 @@ import {
   formatCountdown,
   formatSpan,
   formatWhen,
+  googleCalendarUrl,
   icsFile,
   useNow,
   useServerClock,
@@ -203,9 +204,20 @@ export function ContestLobby({ slug }: { slug: string }) {
           canAsk={state === 'running'}
         />
         {state === 'scheduled' ? (
-          <Button variant="ghost" onClick={downloadIcs}>
-            <CalendarPlus className="size-4" aria-hidden /> Add to calendar
-          </Button>
+          <>
+            <Button asChild variant="ghost">
+              <a
+                href={googleCalendarUrl(c, window.location.href)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CalendarPlus className="size-4" aria-hidden /> Add to Google Calendar
+              </a>
+            </Button>
+            <Button variant="ghost" onClick={downloadIcs}>
+              <CalendarPlus className="size-4" aria-hidden /> Add to calendar (.ics)
+            </Button>
+          </>
         ) : null}
       </div>
       {regError ? (

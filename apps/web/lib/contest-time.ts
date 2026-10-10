@@ -107,3 +107,18 @@ export function icsFile(
     '',
   ].join('\r\n');
 }
+
+/** "Add to Google Calendar": a prefilled event the user confirms in their own Google session. */
+export function googleCalendarUrl(
+  c: { title: string; startsAt: string; endsAt: string },
+  url: string,
+) {
+  const stamp = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: c.title,
+    dates: `${stamp(c.startsAt)}/${stamp(c.endsAt)}`,
+    details: url,
+  });
+  return `https://calendar.google.com/calendar/render?${q}`;
+}

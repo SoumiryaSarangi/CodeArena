@@ -1387,3 +1387,8 @@ Built: `/rules` (`apps/web/app/rules/page.tsx`, same `LegalPage` layout as priva
 Tests: `e2e/legal.spec.ts` +4 (renders, axe in both themes at 390, no horizontal scroll; footer Rules link reaches it by keyboard and shows the "Nothing is decided automatically" line and the Exam mode heading). 27 pass in 3 repeats. Typecheck, lint.
 Decisions: the link is followed by keyboard in the test because the dev build's badge covers the first footer link for mouse clicks. Page says "may freeze" and "fixed number of minutes" rather than stating a default, since each contest sets its own.
 Next: Ayush may reword it (it is his U9.3 text in effect). Ayush must: read it once. Model: S · Sonnet.
+
+## 2026-10-10 · UI-22 · done
+Built: S08 lobby gains "Add to Google Calendar", a link to Google's prefilled-event page (`googleCalendarUrl` in `lib/contest-time.ts`: title, UTC start/end, the contest URL as details; new tab, `noopener noreferrer`); the download button is now "Add to calendar (.ics)" for Apple and Outlook. Option A chosen by Ayush: the user confirms in their own Google session, so we need no Calendar permission, no tokens, no email, and no Google verification. A true one-click add through the Calendar API (option B) would need the sensitive `calendar.events` scope, token storage and Google's app verification, and is not planned.
+Tests: e2e (new) the link's target, rel, host, action, title, dates format, details, no `@` in the URL; the .ics test unchanged and passing; contests and ui18 specs green.
+Next: none. Ayush must: nothing. Model: S · Sonnet.
