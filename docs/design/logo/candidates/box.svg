@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+<style>.fi{fill:#14161a}.fa{fill:#2f49d9}.si{stroke:#14161a}.sa{stroke:#2f49d9}@media (prefers-color-scheme:dark){.fi{fill:#ececee}.fa{fill:#6d8bff}.si{stroke:#ececee}.sa{stroke:#6d8bff}}</style>
+<path class="si" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" d="M16 5.5 25.5 11v11L16 28.5 6.5 22V11Z M6.5 11 16 16.5 25.5 11 M16 16.5v12"/>
+<path class="sa" fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" d="M16 5.5 25.5 11 16 16.5 6.5 11Z"/>
+<circle class="fa" cx="16" cy="11" r="1.9"/>
+</svg>

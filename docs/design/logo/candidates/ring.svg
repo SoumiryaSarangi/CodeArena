@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+<style>.fi{fill:#14161a}.fa{fill:#2f49d9}.si{stroke:#14161a}.sa{stroke:#2f49d9}@media (prefers-color-scheme:dark){.fi{fill:#ececee}.fa{fill:#6d8bff}.si{stroke:#ececee}.sa{stroke:#6d8bff}}</style>
+<path class="si" fill="none" stroke-width="3.2" stroke-linecap="round" d="M10.25 6.04A11.5 11.5 0 0 1 21.75 6.04"/>
+<path class="si" fill="none" stroke-width="3.2" stroke-linecap="round" d="M23.70 7.45A11.5 11.5 0 0 1 27.25 18.39"/>
+<path class="si" fill="none" stroke-width="3.2" stroke-linecap="round" d="M26.51 20.68A11.5 11.5 0 0 1 17.20 27.44"/>
+<path class="si" fill="none" stroke-width="3.2" stroke-linecap="round" d="M14.80 27.44A11.5 11.5 0 0 1 5.49 20.68"/>
+<path class="sa" fill="none" stroke-width="3.2" stroke-linecap="round" d="M4.75 18.39A11.5 11.5 0 0 1 8.30 7.45"/>
+</svg>
