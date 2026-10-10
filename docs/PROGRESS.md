@@ -1381,3 +1381,9 @@ Decisions: no contest-day numbers exist in METRICS.md yet (no contest report has
 Next: run the contest report, then fill the bracket. README GIFs and rewriting `docs/interview/answers.md` stay Ayush's.
 Ayush must: record the video from the shot list; run `tests/load/prod.sh contest-report <slug> FILE` for the contest numbers.
 Model: S · Sonnet.
+
+## 2026-10-10 · UI-21 · done
+Built: `/rules` (`apps/web/app/rules/page.tsx`, same `LegalPage` layout as privacy and terms). The footer "Rules" link had pointed at a page that did not exist since F-07; PLAN U9.3 gave the text to Ayush and it was never written, and no card asked for the page. Text comes from PRD US-9.3, §9.2a and the lobby rules: scoring and ranking, freeze, fair play, what is recorded and that nothing is decided automatically (flagged, reviewed by a person, logged, deleted after 30 days), exam mode (three leaves, deterrent not proctoring, organisers can reopen), clarifications. Contest-specific numbers stay on each contest's page, which wins on a difference.
+Tests: `e2e/legal.spec.ts` +4 (renders, axe in both themes at 390, no horizontal scroll; footer Rules link reaches it by keyboard and shows the "Nothing is decided automatically" line and the Exam mode heading). 27 pass in 3 repeats. Typecheck, lint.
+Decisions: the link is followed by keyboard in the test because the dev build's badge covers the first footer link for mouse clicks. Page says "may freeze" and "fixed number of minutes" rather than stating a default, since each contest sets its own.
+Next: Ayush may reword it (it is his U9.3 text in effect). Ayush must: read it once. Model: S · Sonnet.

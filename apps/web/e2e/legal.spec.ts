@@ -7,6 +7,7 @@ import { stubApi } from './stub-api';
 for (const [path, heading] of [
   ['/privacy', 'Privacy'],
   ['/terms', 'Terms of use'],
+  ['/rules', 'Contest rules'],
 ] as const) {
   for (const theme of ['dark', 'light'] as const) {
     test(`${path} renders, is accessible in the ${theme} theme and has no page-level horizontal scroll`, async ({
@@ -68,4 +69,18 @@ test('the footer and the sign-in page link to both', async ({ page }) => {
   await page.getByRole('contentinfo').getByRole('link', { name: 'Privacy' }).click();
   await expect(page).toHaveURL(/\/privacy$/);
   await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Terms' })).toBeVisible();
+});
+
+test('the footer Rules link opens the rules page, which states that nothing is decided automatically', async ({
+  page,
+}) => {
+  await stubApi(page, { signedIn: false });
+  await page.goto('/signin');
+  // Keyboard, not a mouse click: the dev build's badge sits over the first footer link.
+  await page.getByRole('contentinfo').getByRole('link', { name: 'Rules' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/rules$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Contest rules' })).toBeVisible();
+  await expect(page.getByText('Nothing is decided automatically')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Exam mode' })).toBeVisible();
 });
