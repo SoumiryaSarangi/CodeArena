@@ -13,10 +13,20 @@ check() { # name expected-exit-code command...
   if [ "$got" = "$want" ]; then ok "$name"; else bad "$name (exit $got, wanted $want)"; sed 's/^/     /' "$T/out"; fi
 }
 
+# A stand-in pg_restore (the real one may or may not be installed): a dump is readable when it says so.
+mkdir -p "$T/stubbin"
+cat > "$T/stubbin/pg_restore" <<'SH'
+#!/usr/bin/env bash
+file="${@: -1}"
+grep -q TOCDATA "$file" && echo "1; 0 0 TABLE DATA public users codearena" || exit 1
+SH
+chmod +x "$T/stubbin/pg_restore"
+export PATH="$T/stubbin:$PATH"
+
 make_stage() { # $1 dir
   mkdir -p "$1/d"; echo data > "$1/d/x"
   (cd "$1" && tar czf s3data.tgz d && rm -r d)
-  head -c 2000 /dev/urandom > "$1/postgres.dump"
+  { echo TOCDATA; head -c 2000 /dev/urandom; } > "$1/postgres.dump"
   printf 'A=1\nB=2\n' > "$1/prod.env"; printf 'C=3\n' > "$1/judge-worker.env"; echo "users 3" > "$1/counts.txt"
   { echo "manifest"; for f in postgres.dump s3data.tgz; do echo "sha256 $(sha256sum "$1/$f" | cut -d' ' -f1) $f"; done; } > "$1/manifest.txt"
 }
@@ -42,6 +52,11 @@ check "W-04: a truncated archive fails" 1 bash "$S" verify "$T/cut.enc"
 
 make_stage "$T/nodump"; rm "$T/nodump/postgres.dump"; pack "$T/nodump" "$T/nodump.enc"
 check "W-04: an archive without the database dump fails" 1 bash "$S" verify "$T/nodump.enc"
+
+make_stage "$T/baddump"; echo "not a dump" > "$T/baddump/postgres.dump"
+{ echo manifest; for f in postgres.dump s3data.tgz; do echo "sha256 $(sha256sum "$T/baddump/$f" | cut -d' ' -f1) $f"; done; } > "$T/baddump/manifest.txt"
+pack "$T/baddump" "$T/baddump.enc"
+check "W-04: a dump that pg_restore cannot read fails" 1 bash "$S" verify "$T/baddump.enc"
 
 make_stage "$T/badtar"; echo notatar > "$T/badtar/s3data.tgz"; pack "$T/badtar" "$T/badtar.enc"
 check "W-04: a damaged object-store copy fails" 1 bash "$S" verify "$T/badtar.enc"
@@ -72,7 +87,7 @@ echo "docker $*" >> "$FAKE_ROOT/docker.log"
 case "$*" in
   *"ps -q postgres"*) echo fakepg ;;
   *"compose"*) : ;;
-  "exec fakepg pg_dump"*) head -c 4000 /dev/urandom ;;
+  "exec fakepg pg_dump"*) { echo TOCDATA; head -c 4000 /dev/urandom; } ;;
   "exec -i fakepg pg_restore --list"*) echo "1; 0 0 TABLE DATA public users codearena" ;;
   "exec fakepg psql"*) printf 'users 3\nproblems 20\n' ;;
   "run --rm"*) d="$(mktemp -d)"; echo tests > "$d/t"; tar czf "$FAKE_ROOT/rtmp/teardown-s3data.tgz" -C "$d" . ;;
