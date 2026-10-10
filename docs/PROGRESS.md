@@ -1261,3 +1261,6 @@ UI-07 fix (same day): after the skills were installed `pnpm lint` failed on hund
 **Next:** UI-09 (foundation, tag P) once Ayush answers the veto questions.
 **Ayush must:** read `docs/design/DIRECTION.md` and `docs/design/AUDIT.md` before UI-09; answer the four questions at the end of DIRECTION.md (brand blue vs violet, ink-on-paper primary, root 16 px, Stage/Workbench split). Optional: `npx playwright install chrome` if you want the Playwright MCP browser for future `/taste` runs.
 **Model:** P · opusplan (Opus planned, Sonnet built; evaluation sub-agents on the default subagent model).
+
+## 2026-10-10 · UI-08 · veto point cleared
+Ayush approved all four DIRECTION.md questions (blue, ink-on-paper primary, root 16 px, Stage/Workbench split). DIRECTION.md marked approved. Next: UI-09. Model: S · sonnet (docs only).

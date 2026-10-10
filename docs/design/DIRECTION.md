@@ -1,6 +1,6 @@
 # Design direction: "Match Day" (proposal, UI-08)
 
-Status: **proposal. Ayush reads this and vetoes or amends before UI-09 starts.** Nothing here is built yet. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
+Status: **approved by Ayush on 2026-10-10** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
 
 ## The decision in one paragraph
 
@@ -61,9 +61,9 @@ No new fonts, no animation library (the app already uses `motion` for the board 
 
 Gradients, glows, blurred backdrops, illustrations, mascots, a logo (a wordmark may be set in Geist Mono), testimonials or user counts (none exist), a separate marketing site, new colour for every feature, and redesigning the Monaco editor beyond its theme.
 
-## Open questions for Ayush (veto points)
+## Decisions (Ayush, 2026-10-10)
 
-1. Brand blue instead of violet: yes or keep violet?
-2. Ink-on-paper primary buttons: yes, or a coloured primary?
-3. Root font size 16 px (every screen's text grows ~14%): yes?
-4. Stage vs Workbench density split: yes, or one density?
+1. Brand blue replaces violet: **yes.**
+2. Ink-on-paper primary buttons: **yes.**
+3. Root font size 16 px: **yes** (left to the builder's judgement; accepted).
+4. Stage and Workbench density split: **yes.**
