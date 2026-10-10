@@ -43,6 +43,14 @@ function StatusCell({ p }: { p: ProblemSummary }) {
   );
 }
 
+/** The word is always shown; the colour only repeats it (tokens: difficulty aliases of success, warning, danger). */
+const DIFFICULTY_TONE: Record<string, string> = {
+  Easy: 'text-diff-easy',
+  Medium: 'text-diff-medium',
+  Hard: 'text-diff-hard',
+  Expert: 'text-diff-hard',
+};
+
 const COLUMNS: Column<ProblemSummary>[] = [
   { key: 'status', header: 'Status', cell: (p) => <StatusCell p={p} /> },
   {
@@ -56,7 +64,10 @@ const COLUMNS: Column<ProblemSummary>[] = [
         </Link>
         {/* Phones drop the other columns; what they said moves under the title. */}
         <span className="mt-0.5 block text-12 text-text-3 md:hidden">
-          {difficultyLabel(p.difficulty)} <span className="font-mono">{p.difficulty}</span>
+          <span className={DIFFICULTY_TONE[difficultyLabel(p.difficulty)]}>
+            {difficultyLabel(p.difficulty)}
+          </span>{' '}
+          <span className="font-mono">{p.difficulty}</span>
           {p.acceptance === null ? '' : ` · ${p.acceptance}% accepted`}
         </span>
       </>
@@ -69,7 +80,9 @@ const COLUMNS: Column<ProblemSummary>[] = [
     sortValue: (p) => p.difficulty,
     cell: (p) => (
       <span>
-        {difficultyLabel(p.difficulty)}{' '}
+        <span className={DIFFICULTY_TONE[difficultyLabel(p.difficulty)]}>
+          {difficultyLabel(p.difficulty)}
+        </span>{' '}
         <span className="font-mono text-text-3">{p.difficulty}</span>
       </span>
     ),
@@ -322,6 +335,9 @@ export function PracticeList() {
             <p className="mb-2 text-13 text-text-3">
               {data.items.length} problem{data.items.length === 1 ? '' : 's'}
               {data.next ? ' shown' : ''}
+              {data.items.some((p) => p.status !== undefined && p.status !== null)
+                ? ` · ${data.items.filter((p) => p.status === 'solved').length} solved`
+                : ''}
             </p>
             <DataTable
               caption="Practice problems"

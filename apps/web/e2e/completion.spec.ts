@@ -11,6 +11,9 @@ const rows = (page: Page) => widget(page).locator('.monaco-list-row');
 
 /** Replace the editor's text with what a person types, one key at a time (suggestions open on typing). */
 async function typeCode(page: Page, text: string) {
+  // A suggestion list left open by the previous call can sit over the middle of the editor, where the click lands
+  // (UI-17: the status strip makes the editor shorter, so it does now); closing it first is what a person would do.
+  await page.keyboard.press('Escape');
   await page.locator('.monaco-editor .view-lines').first().click();
   await page.keyboard.press('Control+A');
   await page.keyboard.press('Delete');

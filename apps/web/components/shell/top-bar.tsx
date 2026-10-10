@@ -6,6 +6,7 @@ import { ThemeToggle } from '../theme-toggle';
 import { Button, IconButton } from '../ui/button';
 import { Kbd } from '../ui/kbd';
 import { useModLabel } from '../shortcut-sheet';
+import { Handle } from '../handle';
 import { signInHref, useSession } from '@/lib/session';
 import { usePathname } from 'next/navigation';
 import { usePlatformStatus } from '@/lib/status';
@@ -83,7 +84,11 @@ function Account() {
         className="hit-44 max-w-[5.5rem] truncate text-13 text-text-2 hover:text-text sm:max-w-[16rem]"
         title={session.me.handle ?? undefined}
       >
-        {session.me.handle ?? 'Choose a handle'}
+        {session.me.handle ? (
+          <Handle handle={session.me.handle} rating={session.me.rating} />
+        ) : (
+          'Choose a handle'
+        )}
       </Link>
       <Button variant="ghost" size="sm" onClick={() => void signOut()}>
         Sign out

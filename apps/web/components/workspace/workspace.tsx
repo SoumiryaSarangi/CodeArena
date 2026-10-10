@@ -8,6 +8,7 @@ import { useSignals } from '@/lib/signals';
 import { useModLabel } from '@/components/shortcut-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
+import { SubmissionWire } from '@/components/submission-wire';
 import { Kbd } from '@/components/ui/kbd';
 import { ErrorState, Skeleton } from '@/components/ui/states';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -299,6 +300,7 @@ export function WorkspaceView({
       onSubmit={doSubmit}
       running={judging.running}
       submitting={judging.submitting}
+      live={judging.live}
       retryIn={judging.retryIn}
       hideActions={!wide}
       onPaste={onPaste}
@@ -406,9 +408,16 @@ export function WorkspaceView({
               navHidden
                 ? 'bottom-0 pb-[calc(0.5rem+env(safe-area-inset-bottom))]'
                 : 'bottom-[calc(3.5rem+env(safe-area-inset-bottom))]',
-              'gap-2 border-t border-border-strong bg-surface-1 p-2',
+              'glass gap-2 border-t border-border-strong p-2',
             )}
           >
+            {judging.live || judging.submitting ? (
+              <SubmissionWire
+                live={judging.live}
+                submitting={judging.submitting}
+                className="absolute inset-x-0 -top-px"
+              />
+            ) : null}
             <Button
               className="flex-1"
               variant="secondary"

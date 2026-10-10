@@ -1,0 +1,250 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 854,
+  "overflowX": false,
+  "elements": 493,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      211
+    ],
+    [
+      "13px",
+      28
+    ],
+    [
+      "12px",
+      14
+    ],
+    [
+      "16px",
+      4
+    ],
+    [
+      "18px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      241
+    ],
+    [
+      "500",
+      16
+    ],
+    [
+      "600",
+      4
+    ],
+    [
+      "700",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      214
+    ],
+    [
+      "GeistSans",
+      47
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      123
+    ],
+    [
+      "rgb(220, 220, 220)",
+      40
+    ],
+    [
+      "rgb(163, 169, 178)",
+      28
+    ],
+    [
+      "rgb(138, 144, 154)",
+      28
+    ],
+    [
+      "rgb(210, 168, 255)",
+      20
+    ],
+    [
+      "rgb(251, 191, 36)",
+      20
+    ],
+    [
+      "rgb(109, 139, 255)",
+      2
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(47, 52, 59)",
+      4
+    ],
+    [
+      "rgb(23, 26, 30)",
+      3
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      3
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ],
+    [
+      "3.35544e+07px",
+      6
+    ],
+    [
+      "4px",
+      3
+    ],
+    [
+      "8px",
+      2
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to A problem title that is far too long",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 9,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "A problem title that is far to",
+        "w": 517,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 21
+}

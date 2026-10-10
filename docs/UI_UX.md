@@ -219,6 +219,8 @@ Build with shadcn/ui primitives (Radix) restyled to tokens. Every component docu
 | **Kbd** | Mono 12 px, surface-3, 1 px border; used in tooltips and shortcut sheet. |
 | **Tabs** | Underline style (2 px `--primary`, medium weight when active; 44 px tall under 768 px); arrow keys move focus; `role=tablist`. |
 | **DataTable** | Dense 36 px rows (44 px on the board); columns can be hidden on phones (`hideOnPhone`) when the first cell carries what matters; sticky header; sortable headers with `aria-sort`; row hover surface-2; keyboard row navigation (↑↓, Enter opens); virtualised > 200 rows. |
+| **SubmissionWire** | "The wire" (round 2, UI-17): five 3 px segments (queued, claimed, compiling, running, verdict) that fill from the real submission events and settle in the verdict colour; `aria-hidden` (the queue line and the badge say it in words); `data-wire` carries the state. Under Submit on S05, on the top edge of the phone action bar, on the S03 recent rows (S10 board rows: UI-18). |
+| **Handle** | A handle in its rating tier's colour (the tier word in the tooltip and read out); neutral at the starting 1400 and without a rating. |
 | **VerdictBadge** | Mono 12 px label (AC/WA/…) + optional "on test 7"; tinted bg; `title` has full name; pending variant pulses. |
 | **VerdictGrid** | One 12×12 px square per test (gap 3 px, wraps); states: pending (surface-3 outline), running (accent pulse), verdict colour; hover/focus → tooltip "Test 7 · WA · 31 ms · 2.1 MB"; the whole grid has `role=list`; a visually hidden live region announces "Test 7 wrong answer" only for the final verdict (not every test, to avoid noise). |
 | **QueueStatus** | "#4 in queue · ETA ~6 s" mono; updates ≤ 2 s; switches to "Judging on judge-2 · 7/30". |
@@ -383,11 +385,11 @@ What the redesign changed on each screen; the behaviour specified above did not 
 | Screen | As built |
 |---|---|
 | S01 | Round 2 (UI-16): the tagline at 72 px beside a framed "judge window" that lights the six steps of one submission once (with the measured p50 and p95 of the 8 October 2026 load test under it); a live strip of the last 6 finished practice verdicts on public problems (no handles, `GET /api/status/verdicts`, refreshed every 10 s, Pause, hidden when empty or failing); the proof as display numerals (2.1 s, 28, 6, 2.1 ms, each with its run and date); the 500-run verdict mix as a flat bar with a text legend and the one-judge-against-two bars; a framed sample scoreboard marked "Sample data"; the three things. Bare shell for signed-out visitors. |
-| S02 | Provider buttons stay equal secondary choices (no primary); "Let's go" has a clear disabled state. |
-| S03 | The next contest leads, with a display countdown and a filled action; long handles and titles wrap or truncate. |
-| S04 | On phones the table keeps Status and Title; difficulty and acceptance sit under the title. |
-| S05 | The phone Run/Submit bar sits above the 56 px bottom bar (at the screen edge when the contest is in full view). Page title 22 px, statement headings 22/18/16. |
-| S06 | Visible h1 "Submission to …", 18 px sections, one date format (`10 Oct 2026, 10:00 IST`), numbers never wrap, the test table scrolls inside a labelled region. |
+| S02 | Round 2 (UI-17): the sign-in page has an "After you sign in" panel beside the buttons (choose a handle, practise, join a contest or interview); the provider buttons stay equal secondary choices; "Let's go" has a clear disabled state. |
+| S03 | The next contest leads, with a display countdown and a filled action; long handles and titles wrap or truncate; the greeting handle is in its tier colour (with the tier word read out); practice rows say Solved as a glyph with the word for screen readers; every Recent submissions row has its **wire**. |
+| S04 | On phones the table keeps Status and Title, and the difficulty and acceptance sit under the title. Difficulty is a word with a tone (Easy, Medium, Hard from the difficulty tokens); the list says how many of the shown problems are solved. |
+| S05 | The phone Run/Submit bar sits above the 56 px bottom bar (at the screen edge when the contest is in full view). Page title 22 px, statement headings 22/18/16. **The wire** under the Submit button (and on the top edge of the phone bar) follows the real submission events and settles in the verdict colour; a status strip under the editor shows the language, the font size and, after a submit, the queue line or the verdict and time. |
+| S06 | Visible h1 "Submission to …" (22 px on phones, two lines at most, full text in `title`), 18 px sections, one date format, numbers with thousands separators and GB above 1 GB, and a list of more than 10 tests with a failure shows the rows to look at first ("N of M tests passed", "Show all M tests"). |
 | S07 | One filled action per row: Register when you are not in; Enter filled only while it runs and you are registered. |
 | S08 | Centred 1120 px column, display countdown (72 px from 640 px), the second time zone shows only the time when the day matches. |
 | S09 | Phone action bar at the screen edge in full view. |

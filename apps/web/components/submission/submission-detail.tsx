@@ -10,7 +10,7 @@ import { VerdictBadge } from '@/components/verdict-badge';
 import { VerdictGrid } from '@/components/verdict-grid';
 import { ApiError, apiFetch } from '@/lib/api';
 import { saveDraft, saveLanguage } from '@/lib/drafts';
-import { formatDateTime, formatMemKb } from '@/lib/format';
+import { formatDateTime, formatMemKb, formatMs } from '@/lib/format';
 import { buildJourney } from '@/lib/journey';
 import { languageInfo } from '@/lib/languages';
 import {
@@ -137,7 +137,10 @@ function Detail({
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-3">
-        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+        <h1
+          title={`Submission to ${d.problemTitle}`}
+          className="line-clamp-2 text-22 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere] sm:text-28"
+        >
           Submission to {d.problemTitle}
         </h1>
         <div className="flex flex-wrap items-center gap-3">
@@ -177,7 +180,7 @@ function Detail({
           </div>
           <div className="flex gap-1">
             <dt>Time</dt>
-            <dd className="font-mono text-text">{d.timeMs != null ? `${d.timeMs} ms` : '—'}</dd>
+            <dd className="font-mono text-text">{d.timeMs != null ? formatMs(d.timeMs) : '—'}</dd>
           </div>
           <div className="flex gap-1">
             <dt>Memory</dt>
@@ -246,7 +249,15 @@ function Detail({
   );
 }
 
+/** A long list with something wrong in it shows the rows that need a look first; the passed ones are one tap away. */
+const COLLAPSE_AFTER = 10;
+
 function TestTable({ d }: { d: SubmissionDetail }) {
+  const [showAll, setShowAll] = useState(false);
+  const bad = d.tests.filter((t) => t.verdict !== 'AC');
+  const collapsed = !showAll && d.tests.length > COLLAPSE_AFTER && bad.length > 0;
+  const rows = collapsed ? bad : d.tests;
+  const hidden = d.tests.length - bad.length;
   return (
     <section aria-label="Tests">
       <h2 className="mb-2 text-18 font-semibold">Tests</h2>
@@ -254,7 +265,7 @@ function TestTable({ d }: { d: SubmissionDetail }) {
         role="region"
         tabIndex={0}
         aria-label="Test results table"
-        className="relative relative overflow-x-auto rounded-lg border border-border-strong"
+        className="relative overflow-x-auto rounded-lg border border-border-strong"
       >
         <table className="w-full text-13">
           <caption className="sr-only">Result of each test</caption>
@@ -275,7 +286,7 @@ function TestTable({ d }: { d: SubmissionDetail }) {
             </tr>
           </thead>
           <tbody>
-            {d.tests.map((t) => {
+            {rows.map((t) => {
               const first = t.no === d.failedTest;
               return (
                 <tr
@@ -289,7 +300,9 @@ function TestTable({ d }: { d: SubmissionDetail }) {
                   <td className="h-8 px-3 font-mono">
                     {t.no}
                     {first ? (
-                      <span className="ml-2 font-sans text-12 text-text-2">first failing test</span>
+                      <span className="ml-2 whitespace-nowrap font-sans text-12 text-text-2">
+                        first failing test
+                      </span>
                     ) : null}
                   </td>
                   <td className="px-3">
@@ -310,6 +323,16 @@ function TestTable({ d }: { d: SubmissionDetail }) {
           </tbody>
         </table>
       </div>
+      {d.tests.length > COLLAPSE_AFTER && bad.length > 0 ? (
+        <div className="mt-2 flex items-center gap-3 text-13 text-text-2">
+          <span>
+            {hidden} of {d.tests.length} tests passed
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => setShowAll((v) => !v)}>
+            {collapsed ? `Show all ${d.tests.length} tests` : 'Show only the ones to look at'}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

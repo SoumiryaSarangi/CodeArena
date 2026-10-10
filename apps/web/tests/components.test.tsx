@@ -68,6 +68,7 @@ describe('F-07: timer and formatting', () => {
     expect(formatDuration(-5)).toBe('00:00:00');
     expect(formatMemKb(2150)).toBe('2.1 MB');
     expect(formatMemKb(512)).toBe('512 KB');
+    expect(formatMemKb(2_097_152)).toBe('2.0 GB'); // UI-17: not 2048.0 MB
   });
 });
 
