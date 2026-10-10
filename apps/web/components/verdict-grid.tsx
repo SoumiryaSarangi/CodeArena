@@ -1,3 +1,5 @@
+'use client';
+import { useEffect, useRef } from 'react';
 import type { Verdict } from '@codearena/contracts';
 import { cn } from '@/lib/cn';
 import { formatMemKb } from '@/lib/format';
@@ -31,6 +33,12 @@ export function VerdictGrid({
   tests: GridTest[];
   finalAnnouncement?: string;
 }) {
+  // A swatch pops in only when its state changes while the page is open, never for the whole grid on load.
+  const before = useRef<Map<number, GridTest['state']> | null>(null);
+  const seen = before.current;
+  useEffect(() => {
+    before.current = new Map(tests.map((t) => [t.no, t.state]));
+  });
   return (
     <div>
       <ul role="list" aria-label="Test results" className="flex flex-wrap gap-[3px]">
@@ -47,7 +55,10 @@ export function VerdictGrid({
               t.state === 'running' && 'bg-v-pending motion-safe:animate-judging',
               t.state !== 'pending' &&
                 t.state !== 'running' &&
-                cn(VERDICTS[t.state].swatch, 'motion-safe:animate-fill'),
+                cn(
+                  VERDICTS[t.state].swatch,
+                  seen && seen.get(t.no) !== t.state && 'motion-safe:animate-fill',
+                ),
             )}
           />
         ))}

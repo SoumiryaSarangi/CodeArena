@@ -73,7 +73,7 @@ export function TagFilter({
           id={panelId}
           role="group"
           aria-label="Filter by tags"
-          className="absolute left-0 top-full z-20 mt-1 flex max-h-72 w-64 flex-col gap-2 rounded-lg border border-border-strong bg-surface-2 p-2 shadow-lg"
+          className="absolute left-0 top-full z-20 mt-1 flex max-h-72 w-64 flex-col gap-2 rounded-lg border border-border-strong bg-surface-2 p-2 shadow-[var(--shadow-overlay)]"
         >
           <input
             type="search"

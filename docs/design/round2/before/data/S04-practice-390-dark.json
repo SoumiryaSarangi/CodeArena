@@ -1,0 +1,168 @@
+{
+  "url": "/practice",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 122,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      21
+    ],
+    [
+      "12px",
+      19
+    ],
+    [
+      "14px",
+      3
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      33
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      38
+    ],
+    [
+      "GeistMono",
+      7
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(138, 144, 154)",
+      19
+    ],
+    [
+      "rgb(163, 169, 178)",
+      13
+    ],
+    [
+      "rgb(236, 236, 238)",
+      11
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      7
+    ],
+    [
+      "rgb(23, 26, 30)",
+      3
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Practice",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 9,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "Title",
+        "w": 26,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Peak Reading",
+        "w": 84,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 148,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Maze Runner",
+        "w": 81,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Hop Distances",
+        "w": 88,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Spell Fixer",
+        "w": 64,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 30
+}

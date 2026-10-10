@@ -1,0 +1,152 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 89,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      9
+    ],
+    [
+      "14px",
+      9
+    ],
+    [
+      "13px",
+      6
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      18
+    ],
+    [
+      "500",
+      7
+    ],
+    [
+      "700",
+      2
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      26
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(163, 169, 178)",
+      14
+    ],
+    [
+      "rgb(236, 236, 238)",
+      7
+    ],
+    [
+      "rgb(138, 144, 154)",
+      5
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(11, 12, 14)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      3
+    ],
+    [
+      "color(srgb 0.0666667 0.0745098 0.0862745 / 0.82)",
+      2
+    ],
+    [
+      "rgb(17, 19, 22)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 29
+}

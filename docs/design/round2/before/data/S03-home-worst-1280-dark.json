@@ -1,0 +1,234 @@
+{
+  "url": "/home",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 1209,
+  "overflowX": false,
+  "elements": 511,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      26
+    ],
+    [
+      "14px",
+      24
+    ],
+    [
+      "13px",
+      4
+    ],
+    [
+      "18px",
+      4
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "48px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      46
+    ],
+    [
+      "500",
+      8
+    ],
+    [
+      "600",
+      7
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      54
+    ],
+    [
+      "GeistMono",
+      7
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      26
+    ],
+    [
+      "rgb(163, 169, 178)",
+      26
+    ],
+    [
+      "rgb(138, 144, 154)",
+      6
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(11, 12, 14)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      6
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "8px",
+      4
+    ],
+    [
+      "4px",
+      2
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Welcome back, a_very_long_handle_that_keeps_going_",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Next contest",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Continue practising",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Recent submissions",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your activity",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 17,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "a_very_long_handle_that_keeps_",
+        "w": 256,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "CodeArena Warm-up #1",
+        "w": 154,
+        "h": 18
+      },
+      {
+        "tag": "a",
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 34
+}

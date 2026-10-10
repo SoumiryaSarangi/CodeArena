@@ -1,0 +1,222 @@
+{
+  "url": "/admin/problems/hop-distances",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1480,
+  "overflowX": false,
+  "elements": 206,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      40
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "18px",
+      6
+    ],
+    [
+      "13px",
+      4
+    ],
+    [
+      "22px",
+      2
+    ],
+    [
+      "16.94px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      50
+    ],
+    [
+      "600",
+      11
+    ],
+    [
+      "500",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      36
+    ],
+    [
+      "GeistMono",
+      28
+    ],
+    [
+      "math",
+      1
+    ],
+    [
+      "KaTeX_Math",
+      1
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(138, 144, 154)",
+      25
+    ],
+    [
+      "rgb(236, 236, 238)",
+      20
+    ],
+    [
+      "rgb(163, 169, 178)",
+      15
+    ],
+    [
+      "rgb(210, 168, 255)",
+      4
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgba(138, 144, 154, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgb(17, 19, 22)",
+      2
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      16
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Hop Distances",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Hop Distances#",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Input#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Output#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Notes#",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 8,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "← Problems",
+        "w": 358,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 12,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      }
+    ]
+  },
+  "interactive": 30
+}

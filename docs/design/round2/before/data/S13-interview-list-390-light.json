@@ -1,0 +1,160 @@
+{
+  "url": "/interview",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 83,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      10
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "13px",
+      7
+    ],
+    [
+      "18px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      20
+    ],
+    [
+      "600",
+      5
+    ],
+    [
+      "500",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      28
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      13
+    ],
+    [
+      "rgb(20, 22, 26)",
+      8
+    ],
+    [
+      "rgb(99, 106, 117)",
+      6
+    ],
+    [
+      "rgb(47, 73, 217)",
+      2
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgb(20, 22, 26)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Interview rooms",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "New room",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your rooms",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 5,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 36,
+        "h": 20
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 13,
+        "h": 13
+      },
+      {
+        "tag": "a",
+        "text": "Chai Bill",
+        "w": 55,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 23
+}

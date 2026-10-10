@@ -1,5 +1,7 @@
 # Design direction: "Match Day" (proposal, UI-08)
 
+> **Round 2 (`docs/design/ROUND2.md`, UI-15) supersedes this document where they differ.** In particular: frosted floating chrome is now allowed, the wordmark has its own typeface and two colours, tier and difficulty colours exist, and the evidence copy follows `docs/METRICS.md` exactly.
+
 Status: **approved by Ayush on 2026-10-10 and built in UI-09 to UI-13; see "As built" at the end** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
 
 ## The decision in one paragraph

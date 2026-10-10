@@ -31,19 +31,19 @@ const JOURNEY = [
 ] as const;
 
 /**
- * Every number here is in `docs/METRICS.md` (run and date named in the sentence). Nothing on this
+ * Every number here is in `docs/METRICS.md`, with the run and date named in the sentence and the caveat METRICS.md writes beside it. Nothing on this
  * page is a customer count, a quote or an estimate (PRODUCT.md: absent evidence is not invented).
  */
 const EVIDENCE = [
   {
     claim: 'A verdict in 2.1 seconds, at the 95th percentile.',
     detail:
-      'Load test on production: 500 submissions in two minutes, two judge machines, 200 people watching live.',
+      'Load test on production, 8 October 2026: 500 submissions in two minutes, two judge machines, 195 of 200 live listeners connected, on light test problems (a heavier problem takes longer).',
   },
   {
     claim: 'Twenty-eight attack programs, all contained.',
     detail:
-      'Fork bombs, memory bombs, symlink and /proc reads, network, ptrace, chroot escapes. They run in CI and every night.',
+      'Fork bombs, memory bombs, symlink and /proc reads, network, ptrace, chroot escapes. They run against a real judge machine every night.',
   },
   {
     claim: 'Six failure drills pass on production.',
@@ -53,7 +53,7 @@ const EVIDENCE = [
   {
     claim: 'An interview pad that keeps up: 2.1 ms at the 95th percentile.',
     detail:
-      'Thirty people typing in ten rooms at once; the target was 200 ms. Nothing lost or doubled.',
+      'Run of 9 October 2026: thirty people typing in ten rooms at once, the target 200 ms, nothing lost or doubled. Measured on one machine, without a network.',
   },
 ] as const;
 

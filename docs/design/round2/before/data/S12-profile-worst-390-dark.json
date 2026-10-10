@@ -1,0 +1,206 @@
+{
+  "url": "/u/a_very_long_handle_that_keeps_going_and_going_2026_campus_cohort",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 2281,
+  "overflowX": false,
+  "elements": 722,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      103
+    ],
+    [
+      "12px",
+      18
+    ],
+    [
+      "13px",
+      6
+    ],
+    [
+      "22px",
+      5
+    ],
+    [
+      "16px",
+      3
+    ],
+    [
+      "20px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      122
+    ],
+    [
+      "600",
+      8
+    ],
+    [
+      "500",
+      8
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      77
+    ],
+    [
+      "GeistMono",
+      61
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      114
+    ],
+    [
+      "rgb(163, 169, 178)",
+      15
+    ],
+    [
+      "rgb(138, 144, 154)",
+      8
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(30, 34, 39)",
+      44
+    ],
+    [
+      "rgb(109, 139, 255)",
+      42
+    ],
+    [
+      "rgb(17, 19, 22)",
+      2
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "4px",
+      86
+    ],
+    [
+      "6px",
+      12
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "a_very_long_handle_that_keeps_going_and_going_2026",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Rating graph",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Contest history",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Activity",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Solved (12345)",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "By difficulty",
+      "size": "13px",
+      "weight": "500"
+    },
+    {
+      "tag": "h3",
+      "text": "By tag (top 10)",
+      "size": "13px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 6,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Warm-up #1",
+        "w": 74,
+        "h": 18
+      },
+      {
+        "tag": "a",
+        "text": "Contest Two",
+        "w": 80,
+        "h": 18
+      },
+      {
+        "tag": "a",
+        "text": "Contest One",
+        "w": 80,
+        "h": 18
+      }
+    ]
+  },
+  "interactive": 20
+}

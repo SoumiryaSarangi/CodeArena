@@ -103,8 +103,12 @@ The values below are `apps/web/app/tokens.css`, copied by script and compared by
   --text-2:#A3A9B2; --text-3:#8A909A; --accent:#6D8BFF; --accent-hover:#8199FF; --accent-fg:#0B0C0E;
   --focus:#8EA4FF; --primary:#ECECEE; --primary-hover:#D0D3D8; --primary-fg:#0B0C0E;
   --v-ac:#22C55E; --v-wa:#F87171; --v-tle:#F59E0B; --v-mle:#F472B6; --v-re:#F97316;
-  --v-ce:#94A3B8; --v-ole:#14B8A6; --v-se:var(--text); --v-pending:var(--accent);
-  --danger:#F87171; --warning:#F59E0B; --success:#22C55E; --info:#60A5FA; --shadow-overlay:0 8px 24px rgb(0 0 0 / 0.35);
+  --v-ce:#94A3B8; --v-ole:#14B8A6; --v-se:var(--text); --v-pending:var(--focus); --danger:#F87171;
+  --warning:#F59E0B; --success:#22C55E; --info:#60A5FA; --tier-newcomer:#A3A9B2; --tier-pupil:#4ADE80;
+  --tier-specialist:#22D3EE; --tier-expert:#818CF8; --tier-master:#FB923C; --diff-easy:var(--success);
+  --diff-medium:var(--warning); --diff-hard:var(--danger); --wordmark-code:var(--accent);
+  --wordmark-arena:var(--text); --wordmark-caret:var(--accent); --glass:color-mix(in srgb, var(--surface-1) 82%, transparent);
+  --glass-blur:14px; --shadow-overlay:0 8px 24px rgb(0 0 0 / 0.35);
 }
 [data-theme="light"] {
   --presence-0:#2563EB; --presence-1:#DB2777; --presence-2:#059669; --presence-3:#D97706;
@@ -115,7 +119,8 @@ The values below are `apps/web/app/tokens.css`, copied by script and compared by
   --focus:#2F49D9; --primary:#14161A; --primary-hover:#2C2F36; --primary-fg:#FFFFFF;
   --v-ac:#146C35; --v-wa:#C81E1E; --v-tle:#A04A06; --v-mle:#BE185D; --v-re:#B83B0B;
   --v-ce:#475569; --v-ole:#0F766E; --danger:#C81E1E; --warning:#A04A06; --success:#146C35;
-  --info:#2563EB; --shadow-overlay:0 8px 24px rgb(15 17 20 / 0.12);
+  --info:#2563EB; --tier-newcomer:#566070; --tier-pupil:#166534; --tier-specialist:#0A6A80;
+  --tier-expert:#4338CA; --tier-master:#B4400A; --shadow-overlay:0 8px 24px rgb(15 17 20 / 0.12);
 }
 ```
 
@@ -128,6 +133,8 @@ The values below are `apps/web/app/tokens.css`, copied by script and compared by
 | `--primary-fg` on `--primary` | 16.6:1 | 18.1:1 |
 | `--border-control` on `--bg` | 3.2:1 | 3.0:1 |
 | verdict colours on `--surface-3` (the thinnest case) | ≥ 6.7:1 | ≥ 4.6:1 |
+
+Round 2 additions (UI-15): **tier colours** `--tier-newcomer … --tier-master` for rating tiers (the tier word is always shown with the colour); **difficulty colours** `--diff-easy / --diff-medium / --diff-hard`, aliases of success, warning and danger (always with the word); **wordmark colours** (top bar only, §5.5); **`--glass` and `--glass-blur`** for frosted floating chrome (§5.3). The pending badge uses the focus tone (`--v-pending`) so its text on its own tint stays above 4.5:1.
 
 Rules:
 - Verdict **text** colours are only used on `--bg` or `--surface-1`/`--surface-2`. Badge background = `color-mix(in srgb, var(--v-x) 14%, transparent)` in the **dark** theme. In the **light** theme the verdict colours are 4.8 to 7:1 on `--bg` and at least 4.6:1 on `--surface-3`, so a tint would drop the label below 4.5:1 (measured with axe, F-07): light badges have no tint and use a 1 px inset ring in the verdict colour at 40% instead.
@@ -165,13 +172,14 @@ Heading ladder: **h1 28 · h2 22 (stage) or 18 (workbench) · h3 18 or 16**, at 
 
 - Spacing scale: 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64.
 - Radii: `--radius-sm 4px` (badges, cells) · `--radius-md 6px` (buttons, inputs) · `--radius-lg 8px` (dialogs, panels, cards) · `9999px` for status pills and the scrubber handle · `2px` only for the remote-cursor flag (§5.6).
-- Borders: 1 px. Elevation is expressed by surface steps (`surface-1 → 2 → 3`); only dialogs and popovers get a shadow (`--shadow-overlay`). **No gradients anywhere**: not in our CSS, and Monaco's diff hatch is switched off (`globals.css`).
+- Borders: 1 px. Elevation is expressed by surface steps (`surface-1 → 2 → 3`); only dialogs and popovers get a shadow (`--shadow-overlay`). **No gradients anywhere**: not in our CSS, and Monaco's diff hatch is switched off (`globals.css`). **Frosted chrome (round 2):** the `.glass` class (a 14 px live backdrop blur on `--glass`, a hairline edge) is used only on floating chrome: the top bar, the phone bottom bar, dialogs and drawers, the command palette. It falls back to opaque `--surface-1` without `backdrop-filter` support or when the user asks for reduced transparency. Never on the editor, the board, tables or the diff view.
 
 ### 5.4 Iconography
 lucide, 16 px (20 px in empty states), stroke 1.5, `currentColor`. Icon-only buttons need `aria-label` and a tooltip.
 
 ### 5.5 Brand
-Wordmark `codearena` in Geist Mono 600 + blue accent caret `▍`. The caret is static everywhere (it never blinked as built). Favicon: caret on `--bg`.
+
+Wordmark `codearena`, **in the top bar only** (round 2, UI-15): Space Grotesk Bold (SIL OFL, subset to the nine letters, about 1 KB, `scripts/subset-wordmark.sh`, loaded only by the `Wordmark()` component), **"code" in `--wordmark-code`** (the blue), **"arena" in `--wordmark-arena`** (the text colour) and a thin caret bar in `--wordmark-caret` (the blue), all solid. Its accessible name is exactly "codearena". Everywhere else (titles, copy, the landing text, the footer, other pages) the name stays plain text in the current fonts and colours. The caret is static (it never blinked as built).
 
 ### 5.6 Documented exceptions
 
@@ -191,9 +199,10 @@ Where a literal outside the tokens is deliberate (found by the detector in the U
 | `--dur-fast` | 120 ms | Hover, press, toggles |
 | `--dur-base` | 180 ms | Panels, tabs, toasts |
 | `--dur-slow` | 350 ms | Leaderboard row moves (spring: stiffness 500, damping 40) |
-| `--ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | Default |
+| `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Default (round 2: a stronger ease-out) |
+| `--ease-sheet` | `cubic-bezier(0.32, 0.72, 0, 1)` | The phone drawer sheet (240 ms in, 160 ms out) |
 
-What animates: dialog and drawer enter and exit (opacity and 4 px, 180 ms in, 120 ms out; the drawer slides 16 px) · pressed buttons (scale 0.98, 120 ms) · tab underline colour · verdict grid square fill (scale 0.8→1, 120 ms) · leaderboard FLIP reorder · first-solve cell flash (single 600 ms background pulse) · resolver reveal (cell flip 250 ms) · judging pulse (opacity 0.5↔1, 1.2 s, only while judging) · toasts slide 8 px.
+What animates: dialog and drawer enter and exit (opacity and 4 px, 180 ms in, 120 ms out; the drawer slides 16 px) · pressed buttons (`scale: 0.97`, 120 ms, on the `scale` property so it really animates) · tab underline colour · verdict grid square fill (scale 0.8→1, 120 ms) · leaderboard FLIP reorder · first-solve cell flash (single 600 ms background pulse) · resolver reveal (cell flip 250 ms) · judging pulse (opacity 0.5↔1, 1.2 s, only while judging) · toasts slide 8 px.
 `prefers-reduced-motion: reduce` → all transforms off, reorders are instant, pulse replaced by a static "judging…" label.
 
 ---

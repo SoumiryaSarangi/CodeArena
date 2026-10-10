@@ -26,7 +26,8 @@
     "eval:hints": "pnpm --filter @codearena/api eval:hints",
     "load:test": "node --test tests/load/lib.test.mjs tests/chaos/lib.test.mjs scripts/metrics-report.test.mjs",
     "chaos:local": "node tests/chaos/drill.mjs local",
-    "load:local": "tests/load/local.sh"
+    "load:local": "tests/load/local.sh",
+    "ui-ux:sync": "node scripts/sync-ui-ux.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

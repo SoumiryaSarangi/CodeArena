@@ -187,7 +187,7 @@ Flat by default. Dialogs, drawers, menus and tooltips use `--shadow-overlay` (`0
 ### Named Rules
 
 - **Tone, not shadow.** Raise by surface step. Only things that float get a shadow.
-- **No gradients, no glows, no blur as decoration.**
+- **No gradients, no glows. Blur only on floating chrome**, never as decoration and never over live text.
 
 ## Shapes
 
@@ -211,6 +211,10 @@ Underline style: a 2 px primary underline and medium weight on the active tab; 4
 
 Monospace 12 px label (AC, WA on test 3…) in a tinted box in the dark theme and a 1 px ring in the light theme; pending pulses.
 
+### Wordmark (top bar only)
+
+`codearena` in Space Grotesk Bold (a 1 KB subset loaded only by this component): "code" in the blue, "arena" in the text colour, a thin blue caret bar. Solid colours from `--wordmark-*`. Anywhere else the name is plain text.
+
 ### Navigation
 
 Left rail with an active marker bar plus weight (not tint alone); 56 px bottom bar with labels on phones.
@@ -231,7 +235,7 @@ Dialogs and drawers fade and move 4 px in 180 ms and out in 120 ms; the drawer s
 
 ### Don't:
 
-- Add a gradient, glow or pattern, including third-party ones (Monaco's hatch is overridden).
+- Add a gradient, glow or pattern, including third-party ones (Monaco's hatch is overridden), or blur the editor or the board.
 - Fill with blue, or put a blue button next to an ink one.
 - Use a size below 12 px, or colour as the only signal.
 - Let a long handle, title or table widen the page: wrap, truncate with the full value in `title`, or scroll inside a labelled box.

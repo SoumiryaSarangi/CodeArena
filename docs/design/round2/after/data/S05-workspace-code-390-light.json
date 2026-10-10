@@ -1,0 +1,177 @@
+{
+  "url": "/p/sum-two-numbers",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 167,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      30
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "13px",
+      3
+    ],
+    [
+      "20px",
+      2
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      40
+    ],
+    [
+      "500",
+      4
+    ],
+    [
+      "700",
+      2
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      26
+    ],
+    [
+      "GeistSans",
+      19
+    ],
+    [
+      "wordmarkFont",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      12
+    ],
+    [
+      "rgb(75, 82, 96)",
+      11
+    ],
+    [
+      "rgb(99, 106, 117)",
+      10
+    ],
+    [
+      "rgb(124, 58, 237)",
+      7
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      6
+    ],
+    [
+      "color(srgb 1 1 1 / 0.82)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(20, 22, 26)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "1px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(211, 211, 211) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Two Numbers, One Total",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena",
+        "w": 108,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 29
+}

@@ -39,11 +39,28 @@
   --v-ce: #94a3b8;
   --v-ole: #14b8a6;
   --v-se: var(--text);
-  --v-pending: var(--accent);
+  /* The pending badge is accent text on a 14% accent tint: the focus tone keeps it above 4.5:1 on every surface. */
+  --v-pending: var(--focus);
   --danger: #f87171;
   --warning: #f59e0b;
   --success: #22c55e;
   --info: #60a5fa;
+  /* Round 2 (UI-15): rating tiers (the word is always shown with the colour), difficulty text colours (aliases, no new hue). */
+  --tier-newcomer: #a3a9b2;
+  --tier-pupil: #4ade80;
+  --tier-specialist: #22d3ee;
+  --tier-expert: #818cf8;
+  --tier-master: #fb923c;
+  --diff-easy: var(--success);
+  --diff-medium: var(--warning);
+  --diff-hard: var(--danger);
+  /* The wordmark in the top bar only: two solid colours and a caret bar. */
+  --wordmark-code: var(--accent);
+  --wordmark-arena: var(--text);
+  --wordmark-caret: var(--accent);
+  /* Frosted floating chrome (palette, dialogs, drawers, toasts, bars): live backdrop blur, never on the editor or the board. */
+  --glass: color-mix(in srgb, var(--surface-1) 82%, transparent);
+  --glass-blur: 14px;
   --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.35);
 }
 
@@ -86,6 +103,11 @@
   --warning: #a04a06;
   --success: #146c35;
   --info: #2563eb;
+  --tier-newcomer: #566070;
+  --tier-pupil: #166534;
+  --tier-specialist: #0a6a80;
+  --tier-expert: #4338ca;
+  --tier-master: #b4400a;
   --shadow-overlay: 0 8px 24px rgb(15 17 20 / 0.12);
 }
 
@@ -93,5 +115,6 @@
   --dur-fast: 120ms;
   --dur-base: 180ms;
   --dur-slow: 350ms;
-  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
 }

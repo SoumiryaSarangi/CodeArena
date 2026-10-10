@@ -85,7 +85,13 @@ function Frame({ children }: { children: ReactNode }) {
               {bare ? null : <Rail />}
             </>
           )}
-          <div className={immersive || bare ? undefined : 'pb-14 md:pb-0 md:pl-14 xl:pl-48'}>
+          <div
+            className={
+              immersive || bare
+                ? undefined
+                : 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-14 xl:pl-48'
+            }
+          >
             <main
               id="main"
               className={cn(

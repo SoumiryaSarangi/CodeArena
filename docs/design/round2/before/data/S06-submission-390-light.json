@@ -1,0 +1,197 @@
+{
+  "url": "/s/D1",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1260,
+  "overflowX": false,
+  "elements": 228,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      39
+    ],
+    [
+      "13px",
+      31
+    ],
+    [
+      "12px",
+      17
+    ],
+    [
+      "16px",
+      3
+    ],
+    [
+      "18px",
+      3
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      73
+    ],
+    [
+      "500",
+      15
+    ],
+    [
+      "600",
+      6
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      53
+    ],
+    [
+      "GeistSans",
+      41
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      41
+    ],
+    [
+      "rgb(75, 82, 96)",
+      21
+    ],
+    [
+      "rgb(99, 106, 117)",
+      10
+    ],
+    [
+      "rgb(0, 0, 0)",
+      8
+    ],
+    [
+      "rgb(124, 58, 237)",
+      6
+    ],
+    [
+      "rgb(20, 108, 53)",
+      4
+    ],
+    [
+      "rgb(47, 73, 217)",
+      2
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(208, 212, 218)",
+      4
+    ],
+    [
+      "rgb(242, 243, 245)",
+      3
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      13
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ],
+    [
+      "4px",
+      4
+    ],
+    [
+      "8px",
+      2
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.468158 -0.102692 0.0578288 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      4
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Submission to Two Numbers, One Total",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Journey",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Tests",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Code",
+      "size": "18px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 4,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 143,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 20
+}

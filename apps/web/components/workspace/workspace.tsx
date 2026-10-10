@@ -403,7 +403,9 @@ export function WorkspaceView({
           <div
             className={cn(
               'fixed inset-x-0 z-20 flex',
-              navHidden ? 'bottom-0' : 'bottom-14',
+              navHidden
+                ? 'bottom-0 pb-[calc(0.5rem+env(safe-area-inset-bottom))]'
+                : 'bottom-[calc(3.5rem+env(safe-area-inset-bottom))]',
               'gap-2 border-t border-border-strong bg-surface-1 p-2',
             )}
           >

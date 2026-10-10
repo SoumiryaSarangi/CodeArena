@@ -1,0 +1,185 @@
+{
+  "url": "/r/3649b4a5-cac9-44a1-87d0-a848da9e7fef",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1171,
+  "overflowX": false,
+  "elements": 162,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      26
+    ],
+    [
+      "13px",
+      12
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "16px",
+      2
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      37
+    ],
+    [
+      "500",
+      9
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      30
+    ],
+    [
+      "GeistMono",
+      21
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      19
+    ],
+    [
+      "rgb(163, 169, 178)",
+      11
+    ],
+    [
+      "rgb(138, 144, 154)",
+      9
+    ],
+    [
+      "rgb(210, 168, 255)",
+      4
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(134, 239, 172)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      5
+    ],
+    [
+      "rgb(17, 19, 22)",
+      4
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgba(109, 139, 255, 0.2)",
+      2
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(96, 165, 250)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      24
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(112, 112, 112) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Chai Bill",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Shapes",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Chai Bill",
+      "size": "16px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "meera",
+        "w": 36,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 47
+}

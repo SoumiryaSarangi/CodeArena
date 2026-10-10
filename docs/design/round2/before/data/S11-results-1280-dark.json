@@ -1,0 +1,292 @@
+{
+  "url": "/c/warm-up-1/results",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 1431,
+  "overflowX": false,
+  "elements": 144,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      20
+    ],
+    [
+      "14px",
+      18
+    ],
+    [
+      "16px",
+      17
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "22px",
+      3
+    ],
+    [
+      "40px",
+      2
+    ],
+    [
+      "18px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      31
+    ],
+    [
+      "600",
+      24
+    ],
+    [
+      "500",
+      17
+    ],
+    [
+      "700",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      62
+    ],
+    [
+      "GeistMono",
+      11
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      29
+    ],
+    [
+      "rgb(163, 169, 178)",
+      23
+    ],
+    [
+      "rgb(138, 144, 154)",
+      17
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(11, 12, 14)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ],
+    [
+      "rgb(248, 113, 113)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      3
+    ],
+    [
+      "rgb(23, 26, 30)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      23
+    ],
+    [
+      "4px",
+      3
+    ],
+    [
+      "8px",
+      3
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Results · CodeArena Warm-up #1",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Your problems",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "A. Two Numbers, One TotalACEditorialUpsolve",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "B. Fractional LootWAon test 4EditorialUpsolve",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Complexity#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Edge cases you missed#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compared with the intended approach#",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Readability#",
+      "size": "16px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 16,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 9,
+        "h": 21
+      }
+    ]
+  },
+  "interactive": 35
+}

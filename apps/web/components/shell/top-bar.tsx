@@ -1,5 +1,6 @@
 'use client';
 import { Command, Keyboard } from 'lucide-react';
+import localFont from 'next/font/local';
 import Link from 'next/link';
 import { ThemeToggle } from '../theme-toggle';
 import { Button, IconButton } from '../ui/button';
@@ -9,10 +10,33 @@ import { signInHref, useSession } from '@/lib/session';
 import { usePathname } from 'next/navigation';
 import { usePlatformStatus } from '@/lib/status';
 
+/**
+ * The name in the top bar, and only here (UI-15, round 2): Space Grotesk Bold (SIL OFL) cut down to the nine
+ * letters of the name (about 1 KB, `scripts/subset-wordmark.sh`), "code" in the blue, "arena" in the text
+ * colour, a thin caret bar in the blue. Solid colours from tokens. Everywhere else the name is plain text.
+ */
+const wordmarkFont = localFont({
+  src: '../../app/fonts/wordmark.woff2',
+  weight: '700',
+  display: 'swap',
+  // Not a face the rest of the page uses: no CSS variable, only this element carries the class.
+  fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+});
+
 export function Wordmark() {
   return (
-    <Link href="/" className="hit-44 font-mono text-14 font-semibold text-text">
-      codearena<span className="text-accent">▍</span>
+    <Link
+      href="/"
+      aria-label="codearena"
+      className={`hit-44 inline-flex items-center text-20 leading-none tracking-[-0.01em] ${wordmarkFont.className}`}
+    >
+      <span aria-hidden className="text-wordmark-code">
+        code
+      </span>
+      <span aria-hidden className="text-wordmark-arena">
+        arena
+      </span>
+      <span aria-hidden className="ml-0.5 h-[1em] w-[0.12em] rounded-[1px] bg-wordmark-caret" />
     </Link>
   );
 }
@@ -80,7 +104,7 @@ export function TopBar({
 }) {
   const mod = useModLabel();
   return (
-    <header className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-border-strong bg-surface-1 px-4 md:px-6">
+    <header className="glass sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-border-strong px-4 md:px-6">
       <Wordmark />
       <div className="ml-auto flex items-center gap-2">
         {bare ? null : (

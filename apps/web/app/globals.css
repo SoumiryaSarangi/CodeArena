@@ -25,6 +25,18 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
   --color-focus: var(--focus);
+  --color-tier-newcomer: var(--tier-newcomer);
+  --color-tier-pupil: var(--tier-pupil);
+  --color-tier-specialist: var(--tier-specialist);
+  --color-tier-expert: var(--tier-expert);
+  --color-tier-master: var(--tier-master);
+  --color-diff-easy: var(--diff-easy);
+  --color-diff-medium: var(--diff-medium);
+  --color-diff-hard: var(--diff-hard);
+  --color-wordmark-code: var(--wordmark-code);
+  --color-wordmark-arena: var(--wordmark-arena);
+  --color-wordmark-caret: var(--wordmark-caret);
+  --color-glass: var(--glass);
   --color-v-ac: var(--v-ac);
   --color-v-wa: var(--v-wa);
   --color-v-tle: var(--v-tle);
@@ -82,7 +94,7 @@
   --radius-lg: 8px;
 
   --animate-judging: judging 1.2s ease-in-out infinite;
-  --animate-fill: fill var(--dur-fast) cubic-bezier(0.2, 0, 0, 1);
+  --animate-fill: fill var(--dur-fast) var(--ease-out);
   --animate-flash: flash 1.4s ease-out 1;
   --animate-pop-in: pop-in var(--dur-base) var(--ease-out);
   --animate-pop-out: pop-out var(--dur-fast) var(--ease-out) forwards;
@@ -90,6 +102,9 @@
   --animate-fade-out: fade-out var(--dur-fast) var(--ease-out) forwards;
   --animate-slide-in: slide-in var(--dur-base) var(--ease-out);
   --animate-slide-out: slide-out var(--dur-fast) var(--ease-out) forwards;
+  /* Phones: the drawer is a sheet that comes from the edge (round 2). */
+  --animate-sheet-in: sheet-in 240ms var(--ease-sheet);
+  --animate-sheet-out: sheet-out 160ms var(--ease-sheet) forwards;
 
   @keyframes judging {
     0%,
@@ -142,6 +157,16 @@
       opacity: 0;
     }
   }
+  @keyframes sheet-in {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes sheet-out {
+    to {
+      transform: translateX(100%);
+    }
+  }
   @keyframes fill {
     from {
       transform: scale(0.8);
@@ -187,6 +212,24 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Reduced motion removes movement, not feedback: overlays still fade in and out, in 100 ms. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-in,
+  .animate-slide-in,
+  .animate-sheet-in,
+  .animate-fade-in {
+    animation-name: fade-in !important;
+    animation-duration: 100ms !important;
+  }
+  .animate-pop-out,
+  .animate-slide-out,
+  .animate-sheet-out,
+  .animate-fade-out {
+    animation-name: fade-out !important;
+    animation-duration: 100ms !important;
   }
 }
 
@@ -259,4 +302,54 @@ body {
   border-radius: 9999px;
   border: 2px solid var(--bg);
   background: var(--primary);
+}
+
+/* Frosted floating chrome (UI-15): a live backdrop blur on bars, overlays and sheets only. Opaque when the
+   browser has no backdrop-filter or the user asks for less transparency. Never on the editor, board or tables. */
+.glass {
+  background: var(--surface-1);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--surface-1);
+    backdrop-filter: none;
+  }
+}
+
+/* Phone basics (UI-15, mobile-native): no grey tap flash, no iOS text inflation, no pull-to-refresh bounce
+   from inside scroll boxes, no zoom on focus, no accidental text selection on controls. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  overscroll-behavior: none;
+}
+button,
+a,
+[role='tab'],
+[role='button'] {
+  touch-action: manipulation;
+}
+button,
+[role='tab'],
+[role='button'],
+nav a {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: var(--text-16);
+  }
 }
