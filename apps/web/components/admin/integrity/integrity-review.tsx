@@ -60,7 +60,7 @@ export function IntegrityReview({ runId }: { runId: string }) {
         <Link href="/admin/integrity" className="text-13 text-text-2 underline">
           All checks
         </Link>
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">Similar submissions</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em]">Similar submissions</h1>
         <span className="text-13 text-text-2">
           {run.status === 'done'
             ? `Done${run.finishedAt ? ` · ${formatWhen(run.finishedAt)}` : ''}`
@@ -154,10 +154,15 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <section aria-labelledby="members-h" className="flex flex-col gap-2">
-        <h2 id="members-h" className="text-16 font-medium">
+        <h2 id="members-h" className="text-18 font-semibold">
           {detail.problemSlug}: {detail.members.length} submissions
         </h2>
-        <div role="region" tabIndex={0} aria-label="Submissions table" className="overflow-x-auto">
+        <div
+          role="region"
+          tabIndex={0}
+          aria-label="Submissions table"
+          className="relative relative overflow-x-auto"
+        >
           <table className="w-full text-left text-14">
             <thead className="text-13 text-text-2">
               <tr>
@@ -184,7 +189,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
       </section>
 
       <section aria-labelledby="pairs-h" className="flex flex-col gap-2">
-        <h2 id="pairs-h" className="text-16 font-medium">
+        <h2 id="pairs-h" className="text-18 font-semibold">
           Pairs, most similar first
         </h2>
         {detail.pairs.length === 0 ? (
@@ -194,7 +199,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
             role="region"
             tabIndex={0}
             aria-label="Pair scores table"
-            className="overflow-x-auto"
+            className="relative relative overflow-x-auto"
           >
             <table className="w-full text-left text-14">
               <thead className="text-13 text-text-2">
@@ -242,15 +247,15 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
       </section>
 
       <section aria-labelledby="code-h" className="flex flex-col gap-2">
-        <h2 id="code-h" className="text-16 font-medium">
+        <h2 id="code-h" className="text-18 font-semibold">
           Code side by side
         </h2>
         <div className="flex flex-wrap gap-3 text-13 text-text-2">
-          <label className="flex items-center gap-1">
+          <label className="flex min-w-0 max-w-full items-center gap-1">
             Left
             <MemberSelect value={leftId} onChange={setLeftId} members={detail.members} />
           </label>
-          <label className="flex items-center gap-1">
+          <label className="flex min-w-0 max-w-full items-center gap-1">
             Right
             <MemberSelect value={rightId} onChange={setRightId} members={detail.members} />
           </label>
@@ -276,7 +281,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
         aria-labelledby="signals-h"
         className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
       >
-        <h2 id="signals-h" className="flex items-center gap-2 text-16 font-medium">
+        <h2 id="signals-h" className="flex items-center gap-2 text-18 font-semibold">
           Editor signals
           <span className="rounded-sm border border-border-control px-1.5 text-13 font-normal text-text-2">
             Advisory only
@@ -286,7 +291,7 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
           role="region"
           tabIndex={0}
           aria-label="Editor signals table"
-          className="overflow-x-auto"
+          className="relative relative overflow-x-auto"
         >
           <table className="w-full text-left text-14">
             <thead className="text-13 text-text-2">
@@ -311,7 +316,9 @@ function ClusterPanel({ id, onDecided }: { id: string; onDecided: () => void }) 
                           .join('; ')}
                   </td>
                   <td className="py-1 pr-3">
-                    {s.openedAt ? `${s.focusLosses} times` : 'not recorded'}
+                    {s.openedAt
+                      ? `${s.focusLosses} ${s.focusLosses === 1 ? 'time' : 'times'}`
+                      : 'not recorded'}
                   </td>
                   <td className="py-1 pr-3">{s.timeToAcMinutes ?? 'not available'}</td>
                   <td className="py-1 pr-3">{styleText(s.styleShift)}</td>
@@ -366,7 +373,7 @@ function MemberSelect({
     <select
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      className="h-8 rounded-md border border-border-control bg-surface-1 px-2 text-14 text-text"
+      className="h-9 min-w-0 max-w-[10rem] rounded-md border border-border-control sm:max-w-xs bg-surface-1 px-2 text-14 text-text"
     >
       {members.map((m) => (
         <option key={m.submissionId} value={m.submissionId}>
@@ -404,7 +411,7 @@ function DecisionBar({
 
   return (
     <section aria-labelledby="decide-h" className="flex flex-col gap-2">
-      <h2 id="decide-h" className="text-16 font-medium">
+      <h2 id="decide-h" className="text-18 font-semibold">
         Decision: {CLUSTER_STATUS_TEXT[detail.status]}
       </h2>
       <label className="flex flex-col gap-1 text-13 text-text-2">

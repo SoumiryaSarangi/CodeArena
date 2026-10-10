@@ -1,4 +1,5 @@
 'use client';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import type { AdminContestDetail, DlqList, OpsSummary, Rejudge } from '@codearena/contracts';
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
@@ -25,6 +26,40 @@ const STALE_MS = 10_000;
 
 const ms = (n: number | null) =>
   n === null ? '—' : n >= 1000 ? `${(n / 1000).toFixed(1)} s` : `${n} ms`;
+
+/** The first thing an organiser reads: is anything wrong right now, and what. */
+function HealthBanner({ sum }: { sum: OpsSummary }) {
+  const problems: string[] = [];
+  for (const w of sum.workers) {
+    if (w.ageMs > STALE_MS)
+      problems.push(`${w.id} has not reported for ${(w.ageMs / 1000).toFixed(0)} s`);
+    else if (w.restarts5m > 0) problems.push(`${w.id} restarted ${w.restarts5m}× in 5 minutes`);
+  }
+  if (sum.workers.length === 0) problems.push('no judge is reporting');
+  if (sum.dlq > 0)
+    problems.push(`${sum.dlq} submission${sum.dlq === 1 ? ' is' : 's are'} parked as dead letters`);
+  const ok = problems.length === 0;
+  const Icon = ok ? CheckCircle2 : AlertTriangle;
+  return (
+    <div
+      role="note"
+      aria-label="Judge health"
+      className={cn(
+        'flex items-start gap-3 rounded-lg border px-4 py-3 text-14',
+        ok ? 'border-border bg-surface-1' : 'border-danger/60 bg-surface-1',
+      )}
+    >
+      <Icon
+        className={cn('mt-0.5 size-5 shrink-0', ok ? 'text-v-ac' : 'text-danger')}
+        aria-hidden
+      />
+      <p>
+        <span className="font-semibold">{ok ? 'All judges are healthy.' : 'Needs attention.'}</span>{' '}
+        {ok ? 'Nothing is waiting to be repaired.' : `${problems.join('; ')}.`}
+      </p>
+    </div>
+  );
+}
 
 function Tile({ label, children, tone }: { label: string; children: ReactNode; tone?: 'danger' }) {
   return (
@@ -104,9 +139,10 @@ export function OpsConsole({
 
   return (
     <section aria-labelledby="ops" className="flex flex-col gap-4">
-      <h2 id="ops" className="text-16 font-medium">
+      <h2 id="ops" className="text-22 font-semibold">
         Queue and judges
       </h2>
+      {sum ? <HealthBanner sum={sum} /> : null}
       <dl className="grid grid-cols-2 gap-2 md:grid-cols-5" aria-label="Queue statistics">
         <Tile label="Submissions / min">{sum ? sum.submissionsPerMin : '—'}</Tile>
         <Tile label="Waiting in queue">
@@ -122,7 +158,8 @@ export function OpsConsole({
       </dl>
       {sum ? (
         <p className="text-13 text-text-2">
-          Lanes:{' '}
+          Jobs waiting in each queue lane (a lane keeps one kind of work apart so a rejudge cannot
+          slow a live contest):{' '}
           {sum.lanes.map((l, i) => (
             <span key={l.lane}>
               {i > 0 ? ' · ' : ''}
@@ -132,7 +169,12 @@ export function OpsConsole({
         </p>
       ) : null}
 
-      <div role="region" tabIndex={0} aria-label="Judge workers table" className="overflow-x-auto">
+      <div
+        role="region"
+        tabIndex={0}
+        aria-label="Judge workers table"
+        className="relative relative overflow-x-auto"
+      >
         <table className="w-full text-14">
           <caption className="sr-only">Judge workers</caption>
           <thead>
@@ -197,84 +239,94 @@ export function OpsConsole({
         ) : null}
       </div>
 
-      <h2 className="text-16 font-medium">Actions</h2>
+      <h2 className="mt-2 text-22 font-semibold">Actions</h2>
       <p role="status" className="text-13 text-v-ac">
         {msg}
       </p>
       {failure ? <ActionError error={failure} /> : null}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-13 text-text-2">Extend by</span>
-        {[5, 10, 15].map((m) => (
-          <Button
-            key={m}
-            variant="secondary"
-            size="sm"
-            disabled={over || busy !== null}
-            loading={busy === `extend${m}`}
-            onClick={() =>
-              run(`extend${m}`, async () => {
-                const r = await extendContest(contest.id, m);
-                return `Extended by ${m} minutes; the contest now ends at ${new Date(r.endsAt).toLocaleTimeString()}. Contestants were told.`;
-              })
-            }
-          >
-            +{m} min
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-28 text-13 text-text-2">Extend by</span>
+          {[5, 10, 15].map((m) => (
+            <Button
+              key={m}
+              variant="secondary"
+              size="sm"
+              disabled={over || busy !== null}
+              loading={busy === `extend${m}`}
+              onClick={() =>
+                run(`extend${m}`, async () => {
+                  const r = await extendContest(contest.id, m);
+                  return `Extended by ${m} minutes; the contest now ends at ${new Date(r.endsAt).toLocaleTimeString()}. Contestants were told.`;
+                })
+              }
+            >
+              +{m} min
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+          <span className="w-28 text-13 text-text-2">Repair results</span>
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+            Rejudge…
           </Button>
-        ))}
-        <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-          Rejudge…
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          loading={busy === 'rebuild'}
-          disabled={busy !== null}
-          onClick={() =>
-            run('rebuild', async () => {
-              await rebuildBoard(contest.id);
-              return 'The board was rebuilt from the database.';
-            })
-          }
-        >
-          Rebuild board
-        </Button>
-        {contest.state === 'ended' ? (
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={busy !== null}
-            onClick={() => setFinalOpen(true)}
-          >
-            Finalize…
-          </Button>
-        ) : null}
-        {contest.state === 'finalized' ? (
           <Button
             variant="secondary"
             size="sm"
-            loading={busy === 'recompute'}
+            loading={busy === 'rebuild'}
             disabled={busy !== null}
             onClick={() =>
-              run('recompute', async () => {
-                const r = await recomputeRatings(contest.id);
-                return r.differing === 0
-                  ? `Ratings recomputed: the same ${r.changes} results.`
-                  : `Ratings recomputed: ${r.differing} of ${r.changes} changed.`;
+              run('rebuild', async () => {
+                await rebuildBoard(contest.id);
+                return 'The board was rebuilt from the database.';
               })
             }
           >
-            Recompute ratings
+            Rebuild board
           </Button>
-        ) : null}
+        </div>
         {over ? (
-          <Button asChild variant="secondary" size="sm">
-            <Link href={`/c/${contest.slug}/board?present=1`}>Open resolver</Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+            <span className="w-28 text-13 text-text-2">After the end</span>
+            {contest.state === 'ended' ? (
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={busy !== null}
+                onClick={() => setFinalOpen(true)}
+              >
+                Finalize…
+              </Button>
+            ) : null}
+            {contest.state === 'finalized' ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={busy === 'recompute'}
+                disabled={busy !== null}
+                onClick={() =>
+                  run('recompute', async () => {
+                    const r = await recomputeRatings(contest.id);
+                    return r.differing === 0
+                      ? `Ratings recomputed: the same ${r.changes} results.`
+                      : `Ratings recomputed: ${r.differing} of ${r.changes} changed.`;
+                  })
+                }
+              >
+                Recompute ratings
+              </Button>
+            ) : null}
+            {over ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href={`/c/${contest.slug}/board?present=1`}>Open resolver</Link>
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </div>
 
       <div className="flex flex-col gap-1">
-        <h3 className="text-14 font-medium">Problems</h3>
+        <h3 className="text-16 font-semibold">Problems</h3>
         <ul className="flex flex-col gap-1" aria-label="Problem visibility">
           {contest.problems.map((p) => (
             <li key={p.label} className="flex items-center gap-3 text-14">
@@ -329,7 +381,11 @@ export function OpsConsole({
       </div>
 
       <div className="flex flex-col gap-1">
-        <h3 className="text-14 font-medium">Dead letters</h3>
+        <h3 className="text-16 font-semibold">Dead letters</h3>
+        <p className="text-13 text-text-2">
+          Submissions a judge gave up on after it crashed on them again and again. Re-queue puts one
+          back in line.
+        </p>
         {dlq.length === 0 ? (
           <p className="text-13 text-text-2">Nothing parked.</p>
         ) : (

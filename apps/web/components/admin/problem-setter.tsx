@@ -117,7 +117,7 @@ export function ProblemSetter({ slug }: { slug: string }) {
         <Link href="/admin/problems" className="text-14 text-text-2 hover:underline">
           ← Problems
         </Link>
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">{detail.title}</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em]">{detail.title}</h1>
         <p className="flex flex-wrap items-center gap-x-3 text-14 text-text-2">
           <span className="font-mono">{detail.slug}</span>
           <span>{detail.visibility}</span>
@@ -201,7 +201,7 @@ export function ProblemSetter({ slug }: { slug: string }) {
             ) : null}
 
             <div className="flex flex-col gap-2">
-              <h2 className="text-16 font-medium">Versions</h2>
+              <h2 className="text-18 font-semibold">Versions</h2>
               <DataTable
                 caption="Versions"
                 columns={VERSION_COLUMNS}
@@ -210,7 +210,7 @@ export function ProblemSetter({ slug }: { slug: string }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h2 className="text-16 font-medium">Upload a new version</h2>
+              <h2 className="text-18 font-semibold">Upload a new version</h2>
               <UploadZone fixedSlug={detail.slug} onUploaded={reload} />
             </div>
           </TabsContent>

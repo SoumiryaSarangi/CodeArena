@@ -98,7 +98,7 @@ export function StatementTab({
           aria-label="Statement preview"
           className="h-[60vh] min-h-64 overflow-auto rounded-md border border-border-strong p-4"
         >
-          <Markdown source={draft.statementMd} />
+          <Markdown source={draft.statementMd} demoteH1 />
         </section>
       </div>
     </div>

@@ -38,7 +38,7 @@ function Section({
 }) {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
-      <h2 id={id} className="text-16 font-semibold">
+      <h2 id={id} className="text-22 font-semibold">
         {title}
       </h2>
       {children}
@@ -141,7 +141,7 @@ export function StatusPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 py-6">
       <header>
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">Status</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em]">Status</h1>
         <p className="text-14 text-text-2">
           Live health of CodeArena, and how judging works under the hood.
         </p>
@@ -216,7 +216,7 @@ export function StatusPage() {
           Measured on the production judges on 8 October 2026; every submission got its verdict.
         </p>
         <div
-          className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="relative relative overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           role="region"
           aria-label="Burst test results"
           tabIndex={0}

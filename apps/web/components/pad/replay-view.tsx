@@ -220,7 +220,7 @@ function Replay({ room }: { room: RoomView }) {
         <Link href="/interview" className="text-13 text-text-2 underline">
           Your rooms
         </Link>
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">
+        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
           {room.problem?.title ?? 'Interview'}: replay
         </h1>
         <span className="text-13 text-text-2">
@@ -245,7 +245,7 @@ function Replay({ room }: { room: RoomView }) {
             aria-label="Your private notes"
             className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
           >
-            <h2 className="text-14 font-medium">Your notes</h2>
+            <h2 className="text-18 font-semibold">Your notes</h2>
             {notes === null ? (
               <Skeleton className="h-24 w-full" />
             ) : notes.trim() === '' ? (
@@ -260,7 +260,7 @@ function Replay({ room }: { room: RoomView }) {
 
       {boardSeen ? (
         <section aria-label="Replayed whiteboard" className="flex flex-col gap-2">
-          <h2 className="text-14 font-medium">Whiteboard at this moment</h2>
+          <h2 className="text-18 font-semibold">Whiteboard at this moment</h2>
           <div className="max-w-3xl">
             <BoardCanvas shapes={frame?.shapes ?? []} label="Replayed whiteboard, read-only" />
           </div>
@@ -324,7 +324,7 @@ function Replay({ room }: { room: RoomView }) {
               if (seekTimer.current) clearTimeout(seekTimer.current);
               seekTimer.current = setTimeout(() => void seekTo(t), SEEK_DEBOUNCE_MS);
             }}
-            className="w-full accent-[var(--accent)]"
+            className="scrubber"
           />
           <div className="relative h-4" aria-label="Markers">
             {markers.map((e) => {
@@ -355,7 +355,7 @@ function Replay({ room }: { room: RoomView }) {
       </section>
 
       <section aria-label="Events" className="flex flex-col gap-1">
-        <h2 className="text-16 font-medium">What happened</h2>
+        <h2 className="text-18 font-semibold">What happened</h2>
         {timeline.events.length === 0 ? (
           <p className="text-13 text-text-3">Nothing was recorded besides the code.</p>
         ) : (

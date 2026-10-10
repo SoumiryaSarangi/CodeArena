@@ -73,7 +73,7 @@ export function SummaryPanel({ roomId, hasNotes }: { roomId: string; hasNotes: b
       aria-label="AI summary"
       className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
     >
-      <h2 className="text-14 font-medium">AI summary</h2>
+      <h2 className="text-18 font-semibold">AI summary</h2>
       {view === null && !message ? <Skeleton className="h-16 w-full" /> : null}
       {ready ? (
         <>

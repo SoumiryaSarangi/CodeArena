@@ -551,7 +551,7 @@ export function Whiteboard({
       </p>
 
       <section aria-label="Shapes on the board" className="flex flex-col gap-1">
-        <h2 className="text-14 font-medium">Shapes</h2>
+        <h2 className="text-18 font-semibold">Shapes</h2>
         {shapes.length === 0 ? (
           <p className="text-13 text-text-3">Nothing has been drawn yet.</p>
         ) : (

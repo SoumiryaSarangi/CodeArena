@@ -64,9 +64,9 @@ export function IntegrityRuns() {
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Integrity</h1>
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Integrity</h1>
       <section className="flex flex-col gap-2" aria-labelledby="start-check">
-        <h2 id="start-check" className="text-16 font-medium">
+        <h2 id="start-check" className="text-18 font-semibold">
           Check a contest for similar submissions
         </h2>
         <p className="text-13 text-text-2">
@@ -100,7 +100,7 @@ export function IntegrityRuns() {
         {failure ? <ActionError error={failure} /> : null}
       </section>
       <section aria-labelledby="runs-h" className="flex flex-col gap-2">
-        <h2 id="runs-h" className="text-16 font-medium">
+        <h2 id="runs-h" className="text-18 font-semibold">
           Checks
         </h2>
         {runs.items.length === 0 ? (

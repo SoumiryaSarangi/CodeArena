@@ -140,3 +140,15 @@ describe('UI-11: editor theme', () => {
     }
   });
 });
+
+describe('UI-13: no gradients on screen, and a usable scrubber', () => {
+  const globals = readFileSync(join(root, 'app/globals.css'), 'utf8');
+  it('UI-13: the diff editor hatch pattern is switched off (AUDIT 16)', () => {
+    expect(
+      /\.monaco-diff-editor \.diagonal-fill\s*{[^}]*background-image:\s*none/.test(globals),
+    ).toBe(true);
+  });
+  it('UI-13: the replay scrubber has a 44 px tall hit area (AUDIT 18)', () => {
+    expect(/\.scrubber\s*{[^}]*height:\s*2\.75rem/.test(globals)).toBe(true);
+  });
+});

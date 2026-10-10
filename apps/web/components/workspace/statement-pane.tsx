@@ -113,7 +113,7 @@ export function StatementPane({
                     {name}
                     <CopyButton text={body} label={`Copy sample ${i + 1} ${name.toLowerCase()}`} />
                   </div>
-                  <pre className="overflow-x-auto font-mono text-13">{body}</pre>
+                  <pre className="relative relative overflow-x-auto font-mono text-13">{body}</pre>
                 </div>
               ))}
             </div>

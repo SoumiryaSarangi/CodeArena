@@ -1,0 +1,210 @@
+{
+  "url": "/admin/contests/11111111-1111-4111-8111-111111111111/ops",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 2050,
+  "overflowX": false,
+  "elements": 186,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      37
+    ],
+    [
+      "14px",
+      25
+    ],
+    [
+      "12px",
+      24
+    ],
+    [
+      "16px",
+      8
+    ],
+    [
+      "22px",
+      8
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      72
+    ],
+    [
+      "500",
+      21
+    ],
+    [
+      "600",
+      10
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      80
+    ],
+    [
+      "GeistMono",
+      23
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      40
+    ],
+    [
+      "rgb(20, 22, 26)",
+      37
+    ],
+    [
+      "rgb(99, 106, 117)",
+      20
+    ],
+    [
+      "rgb(200, 30, 30)",
+      4
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(242, 243, 245)",
+      8
+    ],
+    [
+      "rgb(255, 255, 255)",
+      4
+    ],
+    [
+      "rgb(234, 236, 239)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      36
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1: operations",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Queue and judges",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Actions",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Problems",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Dead letters",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Announce to everyone",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Clarifications (1 waiting · j/k move, r replies)",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 8,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Problems",
+        "w": 84,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Contests",
+        "w": 81,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Integrity",
+        "w": 76,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Edit the contest",
+        "w": 94,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Scoreboard",
+        "w": 67,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 37
+}

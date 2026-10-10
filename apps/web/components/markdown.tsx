@@ -42,9 +42,18 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-function Heading({ level, children }: { level: 1 | 2 | 3 | 4; children?: ReactNode }) {
+function Heading({
+  level,
+  as,
+  children,
+}: {
+  level: 1 | 2 | 3 | 4;
+  /** The tag to use when the page already has its own h1 (it keeps the size of `level`). */
+  as?: 'h2';
+  children?: ReactNode;
+}) {
   const id = slugify(text(children));
-  const Tag = `h${level}` as const;
+  const Tag = as ?? (`h${level}` as const);
   const size = { 1: 'text-22', 2: 'text-18', 3: 'text-16', 4: 'text-14' }[level];
   return (
     <Tag id={id || undefined} className={cn('group mt-5 font-semibold text-text', size)}>
@@ -72,7 +81,7 @@ function CodeBlock({ children }: ComponentProps<'pre'>) {
   };
   return (
     <div className="relative my-3">
-      <pre className="overflow-x-auto rounded-md border border-border bg-surface-2 p-3 font-mono text-13">
+      <pre className="relative relative overflow-x-auto rounded-md border border-border bg-surface-2 p-3 font-mono text-13">
         {children}
       </pre>
       <button
@@ -91,14 +100,27 @@ function CodeBlock({ children }: ComponentProps<'pre'>) {
   );
 }
 
-export function Markdown({ source, className }: { source: string; className?: string }) {
+export function Markdown({
+  source,
+  className,
+  demoteH1 = false,
+}: {
+  source: string;
+  className?: string;
+  /** A `# Title` in the text becomes an h2, for pages that already have an h1 (the setter's preview). */
+  demoteH1?: boolean;
+}) {
   return (
     <div className={cn('text-14 leading-6 text-text', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[[rehypeSanitize, schema], rehypeKatex]}
         components={{
-          h1: ({ children }) => <Heading level={1}>{children}</Heading>,
+          h1: ({ children }) => (
+            <Heading level={1} {...(demoteH1 ? { as: 'h2' as const } : {})}>
+              {children}
+            </Heading>
+          ),
           h2: ({ children }) => <Heading level={2}>{children}</Heading>,
           h3: ({ children }) => <Heading level={3}>{children}</Heading>,
           h4: ({ children }) => <Heading level={4}>{children}</Heading>,

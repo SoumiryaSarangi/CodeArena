@@ -1,0 +1,166 @@
+{
+  "url": "/status",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 2716,
+  "overflowX": false,
+  "elements": 243,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      42
+    ],
+    [
+      "14px",
+      31
+    ],
+    [
+      "13px",
+      28
+    ],
+    [
+      "16px",
+      6
+    ],
+    [
+      "22px",
+      5
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      70
+    ],
+    [
+      "500",
+      35
+    ],
+    [
+      "600",
+      8
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      92
+    ],
+    [
+      "GeistMono",
+      21
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      64
+    ],
+    [
+      "rgb(75, 82, 96)",
+      32
+    ],
+    [
+      "rgb(99, 106, 117)",
+      11
+    ],
+    [
+      "rgb(21, 128, 61)",
+      5
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      3
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "3.35544e+07px",
+      5
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Status",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Health",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "How judging works",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Architecture",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Security",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Load test",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Nightly runs on GitHub",
+        "w": 292,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 17
+}

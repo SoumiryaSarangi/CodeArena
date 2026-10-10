@@ -88,9 +88,9 @@ export function InterviewList() {
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Interview rooms</h1>
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Interview rooms</h1>
       <form onSubmit={submit} aria-label="New room" className="flex flex-col gap-3">
-        <h2 className="text-16 font-medium">New room</h2>
+        <h2 className="text-18 font-semibold">New room</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           <Select label="Problem" value={problem} onChange={(e) => setProblem(e.target.value)}>
             <option value="">No problem (blank pad)</option>
@@ -132,7 +132,7 @@ export function InterviewList() {
       </form>
 
       <section aria-labelledby="mine" className="flex flex-col gap-2">
-        <h2 id="mine" className="text-16 font-medium">
+        <h2 id="mine" className="text-18 font-semibold">
           Your rooms
         </h2>
         {!rooms ? (

@@ -254,7 +254,7 @@ function TestTable({ d }: { d: SubmissionDetail }) {
         role="region"
         tabIndex={0}
         aria-label="Test results table"
-        className="overflow-x-auto rounded-lg border border-border-strong"
+        className="relative relative overflow-x-auto rounded-lg border border-border-strong"
       >
         <table className="w-full text-13">
           <caption className="sr-only">Result of each test</caption>

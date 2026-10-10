@@ -238,7 +238,9 @@ function LiveRoom({ room }: { room: RoomView }) {
     <div className="flex min-h-[calc(100dvh-8rem)] flex-col gap-3">
       <PresenceStyles peers={peers} />
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <h1 className="text-18 font-semibold">{room.problem?.title ?? 'Interview room'}</h1>
+        <h1 className="text-22 font-semibold [overflow-wrap:anywhere]">
+          {room.problem?.title ?? 'Interview room'}
+        </h1>
         <span className="font-mono text-14" aria-label="Time in the room">
           {clock(elapsed)}
           {room.durationMin ? ` / ${clock(room.durationMin * 60)}` : ''}
@@ -269,20 +271,25 @@ function LiveRoom({ room }: { room: RoomView }) {
               >
                 Suggestions: {suggestions ? 'on' : 'off'}
               </Button>
-              <Button size="sm" disabled={busy} onClick={() => void copyInvite('candidate')}>
-                Copy candidate link
-              </Button>
-              <Button size="sm" disabled={busy} onClick={() => void copyInvite('observer')}>
-                Copy observer link
-              </Button>
-              <Button
-                size="sm"
-                variant="danger"
-                disabled={busy}
-                onClick={() => setConfirmEnd(true)}
-              >
-                End room
-              </Button>
+              <div role="group" aria-label="Invite links" className="flex gap-2">
+                <Button size="sm" disabled={busy} onClick={() => void copyInvite('candidate')}>
+                  Copy candidate link
+                </Button>
+                <Button size="sm" disabled={busy} onClick={() => void copyInvite('observer')}>
+                  Copy observer link
+                </Button>
+              </div>
+              {/* Apart from the others, behind a divider and a confirmation: it cannot be undone. */}
+              <div className="ml-2 border-l border-border-strong pl-4">
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={busy}
+                  onClick={() => setConfirmEnd(true)}
+                >
+                  End room
+                </Button>
+              </div>
             </>
           ) : null}
         </div>
@@ -404,7 +411,7 @@ function LiveRoom({ room }: { room: RoomView }) {
             className="flex flex-col gap-2 rounded-md border border-border-strong p-3"
           >
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-14 font-medium">{room.problem.title}</h2>
+              <h2 className="text-16 font-semibold">{room.problem.title}</h2>
               <Button
                 size="sm"
                 variant="ghost"

@@ -176,10 +176,12 @@ export function ContestOps({ id }: { id: string }) {
   const open = items.filter((i) => i.answer === null).length;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-6">
+    <div className="flex max-w-5xl flex-col gap-8">
       <div className="flex flex-col gap-1">
         <StateLabel state={contest.state} />
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">{contest.title}: operations</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+          {contest.title}: operations
+        </h1>
         <p className="text-13 text-text-2">
           <Link href={`/admin/contests/${id}`} className="underline">
             Edit the contest
@@ -199,7 +201,7 @@ export function ContestOps({ id }: { id: string }) {
       {contest.rules.examMode ? <ExamPanel id={id} /> : null}
 
       <form onSubmit={post} className="flex flex-col gap-2" aria-label="Announcement">
-        <h2 className="text-16 font-medium">Announce to everyone</h2>
+        <h2 className="text-22 font-semibold">Announce to everyone</h2>
         <label className="flex flex-col gap-1 text-13 text-text-2">
           Message
           <textarea
@@ -219,7 +221,7 @@ export function ContestOps({ id }: { id: string }) {
       </form>
 
       <section aria-labelledby="inbox" className="flex flex-col gap-3">
-        <h2 id="inbox" className="text-16 font-medium">
+        <h2 id="inbox" className="text-22 font-semibold">
           Clarifications{' '}
           <span className="font-normal text-text-2">
             ({open} waiting · <kbd className="font-mono">j</kbd>/<kbd className="font-mono">k</kbd>{' '}

@@ -84,7 +84,7 @@ export function Profile({ handle }: { handle: string }) {
             <h2 id="contests" className="text-22 font-semibold">
               Contest history
             </h2>
-            <div className="overflow-x-auto">
+            <div className="relative relative overflow-x-auto">
               <table className="w-full text-14">
                 <caption className="sr-only">Rated contests, newest first</caption>
                 <thead>

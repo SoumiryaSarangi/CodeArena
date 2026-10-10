@@ -218,3 +218,45 @@ body {
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
+
+/* The diff editor hatches empty regions with a Monaco-drawn pattern; the product has no patterns, so it is a flat surface. */
+.monaco-diff-editor .diagonal-fill {
+  background-image: none !important;
+  background-color: var(--surface-2) !important;
+}
+
+/* The replay scrubber: a 44 px tall hit area around a 6 px track and a 20 px handle, in the palette. */
+.scrubber {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 2.75rem;
+  background: transparent;
+  cursor: pointer;
+}
+.scrubber::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-control);
+}
+.scrubber::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-control);
+}
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 9999px;
+  border: 2px solid var(--bg);
+  background: var(--primary);
+}
+.scrubber::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid var(--bg);
+  background: var(--primary);
+}

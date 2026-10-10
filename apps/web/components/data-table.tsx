@@ -63,7 +63,7 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border-strong">
+    <div className="relative relative overflow-x-auto rounded-lg border border-border-strong">
       <table className="w-full border-collapse text-13">
         <caption className="sr-only">{caption}</caption>
         <thead className="sticky top-0 bg-surface-2">
