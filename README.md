@@ -10,7 +10,7 @@
 
 [Live site](https://code-arena-eta-mauve.vercel.app) · [Status](https://code-arena-eta-mauve.vercel.app/status) · [Documentation](#documentation) · [Metrics](docs/METRICS.md)
 
-<img src="docs/design/round2/after/S10-board-1280-dark.jpg" alt="The CodeArena live scoreboard during a contest" width="860">
+<img src="docs/design/round2/after/hero-practice-1280-dark.jpg" alt="The CodeArena practice list with the new top bar" width="860">
 
 </div>
 

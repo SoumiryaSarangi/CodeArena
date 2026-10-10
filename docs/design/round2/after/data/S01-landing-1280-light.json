@@ -6,7 +6,7 @@
   },
   "pageHeight": 2258,
   "overflowX": false,
-  "elements": 240,
+  "elements": 244,
   "gradients": 0,
   "fontSizes": [
     [
@@ -162,10 +162,6 @@
     [
       "8px",
       3
-    ],
-    [
-      "1px",
-      1
     ]
   ],
   "shadows": [
@@ -260,8 +256,8 @@
       {
         "tag": "a",
         "text": "codearena",
-        "w": 108,
-        "h": 20
+        "w": 135,
+        "h": 24
       },
       {
         "tag": "a",

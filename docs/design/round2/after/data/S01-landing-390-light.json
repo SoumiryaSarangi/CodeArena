@@ -4,14 +4,14 @@
     "w": 390,
     "h": 844
   },
-  "pageHeight": 3348,
+  "pageHeight": 3412,
   "overflowX": false,
-  "elements": 238,
+  "elements": 241,
   "gradients": 0,
   "fontSizes": [
     [
       "14px",
-      52
+      51
     ],
     [
       "13px",
@@ -45,7 +45,7 @@
   "fontWeights": [
     [
       "400",
-      80
+      79
     ],
     [
       "500",
@@ -62,12 +62,12 @@
   ],
   "fontFamilies": [
     [
-      "GeistSans",
+      "GeistMono",
       60
     ],
     [
-      "GeistMono",
-      60
+      "GeistSans",
+      59
     ],
     [
       "wordmarkFont",
@@ -81,7 +81,7 @@
     ],
     [
       "rgb(75, 82, 96)",
-      33
+      32
     ],
     [
       "rgb(99, 106, 117)",
@@ -162,10 +162,6 @@
     [
       "8px",
       3
-    ],
-    [
-      "1px",
-      1
     ]
   ],
   "shadows": [
@@ -260,8 +256,8 @@
       {
         "tag": "a",
         "text": "codearena",
-        "w": 108,
-        "h": 20
+        "w": 135,
+        "h": 24
       },
       {
         "tag": "a",
