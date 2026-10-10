@@ -14,4 +14,12 @@ export class StatusController {
     res.setHeader('Cache-Control', 'public, max-age=5');
     return this.status.get();
   }
+
+  /** UI-16: the landing page's live strip. Public and anonymised (see PublicVerdicts). */
+  @Public()
+  @Get('verdicts')
+  verdicts(@Res({ passthrough: true }) res: Response) {
+    res.setHeader('Cache-Control', 'public, max-age=5');
+    return this.status.recentVerdicts();
+  }
 }

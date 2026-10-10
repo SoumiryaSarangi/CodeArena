@@ -147,6 +147,34 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
         ],
       },
     } as Record<string, unknown>,
+    /** What `GET /api/status/verdicts` answers (UI-16), and how often it was read. `fail` makes it answer 500. */
+    verdicts: {
+      items: [
+        {
+          language: 'cpp17',
+          problemTitle: 'Two Numbers, One Total',
+          verdict: 'AC',
+          timeMs: 41,
+          at: new Date(Date.now() - 12_000).toISOString(),
+        },
+        {
+          language: 'python3',
+          problemTitle: 'Peak Reading',
+          verdict: 'WA',
+          timeMs: 120,
+          at: new Date(Date.now() - 40_000).toISOString(),
+        },
+        {
+          language: 'java21',
+          problemTitle: 'Maze Runner',
+          verdict: 'TLE',
+          timeMs: 1000,
+          at: new Date(Date.now() - 95_000).toISOString(),
+        },
+      ],
+      fail: false,
+      reads: 0,
+    } as { items: object[]; fail: boolean; reads: number },
     /** What `GET /api/status` answers (O-02). */
     status: {
       serverNow: new Date().toISOString(),
@@ -236,6 +264,12 @@ export async function stubApi(page: Page, opts: StubOptions = {}) {
   await page.route('**/api/problems?**', (r) => json(r, { items: [], nextCursor: null }));
   await page.route('**/api/problems/tags', (r) => json(r, { items: [] }));
   await page.route('**/api/status', (r) => json(r, state.status));
+  await page.route('**/api/status/verdicts', (r) => {
+    state.verdicts.reads += 1;
+    return state.verdicts.fail
+      ? json(r, { code: 'internal', title: 'Error', status: 500, type: 'x' }, 500)
+      : json(r, { items: state.verdicts.items });
+  });
   await page.route('**/api/me/home', (r) => json(r, state.home));
   await page.route('**/api/users/*/profile', (r) => {
     const handle = decodeURIComponent(r.request().url().split('/').at(-2)!);

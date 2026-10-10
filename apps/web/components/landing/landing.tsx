@@ -2,6 +2,10 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { signInHref, useSession } from '@/lib/session';
+import { JudgeWindow } from './judge-window';
+import { SampleBoard } from './sample-board';
+import { VerdictMix } from './verdict-mix';
+import { VerdictTicker } from './verdict-ticker';
 
 /** The one action: sign in, or carry on if you already are. Never a second filled button. */
 function PrimaryAction() {
@@ -20,40 +24,35 @@ function PrimaryAction() {
   );
 }
 
-/** The path one submission takes, in the words the submission page uses for it. */
-const JOURNEY = [
-  'Submitted',
-  'Queued',
-  'Claimed by a judge',
-  'Compiled',
-  'Run test by test',
-  'Verdict',
-] as const;
-
 /**
- * Every number here is in `docs/METRICS.md`, with the run and date named in the sentence and the caveat METRICS.md writes beside it. Nothing on this
- * page is a customer count, a quote or an estimate (PRODUCT.md: absent evidence is not invented).
+ * Every number here is in `docs/METRICS.md`, with the run and date named in the sentence and the caveat
+ * METRICS.md writes beside it. Nothing on this page is a customer count, a quote or an estimate (PRODUCT.md:
+ * absent evidence is not invented). The only live numbers are in the ticker, which shows real verdicts or nothing.
  */
 const EVIDENCE = [
   {
-    claim: 'A verdict in 2.1 seconds, at the 95th percentile.',
+    value: '2.1 s',
+    claim: 'A verdict, at the 95th percentile.',
     detail:
       'Load test on production, 8 October 2026: 500 submissions in two minutes, two judge machines, 195 of 200 live listeners connected, on light test problems (a heavier problem takes longer).',
   },
   {
-    claim: 'Twenty-eight attack programs, all contained.',
+    value: '28',
+    claim: 'Attack programs, all contained.',
     detail:
       'Fork bombs, memory bombs, symlink and /proc reads, network, ptrace, chroot escapes. They run against a real judge machine every night.',
   },
   {
-    claim: 'Six failure drills pass on production.',
+    value: '6',
+    claim: 'Failure drills pass on production.',
     detail:
       'Redis killed outright, among others: every accepted submission still got exactly one verdict.',
   },
   {
-    claim: 'An interview pad that keeps up: 2.1 ms at the 95th percentile.',
+    value: '2.1 ms',
+    claim: 'For a keystroke to reach the other typists, at the 95th percentile.',
     detail:
-      'Run of 9 October 2026: thirty people typing in ten rooms at once, the target 200 ms, nothing lost or doubled. Measured on one machine, without a network.',
+      'Interview pad, run of 9 October 2026: thirty people typing in ten rooms at once, the target 200 ms, nothing lost or doubled. Measured on one machine, without a network.',
   },
 ] as const;
 
@@ -78,55 +77,50 @@ const THINGS = [
 /** S01: the public front door, for a student on campus and for someone following a link to see how it is built. */
 export function Landing() {
   return (
-    <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-20 py-6 md:py-16">
-      <section aria-labelledby="hero" className="flex max-w-[44rem] flex-col gap-6">
-        <h1
-          id="hero"
-          className="display text-[2.5rem] font-semibold leading-[1.05] text-balance md:text-72"
-        >
-          The place your campus codes together
-        </h1>
-        <p className="max-w-[36rem] text-16 text-text-2 md:text-18">
-          Practise problems, compete in live contests, and run mock interviews, on a judge your
-          campus owns: its problems, its timing, its data.
-        </p>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <PrimaryAction />
-          <Link
-            href="/status"
-            className="text-14 text-text-2 underline underline-offset-4 hover:text-text"
+    <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-20 py-6 md:py-14">
+      <section
+        aria-labelledby="hero"
+        className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-14"
+      >
+        <div className="flex flex-col gap-6">
+          <h1
+            id="hero"
+            className="display text-[2.5rem] font-semibold leading-[1.05] text-balance md:text-72"
           >
-            See how it is built
-          </Link>
+            The place your campus codes together
+          </h1>
+          <p className="max-w-[36rem] text-16 text-text-2 md:text-18">
+            Practise problems, compete in live contests, and run mock interviews, on a judge your
+            campus owns: its problems, its timing, its data.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <PrimaryAction />
+            <Link
+              href="/status"
+              className="text-14 text-text-2 underline underline-offset-4 hover:text-text"
+            >
+              See how it is built
+            </Link>
+          </div>
         </div>
+        <JudgeWindow />
       </section>
 
-      <section aria-labelledby="journey" className="flex flex-col gap-5">
-        <h2 id="journey" className="max-w-[36rem] text-22 font-semibold">
-          You can watch your code being judged
-        </h2>
-        <ol className="grid gap-px overflow-hidden rounded-lg border border-border bg-border grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-          {JOURNEY.map((step, i) => (
-            <li key={step} className="flex flex-col gap-1 bg-surface-1 px-4 py-4">
-              <span className="font-mono text-12 text-text-3">{i + 1}</span>
-              <span className="text-14 font-medium">{step}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="max-w-[36rem] text-14 text-text-2">
-          Every submission shows where it is: its place in the queue, the judge that took it, and
-          each test as it finishes.
-        </p>
-      </section>
+      <VerdictTicker />
 
-      <section aria-labelledby="evidence" className="flex flex-col gap-6">
+      <section aria-labelledby="evidence" className="flex flex-col gap-8">
         <h2 id="evidence" className="max-w-[36rem] text-22 font-semibold">
           Measured, with the run behind each number
         </h2>
-        <dl className="grid gap-x-12 gap-y-8 md:grid-cols-2">
+        <dl className="grid gap-x-12 gap-y-10 md:grid-cols-2">
           {EVIDENCE.map((e) => (
-            <div key={e.claim} className="flex flex-col gap-1">
-              <dt className="text-18 font-medium text-balance">{e.claim}</dt>
+            <div key={e.claim} className="flex flex-col gap-2">
+              <dt className="flex flex-col gap-1">
+                <span className="display font-mono text-40 font-semibold md:text-56">
+                  {e.value}
+                </span>
+                <span className="text-16 font-medium text-balance">{e.claim}</span>
+              </dt>
               <dd className="text-14 text-text-2">{e.detail}</dd>
             </div>
           ))}
@@ -140,6 +134,10 @@ export function Landing() {
           shows the same system live.
         </p>
       </section>
+
+      <VerdictMix />
+
+      <SampleBoard />
 
       <section aria-labelledby="things" className="flex flex-col gap-6">
         <h2 id="things" className="text-22 font-semibold">

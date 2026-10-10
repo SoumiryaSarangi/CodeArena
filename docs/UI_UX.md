@@ -382,7 +382,7 @@ What the redesign changed on each screen; the behaviour specified above did not 
 
 | Screen | As built |
 |---|---|
-| S01 | No longer an empty page: tagline as a 72 px heading, one action (sign in, or "Open your home"), the six steps a submission takes, four evidence statements each traced to `docs/METRICS.md`, three short paragraphs. Bare shell for signed-out visitors. |
+| S01 | Round 2 (UI-16): the tagline at 72 px beside a framed "judge window" that lights the six steps of one submission once (with the measured p50 and p95 of the 8 October 2026 load test under it); a live strip of the last 6 finished practice verdicts on public problems (no handles, `GET /api/status/verdicts`, refreshed every 10 s, Pause, hidden when empty or failing); the proof as display numerals (2.1 s, 28, 6, 2.1 ms, each with its run and date); the 500-run verdict mix as a flat bar with a text legend and the one-judge-against-two bars; a framed sample scoreboard marked "Sample data"; the three things. Bare shell for signed-out visitors. |
 | S02 | Provider buttons stay equal secondary choices (no primary); "Let's go" has a clear disabled state. |
 | S03 | The next contest leads, with a display countdown and a filled action; long handles and titles wrap or truncate. |
 | S04 | On phones the table keeps Status and Title; difficulty and acceptance sit under the title. |
