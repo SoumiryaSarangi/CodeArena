@@ -7,8 +7,15 @@ export const DEV_DATABASE_URL = 'postgres://codearena:codearena-dev@localhost:54
 
 export const databaseUrl = () => process.env.DATABASE_URL ?? DEV_DATABASE_URL;
 
-export function connect(url: string = databaseUrl()) {
+/**
+ * `onIdleError` hears about a connection that died while it sat unused in the pool (a database restart, a dropped
+ * network). node-postgres removes that client and the next query opens a new one, but it reports the failure as an
+ * `error` event on the pool, and an event with no listener is an uncaught exception: without this the API process
+ * would crash on a Postgres restart. The default is to say nothing (tests, scripts); the API passes its logger.
+ */
+export function connect(url: string = databaseUrl(), onIdleError: (e: Error) => void = () => {}) {
   const pool = new pg.Pool({ connectionString: url, max: 5 });
+  pool.on('error', onIdleError);
   return { pool, db: drizzle(pool, { schema }) };
 }
 
