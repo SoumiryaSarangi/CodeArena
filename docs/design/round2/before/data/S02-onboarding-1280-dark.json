@@ -1,0 +1,170 @@
+{
+  "url": "/onboarding",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 74,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      8
+    ],
+    [
+      "13px",
+      6
+    ],
+    [
+      "12px",
+      6
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      15
+    ],
+    [
+      "500",
+      4
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      19
+    ],
+    [
+      "GeistMono",
+      3
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(163, 169, 178)",
+      11
+    ],
+    [
+      "rgb(138, 144, 154)",
+      6
+    ],
+    [
+      "rgb(236, 236, 238)",
+      4
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      4
+    ],
+    [
+      "rgb(30, 34, 39)",
+      2
+    ],
+    [
+      "rgb(23, 26, 30)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      16
+    ],
+    [
+      "4px",
+      1
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Choose your handle",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 8,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "Choose a handle",
+        "w": 99,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

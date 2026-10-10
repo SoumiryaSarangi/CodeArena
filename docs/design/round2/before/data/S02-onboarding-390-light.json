@@ -1,0 +1,128 @@
+{
+  "url": "/onboarding",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 62,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      9
+    ],
+    [
+      "13px",
+      5
+    ],
+    [
+      "14px",
+      3
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      14
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      2
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      17
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      9
+    ],
+    [
+      "rgb(99, 106, 117)",
+      6
+    ],
+    [
+      "rgb(20, 22, 26)",
+      3
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      4
+    ],
+    [
+      "rgb(242, 243, 245)",
+      1
+    ],
+    [
+      "rgb(234, 236, 239)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Choose your handle",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Choose a handle",
+        "w": 88,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 20
+}

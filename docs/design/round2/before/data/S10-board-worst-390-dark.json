@@ -1,0 +1,157 @@
+{
+  "url": "/c/warm-up-1/board",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1041,
+  "overflowX": false,
+  "elements": 2355,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      997
+    ],
+    [
+      "13px",
+      253
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      1091
+    ],
+    [
+      "500",
+      166
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      855
+    ],
+    [
+      "GeistSans",
+      407
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      620
+    ],
+    [
+      "rgb(138, 144, 154)",
+      382
+    ],
+    [
+      "rgb(34, 197, 94)",
+      234
+    ],
+    [
+      "rgb(163, 169, 178)",
+      23
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      313
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      115
+    ],
+    [
+      "rgb(23, 26, 30)",
+      5
+    ]
+  ],
+  "radii": [
+    [
+      "4px",
+      117
+    ],
+    [
+      "6px",
+      15
+    ],
+    [
+      "8px",
+      2
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(236, 236, 238) 3px 0px 0px 0px inset",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(109, 139, 255) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "李小龍_Алексей_مرحبا",
+        "w": 88,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 20
+}
