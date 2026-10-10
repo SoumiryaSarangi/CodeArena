@@ -1,0 +1,157 @@
+{
+  "url": "/c/warm-up-1/board",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 897,
+  "overflowX": false,
+  "elements": 153,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      29
+    ],
+    [
+      "13px",
+      29
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      48
+    ],
+    [
+      "500",
+      17
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      35
+    ],
+    [
+      "GeistMono",
+      35
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      24
+    ],
+    [
+      "rgb(75, 82, 96)",
+      23
+    ],
+    [
+      "rgb(21, 128, 61)",
+      10
+    ],
+    [
+      "rgb(99, 106, 117)",
+      10
+    ],
+    [
+      "rgb(200, 30, 30)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      15
+    ],
+    [
+      "rgb(242, 243, 245)",
+      5
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      15
+    ],
+    [
+      "4px",
+      5
+    ],
+    [
+      "8px",
+      2
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.527295 -0.11879 0.0684128 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      3
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(20, 22, 26) 3px 0px 0px 0px inset",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(47, 73, 217) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 20
+}

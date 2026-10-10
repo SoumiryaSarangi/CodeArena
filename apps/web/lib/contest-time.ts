@@ -17,10 +17,23 @@ export const formatLocal = (iso: string) =>
   new Intl.DateTimeFormat('en-GB', { ...opts, timeZoneName: 'short' }).format(new Date(iso));
 export const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 /** Both zones, or just IST when the viewer is in India. */
-export const formatWhen = (iso: string) =>
-  localZone() === IST || localZone() === 'Asia/Calcutta'
-    ? formatIst(iso)
-    : `${formatIst(iso)} · ${formatLocal(iso)}`;
+export const formatWhen = (iso: string) => {
+  if (localZone() === IST || localZone() === 'Asia/Calcutta') return formatIst(iso);
+  // US-4.1 asks for both zones; the second one repeats only what differs (the time, unless the day differs too).
+  const d = new Date(iso);
+  const day = (tz?: string) =>
+    new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: tz }).format(d);
+  const sameDay = day(IST) === day();
+  const local = sameDay
+    ? new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZoneName: 'short',
+      }).format(d)
+    : formatLocal(iso);
+  return `${formatIst(iso)} (${local})`;
+};
 
 /** `2 h`, `45 min`, `1 h 30 min`. */
 export function formatSpan(fromIso: string, toIso: string) {

@@ -131,10 +131,12 @@ export function ContestLobby({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
+    <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-8">
+      <div className="flex max-w-[44rem] flex-col gap-1">
         <StateLabel state={state} />
-        <h1 className="text-24 font-semibold tracking-[-0.01em]">{c.title}</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+          {c.title}
+        </h1>
         {c.description ? (
           <p className="whitespace-pre-line text-14 text-text-2">{c.description}</p>
         ) : null}
@@ -142,16 +144,16 @@ export function ContestLobby({ slug }: { slug: string }) {
 
       {state === 'scheduled' ? (
         <div className="flex flex-col gap-1">
-          <span className="text-13 text-text-2">Starts in</span>
-          <span className="font-mono text-32 tabular-nums sm:text-48" aria-hidden>
+          <span className="text-14 text-text-2">Starts in</span>
+          <span className="display font-mono text-40 font-medium sm:text-72" aria-hidden>
             {formatCountdown(startsIn)}
           </span>
           <span className="sr-only">Starts {formatWhen(c.startsAt)}</span>
         </div>
       ) : state === 'running' ? (
         <div className="flex flex-col gap-1">
-          <span className="text-13 text-text-2">Ends in</span>
-          <span className="text-32 sm:text-48">
+          <span className="text-14 text-text-2">Ends in</span>
+          <span className="display text-40 sm:text-72">
             <Timer endsAt={Date.parse(c.endsAt) - offset} />
           </span>
         </div>
@@ -212,7 +214,7 @@ export function ContestLobby({ slug }: { slug: string }) {
         </p>
       ) : null}
 
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14">
+      <dl className="grid max-w-[44rem] grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-14">
         <dt className="text-text-2">Starts</dt>
         <dd>{formatWhen(c.startsAt)}</dd>
         <dt className="text-text-2">Ends</dt>
@@ -233,11 +235,11 @@ export function ContestLobby({ slug }: { slug: string }) {
         <dd>{c.registeredCount}</dd>
       </dl>
 
-      <section aria-labelledby="rules" className="flex flex-col gap-2">
-        <h2 id="rules" className="text-16 font-medium">
+      <section aria-labelledby="rules" className="flex max-w-[44rem] flex-col gap-3">
+        <h2 id="rules" className="text-22 font-semibold">
           Rules
         </h2>
-        <ul className="list-disc pl-5 text-14 text-text-2">
+        <ul className="flex list-disc flex-col gap-2 pl-5 text-14 text-text-2">
           <li>
             Ranked by problems solved, then penalty, then the time of the last accepted solution.
             Equal results share a rank.
@@ -275,13 +277,13 @@ export function ContestLobby({ slug }: { slug: string }) {
 
       {open ? (
         <section aria-labelledby="problems" className="flex flex-col gap-2">
-          <h2 id="problems" className="text-16 font-medium">
+          <h2 id="problems" className="text-22 font-semibold">
             Problems
           </h2>
           {problems ? (
-            <ul className="flex flex-col divide-y divide-border-strong rounded-md border border-border-strong">
+            <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface-1">
               {problems.items.map((p) => (
-                <li key={p.label} className="flex items-baseline gap-3 px-3 py-2 text-14">
+                <li key={p.label} className="flex items-baseline gap-3 px-4 py-3 text-14">
                   <span className="w-5 font-mono font-medium">{p.label}</span>
                   <Link href={`/c/${slug}/${p.label}`} className="hover:underline">
                     {p.title}

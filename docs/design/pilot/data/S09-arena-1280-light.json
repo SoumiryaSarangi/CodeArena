@@ -1,0 +1,241 @@
+{
+  "url": "/c/warm-up-1/A",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 229,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      38
+    ],
+    [
+      "13px",
+      27
+    ],
+    [
+      "12px",
+      10
+    ],
+    [
+      "18px",
+      6
+    ],
+    [
+      "16px",
+      3
+    ],
+    [
+      "16.94px",
+      2
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      59
+    ],
+    [
+      "500",
+      20
+    ],
+    [
+      "600",
+      8
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      45
+    ],
+    [
+      "GeistMono",
+      40
+    ],
+    [
+      "math",
+      1
+    ],
+    [
+      "KaTeX_Math",
+      1
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      31
+    ],
+    [
+      "rgb(20, 22, 26)",
+      29
+    ],
+    [
+      "rgb(99, 106, 117)",
+      14
+    ],
+    [
+      "rgb(124, 58, 237)",
+      7
+    ],
+    [
+      "rgb(0, 0, 0)",
+      2
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgba(99, 106, 117, 0.4)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      9
+    ],
+    [
+      "rgb(234, 236, 239)",
+      7
+    ],
+    [
+      "rgb(208, 212, 218)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgba(100, 100, 100, 0.4)",
+      2
+    ],
+    [
+      "rgb(228, 230, 234)",
+      1
+    ],
+    [
+      "rgb(20, 22, 26)",
+      1
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      20
+    ],
+    [
+      "4px",
+      6
+    ],
+    [
+      "8px",
+      3
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(211, 211, 211) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "A. Chai Bill",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Input#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Output#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Notes#",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Samples",
+      "size": "16px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Sample 1",
+      "size": "13px",
+      "weight": "500"
+    }
+  ],
+  "smallTargets": {
+    "count": 6,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "A✓ 2✓Problem A, solved, solved",
+        "w": 67,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "B… 1✓Problem B, attempted, sol",
+        "w": 60,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "#",
+        "w": 10,
+        "h": 23
+      }
+    ]
+  },
+  "interactive": 28
+}

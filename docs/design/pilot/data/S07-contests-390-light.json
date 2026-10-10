@@ -1,0 +1,168 @@
+{
+  "url": "/contests",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 960,
+  "overflowX": false,
+  "elements": 84,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      14
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "16px",
+      4
+    ],
+    [
+      "22px",
+      3
+    ],
+    [
+      "14px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "500",
+      14
+    ],
+    [
+      "400",
+      13
+    ],
+    [
+      "600",
+      6
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      31
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      13
+    ],
+    [
+      "rgb(20, 22, 26)",
+      10
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(21, 128, 61)",
+      2
+    ],
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      5
+    ],
+    [
+      "rgb(242, 243, 245)",
+      2
+    ],
+    [
+      "rgb(20, 22, 26)",
+      2
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      17
+    ],
+    [
+      "8px",
+      3
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Contests",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Running now",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Upcoming",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Past",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 4,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Old One",
+        "w": 119,
+        "h": 27
+      }
+    ]
+  },
+  "interactive": 25
+}

@@ -7,6 +7,7 @@ import { ConnectionPill } from '@/components/connection-pill';
 import { useSignals } from '@/lib/signals';
 import { useModLabel } from '@/components/shortcut-sheet';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/cn';
 import { Kbd } from '@/components/ui/kbd';
 import { ErrorState, Skeleton } from '@/components/ui/states';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -115,9 +116,12 @@ export function WorkspaceView({
   canary,
   onVerdict,
   suggestions = true,
+  navHidden = false,
 }: {
   problem: ProblemDetail;
   wide: boolean;
+  /** The bottom navigation is hidden (a contest in full view), so the action bar sits at the screen's edge. */
+  navHidden?: boolean;
   /** Contest mode (S09): submissions go to the contest, drafts are kept per contest problem, no Coach. */
   contest?: { slug: string; label: string };
   /** IN-02: the organisers' hidden instruction for automated assistants (contest problems, when switched on). */
@@ -396,7 +400,13 @@ export function WorkspaceView({
           </Tabs>
           <div className="h-16" aria-hidden />
           {/* Sits on top of the 56 px bottom navigation (h-14 in rail.tsx). */}
-          <div className="fixed inset-x-0 bottom-14 z-20 flex gap-2 border-t border-border-strong bg-surface-1 p-2">
+          <div
+            className={cn(
+              'fixed inset-x-0 z-20 flex',
+              navHidden ? 'bottom-0' : 'bottom-14',
+              'gap-2 border-t border-border-strong bg-surface-1 p-2',
+            )}
+          >
             <Button
               className="flex-1"
               variant="secondary"

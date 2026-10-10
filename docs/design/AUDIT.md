@@ -55,6 +55,7 @@ Every row has an owner; nothing is unowned.
 | UI-09 (2026-10-10) | 2, 3, 6, 7 (scale), 8 (button), 9, 15 | Rail "clipped" (9) was a full-page capture artefact. |
 | UI-10 (2026-10-10) | 1, 5 (S03), 8 (S02), 12 (S04), 14, 19 | S01 landing built (own shell, evidence from METRICS.md); S03 wraps long handles and leads with the countdown; S04 shows Status and Title on phones with the rest under the title; signed-out shell has no rail. After-captures in `docs/design/pilot/`. Open for S01 to S04: row 6 CJK glyphs need a live check on a machine with CJK fonts. |
 | UI-11 (2026-10-10) | 7 (S05, S06), 12 (S05, S06), 13 (S06), 17 | S06 has a visible h1 (28) over 18 px sections; markdown headings in statements now 22/18/16; one date format (`10 Oct 2026, 10:00 IST`); test numbers never wrap; the Run/Submit bar sits above the 56 px bottom bar (it overlapped by 8 px after UI-09); Monaco bracket colours come from the palette. |
+| UI-12 (2026-10-10) | 4, 5 (S08, S12), 7 (S11), 10 (S07), 12 (S09, S10), 13 (S07, S08: shortened), 18 (S12), 21 | Stage density on S08, S10, S11: display countdown, standing strip, large rank and rating change with a sentence and one next step, visible freeze notice; S07 one filled action per row; S12 two columns with a graph that keeps its label size on phones. Row 13: US-4.1 requires both zones, so the second zone now repeats only the time. Row 20 (S11 "None found.") is AI-written text, not ours; the "3 times" count stays with UI-13. |
 
 ## Strengths to keep
 

@@ -1,0 +1,169 @@
+{
+  "url": "/c/warm-up-1/A",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 844,
+  "overflowX": false,
+  "elements": 148,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      34
+    ],
+    [
+      "13px",
+      10
+    ],
+    [
+      "16px",
+      2
+    ],
+    [
+      "22px",
+      1
+    ],
+    [
+      "12px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      35
+    ],
+    [
+      "500",
+      12
+    ],
+    [
+      "600",
+      1
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistMono",
+      29
+    ],
+    [
+      "GeistSans",
+      19
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      15
+    ],
+    [
+      "rgb(163, 169, 178)",
+      13
+    ],
+    [
+      "rgb(138, 144, 154)",
+      7
+    ],
+    [
+      "rgb(210, 168, 255)",
+      7
+    ],
+    [
+      "rgb(220, 220, 220)",
+      2
+    ],
+    [
+      "rgba(138, 144, 154, 0.4)",
+      1
+    ],
+    [
+      "rgb(134, 239, 172)",
+      1
+    ],
+    [
+      "rgb(251, 191, 36)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      4
+    ],
+    [
+      "rgb(11, 12, 14)",
+      3
+    ],
+    [
+      "rgba(121, 121, 121, 0.4)",
+      2
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(23, 26, 30)",
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgb(64, 64, 64) 1px 0px 0px 0px inset",
+      2
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "A. Chai Bill",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "A✓ 2✓Problem A, solved, solved",
+        "w": 67,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "B… 1✓Problem B, attempted, sol",
+        "w": 60,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 21
+}

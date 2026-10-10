@@ -1,0 +1,199 @@
+{
+  "url": "/c/warm-up-1/board",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 164,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      30
+    ],
+    [
+      "16px",
+      25
+    ],
+    [
+      "14px",
+      10
+    ],
+    [
+      "12px",
+      6
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      49
+    ],
+    [
+      "500",
+      19
+    ],
+    [
+      "600",
+      5
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      37
+    ],
+    [
+      "GeistMono",
+      36
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      25
+    ],
+    [
+      "rgb(163, 169, 178)",
+      25
+    ],
+    [
+      "rgb(34, 197, 94)",
+      10
+    ],
+    [
+      "rgb(138, 144, 154)",
+      10
+    ],
+    [
+      "rgb(248, 113, 113)",
+      2
+    ],
+    [
+      "rgb(109, 139, 255)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(17, 19, 22)",
+      15
+    ],
+    [
+      "rgb(23, 26, 30)",
+      5
+    ],
+    [
+      "oklab(0.722741 -0.165537 0.0972287 / 0.14)",
+      3
+    ],
+    [
+      "rgb(30, 34, 39)",
+      1
+    ],
+    [
+      "rgb(34, 197, 94)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      16
+    ],
+    [
+      "4px",
+      6
+    ],
+    [
+      "8px",
+      2
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(236, 236, 238) 3px 0px 0px 0px inset",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(109, 139, 255) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      1
+    ]
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 8,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 20
+}

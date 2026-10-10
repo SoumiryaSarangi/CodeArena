@@ -131,10 +131,17 @@ export function ContestResultsView({ slug }: { slug: string }) {
   if (!contest) return <Skeleton className="h-40 w-full" />;
 
   const delta = mine?.change?.delta ?? 0;
+  // The one next step: practise the first problem that was not solved, else pick another one.
+  const missed = items?.find((i) => i.verdict !== 'AC');
+  const next = missed
+    ? { href: `/p/${missed.problemSlug}`, label: `Upsolve ${missed.label}. ${missed.problemTitle}` }
+    : { href: '/practice', label: 'Pick your next problem' };
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-20 font-semibold tracking-[-0.01em]">Results · {contest.title}</h1>
+        <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+          Results · {contest.title}
+        </h1>
         <Button asChild variant="secondary" size="sm">
           <Link href={`/c/${slug}/board`}>Final standings</Link>
         </Button>
@@ -153,27 +160,36 @@ export function ContestResultsView({ slug }: { slug: string }) {
         <>
           <section
             aria-label="My result"
-            className="grid grid-cols-2 gap-3 rounded-lg border border-border-strong p-4 sm:grid-cols-4"
+            className="flex flex-col gap-5 rounded-lg border border-border bg-surface-1 p-5 md:p-6"
           >
-            <Stat label="Rank" value={mine?.row ? `#${mine.row.rank}` : '—'} />
-            <Stat label="Solved" value={mine?.row ? String(mine.row.solved) : '0'} />
-            <Stat label="Penalty" value={mine?.row ? String(mine.row.penalty) : '—'} />
-            <Stat
-              label="Rating"
-              value={
-                mine?.change
-                  ? `${delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : '= '}${delta}`
-                  : mine?.rated
-                    ? 'did not take part'
-                    : 'unrated'
-              }
-              extra={
-                mine?.change ? `${mine.change.oldRating} → ${mine.change.newRating}` : undefined
-              }
-            />
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+              <Stat big label="Rank" value={mine?.row ? `#${mine.row.rank}` : '—'} />
+              <Stat label="Solved" value={mine?.row ? String(mine.row.solved) : '0'} />
+              <Stat label="Penalty" value={mine?.row ? String(mine.row.penalty) : '—'} />
+              <Stat
+                big
+                label="Rating"
+                value={
+                  mine?.change
+                    ? `${delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : '= '}${delta}`
+                    : mine?.rated
+                      ? 'did not take part'
+                      : 'unrated'
+                }
+                extra={
+                  mine?.change ? `${mine.change.oldRating} → ${mine.change.newRating}` : undefined
+                }
+              />
+            </div>
+            <p className="text-14 text-text-2">{ratingSentence(mine)}</p>
+            <div>
+              <Button asChild variant="primary">
+                <Link href={next.href}>{next.label}</Link>
+              </Button>
+            </div>
           </section>
 
-          <h2 className="text-16 font-semibold">Your problems</h2>
+          <h2 className="mt-2 text-22 font-semibold">Your problems</h2>
           {items === null ? (
             <Skeleton className="h-24 w-full" />
           ) : items.length === 0 ? (
@@ -193,11 +209,42 @@ export function ContestResultsView({ slug }: { slug: string }) {
   );
 }
 
-function Stat({ label, value, extra }: { label: string; value: string; extra?: string }) {
+/** What the rating change means, in words: the number alone says it badly when it is negative. */
+function ratingSentence(m: Mine | null): string {
+  if (!m) return '';
+  if (m.change) {
+    const { delta, oldRating, newRating } = m.change;
+    if (delta > 0) return `Your rating went up by ${delta}, from ${oldRating} to ${newRating}.`;
+    if (delta < 0)
+      return `Your rating went down by ${-delta}, from ${oldRating} to ${newRating}. It is recalculated after every rated contest.`;
+    return `Your rating did not change: it stays at ${newRating}.`;
+  }
+  return m.rated
+    ? 'You did not take part, so your rating did not change.'
+    : 'This contest was not rated.';
+}
+
+function Stat({
+  label,
+  value,
+  extra,
+  big,
+}: {
+  label: string;
+  value: string;
+  extra?: string;
+  big?: boolean;
+}) {
   return (
     <div>
-      <div className="text-12 text-text-3">{label}</div>
-      <div className="font-mono text-18 tabular-nums">{value}</div>
+      <div className="text-13 text-text-3">{label}</div>
+      <div
+        className={
+          big ? 'display font-mono text-40 font-semibold' : 'font-mono text-22 tabular-nums'
+        }
+      >
+        {value}
+      </div>
       {extra ? <div className="font-mono text-12 text-text-3">{extra}</div> : null}
     </div>
   );
@@ -207,9 +254,9 @@ function ReviewCard({ item, onRate }: { item: ReviewItem; onRate: (helpful: bool
   return (
     <section
       aria-label={`Problem ${item.label}`}
-      className="rounded-lg border border-border-strong p-4"
+      className="rounded-lg border border-border p-4 md:p-5"
     >
-      <h3 className="flex flex-wrap items-center gap-2 text-16 font-medium">
+      <h3 className="flex flex-wrap items-center gap-2 text-18 font-semibold">
         {item.label}. {item.problemTitle}
         {item.verdict ? (
           <VerdictBadge verdict={item.verdict} test={item.failedTest ?? undefined} />

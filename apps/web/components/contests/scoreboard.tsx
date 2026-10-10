@@ -5,6 +5,7 @@ import type {
   ContestDetail,
   ContestResults,
 } from '@codearena/contracts';
+import { Snowflake } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/states';
 import type { ApiError } from '@/lib/api';
 import { applyDiff } from '@/lib/board';
-import { useNow, useServerClock } from '@/lib/contest-time';
+import { formatWhen, useNow, useServerClock } from '@/lib/contest-time';
 import { boardSnapshot, contestDetail, contestResults } from '@/lib/contests';
 import { cn } from '@/lib/cn';
 import { subscribe, type ConnectionState } from '@/lib/realtime';
@@ -23,7 +24,7 @@ import { ScoreCell } from './score-cell';
 
 /** UI_UX §7: tables of more than this many rows are windowed (fixed 36 px rows). */
 const WINDOW_AFTER = 200;
-const ROW_H = 36;
+const ROW_H = 44;
 const OVERSCAN = 12;
 const VIEW_ROWS = 18;
 
@@ -180,7 +181,8 @@ export function Scoreboard({ slug }: { slug: string }) {
       contest.state !== 'scheduled' &&
       now >= Date.parse(contest.freezeAt));
   const chip = chipFor(contest, frozen, admin);
-  const meInRows = myId ? rows.some((r) => r.userId === myId) : false;
+  const meRow = myId ? rows.find((r) => r.userId === myId) : undefined;
+  const meInRows = meRow !== undefined;
   const labels = board.problems.map((p) => p.label);
   const ratingBy = results?.rated ? new Map(results.changes.map((c) => [c.userId, c])) : null;
   const extra = ratingBy ? 1 : 0;
@@ -189,8 +191,10 @@ export function Scoreboard({ slug }: { slug: string }) {
     <div className="flex min-w-0 max-w-full flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex flex-col gap-0.5">
-          <span className={cn('text-13 font-medium', chip.cls)}>{chip.text}</span>
-          <h1 className="text-24 font-semibold tracking-[-0.01em]">{contest.title}</h1>
+          <span className={cn('text-14 font-medium', chip.cls)}>{chip.text}</span>
+          <h1 className="text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
+            {contest.title}
+          </h1>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <ConnectionPill state={conn} />
@@ -214,10 +218,30 @@ export function Scoreboard({ slug }: { slug: string }) {
         </div>
       </div>
       {frozen && !admin ? (
-        <p className="text-13 text-text-2">
-          The scoreboard is frozen: other people&apos;s attempts show as pending (?).
-          {meInRows ? ' Your own results stay visible to you.' : ''}
-        </p>
+        <div
+          role="note"
+          className="flex items-start gap-3 rounded-lg border border-warning/60 bg-surface-1 p-3 text-14"
+        >
+          <Snowflake className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+          <p>
+            <span className="font-medium">The scoreboard is frozen</span>
+            {contest.freezeAt ? ` since ${formatWhen(contest.freezeAt)}` : ''}: other people&apos;s
+            attempts show as pending (?).
+            {meInRows ? ' Your own results stay visible to you.' : ''}
+          </p>
+        </div>
+      ) : null}
+      {meRow ? (
+        <section
+          aria-label="Your standing"
+          className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-lg border border-border bg-surface-1 px-4 py-3"
+        >
+          <span className="display font-mono text-40 font-semibold">#{meRow.rank}</span>
+          <span className="text-14 text-text-2">
+            of {rows.length} · {meRow.solved} solved · penalty{' '}
+            <span className="font-mono tabular-nums">{meRow.penalty}</span>
+          </span>
+        </section>
       ) : null}
       <span role="status" className="sr-only">
         {announce}
@@ -229,13 +253,13 @@ export function Scoreboard({ slug }: { slug: string }) {
         <div
           ref={scroller}
           onScroll={windowed ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined}
-          className="relative max-h-[calc(100dvh-16rem)] min-w-0 max-w-full overflow-auto rounded-md border border-border-strong"
+          className="relative max-h-[calc(100dvh-16rem)] min-w-0 max-w-full overflow-auto rounded-lg border border-border-strong"
           // The scroll box is keyboard-scrollable for people who cannot use a pointer (WCAG 2.1.1).
           tabIndex={0}
           aria-label="Scoreboard, scrollable"
         >
           <table
-            className="w-full border-separate border-spacing-0 text-14"
+            className="w-full border-separate border-spacing-0 text-14 md:text-16"
             aria-rowcount={rows.length + 1}
           >
             <caption className="sr-only">
@@ -243,10 +267,13 @@ export function Scoreboard({ slug }: { slug: string }) {
             </caption>
             <thead>
               <tr>
-                <th scope="col" className={cn(TH, 'left-0 w-14 text-right')}>
+                <th scope="col" className={cn(TH, 'left-0 w-10 text-right md:w-14')}>
                   Rank
                 </th>
-                <th scope="col" className={cn(TH, 'left-14 min-w-32 text-left')}>
+                <th
+                  scope="col"
+                  className={cn(TH, 'left-10 min-w-28 text-left md:left-14 md:min-w-32')}
+                >
                   Handle
                 </th>
                 <th scope="col" className={cn(TH, 'text-right')}>
@@ -293,8 +320,10 @@ export function Scoreboard({ slug }: { slug: string }) {
                     <td
                       className={cn(
                         TD,
-                        'sticky left-0 z-[1] w-14 text-right font-mono tabular-nums',
-                        mine ? 'bg-surface-2' : 'bg-surface-1',
+                        'sticky left-0 z-[1] w-10 text-right font-mono tabular-nums md:w-14',
+                        mine
+                          ? 'bg-surface-2 font-semibold shadow-[inset_3px_0_0_var(--primary)]'
+                          : 'bg-surface-1',
                       )}
                     >
                       {r.rank}
@@ -303,11 +332,16 @@ export function Scoreboard({ slug }: { slug: string }) {
                       scope="row"
                       className={cn(
                         TD,
-                        'sticky left-14 z-[1] text-left font-mono font-medium',
+                        'sticky left-10 z-[1] text-left font-mono font-medium md:left-14',
                         mine ? 'bg-surface-2' : 'bg-surface-1',
                       )}
                     >
-                      {r.handle}
+                      <span
+                        className="inline-block max-w-[7rem] truncate align-bottom md:max-w-[16rem]"
+                        title={r.handle}
+                      >
+                        {r.handle}
+                      </span>
                       {mine ? (
                         <span className="ml-1 font-sans font-normal text-text-2">(you)</span>
                       ) : null}
@@ -367,4 +401,4 @@ function RatingDelta({
 
 const TH =
   'sticky top-0 z-[2] border-b border-border-strong bg-surface-1 px-3 py-2 text-13 font-medium text-text-2 first:z-[3] [&:nth-child(2)]:z-[3]';
-const TD = 'h-9 border-b border-border-strong/60 px-3 align-middle';
+const TD = 'h-11 border-b border-border-strong/60 px-3 align-middle';

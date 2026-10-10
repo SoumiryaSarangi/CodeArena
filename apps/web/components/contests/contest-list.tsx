@@ -65,8 +65,8 @@ export function ContestListView() {
   ];
 
   return (
-    <div className="flex max-w-4xl flex-col gap-8">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Contests</h1>
+    <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-8">
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Contests</h1>
       {regError ? (
         <p role="alert" className="text-13 text-danger">
           {regError}
@@ -77,12 +77,15 @@ export function ContestListView() {
         .filter((s) => s.items.length > 0)
         .map((s) => (
           <section key={s.title} aria-label={s.title} className="flex flex-col gap-2">
-            <h2 className="text-16 font-medium">{s.title}</h2>
-            <ul className="flex flex-col divide-y divide-border-strong rounded-md border border-border-strong">
+            <h2 className="text-22 font-semibold">{s.title}</h2>
+            <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface-1">
               {s.items.map((c) => (
-                <li key={c.slug} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-3">
+                <li key={c.slug} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <Link href={`/c/${c.slug}`} className="text-14 font-medium hover:underline">
+                    <Link
+                      href={`/c/${c.slug}`}
+                      className="break-words text-16 font-medium hover:underline"
+                    >
                       {c.title}
                     </Link>
                     <span className="text-13 text-text-2">
@@ -106,7 +109,12 @@ export function ContestListView() {
                       </Button>
                     ) : null
                   ) : null}
-                  <Button asChild size="sm" variant="secondary">
+                  {/* One filled action per row: Register, or Enter while it runs and you are in. */}
+                  <Button
+                    asChild
+                    size="sm"
+                    variant={c.state === 'running' && c.registered ? 'primary' : 'ghost'}
+                  >
                     <Link
                       href={`/c/${c.slug}`}
                       aria-label={`${c.state === 'running' ? 'Enter' : 'Open'} ${c.title}`}

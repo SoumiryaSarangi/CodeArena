@@ -42,13 +42,15 @@ export function Profile({ handle }: { handle: string }) {
   const latest = [...data.history].reverse();
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div className="flex items-center gap-4">
+    <div className="mx-auto grid w-full min-w-0 max-w-[1120px] gap-x-10 gap-y-8 lg:grid-cols-[3fr_2fr]">
+      <div className="flex min-w-0 items-center gap-4 lg:col-span-full">
         <Avatar handle={prof.handle} url={prof.avatarUrl} />
-        <div className="flex flex-col gap-1">
-          <h1 className="font-mono text-24 font-semibold">{data.handle}</h1>
-          <p className="text-16">
-            Rating <span className="font-mono font-semibold tabular-nums">{data.rating}</span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="font-mono text-28 font-semibold [overflow-wrap:anywhere]">
+            {data.handle}
+          </h1>
+          <p className="flex flex-wrap items-baseline gap-x-2 text-16">
+            Rating <span className="display font-mono text-40 font-semibold">{data.rating}</span>
             <span className="ml-2 font-medium">{tierWord(data.rating)}</span>
             <span className="ml-2 text-13 text-text-2">
               {data.history.length === 0
@@ -66,86 +68,90 @@ export function Profile({ handle }: { handle: string }) {
           </p>
         </div>
       </div>
-      <section aria-labelledby="graph" className="flex flex-col gap-2">
-        <h2 id="graph" className="text-16 font-medium">
-          Rating graph
-        </h2>
-        {data.history.length === 0 ? (
-          <p className="text-14 text-text-2">Rated contests will show up here.</p>
-        ) : (
-          <RatingGraph history={data.history} />
-        )}
-      </section>
-      <section aria-labelledby="activity" className="flex flex-col gap-2">
-        <h2 id="activity" className="text-16 font-medium">
-          Activity
-        </h2>
-        <ActivityHeatmap activity={prof.activity} />
-      </section>
-      <section aria-labelledby="solved" className="flex flex-col gap-3">
-        <h2 id="solved" className="text-16 font-medium">
-          Solved <span className="font-normal text-text-2">({prof.solved.total})</span>
-        </h2>
-        {prof.solved.total === 0 ? (
-          <p className="text-14 text-text-2">No problems solved yet.</p>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            <BarList
-              label="By difficulty"
-              rows={prof.solved.byDifficulty.map((d) => ({ name: d.label, count: d.count }))}
-            />
-            <BarList
-              label="By tag (top 10)"
-              rows={prof.solved.byTag.map((t) => ({ name: t.tag, count: t.count }))}
-            />
-          </div>
-        )}
-      </section>
-      {latest.length > 0 ? (
-        <section aria-labelledby="contests" className="flex flex-col gap-2">
-          <h2 id="contests" className="text-16 font-medium">
-            Contest history
+      <div className="flex min-w-0 flex-col gap-8">
+        <section aria-labelledby="graph" className="flex flex-col gap-3">
+          <h2 id="graph" className="text-22 font-semibold">
+            Rating graph
           </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-14">
-              <caption className="sr-only">Rated contests, newest first</caption>
-              <thead>
-                <tr className="text-left text-12 text-text-3">
-                  <th scope="col" className="py-1 pr-4 font-medium">
-                    Contest
-                  </th>
-                  <th scope="col" className="py-1 pr-4 text-right font-medium">
-                    Rank
-                  </th>
-                  <th scope="col" className="py-1 pr-4 text-right font-medium">
-                    Change
-                  </th>
-                  <th scope="col" className="py-1 text-right font-medium">
-                    Rating
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {latest.map((h) => (
-                  <tr key={h.contestSlug} className="border-t border-border-strong/60">
-                    <th scope="row" className="py-1 pr-4 text-left font-normal">
-                      <Link href={`/c/${h.contestSlug}/board`} className="underline">
-                        {h.contestTitle}
-                      </Link>
-                    </th>
-                    <td className="py-1 pr-4 text-right font-mono tabular-nums">{h.rank}</td>
-                    <td className="py-1 pr-4 text-right font-mono tabular-nums">
-                      {h.delta > 0 ? '+' : h.delta < 0 ? '−' : '±'}
-                      {Math.abs(h.delta)}
-                    </td>
-                    <td className="py-1 text-right font-mono tabular-nums">{h.newRating}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {data.history.length === 0 ? (
+            <p className="text-14 text-text-2">Rated contests will show up here.</p>
+          ) : (
+            <RatingGraph history={data.history} />
+          )}
         </section>
-      ) : null}
+        {latest.length > 0 ? (
+          <section aria-labelledby="contests" className="flex flex-col gap-2">
+            <h2 id="contests" className="text-22 font-semibold">
+              Contest history
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-14">
+                <caption className="sr-only">Rated contests, newest first</caption>
+                <thead>
+                  <tr className="text-left text-12 text-text-3">
+                    <th scope="col" className="py-1 pr-4 font-medium">
+                      Contest
+                    </th>
+                    <th scope="col" className="py-1 pr-4 text-right font-medium">
+                      Rank
+                    </th>
+                    <th scope="col" className="py-1 pr-4 text-right font-medium">
+                      Change
+                    </th>
+                    <th scope="col" className="py-1 text-right font-medium">
+                      Rating
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {latest.map((h) => (
+                    <tr key={h.contestSlug} className="border-t border-border-strong/60">
+                      <th scope="row" className="py-1 pr-4 text-left font-normal">
+                        <Link href={`/c/${h.contestSlug}/board`} className="underline">
+                          {h.contestTitle}
+                        </Link>
+                      </th>
+                      <td className="py-1 pr-4 text-right font-mono tabular-nums">{h.rank}</td>
+                      <td className="py-1 pr-4 text-right font-mono tabular-nums">
+                        {h.delta > 0 ? '+' : h.delta < 0 ? '−' : '±'}
+                        {Math.abs(h.delta)}
+                      </td>
+                      <td className="py-1 text-right font-mono tabular-nums">{h.newRating}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+      </div>
+      <div className="flex min-w-0 flex-col gap-8">
+        <section aria-labelledby="activity" className="flex flex-col gap-3">
+          <h2 id="activity" className="text-22 font-semibold">
+            Activity
+          </h2>
+          <ActivityHeatmap activity={prof.activity} />
+        </section>
+        <section aria-labelledby="solved" className="flex flex-col gap-3">
+          <h2 id="solved" className="text-22 font-semibold">
+            Solved <span className="font-normal text-text-2">({prof.solved.total})</span>
+          </h2>
+          {prof.solved.total === 0 ? (
+            <p className="text-14 text-text-2">No problems solved yet.</p>
+          ) : (
+            <div className="grid gap-6">
+              <BarList
+                label="By difficulty"
+                rows={prof.solved.byDifficulty.map((d) => ({ name: d.label, count: d.count }))}
+              />
+              <BarList
+                label="By tag (top 10)"
+                rows={prof.solved.byTag.map((t) => ({ name: t.tag, count: t.count }))}
+              />
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

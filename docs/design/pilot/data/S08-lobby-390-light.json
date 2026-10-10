@@ -1,0 +1,142 @@
+{
+  "url": "/c/warm-up-1",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 1021,
+  "overflowX": false,
+  "elements": 91,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      22
+    ],
+    [
+      "12px",
+      9
+    ],
+    [
+      "13px",
+      4
+    ],
+    [
+      "16px",
+      2
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
+      1
+    ],
+    [
+      "22px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      30
+    ],
+    [
+      "500",
+      6
+    ],
+    [
+      "600",
+      4
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      37
+    ],
+    [
+      "GeistMono",
+      3
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      22
+    ],
+    [
+      "rgb(20, 22, 26)",
+      12
+    ],
+    [
+      "rgb(99, 106, 117)",
+      4
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(255, 255, 255)",
+      2
+    ],
+    [
+      "rgb(242, 243, 245)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      14
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "CodeArena Warm-up #1",
+      "size": "28px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Rules",
+      "size": "22px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 3,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      }
+    ]
+  },
+  "interactive": 19
+}
