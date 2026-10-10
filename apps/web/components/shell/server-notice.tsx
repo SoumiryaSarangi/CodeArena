@@ -7,7 +7,7 @@ export const REPO_URL = 'https://github.com/SoumiryaSarangi/CodeArena';
 export const OWNER_MAIL = 'soumiryasarangi@gmail.com';
 export const DEMO_REQUEST_HREF = `mailto:${OWNER_MAIL}?${new URLSearchParams({
   subject: 'CodeArena live demo request',
-  body: "Hi Ayush,\n\nI'd like to see CodeArena live.\n\nName / company:\nPreferred date:\n",
+  body: "Hi Soumirya,\n\nI'd like to see CodeArena live.\n\nName / company:\nPreferred date:\n",
 })
   .toString()
   .replace(/\+/g, '%20')}`;

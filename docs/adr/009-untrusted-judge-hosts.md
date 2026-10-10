@@ -1,6 +1,6 @@
 # ADR-009: Judge hosts are untrusted
 
-- **Status:** Accepted (approved by Ayush, 2026-10-05)
+- **Status:** Accepted (approved by Soumirya, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context
@@ -22,7 +22,7 @@ A compromised judge can at worst forge results for jobs it was given, which sche
 
 ## Hardening from the attack suite (J-07/J-08, 2026-10-06)
 
-The attack suite (`tests/attack-suite`, 28 cases written by Ayush, FR-JUDGE-10) runs every case in a real box and checks the outcome plus host-side facts (no box process survives, the worker stays alive, a secret in the worker's environment never reaches the output). The first run passed 27 of 28. What it showed, and what changed:
+The attack suite (`tests/attack-suite`, 28 cases written by Soumirya, FR-JUDGE-10) runs every case in a real box and checks the outcome plus host-side facts (no box process survives, the worker stays alive, a secret in the worker's environment never reaches the output). The first run passed 27 of 28. What it showed, and what changed:
 
 - **Boxes saw the host's whole `/dev`.** isolate's default rules bind the host `/dev` into each box with device access: about 200 nodes, including disks, `/dev/mem`, `/dev/kmsg`, `/dev/kvm`, `/dev/fuse` and `/dev/userfaultfd`. Only file permissions kept most of them closed, and `/dev/kmsg` was readable on the dev machine. **Fix:** every run (compile, run, checker) now deletes the default rule (`--dir=dev=`) and binds a prepared directory instead (`--dir=dev=/var/local/lib/codearena/box-dev:dev`) holding only `null`, `zero`, `full`, `random`, `urandom`, the `fd`/`stdin`/`stdout`/`stderr` symlinks into `/proc/self/fd`, and an empty `shm/` where isolate mounts a private, memory-accounted tmpfs. `scripts/setup-isolate-wsl.sh` and the judge cloud-init create it; the worker refuses to start if `null` there is not a character device. A test asserts the exact `/dev` listing inside a box.
 - **Kernel log.** `kernel.dmesg_restrict = 1` is set (`/etc/sysctl.d/60-codearena-judge.conf`) as defence in depth, since the box no longer has `/dev/kmsg` at all.
@@ -49,4 +49,4 @@ The judge subnet's network security group enforces the rule above one layer belo
 
 ## Addendum (O-01, 2026-10-08): telemetry port
 
-Ayush approved one more allowed path so the worker's traces and metrics can reach the OpenTelemetry collector on the API VM: judge subnet → API subnet, TCP **4318** (OTLP/HTTP), both in the judge NSG (outbound) and the API NSG (inbound from the judge subnet). Nothing else changed: judges still cannot reach Postgres or any other port, still have no internet in steady state, and still hold no database credentials. What a compromised judge gains is the ability to push junk telemetry (spans, metrics) at the collector; the collector exposes no query or admin surface, applies a memory limit, and forwards only to Grafana Cloud. The firewall tests (`infra/terraform/tests/network.tftest.hcl`) now pin the set to `4318, 6379, 8333`.
+Soumirya approved one more allowed path so the worker's traces and metrics can reach the OpenTelemetry collector on the API VM: judge subnet → API subnet, TCP **4318** (OTLP/HTTP), both in the judge NSG (outbound) and the API NSG (inbound from the judge subnet). Nothing else changed: judges still cannot reach Postgres or any other port, still have no internet in steady state, and still hold no database credentials. What a compromised judge gains is the ability to push junk telemetry (spans, metrics) at the collector; the collector exposes no query or admin surface, applies a memory limit, and forwards only to Grafana Cloud. The firewall tests (`infra/terraform/tests/network.tftest.hcl`) now pin the set to `4318, 6379, 8333`.

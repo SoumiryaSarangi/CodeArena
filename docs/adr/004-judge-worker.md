@@ -1,6 +1,6 @@
 # ADR-004: Judge worker: Go controlling isolate 2.x
 
-- **Status:** Accepted (approved by Ayush, 2026-10-05)
+- **Status:** Accepted (approved by Soumirya, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

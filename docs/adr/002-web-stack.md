@@ -1,11 +1,11 @@
 # ADR-002: Web: Next.js App Router, React 19, Tailwind v4, shadcn/ui
 
-- **Status:** Accepted (approved by Ayush, 2026-10-05)
+- **Status:** Accepted (approved by Soumirya, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context
 
-The product needs server-rendered public pages (problems, profiles, leaderboards) and a highly interactive app (editor, live verdicts, pad). Ayush already knows this stack from a previous project, so there is no learning cost during a two-week build.
+The product needs server-rendered public pages (problems, profiles, leaderboards) and a highly interactive app (editor, live verdicts, pad). Soumirya already knows this stack from a previous project, so there is no learning cost during a two-week build.
 
 ## Decision
 

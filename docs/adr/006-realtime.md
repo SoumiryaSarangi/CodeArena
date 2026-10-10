@@ -1,6 +1,6 @@
 # ADR-006: Realtime: SSE for verdicts and boards, WebSocket (Hocuspocus) for the pad
 
-- **Status:** Accepted (approved by Ayush, 2026-10-05)
+- **Status:** Accepted (approved by Soumirya, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

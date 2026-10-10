@@ -16,7 +16,7 @@ Measurements of two public marketing pages, taken on 2026-10-10 with the `taste`
 | Spacing steps | 8, 4, 6, 12 | 2, 6, 12 |
 | Colour use | neutral first, colour only for state | neutral only; black is the brand |
 
-What the numbers say that matters to CodeArena: both pages set **large display type against small, calm body text** (a 4× jump from body to hero, where CodeArena's biggest heading is 1.7× its body); both put **colour only where it means something**; both use tight negative tracking on display sizes and hairline borders instead of shadows. Both pages also use gradients or glows in places; **CodeArena does not** (rule fixed by Ayush).
+What the numbers say that matters to CodeArena: both pages set **large display type against small, calm body text** (a 4× jump from body to hero, where CodeArena's biggest heading is 1.7× its body); both put **colour only where it means something**; both use tight negative tracking on display sizes and hairline borders instead of shadows. Both pages also use gradients or glows in places; **CodeArena does not** (rule fixed by Soumirya).
 
 ## Round 2 (UI-15, 2026-10-10)
 

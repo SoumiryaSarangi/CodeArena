@@ -74,7 +74,7 @@ Not animated, on purpose: the editor, tab content swaps, the command palette, ta
 2. **"The wire": a thin segmented line under every submission** (Submitted → Verdict, driven by the real submission events, settling into the verdict colour) under the Submit button, on board rows and on the Recent submissions list. It would make "transparent judging" the signature motion. **Needs new work, not a visual tweak:** a small shared component plus a per-row live subscription on the board and home (the events exist; the board does not subscribe per row). **Cost: about 2 to 3 days, medium risk on the board.** **Waits for your yes.**
 3. **A live verdict ticker on the landing page** (the original S01 spec). **Needs a new public endpoint** returning the last 10 anonymised verdicts (language, problem label, verdict, time; no handles), rate-limited and cached 5 s, plus a pause control. **Cost: about 1 to 2 days.** It would also show real activity only when there is some. **Waits for your yes.**
 
-## Decisions from Ayush (2026-10-10)
+## Decisions from Soumirya (2026-10-10)
 
 - **"The wire": yes.** Built in **UI-17** (under the Submit button on S05 and on the Recent submissions list on S03) and **UI-18** (the board rows on S10, which needs a per-row live subscription: the risky part).
 - **The live verdict ticker on the landing: yes.** Built in **UI-16** (`GET /api/status/verdicts`: practice, public problems only, anonymised, cached 5 s).

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Doc** | `docs/PRD.md` · v1.0 · 30 Sep 2026 |
-| **Owner** | Ayush (product, admin, problem setter) |
+| **Owner** | Soumirya (product, admin, problem setter) |
 | **Builder** | Claude Code |
 | **Status** | Approved for build (Day 0) |
 | **Companion docs** | `docs/PLAN.md` (schedule + task cards) · `docs/SRS.md` (requirements, API) · `docs/SYSTEM_DESIGN.md` (architecture) · `docs/UI_UX.md` (design) · `docs/research.md` (background research) |
@@ -55,7 +55,7 @@ It is built to production standards (sandbox security, queueing under burst load
 |---|---|---|---|---|
 | **PE1** | **Riya — placement-prep student** (3rd year) | Practises 1–2 h/day, mostly C++/Python | Build consistency, get unstuck without spoilers, track progress | Editorials give away everything; no peer benchmark |
 | **PE2** | **Arjun — contest regular** (club member) | Codeforces-rated, competes weekly | Fair, fast contests; live standings; rating | Slow queues; unclear verdicts; boring standings |
-| **PE3** | **Ayush — organiser / setter / admin** | Runs the platform and contests | Create problems safely, run a smooth contest, catch cheating fairly | Bad test data, judge outages, no visibility during contests |
+| **PE3** | **Soumirya — organiser / setter / admin** | Runs the platform and contests | Create problems safely, run a smooth contest, catch cheating fairly | Bad test data, judge outages, no visibility during contests |
 | **PE4** | **Mentor-interviewer** (senior student) | Runs mock interviews for juniors | A shared editor that runs code; notes; replay to give feedback | Screen sharing is clumsy; no replay |
 | **PE5** | **Candidate** (junior student) | Practising interviews | Realistic interview feel; feedback | Anxiety; tools that break mid-session |
 | **PE6** | **Faculty / lab TA** (future) | Runs weekly programming labs | Auto-grading and plagiarism reports | Manual checking |
@@ -275,7 +275,7 @@ As Arjun, I want the standings to update live, so that the contest feels alive.
 ### E5 — Problem setting
 
 **US-5.1 · Create a problem from a package** (P0)
-As Ayush, I want to upload a problem package, so that statements, tests, checker, and solutions arrive together.
+As Soumirya, I want to upload a problem package, so that statements, tests, checker, and solutions arrive together.
 - AC1: Package format is documented (SRS §3.1.6); invalid packages are rejected with a list of what's wrong.
 - AC2: Tests are uploaded to object storage and versioned; changing tests creates a new version.
 
@@ -293,7 +293,7 @@ As Ayush, I want to upload a problem package, so that statements, tests, checker
 ### E6 — Contest operations
 
 **US-6.1 · Live ops console** (P0)
-As Ayush during a contest, I want one screen with queue depth, workers, and latency, so that I spot trouble early.
+As Soumirya during a contest, I want one screen with queue depth, workers, and latency, so that I spot trouble early.
 - AC1: Shows per-lane queue depth, active workers with last heartbeat, p50/p95 time-to-verdict (last 5 min), DLQ entries, submissions/min.
 - AC2: Alerts (DLQ > 0, a worker silent 30 s, p95 > 10 s for 2 min) appear on the console and in Grafana.
 
@@ -336,7 +336,7 @@ As Riya, I want progressively stronger hints, so that I use only as much help as
 ### E9 — Integrity
 
 **US-9.1 · Plagiarism run** (P1)
-As Ayush, I want to run a similarity analysis after a contest, so that I find copied solutions.
+As Soumirya, I want to run a similarity analysis after a contest, so that I find copied solutions.
 - AC1: Results show clusters (groups of 2+ users) with scores from both methods, ordered by confidence.
 - AC2: Shared boilerplate (fast-IO templates, code given in the statement) doesn't cause matches.
 
@@ -482,14 +482,14 @@ Codeforces-style multi-player Elo (open formula published by Codeforces in 2015)
 
 | When | What | Owner |
 |---|---|---|
-| Mon 5 Oct | Announcement in class groups: date, rules, sign-in link | Ayush |
-| Tue 6 Oct | Registration opens on the site | Ayush |
-| Wed 7 Oct | Dry run with 5+ friends | Ayush |
-| Thu 8 Oct | Reminder #1 ("2 days to go", link to practice problems) | Ayush |
-| Sat 10 Oct, 12 PM | Reminder #2 with rules summary | Ayush |
-| Sat 10 Oct, 6:45 PM | Final reminder; lobby open | Ayush |
-| Sat 10 Oct, 9:15 PM | Resolver ceremony (screen-share) | Ayush |
-| Sat 10 Oct, 10 PM | Thanks + feedback form (includes SUS) | Ayush |
+| Mon 5 Oct | Announcement in class groups: date, rules, sign-in link | Soumirya |
+| Tue 6 Oct | Registration opens on the site | Soumirya |
+| Wed 7 Oct | Dry run with 5+ friends | Soumirya |
+| Thu 8 Oct | Reminder #1 ("2 days to go", link to practice problems) | Soumirya |
+| Sat 10 Oct, 12 PM | Reminder #2 with rules summary | Soumirya |
+| Sat 10 Oct, 6:45 PM | Final reminder; lobby open | Soumirya |
+| Sat 10 Oct, 9:15 PM | Resolver ceremony (screen-share) | Soumirya |
+| Sat 10 Oct, 10 PM | Thanks + feedback form (includes SUS) | Soumirya |
 
 ### 10.2 Feedback loop
 
@@ -548,7 +548,7 @@ Funnel to watch: `user_signed_up → problem_opened → code_run → submission_
 
 ## 14. Open questions (with default decisions so the build never blocks)
 
-| # | Question | Default until Ayush decides |
+| # | Question | Default until Soumirya decides |
 |---|---|---|
 | Q1 | Is Warm-up #1 rated? | Yes, if ≥ 5 participants |
 | Q2 | Publish all solutions after the contest? | No; each user can choose to make theirs public |

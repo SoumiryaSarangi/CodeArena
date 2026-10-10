@@ -1,6 +1,6 @@
 # ADR-016: Canary text: optional, off by default, a weak signal
 
-- **Status:** Proposed (built as IN-02; Ayush to accept or reject)
+- **Status:** Proposed (built as IN-02; Soumirya to accept or reject)
 - **Date:** 2026-10-09
 
 ## Context

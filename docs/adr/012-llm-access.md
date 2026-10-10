@@ -1,6 +1,6 @@
 # ADR-012: LLM access: provider abstraction, Groq primary, Gemini fallback, one guardrail pipeline
 
-- **Status:** Accepted (approved by Ayush, 2026-10-05)
+- **Status:** Accepted (approved by Soumirya, 2026-10-05)
 - **Date:** 2026-10-05
 
 ## Context

@@ -29,7 +29,7 @@
 |---|---|---|
 | PE1 Riya | Find a problem, run samples, submit, get a hint | First submission ≤ 2 min for new users (median) |
 | PE2 Arjun | Enter contest, submit fast, track standings | Zero "where is my submission?" questions in clarifications |
-| PE3 Ayush | Upload + validate problems, run the contest, review plagiarism | Validate a package in ≤ 3 clicks; spot a failing worker ≤ 10 s |
+| PE3 Soumirya | Upload + validate problems, run the contest, review plagiarism | Validate a package in ≤ 3 clicks; spot a failing worker ≤ 10 s |
 | PE4/PE5 Interview pair | Start a room, code together, replay | Room ready ≤ 30 s; candidate joins with one click |
 
 Overall: SUS ≥ 75 (PRD M6).

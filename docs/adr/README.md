@@ -1,6 +1,6 @@
 # Architecture decision records
 
-Short records (context, decision, alternatives, consequences) for the locked decisions in PLAN §4.1. Changing one needs Ayush's approval and a new or superseding ADR.
+Short records (context, decision, alternatives, consequences) for the locked decisions in PLAN §4.1. Changing one needs Soumirya's approval and a new or superseding ADR.
 
 - [ADR-001: Monorepo with pnpm workspaces and Turborepo](001-monorepo.md)
 - [ADR-002: Web: Next.js App Router, React 19, Tailwind v4, shadcn/ui](002-web-stack.md)

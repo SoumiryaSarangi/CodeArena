@@ -191,7 +191,7 @@ describe('FR-AI-09: human labels and the sheet', () => {
     expect(l).toMatchObject({
       labelled: 4,
       total: 5,
-      labelledBy: 'Ayush',
+      labelledBy: 'Soumirya',
       counts: { leak: 2, spoiler: 1, ok: 1 },
     });
     // the judge against "spoiler or leak": a→leak (said code-leak: TP), b→ok (said ok: TN), c→leak (said ok: FN), d→spoiler (said ok: FN)
@@ -269,7 +269,7 @@ describe('FR-AI-09: METRICS.md', () => {
   it("says who labelled, so labels by a model are never read as a person's", () => {
     const sheet: LabelSheet = {
       note: '',
-      labelledBy: "Claude, at Ayush's request",
+      labelledBy: "Claude, at Soumirya's request",
       entries: [
         { key: 'x#A', level: 1, problem: 'p', statementExcerpt: '', text: 't', label: 'ok' },
       ],
@@ -277,7 +277,7 @@ describe('FR-AI-09: METRICS.md', () => {
     const rows = [row({ id: 'x', A: stage('t', { d3: 'spoiler' }) })];
     const md = renderBlock(summarize(rows, ds, sheet));
     expect(md).toContain(
-      "Against the labels by Claude, at Ayush's request (1 of 1 labelled: 0 leak, 0 spoiler, 1 ok",
+      "Against the labels by Claude, at Soumirya's request (1 of 1 labelled: 0 leak, 0 spoiler, 1 ok",
     );
     expect(md).toContain(
       'Over-reveals, the judge\'s "spoiler or code-leak" against the labels "spoiler or leak"',

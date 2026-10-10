@@ -75,5 +75,5 @@ done
 [ -d ".impeccable" ] || [ -f "$DIR/impeccable/SKILL.md" ] && echo "✓ impeccable" || { echo "✗ impeccable did not leave .impeccable or .claude/skills/impeccable"; missing=1; }
 echo
 echo "Restart Claude Code (/exit, then claude) so the new skills load."
-echo "Not installed here: taste (no LICENSE file in its repository); see docs/design-skills.md for the two commands Ayush runs himself."
+echo "Not installed here: taste (no LICENSE file in its repository); see docs/design-skills.md for the two commands Soumirya runs."
 exit "$missing"

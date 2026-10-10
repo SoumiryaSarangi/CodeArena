@@ -1,7 +1,7 @@
 # CodeArena — Master Build Plan
 
 > **Where this file lives:** `docs/PLAN.md` in the repo. `CLAUDE.md` (repo root) points here.
-> **Who reads it:** Ayush (owner) and Claude Code (builder).
+> **Who reads it:** Soumirya (owner) and Claude Code (builder).
 > **Build window:** Day 0 = Wed 30 Sep 2026 → Day 14 = Wed 14 Oct 2026.
 > **Scope:** everything in `docs/research.md` (the CodeArena research doc), nothing cut, plus the additions in §14.
 > **Rule for Claude Code:** never read this whole file in one go. Find your task card by ID (`grep -n "#### J-03" docs/PLAN.md`) and read that card plus any section it links to.
@@ -17,16 +17,16 @@
 | §2 Who does what | Both | Day 0. This is the contract |
 | §3 Working protocol | Claude Code | Every session (the short version is in `CLAUDE.md`) |
 | §4 Locked decisions | Both | Before any design change. Locked means locked |
-| §5 Accounts and infra | Ayush | Day 0 |
+| §5 Accounts and infra | Soumirya | Day 0 |
 | §6 Architecture spec | Claude Code | When a task card links to it |
 | §7 Frontend spec | Claude Code | Any `UI-*` task |
 | §8–9 Schedule and task cards | Both | Daily |
-| §10 Contest-day runbook | Ayush | Day 9 and Day 10 |
+| §10 Contest-day runbook | Soumirya | Day 9 and Day 10 |
 | §11–13 Quality, metrics, risks | Both | End of each day |
 
 Every task has an ID. Prefixes:
 `F` foundation · `J` judge · `Q` queue/realtime · `P` problems · `S` submissions · `UI` frontend · `D` deploy · `C` contests · `O` ops/observability · `AI` AI Coach · `PL` plagiarism · `IN` integrity signals · `CP` collaborative pad · `W` wrap-up.
-Ayush's tasks use `U` + day number (e.g. `U3.2`).
+Soumirya's tasks use `U` + day number (e.g. `U3.2`).
 
 ### 0.1 Which spec sections each task needs
 
@@ -52,7 +52,7 @@ Name tests after requirement IDs (`it('FR-QUEUE-06: duplicate results change not
 
 ## 1. Mission and definition of done
 
-**Mission:** a production-grade online judge that real people used, with security depth, measured performance under load, a measured AI layer, and a real-time interview pad, all of which Ayush can explain line by line in an interview.
+**Mission:** a production-grade online judge that real people used, with security depth, measured performance under load, a measured AI layer, and a real-time interview pad, all of which Soumirya can explain line by line in an interview.
 
 **CodeArena is "done" on Day 14 when all of these are true:**
 
@@ -75,25 +75,25 @@ Name tests after requirement IDs (`it('FR-QUEUE-06: duplicate results change not
 
 ### 2.1 The rule
 
-> **Claude Code writes everything that can be written. Ayush does everything that needs a human identity, a secret, root on his own machine, money, or other humans, and he must understand everything before it's merged.**
+> **Claude Code writes everything that can be written. Soumirya does everything that needs a human identity, a secret, root on his own machine, money, or other humans, and he must understand everything before it's merged.**
 
-| Ayush does (only Ayush) | Claude Code does (only Claude Code) |
+| Soumirya does (only Soumirya) | Claude Code does (only Claude Code) |
 |---|---|
 | Creating accounts, verifying student status, anything involving billing | All application code: web, API, worker, collab, plagiarism |
 | Creating and storing secrets (`.env`, GitHub Actions secrets, API keys, OAuth apps) | Tests of every kind (unit, integration, e2e, property, attack, load scripts) |
-| Running `sudo` commands on his own machine (Claude writes the script, Ayush runs it) | Scripts, Dockerfiles, Compose, Terraform, cloud-init, Caddyfile, CI workflows |
+| Running `sudo` commands on his own machine (Claude writes the script, Soumirya runs it) | Scripts, Dockerfiles, Compose, Terraform, cloud-init, Caddyfile, CI workflows |
 | `terraform apply` / `destroy` and anything in the Azure portal | Grafana dashboards as JSON, alert rules, runbook drafts |
 | DNS and domain setup | ADRs, specs, `PROGRESS.md` handoffs, PR descriptions |
 | **Writing contest problem statements** (original ideas; Claude helps polish) | Reference solutions, brute-force solutions, generators, validators, checkers, stress tests for every problem |
 | Recruiting participants, running the contest, answering clarifications | Seed data, 20 practice problems (original, textbook-style), eval datasets |
 | Manual QA on real devices, reviewing and merging PRs | The eval harnesses and `docs/METRICS.md` generator |
-| **Explain-back checkpoints** (§3.6) | First drafts of interview answer notes (Ayush rewrites them in his own words) |
+| **Explain-back checkpoints** (§3.6) | First drafts of interview answer notes (Soumirya rewrites them in his own words) |
 | Hosting mock interviews, recording the demo video, the resume | README, architecture diagrams, demo script |
 
-### 2.2 Claude Code must stop and ask Ayush when
+### 2.2 Claude Code must stop and ask Soumirya when
 
 1. A step needs a secret, a password, or an API key value.
-2. A step needs `sudo` on Ayush's machine, or touches cloud billing (creating/destroying cloud resources).
+2. A step needs `sudo` on Soumirya's machine, or touches cloud billing (creating/destroying cloud resources).
 3. The task would change a **locked decision** (§4) or a contract in `packages/contracts`.
 4. A new runtime dependency is not on the approved list in §4.2.
 5. The same bug has survived two fix attempts.
@@ -108,13 +108,13 @@ Pro has usage limits that reset on a rolling window, plus weekly caps. This prot
 
 ### 3.1 One task card = one session
 
-1. Ayush starts a session with: `Do task J-03.` (or several small cards: `Do UI-05 and UI-06.`)
+1. Soumirya starts a session with: `Do task J-03.` (or several small cards: `Do UI-05 and UI-06.`)
 2. Claude Code reads `CLAUDE.md` (automatic), then `docs/PROGRESS.md` (last 40 lines), then **only** the task card and the sections it links to.
 3. Model check against the card's tag (§3.7). Cards tagged **P** or **O** (all 🧠 cards are one of these) start in plan mode and show the plan before writing code.
 4. Implement → test → run the quality gate (`pnpm check`, `go test ./...`, `uv run pytest` as relevant).
 5. Append a handoff entry to `docs/PROGRESS.md` (template in §3.4).
-6. Commit on a branch `t/<ID>-<slug>`, open a PR with `gh pr create` using the PR template. Ayush merges.
-7. Ayush runs `/clear` before the next card.
+6. Commit on a branch `t/<ID>-<slug>`, open a PR with `gh pr create` using the PR template. Soumirya merges.
+7. Soumirya runs `/clear` before the next card.
 
 ### 3.2 Token economy rules
 
@@ -122,13 +122,13 @@ Pro has usage limits that reset on a rolling window, plus weekly caps. This prot
 - Never read `node_modules`, lockfiles, generated files, build output, or `docs/research.md` unless the card says so.
 - Keep explanations in chat short. Put durable explanations in docs, not in chat.
 - Follow the model tag on each card heading (§3.7). Opus costs several times more per turn than Sonnet, so only **P** and **O** cards use it.
-- Don't spawn subagents unless Ayush asks.
+- Don't spawn subagents unless Soumirya asks.
 
 ### 3.3 Git and PRs
 
 - Trunk-based: `main` is always deployable. Short-lived branches `t/<ID>-<slug>`.
 - Conventional commits: `feat(judge): …`, `fix(queue): …`, `test(pad): …`.
-- PR template sections: **What** · **Why** · **How to test** · **Explain-back notes** (3–6 bullets Ayush must understand) · **Risks**.
+- PR template sections: **What** · **Why** · **How to test** · **Explain-back notes** (3–6 bullets Soumirya must understand) · **Risks**.
 - CI must be green before merge.
 
 ### 3.4 `docs/PROGRESS.md` handoff template
@@ -139,7 +139,7 @@ Pro has usage limits that reset on a rolling window, plus weekly caps. This prot
 - Tests: <what runs, what passes>
 - Decisions: <any small decision + why> (big ones → new ADR)
 - Next: <exact next step, or follow-up card IDs>
-- Ayush must: <any action needed from Ayush, e.g. run script X with sudo>
+- Soumirya must: <any action needed from Soumirya, e.g. run script X with sudo>
 - Model: <tag> · ran on <model(s) actually used>
 ```
 
@@ -153,15 +153,15 @@ Pro has usage limits that reset on a rolling window, plus weekly caps. This prot
 - [ ] Observability: new endpoints/jobs emit a trace span and a metric
 - [ ] `PROGRESS.md` updated; ADR added if a decision was made
 
-### 3.6 Explain-back checkpoints (Ayush)
+### 3.6 Explain-back checkpoints (Soumirya)
 
-The project is worthless in interviews if Ayush can't defend it. Each day has a 30–45 minute explain-back: Ayush explains the day's component out loud (or in writing in `docs/interview/notes.md`) without looking at the code, then checks against the code. Anything he can't explain becomes a question for the next Claude Code session: `Explain how XAUTOCLAIM gives us leases in our worker, using our code.`
+The project is worthless in interviews if Soumirya can't defend it. Each day has a 30–45 minute explain-back: Soumirya explains the day's component out loud (or in writing in `docs/interview/notes.md`) without looking at the code, then checks against the code. Anything he can't explain becomes a question for the next Claude Code session: `Explain how XAUTOCLAIM gives us leases in our worker, using our code.`
 
 ### 3.7 Model routing (Sonnet vs Opus)
 
 Opus "costs several times more per turn than Sonnet" (Anthropic support, *Models & usage limits in Claude Code*), and Pro quota is the main schedule risk (§13). So Sonnet does the bulk of the build, and Opus is spent only where a subtle bug is expensive: security, concurrency, ordering and scoring logic. Every card heading ends with a tag:
 
-| Tag | Meaning | Ayush types | Cards |
+| Tag | Meaning | Soumirya types | Cards |
 |---|---|---|---|
 | **S** | Sonnet does the whole card (spec in SYSTEM_DESIGN / SRS / UI_UX is precise) | `/model sonnet` | 46 |
 | **S·high** | Sonnet at higher effort (fiddly but well specified) | `/model sonnet` then `/effort high` | 5 |
@@ -193,7 +193,7 @@ Everything else is **S**.
 | # | Decision | Why (one line) |
 |---|---|---|
 | ADR-001 | Monorepo: pnpm workspaces + Turborepo | One repo, one CI, shared contracts |
-| ADR-002 | Web: Next.js 16.x (latest patched release, App Router) + React 19 + TypeScript + Tailwind v4 + shadcn/ui | Ayush already knows it (SenseiAI) |
+| ADR-002 | Web: Next.js 16.x (latest patched release, App Router) + React 19 + TypeScript + Tailwind v4 + shadcn/ui | Soumirya already knows it (SenseiAI) |
 | ADR-003 | API: NestJS (Express adapter) + TypeScript + Drizzle ORM + Postgres | Module/DI structure = LLD talking points; stable SSE |
 | ADR-004 | Judge worker: **Go** controlling **isolate 2.x** (cgroup v2) | Small, systems-level service; clean process control and concurrency |
 | ADR-005 | Queue: **Redis Streams** with consumer groups, one stream per lane, leases via `XAUTOCLAIM` | Works natively from Go; leases, retries, and DLQ are explainable primitives |
@@ -210,7 +210,7 @@ Everything else is **S**.
 
 ### 4.2 Approved dependencies
 
-- **Web:** next, react, tailwindcss, shadcn/ui (Radix), @tanstack/react-query, zustand, @monaco-editor/react, motion (Framer Motion), react-resizable-panels, cmdk, sonner, react-hook-form, zod, react-markdown + remark-math + rehype-katex + rehype-sanitize, recharts, @sentry/nextjs (approved by Ayush for O-01, 2026-10-08), yjs, y-monaco, @hocuspocus/provider, y-indexeddb, perfect-freehand, lucide-react, geist (font).
+- **Web:** next, react, tailwindcss, shadcn/ui (Radix), @tanstack/react-query, zustand, @monaco-editor/react, motion (Framer Motion), react-resizable-panels, cmdk, sonner, react-hook-form, zod, react-markdown + remark-math + rehype-katex + rehype-sanitize, recharts, @sentry/nextjs (approved by Soumirya for O-01, 2026-10-08), yjs, y-monaco, @hocuspocus/provider, y-indexeddb, perfect-freehand, lucide-react, geist (font).
 - **API/collab:** @nestjs/*, drizzle-orm, drizzle-kit, pg, ioredis, zod, jose, @hocuspocus/server + extension-database + extension-redis, @opentelemetry/*, pino, @aws-sdk/client-s3, @sentry/node.
 - **Worker (Go):** go-redis v9, minio-go, OpenTelemetry Go SDK, `log/slog`.
 - **Plagiarism (Python, managed with uv):** tree-sitter + grammars (cpp, python, java, c, javascript), transformers, torch (CPU), numpy, scikit-learn, networkx, pytest; dev: ruff, mypy.
@@ -223,7 +223,7 @@ Anything else → stop and ask (§2.2).
 
 ## 5. Accounts, infrastructure, and free services
 
-### 5.1 Accounts (Ayush, Day 0)
+### 5.1 Accounts (Soumirya, Day 0)
 
 | Service | Used for | Card? | Notes |
 |---|---|---|---|
@@ -244,7 +244,7 @@ Anything else → stop and ask (§2.2).
 
 | Env | Where | Purpose |
 |---|---|---|
-| **dev** | WSL2 Ubuntu on Ayush's laptop, Docker Compose | Everything, including isolate (WSL2 + systemd + cgroup v2) |
+| **dev** | WSL2 Ubuntu on Soumirya's laptop, Docker Compose | Everything, including isolate (WSL2 + systemd + cgroup v2) |
 | **prod** | Vercel + Azure | Real users. Staging = prod before Day 10 (no separate env; budget) |
 
 ### 5.3 Production topology
@@ -510,17 +510,17 @@ Calm, dense, precise, like a professional tool rather than a toy. Dark-first (li
 
 **Critical path:** F → J → Q → S/UI → D → C → contest. Everything else hangs off it. If a Claude Code usage limit hits, the next card on the critical path always goes first when it resets.
 
-**Daily rhythm (Pro-friendly):** three Claude Code blocks per day aligned with usage windows (morning, afternoon, late evening). Ayush's tasks for the day are sized to fill the gaps between blocks.
+**Daily rhythm (Pro-friendly):** three Claude Code blocks per day aligned with usage windows (morning, afternoon, late evening). Soumirya's tasks for the day are sized to fill the gaps between blocks.
 
 ---
 
 ## 9. Day-by-day plan
 
-Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effort.
+Legend: 🧑 Soumirya · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effort.
 
 ### Day 0 — Wed 30 Sep · Setup
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U0.1** Apply for the GitHub Student Developer Pack (LPU email + ID proof). ⏱ 20 min
 - **U0.2** Activate Azure for Students with LPU email. Create a budget with alerts at $25/$50/$75. ⏱ 20 min
 - **U0.3** Windows setup ⏱ 90 min:
@@ -549,7 +549,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 1 — Thu 1 Oct · Foundation
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U1.1** Fill `.env` files from `.env.example` (OAuth IDs/secrets, JWT keys generated by a script Claude writes). ⏱ 20 min
 - **U1.2** Review ADRs from F-09 (15 min each is fine). Reply "approved" or raise concerns. ⏱ 60 min
 - **U1.3** Read isolate's man page sections INSTALLATION and REPRODUCIBILITY. ⏱ 45 min
@@ -584,17 +584,17 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 #### F-09 · ADRs · **S**
 - Build: ADR-001…015 using a short template (context, decision, alternatives, consequences).
-- Accept: Ayush approves (U1.2).
+- Accept: Soumirya approves (U1.2).
 
 #### J-00 · isolate setup script for WSL2 · **S**
 - Build: `scripts/setup-isolate-wsl.sh` (install build deps or Debian package, enable `isolate.service`, run `isolate-check-environment`, smoke test running `/bin/echo` in a box). Idempotent. Also `infra/cloud-init/judge.yaml` for the VM equivalent.
-- Accept: Ayush runs it (U1.4) and it prints a passing smoke test.
+- Accept: Soumirya runs it (U1.4) and it prints a passing smoke test.
 
 ---
 
 ### Day 2 — Fri 2 Oct (Gandhi Jayanti, long day) · Judge engine
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U2.1** Pick the 6 contest problem ideas (difficulty ladder A easy → F hard). Write rough statements in `problems-private/<slug>/statement.md`. Original ideas only; don't copy statements from other platforms. ⏱ 3 h (spread over Claude's gaps)
 - **U2.2** Manually submit wrong solutions to fixture problems and confirm each verdict looks right. ⏱ 45 min
 - **U2.3** Explain-back: what isolate does with namespaces and cgroups; how TLE vs wall-time differ. ⏱ 30 min
@@ -629,7 +629,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 3 — Sat 3 Oct · Sandbox hardening + queue
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U3.1** Read the Judge0 CVE write-ups linked in `docs/research.md` [1][2][18]. Write the 3 design rules in your own words in `docs/interview/notes.md`. ⏱ 60 min
 - **U3.2** Continue contest problem statements; send them to Claude for the P-02 card. ⏱ 2 h
 - **U3.3** Explain-back: consumer groups, pending entries, XAUTOCLAIM, why the submission ID + run version is the idempotency key. ⏱ 30 min
@@ -664,7 +664,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 4 — Sun 4 Oct · Submissions + live UI
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U4.1** Use the workspace for an hour like a real user; log every papercut in a GitHub issue list. ⏱ 60 min
 - **U4.2** Finish all 6 contest statements. ⏱ 2 h
 - **U4.3** Draft the contest announcement (date, time, rules, prizes if any, "sign in with Google"). ⏱ 20 min
@@ -698,7 +698,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 5 — Mon 5 Oct · Deploy + problem setting
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U5.1** `terraform apply` (after reading the plan output with Claude). Add GitHub Actions secrets (SSH key, registry token, env values). ⏱ 60 min
 - **U5.2** Connect the repo to Vercel; set env vars; add production OAuth callbacks. ⏱ 30 min
 - **U5.3** If the Student Pack arrived: claim the `.me` domain and point `@`, `api` DNS records. Otherwise stay on sslip.io. ⏱ 20 min
@@ -708,8 +708,8 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 🤖 **Claude Code**
 
 #### D-01 · Terraform (Azure) 🧠 · **P**
-- Build: resource group, VNet + subnets, NSGs (judge: no public inbound, egress deny except private subnet), API VM, judge VM (`judge_count` variable), static IP, Blob storage for backups, budget resource; outputs; README for Ayush.
-- Accept: `terraform plan` clean; Ayush applies (U5.1).
+- Build: resource group, VNet + subnets, NSGs (judge: no public inbound, egress deny except private subnet), API VM, judge VM (`judge_count` variable), static IP, Blob storage for backups, budget resource; outputs; README for Soumirya.
+- Accept: `terraform plan` clean; Soumirya applies (U5.1).
 
 #### D-02 · Server provisioning + deploy pipeline · **S**
 - Build: cloud-init (Docker, isolate, worker systemd unit, node exporter), Caddy (TLS, `/api` + `/sse` + `/collab` routes, room-hash routing prepared), prod Compose, GH Actions: build images → GHCR → deploy over SSH with health-check and automatic rollback; nightly attack-suite job on the judge VM.
@@ -720,8 +720,8 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 - Accept: restore test passes once.
 
 #### P-02 · Contest problem tooling 🧠 · **P**
-- Build: for each of Ayush's 6 statements: reference solution (C++), alternative solution (Python), brute force, generator(s), validator, checker if needed, 2+ wrong solutions per expected verdict, stress-test script (brute vs reference on 1,000 random cases). Packages in `problems-private/`.
-- Accept: `validate-problem` green for all 6; stress tests find no mismatch. Ayush reviews statements vs tests.
+- Build: for each of Soumirya's 6 statements: reference solution (C++), alternative solution (Python), brute force, generator(s), validator, checker if needed, 2+ wrong solutions per expected verdict, stress-test script (brute vs reference on 1,000 random cases). Packages in `problems-private/`.
+- Accept: `validate-problem` green for all 6; stress tests find no mismatch. Soumirya reviews statements vs tests.
 
 #### UI-04 · Admin: problem setter · **S**
 - Build: screen 15; upload package, edit statement with live preview, tests table, "Validate" button showing each solution's expected vs actual verdict.
@@ -730,7 +730,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 6 — Tue 6 Oct · Contests
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U6.1** Create "CodeArena Warm-up #1" (Sat 10 Oct 7–9 PM IST, freeze last 30 min) in the admin UI. Share the registration link. ⏱ 20 min
 - **U6.2** Create the dry-run contest (Wed 7 Oct 9 PM, 45 min, 3 fixture problems). ⏱ 15 min
 - **U6.3** Explain-back: composite leaderboard score and its 2^53 bound; how the freeze works. ⏱ 30 min
@@ -758,7 +758,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 7 — Wed 7 Oct · Resolver, ops, observability · Dry run tonight
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U7.1** 9 PM: run the dry-run contest with 5+ friends. Watch the ops console. Afterward, collect feedback in a form (3 questions). ⏱ 90 min
 - **U7.2** Log every bug from the dry run as a GitHub issue with steps. ⏱ 30 min
 - **U7.3** Explain-back: a trace from the browser through Redis to the worker (how `traceparent` travels). ⏱ 30 min
@@ -786,7 +786,7 @@ Legend: 🧑 Ayush · 🤖 Claude Code · 🧠 plan-mode card · ⏱ rough effor
 
 ### Day 8 — Thu 8 Oct · Load test + AI Coach
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U8.1** Before the load test: `scripts/scale-judges.sh up 1` (2 judges, the quota maximum; wraps `terraform apply`, Claude can run it with you). After: `scripts/scale-judges.sh to 1`. ⏱ 20 min
 - **U8.2** Review hint samples: rate 20 hints as good/bad/leaky. Your labels become part of the eval set. ⏱ 60 min
 - **U8.3** Contest reminder message; aim for 30 registered. ⏱ 10 min
@@ -822,7 +822,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 9 — Fri 9 Oct · Integrity + code freeze
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U9.1** Final review of all 6 contest problems: statement, samples, limits. Solve A and B yourself on the platform. ⏱ 2 h
 - **U9.2** Read `docs/runbooks/contest-day.md` end to end; rehearse the resolver on the dry-run data. ⏱ 45 min
 - **U9.3** Write the contest rules page text (includes the advisory telemetry notice and "flagged for review, never auto-banned"). ⏱ 20 min
@@ -833,10 +833,10 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 #### UI-07 · Design skills setup · **S**
 - Build: `scripts/setup-design-skills.sh` (Emil Kowalski's skills, Impeccable without hooks, hairline; idempotent, project scope), `.gitignore` entries so third-party skill files are not committed, `docs/design-skills.md` (sources, licences, installed versions, what each skill is for, how to reinstall, pre-approved dependencies), CLAUDE.md edits (UI rule, precedence, a short "Design skills" section). No product code.
-- Accept: `pnpm check` passes; the script is re-runnable; the PR lists what Ayush must do for the `taste` analyser.
+- Accept: `pnpm check` passes; the script is re-runnable; the PR lists what Soumirya must do for the `taste` analyser.
 
 #### UI-08 · Design direction + audit (read-only, no product code) · **P**
-- Build: `/impeccable init` (answer from PRD and UI_UX, ask Ayush only for gaps), then `/impeccable document`. Screenshot S01–S18 with Playwright at 1280 and 390. Run `/impeccable audit` and `critique`, Emil `review-animations` and `find-animation-opportunities`, `mobile-native` at 390, `break-ui` with worst-case data on S03, S06, S08, S10, S12, S17. If taste is installed, `/taste` https://linear.app and https://vercel.com into `docs/design-refs/` as references. Decide ONE design direction (palette, type, spacing, density, motion, any hairline figures and where) and write `docs/design/DIRECTION.md` (why, in plain language, with the tokens it implies) and `docs/design/AUDIT.md` (findings ranked by severity: screen, fix, owning card). List every new dependency proposed.
+- Build: `/impeccable init` (answer from PRD and UI_UX, ask Soumirya only for gaps), then `/impeccable document`. Screenshot S01–S18 with Playwright at 1280 and 390. Run `/impeccable audit` and `critique`, Emil `review-animations` and `find-animation-opportunities`, `mobile-native` at 390, `break-ui` with worst-case data on S03, S06, S08, S10, S12, S17. If taste is installed, `/taste` https://linear.app and https://vercel.com into `docs/design-refs/` as references. Decide ONE design direction (palette, type, spacing, density, motion, any hairline figures and where) and write `docs/design/DIRECTION.md` (why, in plain language, with the tokens it implies) and `docs/design/AUDIT.md` (findings ranked by severity: screen, fix, owning card). List every new dependency proposed.
 - Accept: DIRECTION.md and AUDIT.md exist; every AUDIT item names its owning card (UI-09 to UI-13).
 
 #### UI-09 · Design foundation: tokens, fonts, base components, app shell · **P**
@@ -861,18 +861,18 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 #### UI-15 · Round 2: review of the built UI, direction delta, top-bar wordmark, foundation changes (fonts, colours, materials, shared components, shell) · **P**
 - Build: capture the built UI with the existing harness into `docs/design/round2/before/`; run the design skills on it (critique, audit, review-animations, find-animation-opportunities, apple-design, emil-design-eng, mobile-native, break-ui, taste on leetcode.com/problemset/, codeforces.com/contests and linear.app); write `docs/design/ROUND2.md` (what stays, what changes, ranked per screen with owning card, fonts, colours, materials, motion, wordmark, twist, dependencies) and a line at the top of DIRECTION.md. Apply the top-bar wordmark twist (font and colour only in `Wordmark()`, subset font, tokens, contrast tests) and the foundation-level changes; add `scripts/sync-ui-ux.mjs` so UI_UX's token and type blocks are generated, not hand-edited.
-- Accept: gate green (lint, typecheck, unit incl. drift tests, full e2e with axe in both themes, detector 0 findings); before/after of the top bar and two screens; ROUND2.md read by Ayush.
+- Accept: gate green (lint, typecheck, unit incl. drift tests, full e2e with axe in both themes, detector 0 findings); before/after of the top bar and two screens; ROUND2.md read by Soumirya.
 
 #### UI-16 · Landing S01, round 2 · **P**
-- Build: the landing page per ROUND2.md: a hero that plays one real-timed verdict journey, the live verdict ticker (`GET /api/status/verdicts`, approved by Ayush 2026-10-10), the proof as numerals, the 500-run verdict mix, a framed sample board. Only real numbers from `docs/METRICS.md`; no gradients.
+- Build: the landing page per ROUND2.md: a hero that plays one real-timed verdict journey, the live verdict ticker (`GET /api/status/verdicts`, approved by Soumirya 2026-10-10), the proof as numerals, the 500-run verdict mix, a framed sample board. Only real numbers from `docs/METRICS.md`; no gradients.
 - Accept: gate green; before/after at 1280 and 390.
 
 #### UI-17 · Round 2 screens S02–S06 · **S**
-- Build: ROUND2.md's list for S02 to S06, **including "the wire"** (a thin segmented line under the Submit button on S05 and on the S03 Recent submissions rows, driven by the real submission events and settling into the verdict colour; approved by Ayush 2026-10-10); tier-coloured handles; before/after at 1280 and 390 in the PR.
+- Build: ROUND2.md's list for S02 to S06, **including "the wire"** (a thin segmented line under the Submit button on S05 and on the S03 Recent submissions rows, driven by the real submission events and settling into the verdict colour; approved by Soumirya 2026-10-10); tier-coloured handles; before/after at 1280 and 390 in the PR.
 - Accept: gate green for the touched screens.
 
 #### UI-18 · Round 2 screens S07–S12 · **S**
-- Build: ROUND2.md's list for S07 to S12, **including "the wire" on the board rows** (S10; needs a per-row live subscription: capped, none when the tab is hidden; approved by Ayush 2026-10-10); tier-coloured handles; before/after at 1280 and 390.
+- Build: ROUND2.md's list for S07 to S12, **including "the wire" on the board rows** (S10; needs a per-row live subscription: capped, none when the tab is hidden; approved by Soumirya 2026-10-10); tier-coloured handles; before/after at 1280 and 390.
 - Accept: gate green for the touched screens.
 
 #### UI-19 · Round 2 screens S13–S18, then sync docs and README screenshots · **S**
@@ -883,7 +883,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 - Build: reviews of each participant's final submission per attempted problem (complexity, missed edge cases, intended-approach comparison, readability), **generated on demand when opened plus a paced background job within the daily budget** (SD-§12.3); review page UI (S11) with ready / generating / queued states.
 
 #### AI-04 · Leak-rate eval 🧠 · **P**
-- Build: `apps/api/eval/hints/` — 60+ prompts (incl. adversarial "just give me the code", role-play, code-completion tricks), plus Ayush's labels; automatic leak detector (code-block/AST heuristics + LLM judge), report leak rate with vs without code-removal pass → `docs/METRICS.md`.
+- Build: `apps/api/eval/hints/` — 60+ prompts (incl. adversarial "just give me the code", role-play, code-completion tricks), plus Soumirya's labels; automatic leak detector (code-block/AST heuristics + LLM judge), report leak rate with vs without code-removal pass → `docs/METRICS.md`.
 
 #### PL-01 · Normalisation + winnowing (Python) · **S·high**
 - Build: tree-sitter parse (C, C++, Python, Java, JS), canonical identifier renaming, strip comments/dead code/formatting, k-gram hashing, winnowing fingerprints, candidate pairs above a threshold.
@@ -907,7 +907,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 10 — Sat 10 Oct · 🎯 Contest day
 
-🧑 **Ayush** (follow §10 exactly)
+🧑 **Soumirya** (follow §10 exactly)
 - **U10.1** 2:00 PM: scale judges up; run the pre-flight checklist.
 - **U10.2** 6:30 PM: open lobby; post the link.
 - **U10.3** 7:00–9:00 PM: run the contest from the ops console; answer clarifications.
@@ -924,7 +924,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 11 — Sun 11 Oct · Post-contest + pad begins
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U11.1** Run the plagiarism pipeline on contest data; review every flagged cluster yourself; record decisions. ⏱ 60 min
 - **U11.2** Write a short incident/retro note: what broke, what held, numbers. ⏱ 45 min
 - **U11.3** Recruit 5–10 people for mock interviews on Tue 13 and Wed 14 (30–40 min each). ⏱ 20 min
@@ -947,7 +947,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 12 — Mon 12 Oct · Pad core
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U12.1** Test the pad with one friend for 20 minutes; log issues. ⏱ 30 min
 - **U12.2** Email one faculty member or lab TA offering CodeArena for a programming lab (auto-grading + plagiarism reports). Attach the contest stats. ⏱ 30 min
 - **U12.3** Explain-back: why the Redis extension doesn't reduce CPU load, and what room-hash routing fixes. ⏱ 30 min
@@ -970,7 +970,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 13 — Tue 13 Oct · Pad advanced + tests · Mock interviews begin
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U13.1** Host 3–5 mock interviews (you as interviewer or swap roles). ⏱ 2–3 h
 - **U13.2** Watch two playbacks; note what felt off. ⏱ 30 min
 - **U13.3** Explain-back: playback and fast seeking; restoring a version without breaking other clients. ⏱ 30 min
@@ -992,7 +992,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 ### Day 14 — Wed 14 Oct · Stretch + wrap
 
-🧑 **Ayush**
+🧑 **Soumirya**
 - **U14.1** Host the remaining mock interviews. ⏱ 2 h
 - **U14.2** Record the demo video (script from W-02): contest replay + resolver, sandbox blocking a fork bomb, live verdict grid, trace in Grafana, plagiarism cluster, hint ladder, pad with playback. ⏱ 90 min
 - **U14.3** Rewrite `docs/interview/answers.md` in your own words; fill the resume bullet with measured numbers. ⏱ 90 min
@@ -1086,7 +1086,7 @@ Dry-run bug fixes first (from U7.2 issues), then:
 
 | Risk | Signal | Response |
 |---|---|---|
-| **Pro usage limits slow the build** (the biggest risk to a 14-day schedule) | Hitting limits before finishing a day's critical-path cards | Critical-path cards always first; Ayush's tasks fill cooldowns; keep sessions to one card; follow the model tags (§3.7) so Opus is spent only on the 21 P/O cards; if the weekly cap blocks the critical path before Day 9, consider Max 5x for these two weeks, or let the non-critical tail run into Days 15–17. **Scope stays the same either way.** |
+| **Pro usage limits slow the build** (the biggest risk to a 14-day schedule) | Hitting limits before finishing a day's critical-path cards | Critical-path cards always first; Soumirya's tasks fill cooldowns; keep sessions to one card; follow the model tags (§3.7) so Opus is spent only on the 21 P/O cards; if the weekly cap blocks the critical path before Day 9, consider Max 5x for these two weeks, or let the non-critical tail run into Days 15–17. **Scope stays the same either way.** |
 | isolate misbehaves in WSL2 | J-00 smoke test fails | Use a small Azure Linux VM as the dev judge from Day 2 (worker connects to local Redis via SSH tunnel) |
 | Student Pack not approved in time | No domain by Day 5 | sslip.io + Vercel domain (already the default plan) |
 | Azure region/size blocked by subscription policy | Terraform error | Pick an allowed region; document the latency |

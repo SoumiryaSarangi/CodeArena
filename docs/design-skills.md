@@ -1,12 +1,12 @@
 # Design skills
 
-Since UI-07 the look and feel of the product is decided by a set of design skills for Claude Code, not by a fixed token file (decision by Ayush, recorded in `CLAUDE.md`). The only design rule that stays is **no gradients**. `docs/UI_UX.md` still describes screens, copy and behaviour; its tokens are a starting point that the redesign cards (UI-08 to UI-14) may change, and UI-14 updates the doc to match what was built.
+Since UI-07 the look and feel of the product is decided by a set of design skills for Claude Code, not by a fixed token file (decision by Soumirya, recorded in `CLAUDE.md`). The only design rule that stays is **no gradients**. `docs/UI_UX.md` still describes screens, copy and behaviour; its tokens are a starting point that the redesign cards (UI-08 to UI-14) may change, and UI-14 updates the doc to match what was built.
 
 The skill files are third-party and are **not committed** (their licences differ; `.claude/skills/` is in `.gitignore`). `scripts/setup-design-skills.sh` reproduces them.
 
 ## Installed on 2026-10-09
 
-`scripts/setup-design-skills.sh` ran on Ayush's machine and its own check passed for all 13 skills. Versions, licences and repositories were checked against the registries (GitHub API for the skills repositories, npm for Impeccable), not taken from memory.
+`scripts/setup-design-skills.sh` ran on Soumirya's machine and its own check passed for all 13 skills. Versions, licences and repositories were checked against the registries (GitHub API for the skills repositories, npm for Impeccable), not taken from memory.
 
 | Source | Licence (checked) | Version installed |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ The skill files are third-party and are **not committed** (their licences differ
 | hairline: <https://github.com/lucasmarkes/hairline> | MIT | no release numbers: `main` at commit `a2217852fe` (2026-10-08); hash in `skills-lock.json` |
 | taste: <https://github.com/senlindesign/taste-skill> | **none**: the repository has no LICENSE file (the GitHub API reports no licence), so it is never committed | not installed by the script. Installed by hand on 2026-10-09 into `~/.claude/skills/taste` (outside the repository) at `main` commit `6dce223f2f` (2026-07-07) |
 
-What the installers put on disk: `.claude/skills/<name>/` for all 13 skills (ignored by git); `.claude/agents/impeccable-*.md`, four helper agent definitions that Impeccable installs (`impeccable-asset-producer`, `-documenter`, `-finish-reviewer`, `-manual-edit-applier`; ignored by git; they only run if Impeccable calls them, and `CLAUDE.md` still says no subagents unless Ayush asks); and **`skills-lock.json`** at the repository root (sources and content hashes only, no third-party text, committed so the exact set can be checked or restored with `npx skills@latest experimental_install`). `.claude/settings.json` was not changed: **no hooks were added**.
+What the installers put on disk: `.claude/skills/<name>/` for all 13 skills (ignored by git); `.claude/agents/impeccable-*.md`, four helper agent definitions that Impeccable installs (`impeccable-asset-producer`, `-documenter`, `-finish-reviewer`, `-manual-edit-applier`; ignored by git; they only run if Impeccable calls them, and `CLAUDE.md` still says no subagents unless Soumirya asks); and **`skills-lock.json`** at the repository root (sources and content hashes only, no third-party text, committed so the exact set can be checked or restored with `npx skills@latest experimental_install`). `.claude/settings.json` was not changed: **no hooks were added**.
 
 Both installers warn that skills run with the agent's full permissions. `npx skills` also prints a security assessment per skill: for `hairline-create` it reported "Safe" (Gen), 0 alerts (Socket) and **Medium risk (Snyk)**; read that skill (`.claude/skills/hairline-create/SKILL.md`) before running it on anything important. Impeccable's skill runs its own scripts from `.claude/skills/impeccable/scripts/` (for example `impeccable context` at the start of a session): that is third-party code, so read it once before relying on it.
 
@@ -49,7 +49,7 @@ Then restart Claude Code (`/exit`, then `claude`) so the skills load. The script
 
 ## Impeccable's hooks (off)
 
-The hooks download and run a binary on every edit, so the setup passes `--no-hooks` and `.claude/settings.json` has none. To enable them later (only if Ayush says so), use Impeccable's own command, `/impeccable hooks on` (`/impeccable hooks status` shows the state, `off` reverses it), and review what it adds to `.claude/` before committing anything.
+The hooks download and run a binary on every edit, so the setup passes `--no-hooks` and `.claude/settings.json` has none. To enable them later (only if Soumirya says so), use Impeccable's own command, `/impeccable hooks on` (`/impeccable hooks status` shows the state, `off` reverses it), and review what it adds to `.claude/` before committing anything.
 
 ## taste (outside the repository)
 
@@ -62,7 +62,7 @@ It lives in `~/.claude/skills`, outside the repository, because its repository h
 
 ## Pre-approved dependencies
 
-Approved by Ayush for the redesign (each one actually added is also listed in its PR and added to this table with the date and the card):
+Approved by Soumirya for the redesign (each one actually added is also listed in its PR and added to this table with the date and the card):
 
 | Dependency | Why | Added in |
 | --- | --- | --- |

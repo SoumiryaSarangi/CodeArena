@@ -8,9 +8,9 @@ web
 
 ## Users
 
-The primary users, confirmed by Ayush on 2026-10-09, are **students who practise and compete**: Riya (3rd-year placement-prep student, practises 1 to 2 hours a day, mostly C++ and Python) and Arjun (contest regular, club member, wants fast fair contests and live standings). Second: **organisers** (Ayush: problem setter, contest operator, admin), **interviewers** (a senior student running a mock interview) and **candidates** (a junior student practising interviews). A faculty or lab TA is a possible future user, not a current one. Sources: `docs/PRD.md` §4.1.
+The primary users, confirmed by Soumirya on 2026-10-09, are **students who practise and compete**: Riya (3rd-year placement-prep student, practises 1 to 2 hours a day, mostly C++ and Python) and Arjun (contest regular, club member, wants fast fair contests and live standings). Second: **organisers** (Soumirya: problem setter, contest operator, admin), **interviewers** (a senior student running a mock interview) and **candidates** (a junior student practising interviews). A faculty or lab TA is a possible future user, not a current one. Sources: `docs/PRD.md` §4.1.
 
-A second audience exists for the public landing page and status page: **reviewers and recruiters** following a resume link, who need to see within a minute what the platform does and that it is built well. Confirmed by Ayush as "both audiences" for the landing page; students remain first everywhere else.
+A second audience exists for the public landing page and status page: **reviewers and recruiters** following a resume link, who need to see within a minute what the platform does and that it is built well. Confirmed by Soumirya as "both audiences" for the landing page; students remain first everywhere else.
 
 ## Product Purpose
 
@@ -26,11 +26,11 @@ Students use it on laptops (coding) and on phones (reading statements, watching 
 
 ## Capabilities and Constraints
 
-Languages: C, C++17 and 20, Java 21, Python 3, JavaScript (Node). Verdicts: AC, WA, TLE, MLE, RE, CE, OLE, SE; every verdict must carry a text label, never colour alone. Screens S01 to S18 are listed in `docs/UI_UX.md` with their routes and copy. The live board, verdicts and clarifications arrive over Server-Sent Events; the interview pad over WebSocket. Hard product rules: hints are off during contests; hidden test data never appears in the interface; the interviewer's notes and AI summary are visible only to the interviewer; plagiarism flags are never acted on automatically (an administrator reviews each cluster). Technical: Next.js App Router, Tailwind v4, shadcn/ui, Monaco for code, Geist fonts today (starting points, not commitments, per the design decision of 2026-10-09). **The only visual rule fixed by Ayush: no gradients.** Everything else about look and feel is decided by the design process. Existing tests are the gate for changes. Undecided and left to the design work: palette, typography, density, motion, imagery.
+Languages: C, C++17 and 20, Java 21, Python 3, JavaScript (Node). Verdicts: AC, WA, TLE, MLE, RE, CE, OLE, SE; every verdict must carry a text label, never colour alone. Screens S01 to S18 are listed in `docs/UI_UX.md` with their routes and copy. The live board, verdicts and clarifications arrive over Server-Sent Events; the interview pad over WebSocket. Hard product rules: hints are off during contests; hidden test data never appears in the interface; the interviewer's notes and AI summary are visible only to the interviewer; plagiarism flags are never acted on automatically (an administrator reviews each cluster). Technical: Next.js App Router, Tailwind v4, shadcn/ui, Monaco for code, Geist fonts today (starting points, not commitments, per the design decision of 2026-10-09). **The only visual rule fixed by Soumirya: no gradients.** Everything else about look and feel is decided by the design process. Existing tests are the gate for changes. Undecided and left to the design work: palette, typography, density, motion, imagery.
 
 ## Brand Commitments
 
-Only two, confirmed by Ayush: the name **CodeArena** and the tagline **"The place your campus codes together"** (PRD vision: "practise, compete, and interview, on a judge you can trust"). There is no logo, favicon or brand colour in the repository; a wordmark may be proposed. Voice in existing copy is plain and factual (error messages say what happened and what to do); `docs/UI_UX.md` §10 has the current copy.
+Only two, confirmed by Soumirya: the name **CodeArena** and the tagline **"The place your campus codes together"** (PRD vision: "practise, compete, and interview, on a judge you can trust"). There is no logo, favicon or brand colour in the repository; a wordmark may be proposed. Voice in existing copy is plain and factual (error messages say what happened and what to do); `docs/UI_UX.md` §10 has the current copy.
 
 ## Evidence on Hand
 

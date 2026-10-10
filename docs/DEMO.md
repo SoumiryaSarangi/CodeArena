@@ -1,6 +1,6 @@
 # Demo video and resume bullets (W-02)
 
-Written for Ayush, who records the video and writes the resume. Every number below is copied from
+Written for Soumirya, who records the video and writes the resume. Every number below is copied from
 [METRICS.md](METRICS.md); where METRICS.md has no number yet, the line says so and nothing is invented.
 Nothing here is a claim you cannot show on screen.
 

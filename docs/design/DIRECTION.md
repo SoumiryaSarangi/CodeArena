@@ -2,7 +2,7 @@
 
 > **Round 2 (`docs/design/ROUND2.md`, UI-15) supersedes this document where they differ.** In particular: frosted floating chrome is now allowed, the wordmark has its own typeface and two colours, tier and difficulty colours exist, and the evidence copy follows `docs/METRICS.md` exactly. What round 2 built is in ROUND2.md "As built".
 
-Status: **approved by Ayush on 2026-10-10 and built in UI-09 to UI-13; see "As built" at the end** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
+Status: **approved by Soumirya on 2026-10-10 and built in UI-09 to UI-13; see "As built" at the end** (all four open questions answered yes; see the end). Nothing here is built yet; UI-09 starts it. Evidence: `docs/design/AUDIT.md`, the 100 captures in `docs/design/screens/`, the references in `docs/design-refs/`. The only rule that was fixed beforehand: **no gradients** (that includes glows and image fades).
 
 ## The decision in one paragraph
 
@@ -63,7 +63,7 @@ No new fonts, no animation library (the app already uses `motion` for the board 
 
 Gradients, glows, blurred backdrops, illustrations, mascots, a logo (a wordmark may be set in Geist Mono), testimonials or user counts (none exist), a separate marketing site, new colour for every feature, and redesigning the Monaco editor beyond its theme.
 
-## Decisions (Ayush, 2026-10-10)
+## Decisions (Soumirya, 2026-10-10)
 
 1. Brand blue replaces violet: **yes.**
 2. Ink-on-paper primary buttons: **yes.**

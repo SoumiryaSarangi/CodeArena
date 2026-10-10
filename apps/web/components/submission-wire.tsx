@@ -15,7 +15,7 @@ const RANK: Record<LiveSubmission['phase'], number> = {
 };
 
 /**
- * "The wire" (round 2, approved by Ayush): a thin line of five segments under a submission that fills as the real
+ * "The wire" (round 2, approved by Soumirya): a thin line of five segments under a submission that fills as the real
  * events arrive (queued, claimed, compiling, running) and settles into the verdict's colour when the verdict is
  * in. Feedback only: the words that say the same thing are always next to it (the queue line, the verdict
  * badge), so it is hidden from assistive technology. Pass `live` for a submission being followed, or

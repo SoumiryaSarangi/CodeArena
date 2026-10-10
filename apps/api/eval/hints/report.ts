@@ -229,7 +229,7 @@ function scoreLabels(sheet: LabelSheet, hints: Row[]): NonNullable<Summary['labe
   return {
     labelled: done.length,
     total: sheet.entries.length,
-    labelledBy: sheet.labelledBy ?? 'Ayush',
+    labelledBy: sheet.labelledBy ?? 'Soumirya',
     counts,
     spoilerJudge: {
       tp,

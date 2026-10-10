@@ -1,6 +1,6 @@
 # Interview answers: first draft
 
-**Status: a first draft written by Claude, to be rewritten by Ayush in his own words (plan task U14.3).** An answer you cannot give without looking at this page is not yet yours. Read the "where to look" line, open the code, and say it out loud first.
+**Status: a first draft written by Claude, to be rewritten by Soumirya in his own words (plan task U14.3).** An answer you cannot give without looking at this page is not yet yours. Read the "where to look" line, open the code, and say it out loud first.
 
 **About the source list.** The card asked for answers to "§13 of the research doc and §6.13". `docs/research.md` is not in this repository, so I could not match its question list. These questions come from the project itself: its decisions (ADRs), its numbers (`docs/METRICS.md`) and the bugs it had. Add the research doc's own questions at the bottom when you have it open, and point each at the nearest answer here.
 
@@ -137,7 +137,7 @@ The honest answer is a list: the single API VM and the single Redis (no failover
 
 ## 10. Using an AI pair programmer, honestly
 
-**Check every sentence here is true for you before you say it.** What the repository itself supports: the plan, the decisions and the acceptance checks are written down before the code (`docs/PLAN.md`, `docs/adr/`), and each locked decision and each new dependency was approved by Ayush (the ADRs say "approved by Ayush" with a date; `CLAUDE.md` lists what needs his approval). An AI pair programmer wrote most of the code under the rules in `CLAUDE.md`: a model per card, explain-back checkpoints, tests named after requirement IDs, a quality gate before every commit. What keeps that honest is that claims are measured by scripts and written with their caveats, that bugs found by the suites are in the log (`docs/PROGRESS.md`), and that the places where the AI's own work was the weak evidence (the hint labels) are disclosed in the report. The commits are authored by Ayush, who owns what ships; be ready to explain any file in them without opening it.
+**Check every sentence here is true for you before you say it.** What the repository itself supports: the plan, the decisions and the acceptance checks are written down before the code (`docs/PLAN.md`, `docs/adr/`), and each locked decision and each new dependency was approved by Soumirya (the ADRs say "approved by Soumirya" with a date; `CLAUDE.md` lists what needs his approval). An AI pair programmer wrote most of the code under the rules in `CLAUDE.md`: a model per card, explain-back checkpoints, tests named after requirement IDs, a quality gate before every commit. What keeps that honest is that claims are measured by scripts and written with their caveats, that bugs found by the suites are in the log (`docs/PROGRESS.md`), and that the places where the AI's own work was the weak evidence (the hint labels) are disclosed in the report. The commits are authored by Soumirya, who owns what ships; be ready to explain any file in them without opening it.
 
 ---
 
