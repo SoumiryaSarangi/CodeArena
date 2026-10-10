@@ -50,14 +50,22 @@ const COLUMNS: Column<ProblemSummary>[] = [
     header: 'Title',
     sortValue: (p) => p.title.toLowerCase(),
     cell: (p) => (
-      <Link href={`/p/${p.slug}`} className="font-medium text-text hover:underline">
-        {p.title}
-      </Link>
+      <>
+        <Link href={`/p/${p.slug}`} className="break-words font-medium text-text hover:underline">
+          {p.title}
+        </Link>
+        {/* Phones drop the other columns; what they said moves under the title. */}
+        <span className="mt-0.5 block text-12 text-text-3 md:hidden">
+          {difficultyLabel(p.difficulty)} <span className="font-mono">{p.difficulty}</span>
+          {p.acceptance === null ? '' : ` · ${p.acceptance}% accepted`}
+        </span>
+      </>
     ),
   },
   {
     key: 'difficulty',
     header: 'Difficulty',
+    hideOnPhone: true,
     sortValue: (p) => p.difficulty,
     cell: (p) => (
       <span>
@@ -69,6 +77,7 @@ const COLUMNS: Column<ProblemSummary>[] = [
   {
     key: 'tags',
     header: 'Tags',
+    hideOnPhone: true,
     cell: (p) => (
       <span className="flex flex-wrap gap-1">
         {p.tags.slice(0, 3).map((t) => (
@@ -87,6 +96,7 @@ const COLUMNS: Column<ProblemSummary>[] = [
   {
     key: 'acceptance',
     header: 'Acceptance',
+    hideOnPhone: true,
     align: 'right',
     mono: true,
     sortValue: (p) => p.acceptance ?? -1,
@@ -215,7 +225,7 @@ export function PracticeList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Practice</h1>
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Practice</h1>
 
       <form
         role="search"

@@ -15,9 +15,9 @@ function Card({ id, title, children }: { id: string; title: string; children: Re
   return (
     <section
       aria-labelledby={id}
-      className="flex flex-col gap-3 rounded-md border border-border-strong bg-surface-1 p-4"
+      className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-surface-1 p-4 md:p-5"
     >
-      <h2 id={id} className="text-16 font-medium">
+      <h2 id={id} className="text-18 font-semibold">
         {title}
       </h2>
       {children}
@@ -32,7 +32,13 @@ function NextContest({ c }: { c: NonNullable<HomeSummary['nextContest']> }) {
   const secs = Math.floor((Date.parse(c.startsAt) - now) / 1000);
   return (
     <>
-      <p className="text-14">
+      {!running && secs > 0 ? (
+        // Glanceable copy of the line below (which is the accessible one).
+        <p aria-hidden className="display font-mono text-40 font-medium md:text-48">
+          {formatCountdown(secs)}
+        </p>
+      ) : null}
+      <p className="break-words text-14">
         <Link href={`/c/${c.slug}`} className="font-medium underline">
           {c.title}
         </Link>
@@ -42,18 +48,18 @@ function NextContest({ c }: { c: NonNullable<HomeSummary['nextContest']> }) {
       </p>
       <div className="flex items-center gap-3">
         {running ? (
-          <Button asChild variant="primary" size="sm">
+          <Button asChild variant="primary">
             <Link href={`/c/${c.slug}`}>Open the contest</Link>
           </Button>
         ) : c.registered ? (
           <>
             <span className="text-13 font-medium text-v-ac">You are registered</span>
-            <Button asChild variant="secondary" size="sm">
+            <Button asChild variant="primary">
               <Link href={`/c/${c.slug}`}>Open the lobby</Link>
             </Button>
           </>
         ) : (
-          <Button asChild variant="primary" size="sm">
+          <Button asChild variant="primary">
             <Link href={`/c/${c.slug}`}>Register</Link>
           </Button>
         )}
@@ -118,8 +124,8 @@ export function HomeView() {
   if (!home || !recent) return <Skeleton className="h-64 w-full" />;
 
   return (
-    <div className="flex max-w-4xl flex-col gap-4">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">
+    <div className="mx-auto flex w-full min-w-0 max-w-[1120px] flex-col gap-4">
+      <h1 className="break-words text-28 font-semibold tracking-[-0.01em] [overflow-wrap:anywhere]">
         Welcome back{handle ? `, ${handle}` : ''}
       </h1>
 
@@ -128,7 +134,7 @@ export function HomeView() {
           <ul aria-label="Warm-up problems" className="flex flex-col gap-1">
             {home.warmUps.map((w) => (
               <li key={w.slug} className="flex items-baseline gap-3 text-14">
-                <Link href={`/p/${w.slug}`} className="underline">
+                <Link href={`/p/${w.slug}`} className="min-w-0 break-words underline">
                   {w.title}
                 </Link>
                 <span className="font-mono text-12 text-text-3">{w.difficulty}</span>
@@ -151,7 +157,7 @@ export function HomeView() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
         <Card id="next" title="Next contest">
           {home.nextContest ? (
             <NextContest c={home.nextContest} />
@@ -177,10 +183,10 @@ export function HomeView() {
             <ul aria-label="Recent problems" className="flex flex-col gap-1.5">
               {home.continuePracticing.map((p) => (
                 <li key={p.slug} className="flex items-center gap-3 text-14">
-                  <Link href={`/p/${p.slug}`} className="underline">
+                  <Link href={`/p/${p.slug}`} className="min-w-0 break-words underline">
                     {p.title}
                   </Link>
-                  <span className="ml-auto text-12 text-text-2">
+                  <span className="ml-auto shrink-0 whitespace-nowrap text-12 text-text-2">
                     {p.solved ? 'Solved' : 'Not solved yet'}
                   </span>
                 </li>
@@ -197,7 +203,7 @@ export function HomeView() {
           <ul aria-label="Recent submissions" className="flex flex-col gap-1.5">
             {recent.map((s) => (
               <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-14">
-                <Link href={`/p/${s.problemSlug}`} className="underline">
+                <Link href={`/p/${s.problemSlug}`} className="min-w-0 break-words underline">
                   {s.problemTitle}
                 </Link>
                 <VerdictBadge

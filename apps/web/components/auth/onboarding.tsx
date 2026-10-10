@@ -105,7 +105,7 @@ export function Onboarding() {
   const shown = local ?? taken ?? error ?? undefined;
   return (
     <form onSubmit={submit} className="mx-auto flex max-w-sm flex-col gap-4 py-12" noValidate>
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Choose your handle</h1>
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Choose your handle</h1>
       <p className="text-13 text-text-3">{RULES}</p>
       <Input
         label="Handle"

@@ -1,0 +1,168 @@
+{
+  "url": "/signin",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 26,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "12px",
+      5
+    ],
+    [
+      "14px",
+      4
+    ],
+    [
+      "13px",
+      4
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      9
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      13
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(20, 22, 26)",
+      6
+    ],
+    [
+      "rgb(99, 106, 117)",
+      5
+    ],
+    [
+      "rgb(47, 73, 217)",
+      3
+    ],
+    [
+      "rgb(75, 82, 96)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(242, 243, 245)",
+      3
+    ],
+    [
+      "rgb(255, 255, 255)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      8
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Sign in",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 9,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 44,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 35,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Rules",
+        "w": 47,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Status",
+        "w": 53,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 58,
+        "h": 28
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 51,
+        "h": 28
+      }
+    ]
+  },
+  "interactive": 13
+}

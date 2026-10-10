@@ -1,0 +1,126 @@
+{
+  "url": "/signin",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "pageHeight": 844,
+  "overflowX": false,
+  "elements": 28,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "14px",
+      4
+    ],
+    [
+      "13px",
+      4
+    ],
+    [
+      "12px",
+      4
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      8
+    ],
+    [
+      "600",
+      3
+    ],
+    [
+      "500",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      12
+    ],
+    [
+      "GeistMono",
+      2
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(236, 236, 238)",
+      6
+    ],
+    [
+      "rgb(138, 144, 154)",
+      5
+    ],
+    [
+      "rgb(109, 139, 255)",
+      3
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(23, 26, 30)",
+      3
+    ],
+    [
+      "rgb(17, 19, 22)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      8
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Sign in",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 4,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Privacy",
+        "w": 44,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Terms",
+        "w": 35,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 13
+}

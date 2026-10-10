@@ -54,7 +54,11 @@ function Account() {
   }
   return (
     <span className="flex items-center gap-2">
-      <Link href="/onboarding" className="hit-44 text-13 text-text-2 hover:text-text">
+      <Link
+        href="/onboarding"
+        className="hit-44 max-w-[5.5rem] truncate text-13 text-text-2 hover:text-text sm:max-w-[16rem]"
+        title={session.me.handle ?? undefined}
+      >
         {session.me.handle ?? 'Choose a handle'}
       </Link>
       <Button variant="ghost" size="sm" onClick={() => void signOut()}>
@@ -64,21 +68,39 @@ function Account() {
   );
 }
 
-export function TopBar({ onPalette, onSheet }: { onPalette: () => void; onSheet: () => void }) {
+export function TopBar({
+  onPalette,
+  onSheet,
+  bare = false,
+}: {
+  onPalette: () => void;
+  onSheet: () => void;
+  /** Signed-out landing and sign-in: wordmark, status, theme and Sign in only. */
+  bare?: boolean;
+}) {
   const mod = useModLabel();
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-border-strong bg-surface-1 px-4 md:px-6">
       <Wordmark />
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="secondary" size="sm" onClick={onPalette} aria-label="Open command palette">
-          <Command className="size-3.5" aria-hidden />
-          <span className="hidden sm:inline">Search</span>
-          <Kbd className="hidden sm:inline-flex">{mod} K</Kbd>
-        </Button>
+        {bare ? null : (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onPalette}
+            aria-label="Open command palette"
+          >
+            <Command className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Search</span>
+            <Kbd className="hidden sm:inline-flex">{mod} K</Kbd>
+          </Button>
+        )}
         <SystemDot />
-        <IconButton label="Keyboard shortcuts" onClick={onSheet}>
-          <Keyboard className="size-4" aria-hidden />
-        </IconButton>
+        {bare ? null : (
+          <IconButton label="Keyboard shortcuts" onClick={onSheet} className="max-sm:hidden">
+            <Keyboard className="size-4" aria-hidden />
+          </IconButton>
+        )}
         <ThemeToggle />
         <Account />
       </div>

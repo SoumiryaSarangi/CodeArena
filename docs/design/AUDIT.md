@@ -48,6 +48,13 @@ Owner cards: UI-09 foundation (tokens, fonts, base components, shell) · UI-10 S
 
 Every row has an owner; nothing is unowned.
 
+### Progress
+
+| Card | Rows resolved | Notes |
+|---|---|---|
+| UI-09 (2026-10-10) | 2, 3, 6, 7 (scale), 8 (button), 9, 15 | Rail "clipped" (9) was a full-page capture artefact. |
+| UI-10 (2026-10-10) | 1, 5 (S03), 8 (S02), 12 (S04), 14, 19 | S01 landing built (own shell, evidence from METRICS.md); S03 wraps long handles and leads with the countdown; S04 shows Status and Title on phones with the rest under the title; signed-out shell has no rail. After-captures in `docs/design/pilot/`. Open for S01 to S04: row 6 CJK glyphs need a live check on a machine with CJK fonts. |
+
 ## Strengths to keep
 
 S06's submission journey (checkmarks with ms offsets and per-test table) is the clearest expression of "show the system"; S18's narrative page and honest diagram; verdicts always carry a text label; tabular mono numerals; visible keyboard shortcuts on S05 and S09; focus ring and reduced-motion handling; a token pipeline with zero raw colours and perfect dark/light parity; no horizontal overflow on any normal capture.

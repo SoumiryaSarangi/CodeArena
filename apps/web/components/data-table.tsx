@@ -11,6 +11,8 @@ export interface Column<T> {
   sortValue?: (row: T) => string | number;
   align?: 'left' | 'right';
   mono?: boolean;
+  /** Not shown under 768 px; the row's first cell carries what matters (see PracticeList). */
+  hideOnPhone?: boolean;
 }
 
 /**
@@ -84,6 +86,7 @@ export function DataTable<T>({
                   className={cn(
                     'h-9 px-3 font-medium text-text-2',
                     c.align === 'right' ? 'text-right' : 'text-left',
+                    c.hideOnPhone && 'max-md:hidden',
                   )}
                 >
                   {c.sortValue ? (
@@ -128,6 +131,7 @@ export function DataTable<T>({
                     'px-3',
                     c.align === 'right' && 'text-right',
                     c.mono && 'font-mono tabular-nums',
+                    c.hideOnPhone && 'max-md:hidden',
                   )}
                 >
                   {c.cell(row)}

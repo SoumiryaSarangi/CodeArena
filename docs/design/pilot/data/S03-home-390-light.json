@@ -4,9 +4,9 @@
     "w": 390,
     "h": 844
   },
-  "pageHeight": 897,
+  "pageHeight": 948,
   "overflowX": false,
-  "elements": 465,
+  "elements": 466,
   "gradients": 0,
   "fontSizes": [
     [
@@ -15,18 +15,26 @@
     ],
     [
       "14px",
-      6
+      7
     ],
     [
-      "16px",
-      5
-    ],
-    [
-      "13px",
+      "18px",
       4
     ],
     [
-      "24px",
+      "13px",
+      3
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ],
+    [
+      "40px",
       1
     ]
   ],
@@ -36,12 +44,12 @@
       21
     ],
     [
-      "500",
-      9
+      "600",
+      7
     ],
     [
-      "600",
-      3
+      "500",
+      6
     ]
   ],
   "fontFamilies": [
@@ -51,13 +59,13 @@
     ],
     [
       "GeistMono",
-      5
+      6
     ]
   ],
   "textColours": [
     [
       "rgb(20, 22, 26)",
-      12
+      13
     ],
     [
       "rgb(75, 82, 96)",
@@ -97,7 +105,11 @@
   "radii": [
     [
       "6px",
-      18
+      14
+    ],
+    [
+      "8px",
+      4
     ],
     [
       "4px",
@@ -114,32 +126,32 @@
     {
       "tag": "h1",
       "text": "Welcome back, riya_k",
-      "size": "24px",
+      "size": "28px",
       "weight": "600"
     },
     {
       "tag": "h2",
       "text": "Next contest",
-      "size": "16px",
-      "weight": "500"
+      "size": "18px",
+      "weight": "600"
     },
     {
       "tag": "h2",
       "text": "Continue practising",
-      "size": "16px",
-      "weight": "500"
+      "size": "18px",
+      "weight": "600"
     },
     {
       "tag": "h2",
       "text": "Recent submissions",
-      "size": "16px",
-      "weight": "500"
+      "size": "18px",
+      "weight": "600"
     },
     {
       "tag": "h2",
       "text": "Your activity",
-      "size": "16px",
-      "weight": "500"
+      "size": "18px",
+      "weight": "600"
     }
   ],
   "smallTargets": {

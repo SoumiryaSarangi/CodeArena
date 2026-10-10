@@ -15,7 +15,7 @@ export function SignIn() {
   const failed = params.get('error') === 'oauth-failed';
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-4 py-12">
-      <h1 className="text-24 font-semibold tracking-[-0.01em]">Sign in</h1>
+      <h1 className="text-28 font-semibold tracking-[-0.01em]">Sign in</h1>
       {failed ? (
         <p role="alert" className="text-14 text-danger">
           Sign-in was cancelled. Try again?

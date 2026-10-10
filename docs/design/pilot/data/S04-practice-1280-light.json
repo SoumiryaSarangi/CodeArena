@@ -1,0 +1,190 @@
+{
+  "url": "/practice",
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "pageHeight": 800,
+  "overflowX": false,
+  "elements": 163,
+  "gradients": 0,
+  "fontSizes": [
+    [
+      "13px",
+      40
+    ],
+    [
+      "12px",
+      19
+    ],
+    [
+      "14px",
+      8
+    ],
+    [
+      "16px",
+      1
+    ],
+    [
+      "28px",
+      1
+    ]
+  ],
+  "fontWeights": [
+    [
+      "400",
+      52
+    ],
+    [
+      "500",
+      14
+    ],
+    [
+      "600",
+      3
+    ]
+  ],
+  "fontFamilies": [
+    [
+      "GeistSans",
+      56
+    ],
+    [
+      "GeistMono",
+      13
+    ]
+  ],
+  "textColours": [
+    [
+      "rgb(75, 82, 96)",
+      30
+    ],
+    [
+      "rgb(20, 22, 26)",
+      22
+    ],
+    [
+      "rgb(99, 106, 117)",
+      15
+    ],
+    [
+      "rgb(47, 73, 217)",
+      1
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "backgrounds": [
+    [
+      "rgb(234, 236, 239)",
+      13
+    ],
+    [
+      "rgb(255, 255, 255)",
+      7
+    ],
+    [
+      "rgb(242, 243, 245)",
+      3
+    ],
+    [
+      "rgb(21, 128, 61)",
+      1
+    ]
+  ],
+  "radii": [
+    [
+      "6px",
+      18
+    ],
+    [
+      "4px",
+      13
+    ],
+    [
+      "3.35544e+07px",
+      1
+    ],
+    [
+      "8px",
+      1
+    ]
+  ],
+  "shadows": [],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Practice",
+      "size": "28px",
+      "weight": "600"
+    }
+  ],
+  "smallTargets": {
+    "count": 16,
+    "examples": [
+      {
+        "tag": "a",
+        "text": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "tag": "a",
+        "text": "codearena▍",
+        "w": 80,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Systems normal",
+        "w": 106,
+        "h": 16
+      },
+      {
+        "tag": "a",
+        "text": "riya_k",
+        "w": 37,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "Title",
+        "w": 26,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "Difficulty",
+        "w": 53,
+        "h": 20
+      },
+      {
+        "tag": "button",
+        "text": "Acceptance",
+        "w": 72,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Peak Reading",
+        "w": 84,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Two Numbers, One Total",
+        "w": 148,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Maze Runner",
+        "w": 81,
+        "h": 17
+      }
+    ]
+  },
+  "interactive": 30
+}

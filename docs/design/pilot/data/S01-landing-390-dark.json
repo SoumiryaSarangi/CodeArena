@@ -4,101 +4,161 @@
     "w": 390,
     "h": 844
   },
-  "pageHeight": 897,
+  "pageHeight": 2096,
   "overflowX": false,
-  "elements": 58,
+  "elements": 82,
   "gradients": 0,
   "fontSizes": [
     [
-      "12px",
-      9
-    ],
-    [
       "14px",
-      2
+      18
     ],
     [
-      "16px",
-      1
+      "12px",
+      10
+    ],
+    [
+      "18px",
+      7
     ],
     [
       "13px",
-      1
+      4
     ],
     [
-      "24px",
+      "22px",
+      3
+    ],
+    [
+      "16px",
+      2
+    ],
+    [
+      "40px",
       1
     ]
   ],
   "fontWeights": [
     [
       "400",
-      10
-    ],
-    [
-      "600",
-      3
+      24
     ],
     [
       "500",
-      1
+      12
+    ],
+    [
+      "600",
+      9
     ]
   ],
   "fontFamilies": [
     [
       "GeistSans",
-      12
+      36
     ],
     [
       "GeistMono",
-      2
+      9
     ]
   ],
   "textColours": [
     [
-      "rgb(163, 169, 178)",
-      5
-    ],
-    [
       "rgb(236, 236, 238)",
-      4
+      20
     ],
     [
       "rgb(138, 144, 154)",
-      4
+      13
+    ],
+    [
+      "rgb(163, 169, 178)",
+      10
     ],
     [
       "rgb(109, 139, 255)",
+      1
+    ],
+    [
+      "rgb(11, 12, 14)",
       1
     ]
   ],
   "backgrounds": [
     [
       "rgb(17, 19, 22)",
-      2
+      7
     ],
     [
       "rgb(23, 26, 30)",
-      2
+      1
+    ],
+    [
+      "rgb(236, 236, 238)",
+      1
+    ],
+    [
+      "rgb(35, 39, 45)",
+      1
     ]
   ],
   "radii": [
     [
       "6px",
-      13
+      7
+    ],
+    [
+      "8px",
+      1
     ]
   ],
   "shadows": [],
   "headings": [
     {
       "tag": "h1",
-      "text": "CodeArena",
-      "size": "24px",
+      "text": "The place your campus codes together",
+      "size": "40px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "You can watch your code being judged",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Measured, with the run behind each number",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h2",
+      "text": "Three things, one account",
+      "size": "22px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Practise",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Compete",
+      "size": "18px",
+      "weight": "600"
+    },
+    {
+      "tag": "h3",
+      "text": "Interview",
+      "size": "18px",
       "weight": "600"
     }
   ],
   "smallTargets": {
-    "count": 2,
+    "count": 6,
     "examples": [
       {
         "tag": "a",
@@ -111,8 +171,32 @@
         "text": "codearena▍",
         "w": 80,
         "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "See how it is built",
+        "w": 112,
+        "h": 20
+      },
+      {
+        "tag": "a",
+        "text": "Practise",
+        "w": 72,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "Compete",
+        "w": 81,
+        "h": 23
+      },
+      {
+        "tag": "a",
+        "text": "Interview",
+        "w": 82,
+        "h": 23
       }
     ]
   },
-  "interactive": 16
+  "interactive": 15
 }

@@ -1,9 +1,10 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { cn } from '@/lib/cn';
-import { SessionProvider } from '@/lib/session';
+import { SessionProvider, useSession } from '@/lib/session';
 import { useGlobalShortcuts } from '@/lib/use-global-shortcuts';
 import { CommandPalette } from '../command-palette';
 import { ShortcutSheet } from '../shortcut-sheet';
@@ -25,7 +26,21 @@ export function useImmersive(on: boolean) {
   }, [on, set]);
 }
 
+/** Pages that introduce the product to someone who has not signed in: no app rail, a short top bar. */
+const BARE_PATHS = new Set(['/', '/signin']);
+
 export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <SessionProvider>
+      <Frame>{children}</Frame>
+    </SessionProvider>
+  );
+}
+
+function Frame({ children }: { children: ReactNode }) {
+  const { session } = useSession();
+  const path = usePathname();
+  const bare = session.status !== 'authed' && BARE_PATHS.has(path);
   const [immersive, setImmersive] = useState(false);
   const [palette, setPalette] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -36,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useGlobalShortcuts(handlers);
 
   return (
-    <SessionProvider>
+    <>
       <ImmersiveSetter.Provider value={setImmersive}>
         <TooltipProvider>
           <a
@@ -47,11 +62,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           </a>
           {immersive ? null : (
             <>
-              <TopBar onPalette={() => setPalette(true)} onSheet={() => setSheet(true)} />
-              <Rail />
+              <TopBar
+                bare={bare}
+                onPalette={() => setPalette(true)}
+                onSheet={() => setSheet(true)}
+              />
+              {bare ? null : <Rail />}
             </>
           )}
-          <div className={immersive ? undefined : 'pb-14 md:pb-0 md:pl-14 xl:pl-48'}>
+          <div className={immersive || bare ? undefined : 'pb-14 md:pb-0 md:pl-14 xl:pl-48'}>
             <main
               id="main"
               className={cn(
@@ -88,6 +107,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Toaster position="bottom-right" visibleToasts={3} duration={5000} />
         </TooltipProvider>
       </ImmersiveSetter.Provider>
-    </SessionProvider>
+    </>
   );
 }

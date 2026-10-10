@@ -4,18 +4,18 @@
     "w": 1280,
     "h": 800
   },
-  "pageHeight": 800,
+  "pageHeight": 1209,
   "overflowX": false,
-  "elements": 470,
+  "elements": 510,
   "gradients": 0,
   "fontSizes": [
     [
       "12px",
-      14
+      26
     ],
     [
       "14px",
-      12
+      24
     ],
     [
       "13px",
@@ -41,7 +41,7 @@
   "fontWeights": [
     [
       "400",
-      22
+      46
     ],
     [
       "500",
@@ -55,7 +55,7 @@
   "fontFamilies": [
     [
       "GeistSans",
-      30
+      54
     ],
     [
       "GeistMono",
@@ -64,49 +64,53 @@
   ],
   "textColours": [
     [
-      "rgb(20, 22, 26)",
-      14
+      "rgb(236, 236, 238)",
+      26
     ],
     [
-      "rgb(75, 82, 96)",
-      14
+      "rgb(163, 169, 178)",
+      26
     ],
     [
-      "rgb(99, 106, 117)",
+      "rgb(138, 144, 154)",
       6
     ],
     [
-      "rgb(47, 73, 217)",
+      "rgb(109, 139, 255)",
       1
     ],
     [
-      "rgb(255, 255, 255)",
+      "rgb(11, 12, 14)",
       1
     ],
     [
-      "rgb(200, 30, 30)",
+      "rgb(248, 113, 113)",
       1
     ]
   ],
   "backgrounds": [
     [
-      "rgb(255, 255, 255)",
+      "rgb(17, 19, 22)",
       6
     ],
     [
-      "rgb(242, 243, 245)",
+      "rgb(23, 26, 30)",
       2
     ],
     [
-      "rgb(234, 236, 239)",
+      "rgb(30, 34, 39)",
       1
     ],
     [
-      "rgb(21, 128, 61)",
+      "rgb(34, 197, 94)",
       1
     ],
     [
-      "rgb(20, 22, 26)",
+      "rgb(236, 236, 238)",
+      1
+    ],
+    [
+      "oklab(0.710632 0.15384 0.0628371 / 0.14)",
       1
     ]
   ],
@@ -128,16 +132,11 @@
       1
     ]
   ],
-  "shadows": [
-    [
-      "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.534923 0.179573 0.093921 / 0.4) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
-      1
-    ]
-  ],
+  "shadows": [],
   "headings": [
     {
       "tag": "h1",
-      "text": "Welcome back, riya_k",
+      "text": "Welcome back, a_very_long_handle_that_keeps_going_",
       "size": "28px",
       "weight": "600"
     },
@@ -167,7 +166,7 @@
     }
   ],
   "smallTargets": {
-    "count": 12,
+    "count": 17,
     "examples": [
       {
         "tag": "a",
@@ -189,8 +188,8 @@
       },
       {
         "tag": "a",
-        "text": "riya_k",
-        "w": 37,
+        "text": "a_very_long_handle_that_keeps_",
+        "w": 446,
         "h": 20
       },
       {
@@ -201,35 +200,35 @@
       },
       {
         "tag": "a",
-        "text": "Two Numbers, One Total",
-        "w": 156,
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
         "h": 20
       },
       {
         "tag": "a",
-        "text": "Fractional Loot",
-        "w": 96,
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
         "h": 20
       },
       {
         "tag": "a",
-        "text": "Two Numbers, One Total",
-        "w": 156,
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
         "h": 20
       },
       {
         "tag": "a",
-        "text": "Rules",
-        "w": 47,
-        "h": 28
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
       },
       {
         "tag": "a",
-        "text": "Status",
-        "w": 53,
-        "h": 28
+        "text": "🔥 解く: 配列の和",
+        "w": 68,
+        "h": 20
       }
     ]
   },
-  "interactive": 22
+  "interactive": 34
 }
