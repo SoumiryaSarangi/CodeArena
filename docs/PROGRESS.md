@@ -1474,3 +1474,8 @@ Built: **README hero** is now the Practice list with the new top bar (`docs/desi
 Tests: web unit `tests/app-icons.test.ts` 3 (the manifest names the app and uses the dark surface token, every listed icon exists and has the size it declares, a maskable 512 and plain 192 and 512 exist, the Apple icon is 180 px), browser `e2e/app-icons.spec.ts` (the page links the favicon, Apple icon and manifest, and each is served with the right type); design-system tests (the F-07 colour rule) still green: 39/39; typecheck and lint clean. The maskable and the 192 px icons were looked at.
 Note: the screenshots are of stubbed data (a five-problem list with odd tag names such as "strings2" that come from the fixture), as the README says.
 Model: S · Sonnet.
+
+## 2026-10-10 · UI-25d · done
+Changed at Soumirya's request: the README hero is the **full, uncropped** Practice capture (`docs/design/round2/after/S04-practice-1280-dark.jpg`; the cropped copy was removed). So the page is not half empty, the capture harness's S04 fixture (`e2e/design-shots.spec.ts` only, no product code, and not the practice browser spec, which keeps its overflow-test fixture) now lists **14 of the 20 public problems** with their real titles, difficulties and tags from `problems/*/problem.yaml`; acceptance rates and the solved marks are fixture values (the README already says the captures are stubbed data). The four S04 captures were retaken.
+Tests: `tsc` clean; the capture spec runs only with `DESIGN_SHOTS=1` (4 passed); the screenshot was looked at.
+Model: S · Sonnet.

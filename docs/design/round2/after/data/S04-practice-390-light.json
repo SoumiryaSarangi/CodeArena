@@ -4,18 +4,18 @@
     "w": 390,
     "h": 844
   },
-  "pageHeight": 897,
+  "pageHeight": 1025,
   "overflowX": false,
-  "elements": 131,
+  "elements": 203,
   "gradients": 0,
   "fontSizes": [
     [
       "12px",
-      23
+      50
     ],
     [
       "13px",
-      21
+      39
     ],
     [
       "20px",
@@ -37,11 +37,11 @@
   "fontWeights": [
     [
       "400",
-      37
+      73
     ],
     [
       "500",
-      9
+      18
     ],
     [
       "700",
@@ -55,11 +55,11 @@
   "fontFamilies": [
     [
       "GeistSans",
-      42
+      78
     ],
     [
       "GeistMono",
-      5
+      14
     ],
     [
       "wordmarkFont",
@@ -69,30 +69,26 @@
   "textColours": [
     [
       "rgb(99, 106, 117)",
-      18
+      41
+    ],
+    [
+      "rgb(20, 22, 26)",
+      20
     ],
     [
       "rgb(75, 82, 96)",
       13
     ],
     [
-      "rgb(20, 22, 26)",
-      11
-    ],
-    [
       "rgb(20, 108, 53)",
-      3
+      10
     ],
     [
       "rgb(160, 74, 6)",
-      2
+      9
     ],
     [
       "rgb(47, 73, 217)",
-      1
-    ],
-    [
-      "rgb(200, 30, 30)",
       1
     ]
   ],
@@ -130,7 +126,7 @@
     }
   ],
   "smallTargets": {
-    "count": 9,
+    "count": 18,
     "examples": [
       {
         "tag": "a",
@@ -170,23 +166,29 @@
       },
       {
         "tag": "a",
-        "text": "Maze Runner",
-        "w": 81,
+        "text": "Rainfall Totals",
+        "w": 87,
         "h": 17
       },
       {
         "tag": "a",
-        "text": "Hop Distances",
-        "w": 88,
+        "text": "Unique Badges",
+        "w": 92,
         "h": 17
       },
       {
         "tag": "a",
-        "text": "Spell Fixer",
-        "w": 64,
+        "text": "Shelf Search",
+        "w": 78,
+        "h": 17
+      },
+      {
+        "tag": "a",
+        "text": "Budget Windows",
+        "w": 106,
         "h": 17
       }
     ]
   },
-  "interactive": 30
+  "interactive": 39
 }

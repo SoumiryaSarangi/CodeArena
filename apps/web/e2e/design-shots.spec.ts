@@ -318,13 +318,37 @@ const SCREENS: Screen[] = [
     name: 'practice',
     open: async (page) => {
       await stubApi(page);
-      // the problem list the practice spec uses (the default stub answers an empty list)
+      // The first 14 of the 20 public problems by difficulty (real titles and tags from problems/*/problem.yaml);
+      // acceptance rates and solved state are fixture values, as the whole capture is stubbed data.
       const items = [
         ['peak-reading', 'Peak Reading', 800, ['implementation', 'arrays'], 91.2, 'solved'],
-        ['sum-two-numbers', 'Two Numbers, One Total', 800, ['implementation', 'math'], 74.5, 'new'],
+        [
+          'sum-two-numbers',
+          'Two Numbers, One Total',
+          800,
+          ['implementation', 'math'],
+          74.5,
+          'solved',
+        ],
+        ['rainfall-totals', 'Rainfall Totals', 900, ['prefix sums', 'arrays'], 68.4, 'solved'],
+        ['unique-badges', 'Unique Badges', 900, ['sorting', 'sets'], 61.3, 'new'],
+        ['shelf-search', 'Shelf Search', 1000, ['binary search', 'arrays'], 55.4, 'solved'],
+        ['budget-windows', 'Budget Windows', 1100, ['two pointers', 'arrays'], 48.7, 'solved'],
+        ['hall-of-fame', 'Hall of Fame', 1100, ['sorting'], 52.1, 'new'],
+        [
+          'matching-pair',
+          'Matching Pair',
+          1200,
+          ['hashing', 'two pointers', 'checker'],
+          39.9,
+          'attempted',
+        ],
         ['maze-runner', 'Maze Runner', 1200, ['bfs', 'graphs', 'grids'], 40.1, 'new'],
+        ['stair-climb', 'Stair Climb', 1200, ['dp', 'counting'], 33.6, 'new'],
         ['hop-distances', 'Hop Distances', 1300, ['bfs', 'graphs'], null, 'attempted'],
-        ['spell-fixer', 'Spell Fixer', 1600, ['dp', 'strings', 'strings2', 'x', 'y'], 12.0, 'new'],
+        ['network-islands', 'Network Islands', 1300, ['dsu', 'graphs'], 27.8, 'new'],
+        ['divisor-census', 'Divisor Census', 1400, ['number theory', 'sieve'], 24.1, 'new'],
+        ['packing-the-van', 'Packing the Van', 1400, ['dp', 'knapsack'], 18.5, 'new'],
       ].map(([slug, title, difficulty, tags, acceptance, status]) => ({
         slug,
         title,
@@ -338,9 +362,11 @@ const SCREENS: Screen[] = [
       await page.route('**/api/problems/tags', (r) =>
         json(r, {
           items: [
+            { tag: 'arrays', count: 5 },
             { tag: 'bfs', count: 2 },
-            { tag: 'dp', count: 1 },
-            { tag: 'graphs', count: 2 },
+            { tag: 'dp', count: 4 },
+            { tag: 'graphs', count: 4 },
+            { tag: 'sorting', count: 4 },
           ],
         }),
       );

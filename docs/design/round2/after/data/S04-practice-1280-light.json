@@ -4,18 +4,18 @@
     "w": 1280,
     "h": 800
   },
-  "pageHeight": 800,
+  "pageHeight": 832,
   "overflowX": false,
-  "elements": 177,
+  "elements": 301,
   "gradients": 0,
   "fontSizes": [
     [
       "13px",
-      40
+      85
     ],
     [
       "12px",
-      19
+      35
     ],
     [
       "14px",
@@ -37,11 +37,11 @@
   "fontWeights": [
     [
       "400",
-      52
+      104
     ],
     [
       "500",
-      14
+      23
     ],
     [
       "700",
@@ -55,11 +55,11 @@
   "fontFamilies": [
     [
       "GeistSans",
-      56
+      99
     ],
     [
       "GeistMono",
-      11
+      29
     ],
     [
       "wordmarkFont",
@@ -69,37 +69,33 @@
   "textColours": [
     [
       "rgb(75, 82, 96)",
-      30
+      47
     ],
     [
       "rgb(20, 22, 26)",
-      17
+      35
     ],
     [
       "rgb(99, 106, 117)",
-      15
+      28
     ],
     [
       "rgb(20, 108, 53)",
-      3
+      10
     ],
     [
       "rgb(160, 74, 6)",
-      2
+      9
     ],
     [
       "rgb(47, 73, 217)",
-      1
-    ],
-    [
-      "rgb(200, 30, 30)",
       1
     ]
   ],
   "backgrounds": [
     [
       "rgb(234, 236, 239)",
-      13
+      30
     ],
     [
       "rgb(255, 255, 255)",
@@ -120,12 +116,12 @@
   ],
   "radii": [
     [
-      "6px",
-      18
+      "4px",
+      30
     ],
     [
-      "4px",
-      13
+      "6px",
+      18
     ],
     [
       "3.35544e+07px",
@@ -146,7 +142,7 @@
     }
   ],
   "smallTargets": {
-    "count": 16,
+    "count": 25,
     "examples": [
       {
         "tag": "a",
@@ -204,11 +200,11 @@
       },
       {
         "tag": "a",
-        "text": "Maze Runner",
-        "w": 81,
+        "text": "Rainfall Totals",
+        "w": 87,
         "h": 17
       }
     ]
   },
-  "interactive": 30
+  "interactive": 39
 }

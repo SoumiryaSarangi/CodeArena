@@ -10,7 +10,7 @@
 
 [Live site](https://code-arena-eta-mauve.vercel.app) · [Status](https://code-arena-eta-mauve.vercel.app/status) · [Documentation](#documentation) · [Metrics](docs/METRICS.md)
 
-<img src="docs/design/round2/after/hero-practice-1280-dark.jpg" alt="The CodeArena practice list with the new top bar" width="860">
+<img src="docs/design/round2/after/S04-practice-1280-dark.jpg" alt="The CodeArena practice list: 14 of the 20 public problems, with difficulty, tags and acceptance" width="860">
 
 </div>
 
