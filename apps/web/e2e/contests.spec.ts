@@ -81,33 +81,13 @@ test.describe('C-01: contest lobby (S08)', () => {
     await expect(link).toHaveAttribute('href', /\/signin\?.*return/);
   });
 
-  test('Add to calendar downloads an .ics with the start and end', async ({ page }) => {
-    await stubApi(page);
-    await stubContests(page);
-    await page.goto('/c/warm-up-1');
-    const [download] = await Promise.all([
-      page.waitForEvent('download'),
-      page.getByRole('button', { name: 'Add to calendar' }).click(),
-    ]);
-    expect(download.suggestedFilename()).toBe('warm-up-1.ics');
-    const text = await (
-      await download.createReadStream()
-    )
-      .toArray()
-      .then((c) => Buffer.concat(c).toString());
-    expect(text).toContain('BEGIN:VEVENT');
-    expect(text).toMatch(/DTSTART:\d{8}T\d{6}Z/);
-    expect(text).toMatch(/DTEND:\d{8}T\d{6}Z/);
-    expect(text).toContain('SUMMARY:CodeArena Warm-up #1');
-  });
-
-  test('Add to Google Calendar opens a prefilled event in a new tab, with no account data', async ({
+  test('Add to calendar opens a prefilled Google Calendar event in a new tab, with no account data', async ({
     page,
   }) => {
     await stubApi(page);
     await stubContests(page);
     await page.goto('/c/warm-up-1');
-    const link = page.getByRole('link', { name: 'Add to Google Calendar' });
+    const link = page.getByRole('link', { name: 'Add to calendar' });
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', /noopener/);
     const url = new URL((await link.getAttribute('href'))!);

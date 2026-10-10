@@ -13,7 +13,6 @@ import {
   formatSpan,
   formatWhen,
   googleCalendarUrl,
-  icsFile,
   useNow,
   useServerClock,
 } from '@/lib/contest-time';
@@ -119,18 +118,6 @@ export function ContestLobby({ slug }: { slug: string }) {
   if (!c || !state) return <Skeleton className="h-64 w-full" />;
 
   const startsIn = (Date.parse(c.startsAt) - now) / 1000;
-  const downloadIcs = () => {
-    const blob = new Blob([icsFile(c, window.location.href)], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${c.slug}.ics`;
-    document.body.append(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-8">
       <div className="flex max-w-[44rem] flex-col gap-1">
@@ -204,20 +191,15 @@ export function ContestLobby({ slug }: { slug: string }) {
           canAsk={state === 'running'}
         />
         {state === 'scheduled' ? (
-          <>
-            <Button asChild variant="ghost">
-              <a
-                href={googleCalendarUrl(c, window.location.href)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <CalendarPlus className="size-4" aria-hidden /> Add to Google Calendar
-              </a>
-            </Button>
-            <Button variant="ghost" onClick={downloadIcs}>
-              <CalendarPlus className="size-4" aria-hidden /> Add to calendar (.ics)
-            </Button>
-          </>
+          <Button asChild variant="ghost">
+            <a
+              href={googleCalendarUrl(c, window.location.href)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <CalendarPlus className="size-4" aria-hidden /> Add to calendar
+            </a>
+          </Button>
         ) : null}
       </div>
       {regError ? (

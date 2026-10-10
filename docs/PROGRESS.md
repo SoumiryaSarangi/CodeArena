@@ -1392,3 +1392,8 @@ Next: Ayush may reword it (it is his U9.3 text in effect). Ayush must: read it o
 Built: S08 lobby gains "Add to Google Calendar", a link to Google's prefilled-event page (`googleCalendarUrl` in `lib/contest-time.ts`: title, UTC start/end, the contest URL as details; new tab, `noopener noreferrer`); the download button is now "Add to calendar (.ics)" for Apple and Outlook. Option A chosen by Ayush: the user confirms in their own Google session, so we need no Calendar permission, no tokens, no email, and no Google verification. A true one-click add through the Calendar API (option B) would need the sensitive `calendar.events` scope, token storage and Google's app verification, and is not planned.
 Tests: e2e (new) the link's target, rel, host, action, title, dates format, details, no `@` in the URL; the .ics test unchanged and passing; contests and ui18 specs green.
 Next: none. Ayush must: nothing. Model: S · Sonnet.
+
+## 2026-10-10 · UI-22b · done
+Changed at Ayush's request: the lobby has one button again, "Add to calendar", and it now does what "Add to Google Calendar" did (opens the prefilled event in a new tab). The .ics download, its helper (`icsFile`) and its test are removed. Apple and Outlook users have no download now; they can copy the event from Google or add it by hand.
+Tests: the Google link test now finds the link by "Add to calendar"; contests spec 21 pass; typecheck, lint.
+Model: S · Sonnet.

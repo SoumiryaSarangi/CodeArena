@@ -85,30 +85,7 @@ export function toLocalInput(iso: string) {
 }
 export const fromLocalInput = (v: string) => new Date(v).toISOString();
 
-/** A one-event calendar file ("Add to calendar", S08). */
-export function icsFile(
-  c: { slug: string; title: string; startsAt: string; endsAt: string },
-  url: string,
-) {
-  const stamp = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//CodeArena//Contests//EN',
-    'BEGIN:VEVENT',
-    `UID:${c.slug}@codearena`,
-    `DTSTAMP:${stamp(new Date().toISOString())}`,
-    `DTSTART:${stamp(c.startsAt)}`,
-    `DTEND:${stamp(c.endsAt)}`,
-    `SUMMARY:${c.title.replace(/[,;\\]/g, ' ')}`,
-    `URL:${url}`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-    '',
-  ].join('\r\n');
-}
-
-/** "Add to Google Calendar": a prefilled event the user confirms in their own Google session. */
+/** "Add to calendar" (S08): a prefilled event the user confirms in their own Google session. */
 export function googleCalendarUrl(
   c: { title: string; startsAt: string; endsAt: string },
   url: string,
