@@ -1479,3 +1479,7 @@ Model: S · Sonnet.
 Changed at Soumirya's request: the README hero is the **full, uncropped** Practice capture (`docs/design/round2/after/S04-practice-1280-dark.jpg`; the cropped copy was removed). So the page is not half empty, the capture harness's S04 fixture (`e2e/design-shots.spec.ts` only, no product code, and not the practice browser spec, which keeps its overflow-test fixture) now lists **14 of the 20 public problems** with their real titles, difficulties and tags from `problems/*/problem.yaml`; acceptance rates and the solved marks are fixture values (the README already says the captures are stubbed data). The four S04 captures were retaken.
 Tests: `tsc` clean; the capture spec runs only with `DESIGN_SHOTS=1` (4 passed); the screenshot was looked at.
 Model: S · Sonnet.
+
+## 2026-10-10 · CP-07b · done (a flaky test found by CI)
+CI failed once on `apps/collab/src/doc-size.test.ts` ("expected 250 to be greater than 250"). Cause: Yjs writes a client id as a variable-length integer, so the random client ids of the test's two documents change the encoded size by up to four bytes, and the assertion compares the size with fixed numbers (250 and a cap of 300); with small ids the size landed exactly on 250. No product code was wrong. Fix: the two documents get fixed five-byte client ids. 25 runs in a row pass. This is the third flaky test seen (the replay 4× timing test and the collab hook timeouts on a slow disk are the others, see ROADMAP).
+Model: S · Sonnet.

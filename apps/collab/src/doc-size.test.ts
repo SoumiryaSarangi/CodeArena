@@ -66,6 +66,9 @@ describe('FR-PAD-13: the size cap, without a server', () => {
     const doc = new Y.Doc({ gc: false });
     const guard = new DocSizeGuard(300);
     const client = new Y.Doc({ gc: false });
+    // Yjs writes a client id as a variable-length integer, so a random id changes the encoded size by up to four
+    // bytes. The size is compared with fixed numbers below, so the ids are fixed (both need five bytes).
+    client.clientID = 0x1abcdef0;
     const small = insertUpdate(client, 0, 'a'.repeat(100));
     Y.applyUpdate(doc, small);
     expect(guard.allows(doc, frame('r', 0, 2, small))).toBe(true);
@@ -76,6 +79,7 @@ describe('FR-PAD-13: the size cap, without a server', () => {
     expect(guard.allows(doc, frame('r', 0, 2, more))).toBe(true);
     // fill it up, then a delete is allowed although the document is at the limit
     const filler = new Y.Doc({ gc: false });
+    filler.clientID = 0x2bcdef01;
     Y.applyUpdate(filler, Y.encodeStateAsUpdate(doc));
     const fill = insertUpdate(filler, 0, 'd'.repeat(120));
     Y.applyUpdate(doc, fill);
