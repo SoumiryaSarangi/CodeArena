@@ -126,7 +126,7 @@ Other scripts (load tests, failure drills, the hint eval, `ui-ux:sync`) are list
 
 The judge runs hostile code, so its host is treated as hostile: workers run on separate VMs, hold no database credentials and reach Redis as an ACL user limited to job streams. Sandboxes have no network and an empty environment, and outputs are read with `O_NOFOLLOW`, `fstat` and a size cap. Sign-in is OAuth only, with short-lived tokens, rotating refresh cookies, CSRF protection and single-use realtime tickets. Hidden tests never enter this repository. Limits are stated plainly: exam mode is a deterrent, not proctoring, and plagiarism and AI signals are for a person to review. Details: [System design](docs/SYSTEM_DESIGN.md) and the [privacy page](https://code-arena-eta-mauve.vercel.app/privacy).
 
-To report a vulnerability, please do not open a public issue; e-mail the maintainer (see the GitHub profile) with steps to reproduce.
+To report a vulnerability, please do not open a public issue: see [SECURITY.md](SECURITY.md).
 
 ## Deployment
 
@@ -134,19 +134,23 @@ The web app runs on Vercel; the API, collab servers, plagiarism service and Cadd
 
 ## Documentation
 
-- [PRD](docs/PRD.md) · [SRS](docs/SRS.md) · [UI/UX](docs/UI_UX.md) · [System design](docs/SYSTEM_DESIGN.md)
-- [Architecture decisions](docs/adr/README.md) · [Metrics](docs/METRICS.md)
-- [Design audit](docs/design/AUDIT.md) · [Design round 2](docs/design/ROUND2.md) · [All screenshots](docs/design/round2/after/)
-- [Plan](docs/PLAN.md) · [Progress log](docs/PROGRESS.md) · [Demo script](docs/DEMO.md)
+Start at the [documentation index](docs/README.md). The short list:
+
+- [Product overview](docs/PRODUCT.md) · [PRD](docs/PRD.md) · [SRS](docs/SRS.md) · [UI/UX](docs/UI_UX.md)
+- [Architecture](docs/ARCHITECTURE.md) · [System design](docs/SYSTEM_DESIGN.md) · [Architecture decisions](docs/adr/README.md)
+- [Testing](docs/TESTING.md) · [Metrics](docs/METRICS.md) · [Roadmap and known limits](docs/ROADMAP.md)
+- [Plan](docs/PLAN.md) · [Progress log](docs/PROGRESS.md) · [Changelog](CHANGELOG.md) · [Demo script](docs/DEMO.md)
 
 ## Status
 
-The plan's critical path is built and deployed. The upgrade paths the design left out (KEDA autoscaling, gVisor or Firecracker per job, a vector store, an external identity provider) are written up in [ADR-014](docs/adr/014-upgrade-paths.md). Open items are tracked in [`docs/PROGRESS.md`](docs/PROGRESS.md).
+The plan's critical path is built and deployed. The upgrade paths the design left out are written up in
+[ADR-014](docs/adr/014-upgrade-paths.md); open items and known limits are in the [roadmap](docs/ROADMAP.md).
 
 ## Contributing
 
-This is a personal project and is not taking outside pull requests right now; issues with a clear reproduction are welcome. If you work on the code, run `pnpm check` first and keep tests next to the change.
+This is a personal project and is not taking outside pull requests right now; issues with a clear reproduction are
+welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-No license has been chosen yet, so all rights are reserved until a `LICENSE` file is added.
+[MIT](LICENSE) © 2026 Soumirya Sarangi.
