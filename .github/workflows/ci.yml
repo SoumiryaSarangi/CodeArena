@@ -97,7 +97,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
       - name: 'Terraform: format, validate, offline firewall tests'
         working-directory: infra/terraform
         run: |
