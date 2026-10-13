@@ -55,7 +55,7 @@ jobs:
       - name: Image name (lowercase, as registries require)
         id: name
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-api" >> "$GITHUB_OUTPUT"
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         id: build
         with:
           context: .
@@ -176,7 +176,7 @@ jobs:
       - name: Image name (lowercase, as registries require)
         id: name
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-plag" >> "$GITHUB_OUTPUT"
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         id: build
         with:
           context: apps/plag
@@ -240,7 +240,7 @@ jobs:
       - name: Image name (lowercase, as registries require)
         id: name
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codearena-collab" >> "$GITHUB_OUTPUT"
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         id: build
         with:
           context: .
